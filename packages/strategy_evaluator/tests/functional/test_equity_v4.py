@@ -15,12 +15,12 @@ from execution_channels.instruments import AssetClass
 from execution_channels.instruments import BarFrequency
 from execution_channels.instruments import InstrumentId
 from execution_channels.instruments import MarketId
-from execution_channels.policy import AccountPolicy
+from execution_channels.policy import ExecutionPolicy, AccountPolicy
 from execution_channels.policy import CashAvailabilityPolicy
 from execution_channels.policy import ResearchExecutionSpec
 from execution_channels.policy import CnEquitySpec
 from execution_channels.policy import UsEquitySpec
-from execution_channels.contracts import SellRemainderPolicy
+from execution_channels.contracts import AccountExecutionPlan, SellRemainderPolicy
 from execution_channels.planning import plan_account_decision
 from execution_channels.session_contracts import OrderSide
 from execution_channels.session_contracts import OrderType
@@ -61,57 +61,6 @@ def ledger(market=MarketId.US, *, variant="scaling"):
         market, AssetClass.STOCK, "600000.SH" if market is MarketId.CN else "LITE"
     )
     event_at = origin + timedelta(days=1)
-    if variant in {"events", "odd"}:
-        actions = pd.DataFrame(
-            [
-                dict(
-                    Date=event_at,
-                    AvailableDate=event_at,
-                    EventId="split",
-                    Kind="SPLIT",
-                    Ratio=1.5 if variant == "odd" else 2.0,
-                    CashPerShare=0.0,
-                    PayAt=None,
-                ),
-                dict(
-                    Date=event_at,
-                    AvailableDate=event_at,
-                    EventId="cash",
-                    Kind="CASH_DIVIDEND",
-                    Ratio=1.0,
-                    CashPerShare=0.1,
-                    PayAt=event_at + timedelta(minutes=30),
-                ),
-            ]
-        )
-    elif variant == "midpayment":
-        actions = pd.DataFrame(
-            [
-                dict(
-                    Date=event_at,
-                    AvailableDate=event_at,
-                    EventId="cash",
-                    Kind="CASH_DIVIDEND",
-                    Ratio=1.0,
-                    CashPerShare=2.0,
-                    PayAt=event_at.replace(hour=11, minute=0),
-                )
-            ]
-        )
-    else:
-        actions = pd.DataFrame(
-            [
-                dict(
-                    Date=origin,
-                    AvailableDate=origin,
-                    EventId="none",
-                    Kind="NONE",
-                    Ratio=1.0,
-                    CashPerShare=0.0,
-                    PayAt=None,
-                )
-            ]
-        )
     bars, rules = [], []
 
     def quote(stamp, price=10.0, volume=10000.0):
@@ -149,8 +98,7 @@ def ledger(market=MarketId.US, *, variant="scaling"):
         specification=spec,
         initial_cash=10000.0,
         fee_rate=0.001,
-        actions=actions,
-        price_basis="RAW",
+        price_basis="HFQ",
         execution_bars=None if execution is None else pd.DataFrame(execution),
     )
     bars.append(
@@ -200,31 +148,20 @@ def ledger(market=MarketId.US, *, variant="scaling"):
             ExecutionPrecision.BAR_INTERVAL,
         )
         account = executor.account_snapshot(point, instrument)
-        decision = _intent(
-            target,
-            "synthetic independent audit fixture",
-            facts={"target": target},
-            next_watch="next causal observation",
-            orders=orders,
-            legs=legs,
-            capital_mode=mode,
-            cycle_before=executor.cycle_budget if mode == "signal_cash_fraction" else None,
-            cycle_after=budget,
-        )
         reference = bars[-1]["Close"]
-        if variant in {"events", "odd"} and observed <= event_at <= stamp:
-            reference /= 1.5 if variant == "odd" else 2
-        proposal = plan_account_decision(
-            decision,
-            point,
-            account,
-            reference,
-            spec,
-            owner="candidate:fixture",
-            implementation="1" * 64,
-            fee_rate=0.001,
-            sell_remainder_policy=SellRemainderPolicy.FULL_LIQUIDATION,
-        )
+        if orders or legs:
+            instructions = orders or tuple(leg.order for leg in legs)
+            quantity = account.quantity + sum(order.quantity * (1 if order.side is OrderSide.BUY else -1) for order in instructions)
+            proposal = AccountExecutionPlan(f'{executor.revision+1:064x}', 'candidate:fixture', point,
+                account.revision, quantity, orders, legs, mode,
+                executor.cycle_budget if mode == 'signal_cash_fraction' else None, budget,
+                {'sizing':'EXPLICIT_ORDERS','target':target,'reference_price':reference,
+                 'specification_hash':spec.fingerprint,'fee_rate':.001})
+        else:
+            proposal = plan_account_decision(_intent(target, 'fixture', facts={}, next_watch='next'),
+                point, account, reference, spec, owner='candidate:fixture', implementation='1'*64,
+                fee_rate=.001, sell_remainder_policy=SellRemainderPolicy.FULL_LIQUIDATION,
+                execution_policy=ExecutionPolicy('TARGET_POSITION', {'capital_mode':mode}))
         executor.execute_account_plan(proposal, row, constraint=rule)
         bars.append(row)
         rules.append(rule)
@@ -328,10 +265,10 @@ def ledger(market=MarketId.US, *, variant="scaling"):
         decisions=records(result.decisions),
         orders=records(result.orders),
         fills=records(result.fills),
-        actions=records(result.corporate_action_entries),
+        account_entries=records(result.account_entries),
+        price_basis=result.price_basis, quantity_basis=result.quantity_basis,
         account_points=records(result.account_points),
         trades=records(result.trades),
-        action_facts=records(actions),
         fee_rate=0.001,
     )
     if execution is not None:
@@ -345,8 +282,6 @@ def ledger(market=MarketId.US, *, variant="scaling"):
     [
         "scaling",
         "fractions",
-        "events",
-        "odd",
         "locks",
         "legs",
         "volume",
@@ -450,10 +385,6 @@ def test_v4_audit_rejects_corrupted_complete_looking_facts(base_ledger, field):
         ("fractions", "reference"),
         ("fractions", "fraction"),
         ("fullcash", "residual-target"),
-        ("events", "entitlement"),
-        ("events", "payment"),
-        ("events", "missing-event"),
-        ("events", "pay-time"),
         ("locks", "sellable-time"),
         ("checkpoints", "quote-source"),
         ("checkpoints", "quote-volume"),
@@ -509,26 +440,6 @@ def test_v4_audit_rejects_sizing_events_locks_dependencies_and_execution_source_
         audit_equity_account(**source, account_contract=4, decision_contract="FORMAL_V4")
 
 
-@pytest.mark.parametrize("market", [MarketId.CN, MarketId.US])
-def test_checkpoint_can_spend_only_dividend_cash_paid_before_its_exact_quote(market):
-    source = ledger(market, variant="midpayment")
-    assert len(source["fills"]) == 2
-    assert source["fills"][-1]["price"] == 11.0
-    assert source["account_points"][0]["cash"] < 1101
-    result = audit_equity_account(**source, account_contract=4, decision_contract="FORMAL_V4")
-    assert result.total_return == pytest.approx(0.36899)
-    for defect in ("early-journal", "late-source", "duplicate-payment", "missing-payment"):
-        damaged = deepcopy(source)
-        if defect == "early-journal":
-            damaged["actions"][-1]["time"] = damaged["constraints"][-1]["Date"]
-        elif defect == "late-source":
-            damaged["action_facts"][0]["PayAt"] = damaged["account_points"][-1]["time"]
-        elif defect == "duplicate-payment":
-            damaged["actions"].append(dict(damaged["actions"][-1]))
-        else:
-            damaged["actions"].pop()
-        with pytest.raises(ValueError):
-            audit_equity_account(**damaged, account_contract=4, decision_contract="FORMAL_V4")
 
 
 @pytest.mark.parametrize("marker", [2, 3, 4.0, True, False, "4", None])

@@ -39,15 +39,15 @@ def _drawdown(values, initial):
 
 
 def audit_equity_account(*, initial_cash, specification, bars, decisions, orders,
-                         fills, actions, account_points, trades, action_facts, constraints, fee_rate,
+                         fills, account_entries, account_points, trades, constraints, fee_rate, price_basis, quantity_basis,
                          decision_contract="FORMAL_V4", account_contract=None, execution_bars=None):
-    """Independently audit the current explicit V4 RAW account facts only."""
+    """Independently audit the current explicit V4 HFQ simulated-unit account facts only."""
     if type(account_contract) is not int or account_contract != 4:
         raise ValueError('account audit requires explicit V4 contract marker')
     if decision_contract != 'FORMAL_V4':
         raise ValueError('account audit requires FORMAL_V4 decision contract')
     from .equity_v4 import audit_account_v4
     return audit_account_v4(initial_cash=initial_cash, specification=specification, bars=bars,
-        decisions=decisions, orders=orders, fills=fills, actions=actions,
-        account_points=account_points, trades=trades, action_facts=action_facts,
+        decisions=decisions, orders=orders, fills=fills, account_entries=account_entries,
+        account_points=account_points, trades=trades, price_basis=price_basis, quantity_basis=quantity_basis,
         constraints=constraints, fee_rate=fee_rate, execution_bars=execution_bars)

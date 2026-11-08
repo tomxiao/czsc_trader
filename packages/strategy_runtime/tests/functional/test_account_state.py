@@ -6,6 +6,7 @@ import pickle
 
 import pandas as pd
 import pytest
+from strategy_runtime.models import ExecutionPolicy
 
 from dataflows import AssetClass, BarFrequency, InstrumentId, MarketId, SourceRef, TradingSession, TimeInterval
 from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy, EquityStrategyCandidate, EquityAuxiliaryInput,
@@ -30,7 +31,7 @@ def step(ctx, state):
         latched = state.cycle.values.get("latched") or close < 9.
         target = int(not latched)
     return AccountStepResult(AccountDecision.from_facts(target, "numbered test", facts={"held":held,"latched":latched},
-        next_watch="next complete bar", capital_mode="full_available_cash"), StateRecord(), StateRecord((("held",held),("latched",latched))))
+        next_watch="next complete bar"), StateRecord(), StateRecord((("held",held),("latched",latched))))
 '''
 
 
@@ -44,7 +45,7 @@ def candidate(root):
                                              StateField('latched', StateValueType.BOOL)))
     definition = EquityStrategyDefinition(InstrumentId(MarketId.US, AssetClass.STOCK, 'LITE'),
         spec, 1, 'strategy:step', ('strategy.py',), equity_source_hash(root, ('strategy.py',)), '{}',
-        contract_version=4, computation=StrategyComputation.STATEFUL_STEP, feature_graph=graph, state_schema=schema)
+        contract_version=4,execution_policy=ExecutionPolicy("TARGET_POSITION", {"capital_mode":"full_available_cash"}), computation=StrategyComputation.STATEFUL_STEP, feature_graph=graph, state_schema=schema)
     return EquityStrategyCandidate('S999', 'C0001', definition, root)
 
 
@@ -61,7 +62,7 @@ def inputs(value, count=7):
     actions = pd.DataFrame([{'Date': starts[0], 'AvailableDate': starts[0],
         'EventId': 'none', 'Kind': 'NONE', 'Ratio': 1., 'CashPerShare': 0., 'PayAt': None}])
     executor = PortfolioHistoricalExecutor(specification=execution_spec(value.definition.execution_spec),
-        initial_cash=1000., fee_rate=.001, actions=actions, price_basis='RAW')
+        initial_cash=1000., fee_rate=.001,  price_basis='HFQ')
     return bars, constraints, executor
 
 
@@ -159,7 +160,7 @@ def test_owner_is_explicit_and_future_suffix_does_not_change_earlier_tables(tmp_
     second = run_replay(prepare(value, altered, constraints),
         value, second_executor, constraints=constraints, start=bars.BarStart.iloc[1].to_pydatetime(), end=end,
         fee_rate=.001, owner='benchmark:independent')
-    for name in ('decisions', 'orders', 'fills', 'corporate_action_entries', 'account_points', 'account_daily', 'trades'):
+    for name in ('decisions', 'orders', 'fills', 'account_entries', 'account_points', 'account_daily', 'trades'):
         pd.testing.assert_frame_equal(getattr(first.execution_result, name), getattr(second.execution_result, name), check_exact=True)
     assert (first.state.revision, first.state.account, first.state.cycle) == (
         second.state.revision, second.state.account, second.state.cycle)

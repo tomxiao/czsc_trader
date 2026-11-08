@@ -22,7 +22,6 @@ class AssetClass(StrEnum):
 class EquityProduct(StrEnum):
     BARS = "equity.bars"
     SESSIONS = "equity.sessions"
-    ACTIONS = "equity.actions"
     TRADING_FACTS = "equity.trading_facts"
 
 
@@ -35,6 +34,12 @@ class PriceAdjustment(StrEnum):
     NONE = "none"
     FORWARD = "qfq"
     BACKWARD = "hfq"
+
+
+class AcquisitionMethod(StrEnum):
+    PROVIDER_RAW = "PROVIDER_RAW"
+    PROVIDER_ADJUSTED = "PROVIDER_ADJUSTED"
+    DFLS_ADJUSTED = "DFLS_ADJUSTED"
 
 
 class EquitySession(StrEnum):
@@ -175,8 +180,8 @@ class EquityQuery:
                           ("adjustment", PriceAdjustment), ("session", EquitySession)):
             if type(getattr(self, name)) is not cls:
                 raise TypeError(f"equity query {name} requires {cls.__name__}")
-        if self.product is not EquityProduct.BARS and self.adjustment is not PriceAdjustment.NONE:
-            raise ValueError("only bars may request price adjustment")
+        if self.product is EquityProduct.SESSIONS and self.adjustment is not PriceAdjustment.NONE:
+            raise ValueError("sessions have no price adjustment")
 
 
 @dataclass(frozen=True, slots=True)

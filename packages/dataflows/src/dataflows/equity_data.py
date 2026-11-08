@@ -6,7 +6,7 @@ import math
 
 import pandas as pd
 
-from .equity_contracts import EquityProduct, TradingSession, TimeInterval, MarketId, UsEquityBarPolicy
+from .equity_contracts import AcquisitionMethod, EquityProduct, TradingSession, TimeInterval, MarketId, UsEquityBarPolicy
 from .errors import DataContractError, IncompleteDataError
 
 
@@ -37,12 +37,15 @@ def equity_metadata(request, sessions, *, availability_basis: str):
     return {
         "vendor": p.source.provider, "source_revision": p.source.revision,
         "instrument": asdict(p.instrument), "adjustment": p.query.adjustment.value,
+        "price_basis_id": ":".join((p.source.provider, p.source.revision,
+            p.instrument.market.value, p.instrument.asset_class.value,
+            p.instrument.symbol, p.query.adjustment.value)),
         "source_time_field": "Date", "availability_time_field": "AvailableDate",
         "source_calendar": p.instrument.market.value,
         "available_at": availability_basis, "request_range_policy": "EXACT",
         "coverage_start": p.query.start.isoformat(), "coverage_end": p.query.end.isoformat(),
         "sessions": [session_record(s) for s in sessions],
-        "primary_key": ["Date", "EventId"] if p.query.product is EquityProduct.ACTIONS else ["Date"],
+        "primary_key": ["Date"],
     }
 
 
@@ -83,6 +86,15 @@ def validate_equity_frame(frame, request, metadata):
     if not dates.is_monotonic_increasing:
         raise DataContractError("equity rows must be ordered")
     if p.query.product is EquityProduct.BARS:
+        if p.query.adjustment.value != 'none' and 'acquisition_method' not in metadata:
+            raise DataContractError('adjusted bars require their acquisition method')
+        if "acquisition_method" in metadata:
+            try:
+                method = AcquisitionMethod(metadata["acquisition_method"])
+            except (ValueError, TypeError) as exc:
+                raise DataContractError("unknown price acquisition method") from exc
+            if (method is AcquisitionMethod.PROVIDER_RAW) != (p.query.adjustment.value == "none"):
+                raise DataContractError("price acquisition method differs from adjustment")
         starts = _timestamps(frame, "BarStart")
         expected = tuple(bar for s in sessions for bar in s.bars(p.query.frequency))
         if tuple(dates) != tuple(pd.Timestamp(b.end) for b in expected) or tuple(starts) != tuple(pd.Timestamp(b.start) for b in expected):
@@ -134,23 +146,11 @@ def validate_equity_frame(frame, request, metadata):
     elif p.query.product is EquityProduct.SESSIONS:
         if "SessionDate" not in frame or tuple(frame.SessionDate) != tuple(s.session_date.isoformat() for s in sessions):
             raise DataContractError("session product differs from its declared calendar")
-    elif p.query.product is EquityProduct.ACTIONS:
-        required = {"EventId", "Kind", "Ratio", "CashPerShare", "PayAt"}
-        if not required.issubset(frame) or frame.EventId.duplicated().any():
-            raise DataContractError("corporate actions need unique identities and complete fields")
-        for row in frame.itertuples():
-            if row.Kind not in {"NONE", "SPLIT", "CASH_DIVIDEND"}:
-                raise DataContractError("CORPORATE_ACTION_UNSUPPORTED")
-            if row.Kind == "SPLIT" and (not math.isfinite(float(row.Ratio)) or row.Ratio <= 0):
-                raise DataContractError("split ratio must be positive and finite")
-            if row.Kind == "CASH_DIVIDEND":
-                pay = pd.Timestamp(row.PayAt)
-                if (not math.isfinite(float(row.CashPerShare)) or row.CashPerShare < 0
-                        or pd.isna(pay) or pay.tzinfo is None or pay < row.Date):
-                    raise DataContractError("cash dividend requires a valid payment time and amount")
-        if "NONE" in set(frame.Kind) and (len(frame) != 1 or not metadata.get("no_actions_verified")):
-            raise DataContractError("empty action history requires explicit source verification")
     elif p.query.product is EquityProduct.TRADING_FACTS:
+        if metadata.get("adjustment") != p.query.adjustment.value:
+            raise DataContractError("trading facts price adjustment differs from request")
+        if not isinstance(metadata.get("price_basis_id"), str) or not metadata["price_basis_id"].strip():
+            raise DataContractError("trading facts require an explicit price basis")
         columns = {"Date", "AvailableDate", "Tradable", "PriceLimitLower", "PriceLimitUpper"}
         if set(frame) != columns:
             raise DataContractError("trading facts require dated tradability and price bounds only")

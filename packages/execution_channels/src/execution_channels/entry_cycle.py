@@ -82,8 +82,8 @@ class EntryCycleState:
                 getattr(self, name), name, fraction=name == "allocation_fraction"))
         if self.cash_budget <= 0:
             raise RuntimeContractError("cycle cash budget must be positive")
-        if type(self.target_quantity) is not int or self.target_quantity <= 0 or self.target_quantity % 100:
-            raise RuntimeContractError("cycle target requires positive 100-share lots")
+        if type(self.target_quantity) is not int or self.target_quantity <= 0:
+            raise RuntimeContractError("cycle target requires positive integer units")
         if not isinstance(self.phase, EntryCyclePhase):
             raise RuntimeContractError("cycle phase requires EntryCyclePhase")
 

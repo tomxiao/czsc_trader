@@ -5,10 +5,10 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 from dataflows import (AssetClass, BarFrequency, InstrumentId, MarketId, SourceRef,
     TradingSession, TimeInterval, EquitySourceCoverage, EquityFrequencyFacts,
-    ProviderConfig, versioned_equity_bindings)
+    ProviderConfig, versioned_equity_bindings, PriceAdjustment, AcquisitionMethod)
 from strategy_runtime import (CnEquitySpec, UsEquitySpec, ResearchExecutionSpec,
     AccountPolicy, CashAvailabilityPolicy, EquityStrategyDefinition, EquityStrategyCandidate,
-    equity_source_hash, StrategyComputation)
+    equity_source_hash, StrategyComputation, ExecutionPolicy)
 from strategy_runtime.equity_features import FeatureGraph
 from strategy_runtime.equity_replay import StrategyStateSchema
 from czsc_trader.application import (RepositoryContext, create_research_batch, create_research_context,
@@ -31,7 +31,7 @@ def calculate(ctx):
 '''
 
 
-def setup_account(root, market, frequency, computation=StrategyComputation.STATEFUL_STEP, *, events=False, gap_kind=None):
+def setup_account(root, market, frequency, computation=StrategyComputation.STATEFUL_STEP, *, gap_kind=None):
     repository = RepositoryContext(root, root/'research', root/'research/registrations', root/'strategies')
     instrument = InstrumentId(market, AssetClass.STOCK, '600000.SH' if market is MarketId.CN else 'TEST')
     batch = create_research_batch(repository, ResearchBatchRequest('S999', 'Account parity fixture',
@@ -54,8 +54,6 @@ def setup_account(root, market, frequency, computation=StrategyComputation.STATE
         starts, ends = [p.start for p in grid], [p.end for p in grid]
         bars = pd.DataFrame({'Date':ends,'BarStart':starts,'AvailableDate':ends,
             'Open':10.,'High':11.,'Low':9.,'Close':10.,'Volume':1000000.,'Amount':10000000.})
-        if events:
-            bars.loc[bars.BarStart >= sessions[2].segments[0].start,['Open','High','Low','Close']] /= 2
         bars['Amount'] = bars.Close * bars.Volume
         if gap_kind is not None:
             bars['BarStatus'], bars['ExecutionBlocked'] = 'OBSERVED', False
@@ -70,18 +68,11 @@ def setup_account(root, market, frequency, computation=StrategyComputation.STATE
         rules = pd.DataFrame({'Date':starts,'AvailableDate':starts,'Tradable':True,
             'PriceLimitLower':1. if market is MarketId.CN else None,
             'PriceLimitUpper':20. if market is MarketId.CN else None})
-        versions.append(EquityFrequencyFacts(freq,bars,rules))
-    stamp = sessions[2].segments[0].start
-    actions = pd.DataFrame(([{'Date':stamp,'AvailableDate':stamp,'EventId':'split','Kind':'SPLIT',
-        'Ratio':2.,'CashPerShare':0.,'PayAt':None},
-        {'Date':stamp,'AvailableDate':stamp,'EventId':'dividend','Kind':'CASH_DIVIDEND',
-        'Ratio':1.,'CashPerShare':.1,'PayAt':sessions[3].segments[0].start}] if events else
-        [{'Date':sessions[0].segments[0].start,'AvailableDate':sessions[0].segments[0].start,
-          'EventId':'none','Kind':'NONE','Ratio':1.,'CashPerShare':0.,'PayAt':None}]))
+        versions.append(EquityFrequencyFacts(freq,bars,rules,PriceAdjustment.BACKWARD,AcquisitionMethod.PROVIDER_ADJUSTED))
     coverage = EquitySourceCoverage(sessions[0].session_date,sessions[-1].session_date,
-        'Synthetic complete source receipt, not real security-history admission.',True,not events)
+        'Synthetic complete HFQ source receipt, not real security-history admission.')
     bindings = versioned_equity_bindings(instrument=instrument,source=source,coverage=coverage,
-        sessions=sessions,frequencies=tuple(versions),actions=actions,following_session=following)
+        sessions=sessions,frequencies=tuple(versions),following_session=following)
     context = create_research_context(repository,batch,providers=ProviderConfig(bindings={},equity_bindings=bindings),execution_spec=spec)
     from strategy_runtime import ExecutionResources
     context.evaluation.resources=ExecutionResources(1,1)
@@ -91,11 +82,11 @@ def setup_account(root, market, frequency, computation=StrategyComputation.STATE
     (source_root/'strategy.py').write_text(STEP if computation is StrategyComputation.STATEFUL_STEP else BATCH,encoding='utf-8')
     definition=EquityStrategyDefinition(instrument,spec,1,
         'strategy:step' if computation is StrategyComputation.STATEFUL_STEP else 'strategy:calculate',
-        ('strategy.py',),equity_source_hash(source_root,('strategy.py',)),contract_version=4,
+        ('strategy.py',),equity_source_hash(source_root,('strategy.py',)),contract_version=4,execution_policy=ExecutionPolicy("TARGET_POSITION",{}),
         computation=computation,feature_graph=FeatureGraph((),()),state_schema=StrategyStateSchema())
     candidate=EquityStrategyCandidate('S999','C0001',definition,source_root)
     grid=tuple(part for session in sessions for part in session.bars(frequency))
     request=EquityEvaluationRequest(experiment,candidate,TimeInterval(grid[1].start,grid[-1].end),
-        sessions[0].session_date,EquitySources(source,source,source,source),100000.,.001,
+        sessions[0].session_date,EquitySources(source,source,source),100000.,.001,
         benchmark=EvaluationBenchmark(EquityBuyHold(spec)),drawdown_basis='BAR_CLOSE',concentration_basis='MAX_SINGLE')
     return context,request

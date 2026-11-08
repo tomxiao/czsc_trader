@@ -18,9 +18,9 @@ def _retained_ledger(result, *, benchmark=False):
     payload = materialize_equity(result).payload
     run = payload['runs']['buy_hold' if benchmark else 'candidate']
     ledger = {**{name: payload['audit_inputs'][name] for name in (
-        'bars', 'action_facts', 'constraints', 'specification', 'initial_cash', 'fee_rate')},
-        **{name: run[name] for name in ('decisions', 'orders', 'fills', 'actions', 'account_points', 'trades')},
-        'account_contract': 4}
+        'bars', 'constraints', 'specification', 'initial_cash', 'fee_rate')},
+        **{name: run[name] for name in ('decisions', 'orders', 'fills', 'account_entries', 'account_points', 'trades')},
+        'account_contract': 4, 'price_basis':'HFQ','quantity_basis':'SIMULATED_INTEGER_UNITS'}
     if not benchmark and payload['request']['candidate_definition'].get('execution_input') is not None:
         ledger['execution_bars'] = payload['audit_inputs']['decision_inputs']['execution']['bars']
     return ledger
@@ -32,11 +32,11 @@ def test_retired_research_contracts_are_rejected_at_construction(tmp_path,contra
     context,request=setup_account(tmp_path,MarketId.US,BarFrequency.M30)
     if contract==2:
         candidate=replace(request.candidate,definition=replace(request.candidate.definition,
-            contract_version=2,computation=None,feature_graph=None,state_schema=None))
+            contract_version=2,computation=None,feature_graph=None,state_schema=None,execution_policy=None,analysis_price="RAW"))
         with pytest.raises(TypeError,match='contract_version=4'):
             replace(request,candidate=candidate)
     else:
-        with pytest.raises(ValueError,match='contract'):
+        with pytest.raises(ValueError,match='contract|require V4'):
             replace(request.candidate.definition,contract_version=contract)
 
 
@@ -108,30 +108,19 @@ def step(ctx,state):
 def test_stage_one_two_daily_plan_uses_real_1130_execution_quote(tmp_path, market):
     from dataclasses import replace
     from strategy_runtime import equity_source_hash, ExecutionInput
-    context, request = setup_account(tmp_path, market, BarFrequency.DAILY, gap_kind='checkpoint')
+    context, request = setup_account(tmp_path, market, BarFrequency.DAILY)
     root = request.candidate.source_root
-    (root/'strategy.py').write_text('''from datetime import datetime, time, timedelta
-from zoneinfo import ZoneInfo
-from strategy_runtime import AccountDecision, AccountStepResult
+    (root/'strategy.py').write_text('''from strategy_runtime import AccountDecision, AccountStepResult
 from strategy_runtime.equity_replay import StateRecord
-from strategy_runtime.replay_contracts import ReplayOrder, ReplayLeg
-from strategy_runtime.contracts import OrderSide, OrderType
-def step(ctx, state):
+def step(ctx,state):
     assert 'execution' not in ctx.auxiliary_histories
-    if ctx.account.quantity==0:
-        decision=AccountDecision.from_facts(1.,'initial core',facts={'q':0},next_watch='next day',
-            orders=(ReplayOrder(OrderSide.BUY,100,OrderType.LIMIT,10.1),))
-    elif ctx.account.sellable_quantity>=100:
-        opening=ctx.point.execution_interval.start
-        checkpoint=datetime.combine(opening.astimezone(ZoneInfo(ctx.session.timezone)).date(),time(11,30),tzinfo=ZoneInfo(ctx.session.timezone))
-        legs=(ReplayLeg(0,ReplayOrder(OrderSide.SELL,100,OrderType.MARKET),'OPEN',opening,opening+timedelta(minutes=1)),
-              ReplayLeg(1,ReplayOrder(OrderSide.BUY,100,OrderType.MARKET),'11:30_CLOSE',checkpoint-timedelta(minutes=1),checkpoint,0,'FILLED_ALL'))
-        decision=AccountDecision.from_facts(1.,'confirmed sell then buy',facts={'q':ctx.account.quantity},next_watch='next day',legs=legs)
-    else:
-        decision=AccountDecision.from_facts(1.,'wait',facts={'q':ctx.account.quantity},next_watch='next day',capital_mode='full_available_cash')
-    return AccountStepResult(decision,cycle_values=StateRecord())
-''', encoding='utf-8')
+    target=float(ctx.account.quantity==0 or ctx.account.sellable_quantity==ctx.account.quantity)
+    return AccountStepResult(AccountDecision.from_facts(target,'core event',facts={'quantity':ctx.account.quantity},next_watch='next day'),cycle_values=StateRecord())
+''',encoding='utf-8')
+    from strategy_runtime import ExecutionPolicy
     definition=replace(request.candidate.definition,source_sha256=equity_source_hash(root,('strategy.py',)),session_context=True,
+        execution_policy=ExecutionPolicy('INTRADAY_OVERLAY', {'lot_size':request.candidate.definition.execution_spec.quantity_step,
+            'one_way_cost':.001,'core_fraction':.5}),
         execution_input=ExecutionInput(request.candidate.instrument, request.sources.bars, BarFrequency.M30))
     request=replace(request,candidate=replace(request.candidate,definition=definition))
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
@@ -143,8 +132,7 @@ def step(ctx, state):
         assert ledger['execution_bars']
         from czsc_trader.research_tools.equity_replay import materialize_equity
         quality = materialize_equity(outcome.result).payload['runs']['candidate']['data_quality']
-        assert quality['execution_input']['affected_sessions'] == ['2026-10-28']
-        assert any(row['reason']=='MISSING_EXECUTION_BAR' for row in quality['affected_orders'])
+        assert quality['execution_input']['affected_sessions'] == []
         selected=[r for r in ledger['fills'] if r['quote_source']=='EXECUTION_BARS']
         assert selected
         from zoneinfo import ZoneInfo
@@ -176,21 +164,16 @@ def test_stage_two_multi_order_round_trips_reconcile_public_diagnosis(tmp_path, 
     root = request.candidate.source_root
     (root/'strategy.py').write_text('''from strategy_runtime import AccountDecision, AccountStepResult
 from strategy_runtime.equity_replay import StateRecord
-from strategy_runtime.replay_contracts import ReplayOrder
-from strategy_runtime.contracts import OrderSide, OrderType
-def step(ctx, state):
-    q=ctx.account.quantity
-    if q==0:
-        decision=AccountDecision.from_facts(.5,'two entry orders',facts={'q':q},next_watch='next bar',
-            orders=(ReplayOrder(OrderSide.BUY,100,OrderType.LIMIT,10.1),ReplayOrder(OrderSide.BUY,100,OrderType.LIMIT,10.1)))
-    elif ctx.account.sellable_quantity==q:
-        decision=AccountDecision.from_facts(0.,'two exit orders',facts={'q':q},next_watch='next bar',
-            orders=(ReplayOrder(OrderSide.SELL,100,OrderType.MARKET),ReplayOrder(OrderSide.SELL,q-100,OrderType.MARKET)))
-    else:
-        decision=AccountDecision.from_facts(1.,'wait for legal sale',facts={'q':q},next_watch='next bar',capital_mode='full_available_cash')
-    return AccountStepResult(decision,cycle_values=StateRecord())
-''', encoding='utf-8')
-    definition = replace(request.candidate.definition, source_sha256=equity_source_hash(root,('strategy.py',)))
+def step(ctx,state):
+    target=1. if ctx.account.quantity==0 or ctx.account.sellable_quantity<ctx.account.quantity else 0.
+    return AccountStepResult(AccountDecision.from_facts(target,'entry cycle',facts={'q':ctx.account.quantity},next_watch='next bar'),cycle_values=StateRecord())
+''',encoding='utf-8')
+    from strategy_runtime import ExecutionPolicy
+    spec=request.candidate.definition.execution_spec
+    policy=ExecutionPolicy('FROZEN_RULE',{'capital':{'mode':'available_cash_fraction','target_scope':'entry_cycle','allocation_fraction':.03,'fee_rate':.001},
+        'instrument':{'lot_size':spec.quantity_step,'price_tick':spec.price_tick,'maximum_order_quantity':100,'price_limit_ratio':.1},
+        'entry':{'order_type':'LIMIT','limit_parameter':.01},'exit':{'order_type':'MARKET','limit_ratio':.1}})
+    definition=replace(request.candidate.definition,source_sha256=equity_source_hash(root,('strategy.py',)),execution_policy=policy)
     request = replace(request, candidate=replace(request.candidate,definition=definition))
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         prepared = context.evaluation.prepare(request, execution=execution)
@@ -240,8 +223,8 @@ def test_stage_one_two_public_computation_clock_and_scale_in_out(tmp_path, marke
 
 @pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
 @pytest.mark.parametrize('frequency', [BarFrequency.DAILY, BarFrequency.M30])
-def test_stage_three_raw_actions_and_independent_multi_fill_diagnosis(tmp_path, market, frequency):
-    context, request = setup_account(tmp_path, market, frequency, events=True)
+def test_stage_three_hfq_accounts_and_independent_multi_fill_diagnosis(tmp_path, market, frequency):
+    context, request = setup_account(tmp_path, market, frequency)
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         prepared = context.evaluation.prepare(request, execution=execution)
         outcome, = context.evaluation.evaluate_many((prepared,), execution=execution)
@@ -251,10 +234,9 @@ def test_stage_three_raw_actions_and_independent_multi_fill_diagnosis(tmp_path, 
         for benchmark in (False, True):
             ledger = _retained_ledger(outcome.result, benchmark=benchmark)
             assert ledger['account_contract'] == 4
-            assert {row['Kind'] for row in ledger['action_facts']} == {'SPLIT'}
-            assert not {'CASH_DIVIDEND', 'DIVIDEND_PAYMENT'} & {row['kind'] for row in ledger['actions']}
+            assert ledger['price_basis']=='HFQ' and ledger['quantity_basis']=='SIMULATED_INTEGER_UNITS'
+            assert {row['kind'] for row in ledger['account_entries']} <= {'SALE_SETTLEMENT'}
             audit_equity_account(**ledger, decision_contract='FORMAL_V4')
-        assert 'SPLIT' in {row['kind'] for row in ledger['actions']}
         # Independent fact audit must reject an altered, otherwise well-formed ledger.
         damaged = dict(ledger, account_points=[dict(row) for row in ledger['account_points']])
         damaged['account_points'][-1]['cash'] += 1

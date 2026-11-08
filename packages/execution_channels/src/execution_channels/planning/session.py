@@ -29,8 +29,6 @@ def build_execution_plan(
     policy: ExecutionPolicy,
     signal_reference_price: float,
     execution_reference_price: float,
-    price_scale: float = 1.0,
-    unadjusted_reference_price: float | None = None,
     cycle_target: CycleTarget | None = None,
     entry_cycle: EntryCycleState | None = None,
     opening_signal_identity: str | None = None,
@@ -48,8 +46,6 @@ def build_execution_plan(
             target_position=target_position,
             signal_reference_price=signal_reference_price,
             execution_reference_price=execution_reference_price,
-            price_scale=price_scale,
-            unadjusted_reference_price=unadjusted_reference_price,
             cycle_target=cycle_target, entry_cycle=entry_cycle,
             opening_signal_identity=opening_signal_identity, account_id=account_id,
         )
@@ -115,8 +111,6 @@ def plan_session_decision(proposal: SessionProposal, portfolio: PortfolioSnapsho
             policy=proposal.execution_policy,
             signal_reference_price=float(references.signal_price),
             execution_reference_price=float(references.execution_price),
-            price_scale=float(references.price_scale),
-            unadjusted_reference_price=float(references.execution_price / references.price_scale),
             cycle_target=proposal.cycle_target, entry_cycle=state.entry_cycle,
             opening_signal_identity=signal_identity, account_id=portfolio.account_id,
         )

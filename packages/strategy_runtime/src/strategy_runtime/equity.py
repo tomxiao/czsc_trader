@@ -192,7 +192,6 @@ class EquityPortfolio:
     cycle_entry: datetime | None = None
     cycle_cost: float = 0.
     feedback_source: str = "BAR_INTERVAL"
-    reference_price_scale: float = 1.
     closed_cycle_feedback: EquityClosedCycleFeedback | None = None
 
     def __post_init__(self):
@@ -204,7 +203,6 @@ class EquityPortfolio:
             raise ValueError("invalid cycle cost")
         if self.cycle_entry is not None:
             object.__setattr__(self, "cycle_entry", utc(self.cycle_entry))
-        _positive(self.reference_price_scale, "reference price scale")
         if self.closed_cycle_feedback is not None and type(self.closed_cycle_feedback) is not EquityClosedCycleFeedback:
             raise TypeError("portfolio requires typed closed cycle feedback or unavailable None")
 
@@ -300,6 +298,6 @@ class EquityStrategyInstance:
         target, explanation = result.target, result.explanation.to_dict()
         if type(target) not in (float, int) or target not in (0, 1):
             raise ValueError("equity candidate must return a finite binary long-only target")
-        reference = float(last.Close) * portfolio.reference_price_scale
+        reference = float(last.Close)
         _positive(reference, "reference")
         return EquityIntent(point, target, reference, explanation)

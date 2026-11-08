@@ -90,7 +90,7 @@ def test_causal_history_requires_completion_and_availability_with_latency():
 
 
 @pytest.mark.parametrize('market_name', ('CN', 'US'))
-def test_forward_selection_keeps_actions_but_never_requests_current_ohlcv(market_name, tmp_path):
+def test_forward_selection_only_requests_completed_hfq_observations(market_name, tmp_path):
     from datetime import date, timedelta
     from zoneinfo import ZoneInfo
     from dataflows import MarketId, EquityProduct, TradingSession, TimeInterval
@@ -109,14 +109,13 @@ def test_forward_selection_keeps_actions_but_never_requests_current_ohlcv(market
         identity=SimpleNamespace(metadata={'sessions': [session_record(s) for s in sessions]}))
     calendars = {role: result for role, p in binding.request_bindings if p.query.product is EquityProduct.SESSIONS}
     interval = sessions[2].segments[0]
-    definition = SimpleNamespace(instrument=binding.instrument)
+    definition = SimpleNamespace(instrument=binding.instrument, observation_inputs=())
     requests, items, observation_items, _ = forward_requests(None, binding, interval, definition,
         tmp_path, calendars, cutoff=interval.start)
     assert not observation_items
     assert len(requests) == len({r.parameters for r in requests})
     for _, parameters in items:
         expected = {EquityProduct.BARS: date(2026, 10, 15),
-                    EquityProduct.ACTIONS: date(2026, 10, 16),
                     EquityProduct.SESSIONS: date(2026, 10, 16) + timedelta(days=14)}
         assert parameters.query.end == expected[parameters.query.product]
     with pytest.raises(ValueError, match='explicit observation-only input migration'):

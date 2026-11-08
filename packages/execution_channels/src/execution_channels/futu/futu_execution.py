@@ -861,19 +861,23 @@ class ChannelExecution:
                     if account["symbol"] == symbol
                 )
                 if broker_quantity != logical_quantity:
-                    self.store.set_setting("channel_reconciliation_status", "BLOCKED")
-                    self.audit.record(
-                        "CHANNEL_RECONCILIATION_FAILED", source="futu_execution",
-                        outcome="FAILURE", channel=self.channel_id, symbol=symbol,
-                        details={
-                            "reason": "position_mismatch", "broker_quantity": broker_quantity,
-                            "logical_quantity": logical_quantity,
-                        },
-                    )
-                    raise ChannelReconciliationError(
-                        f"Futu持仓与虚拟账户分账不一致({symbol}): "
-                        f"{broker_quantity}!={logical_quantity}"
-                    )
+                    if checkpoint_at is None or not self._cash_adjustment_orders_match(checkpoint_at, moment, ()):
+                        self._block_reconciliation('position_order_history_unconfirmed',
+                            f'Futu持仓差异需要先确认完整订单记录({symbol})')
+                    try:
+                        with self.store.atomic_decision_update():
+                            changed = self.store.reconcile_equity_positions(symbol,
+                                quantity=broker_quantity, at=moment)
+                            for change in changed:
+                                self.audit.record('CHANNEL_POSITION_RECONCILED', source='futu_execution',
+                                    channel=self.channel_id, symbol=symbol, account_id=change['account_id'],
+                                    details=change)
+                    except ValueError as exc:
+                        self._block_reconciliation('position_ownership_unconfirmed',
+                            f'Futu持仓差异尚不能归属({symbol}): {exc}',
+                            details={'broker_quantity': broker_quantity, 'logical_quantity': logical_quantity})
+                    for change in changed:
+                        touched_accounts.add(change['account_id'])
         self._reconcile_cash()
         self._require_cash_reconciliation()
         violations = self.store.account_invariant_violations()

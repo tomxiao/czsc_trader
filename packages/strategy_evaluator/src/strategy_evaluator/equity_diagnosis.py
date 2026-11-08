@@ -1,4 +1,4 @@
-"""US continuous-account decomposition, preserving event income and session units."""
+"""HFQ continuous-account decomposition in simulated execution units."""
 from collections import defaultdict
 from datetime import date
 import math
@@ -31,26 +31,11 @@ def _decompose(ledger, identity, start, end):
     fills = defaultdict(list)
     for row in ledger['fills']:
         fills[pd.Timestamp(row['interval_end'])].append(row)
-    events = sorted(ledger["actions"], key=lambda x: (x["account_revision"], pd.Timestamp(x["time"])))
-    splits = {x["EventId"]: float(x["Ratio"]) for x in ledger["action_facts"] if x["Kind"] == "SPLIT"}
-    previous_equity, previous_close, quantity, cursor = ledger["initial_cash"], None, 0, 0
+    previous_equity, previous_close, quantity = ledger["initial_cash"], None, 0
     per_session = defaultdict(list)
     for row in rows:
         stamp, close = pd.Timestamp(row["time"]), float(row["close"])
         entry = holding = exit_pnl = fees = 0.
-        # Adjacent bars share a boundary timestamp. Events effective at the next
-        # open belong to its revision, not to the preceding close observation.
-        while cursor < len(events) and events[cursor]["account_revision"] <= row["account_revision"]:
-            event = events[cursor]
-            if event["kind"] == "SPLIT":
-                ratio = splits[event["event_id"]]
-                quantity = int(quantity * ratio)
-                if previous_close is not None:
-                    previous_close /= ratio
-            elif event["kind"] == "CASH_DIVIDEND":
-                holding += float(event["amount"])
-            # Payment and sale settlement transfer accounts; they are not new income.
-            cursor += 1
         # FIFO within an observation partitions exact PnL for scale-in/out and
         # same-observation closed/reopened cycles; it is not a price prediction.
         from collections import deque

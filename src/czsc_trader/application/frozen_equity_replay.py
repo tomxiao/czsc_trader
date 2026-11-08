@@ -42,7 +42,7 @@ def run_frozen_equity(instance, bars, constraints, executor, *, start, end, fee_
             point = DecisionPoint(history.Date.iloc[-1].to_pydatetime(), interval.start,
                 ExecutionInterval(interval.start, interval.end))
             intent = FrozenEquityIntent(point, float(portfolio.quantity > 0),
-                float(history.Close.iloc[-1]) * portfolio.reference_price_scale, None, True)
+                float(history.Close.iloc[-1]), None, True)
         else:
             proposal = instance.propose(history.drop(columns=['BarStatus','ExecutionBlocked'], errors='ignore'),
                 interval, strategy_portfolio(portfolio), auxiliary_histories=auxiliary_histories,

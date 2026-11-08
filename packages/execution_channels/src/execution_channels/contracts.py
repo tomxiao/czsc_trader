@@ -277,7 +277,6 @@ class EquityPortfolio:
     cycle_entry: datetime | None = None
     cycle_cost: float = 0.
     feedback_source: str = "BAR_INTERVAL"
-    reference_price_scale: float = 1.
     closed_cycle_feedback: EquityClosedCycleFeedback | None = None
 
     def __post_init__(self):
@@ -289,7 +288,6 @@ class EquityPortfolio:
             raise ValueError("invalid cycle cost")
         if self.cycle_entry is not None:
             object.__setattr__(self, "cycle_entry", utc(self.cycle_entry))
-        _positive(self.reference_price_scale, "reference price scale")
         if self.closed_cycle_feedback is not None and type(self.closed_cycle_feedback) is not EquityClosedCycleFeedback:
             raise TypeError("portfolio requires typed closed cycle feedback or unavailable None")
 
@@ -327,9 +325,7 @@ class EquityPlan:
 
 
 class RecognizedEventKind(StrEnum):
-    SPLIT = 'SPLIT'
-    CASH_DIVIDEND = 'CASH_DIVIDEND'
-    DIVIDEND_PAYMENT = 'DIVIDEND_PAYMENT'
+    POSITION_ADJUSTMENT = 'POSITION_ADJUSTMENT'
     SALE_SETTLEMENT = 'SALE_SETTLEMENT'
 
 
@@ -342,7 +338,7 @@ class RecognizedAccountEvent:
     quantity_after: int
     cash_delta: float
     receivable_delta: float
-    ratio: float | None = None
+    reason: str = 'UNKNOWN'
 
     def __post_init__(self):
         if type(self.event_id) is not str or not self.event_id or type(self.kind) is not RecognizedEventKind:
@@ -356,11 +352,10 @@ class RecognizedAccountEvent:
             value=getattr(self,name)
             if type(value) not in (int,float) or not math.isfinite(value):
                 raise ValueError('recognized event deltas must be finite')
-        if self.kind is RecognizedEventKind.SPLIT:
-            if type(self.ratio) not in (int,float) or not math.isfinite(self.ratio) or self.ratio<=0:
-                raise ValueError('recognized split requires its confirmed ratio')
-        elif self.ratio is not None:
-            raise ValueError('only recognized splits declare a unit ratio')
+        if self.reason not in {'UNKNOWN', 'TRADE_SETTLEMENT'}:
+            raise ValueError('recognized event requires an explicit supported reason')
+        if self.kind is RecognizedEventKind.POSITION_ADJUSTMENT and self.reason != 'UNKNOWN':
+            raise ValueError('position adjustment cannot infer its cause')
 
 
 class SellRemainderPolicy(StrEnum):

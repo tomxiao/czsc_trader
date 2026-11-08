@@ -23,7 +23,7 @@ from execution_channels.historical.frozen_equity import _FrozenEquityExecutor
 
 
 START = datetime(2026, 10, 1, 14, tzinfo=timezone.utc)
-TABLES = ('decisions', 'orders', 'fills', 'corporate_action_entries',
+TABLES = ('decisions', 'orders', 'fills', 'account_entries',
           'account_points', 'account_daily', 'trades')
 
 
@@ -33,7 +33,7 @@ def account(actions=None, *, deferred=False):
                                 AccountPolicy('USD', policy), 1, .01, .01, 0.)
     if actions is None:
         actions = pd.DataFrame(columns=['Date', 'EventId', 'Kind'])
-    return _FrozenEquityExecutor(specification=spec, initial_cash=1000., fee_rate=.001, actions=actions)
+    return _FrozenEquityExecutor(specification=spec, initial_cash=1000., fee_rate=.001)
 
 
 def transition(executor, side='BUY', quantity=10, **updates):
@@ -256,55 +256,8 @@ def test_series_and_immutable_mapping_have_identical_seven_tables_and_idempotenc
     assert len(new.rows['decisions']) == 1
 
 
-def test_outer_failure_restores_snapshot_actions_successful_execution_and_idempotency():
-    stamp = START + timedelta(minutes=30)
-    actions = pd.DataFrame([
-        dict(Date=stamp, EventId='split', Kind='SPLIT', Ratio=2., CashPerShare=0., PayAt=pd.NaT),
-        dict(Date=stamp, EventId='dividend', Kind='CASH_DIVIDEND', Ratio=1., CashPerShare=.25, PayAt=stamp),
-    ])
-    executor = account(actions)
-    step(executor)
-    before = snapshot(executor)
-    with pytest.raises(RuntimeError, match='strategy state commit'):
-        with executor.transaction():
-            portfolio = executor.snapshot_at(stamp, stamp)
-            assert portfolio.quantity == 20 and portfolio.cash == pytest.approx(904.9)
-            plan, bar, constraint = transition(executor, 'SELL', 20, Open=5., High=5.2, Low=4.8, Close=5.)
-            executor.execute(plan, MappingProxyType(bar), constraint=MappingProxyType(constraint))
-            assert 'plan-1' in executor.completed and executor.quantity == 0
-            raise RuntimeError('strategy state commit')
-    assert snapshot(executor) == before
-    with executor.transaction():
-        executor.snapshot_at(stamp, stamp)
-        executor.execute(plan, MappingProxyType(bar), constraint=MappingProxyType(constraint))
-    assert executor.quantity == 0 and len(executor.rows['trades']) == 1
-    assert len(executor.rows['actions']) == 3
-    assert executor.applied == {'split', 'dividend'}
-    assert set(executor.completed) == {'plan-0', 'plan-1'}
 
 
-def test_snapshot_only_failure_and_pending_dividend_payment_are_rolled_back():
-    stamp = START + timedelta(minutes=30)
-    pay = stamp + timedelta(minutes=30)
-    actions = pd.DataFrame([dict(Date=stamp, EventId='dividend', Kind='CASH_DIVIDEND',
-                                 Ratio=1., CashPerShare=.5, PayAt=pay)])
-    executor = account(actions)
-    step(executor)
-    before = snapshot(executor)
-    with pytest.raises(ValueError, match='strategy evaluation'):
-        with executor.transaction():
-            executor.snapshot_at(stamp, stamp)
-            assert executor.receivable == 5.
-            raise ValueError('strategy evaluation')
-    assert snapshot(executor) == before
-    executor.snapshot_at(stamp, stamp)
-    before_payment = snapshot(executor)
-    with pytest.raises(ValueError, match='state validation'):
-        with executor.transaction():
-            executor.snapshot_at(pay, pay)
-            assert executor.receivable == 0 and not executor.pending
-            raise ValueError('state validation')
-    assert snapshot(executor) == before_payment
 
 
 def test_nested_failed_savepoint_can_retry_and_outer_failure_preserves_prior_keys():
@@ -356,20 +309,6 @@ def test_transaction_never_copies_or_enumerates_existing_completed_journal():
     assert executor.revision == 0 and executor.quantity == 0
 
 
-def test_action_rows_are_materialized_once_and_source_is_isolated(monkeypatch):
-    stamp = START + timedelta(minutes=30)
-    actions = pd.DataFrame([dict(Date=stamp, EventId='split', Kind='SPLIT',
-                                 Ratio=2., CashPerShare=0., PayAt=pd.NaT)])
-    executor = account(actions)
-    actions.loc[0, 'Ratio'] = 3.
-    assert isinstance(executor._action_events, tuple)
-    def forbidden(*args, **kwargs):
-        raise AssertionError('per-bar DataFrame tuple creation is forbidden')
-    monkeypatch.setattr(pd.DataFrame, 'itertuples', forbidden)
-    step(executor)
-    assert executor.snapshot_at(stamp, stamp).quantity == 20
-    step(executor, 'SELL', 20, Open=5., High=5.2, Low=4.8, Close=5.)
-    assert len(executor.rows['actions']) == 1
 
 
 def test_invalid_mapping_transition_rejects_and_restores_prior_account():
@@ -387,34 +326,3 @@ def test_invalid_mapping_transition_rejects_and_restores_prior_account():
     with pytest.raises(TypeError, match='Series or Mapping'):
         executor.execute(plan, [], constraint=MappingProxyType(constraint))
     assert snapshot(executor) == before
-
-
-def test_mapping_settlement_and_event_ledger_matches_series():
-    stamp = START + timedelta(minutes=30)
-    actions = pd.DataFrame([
-        dict(Date=stamp, EventId='dividend', Kind='CASH_DIVIDEND', Ratio=1., CashPerShare=.25,
-             PayAt=stamp+timedelta(minutes=30)),
-        dict(Date=stamp, EventId='split', Kind='SPLIT', Ratio=2., CashPerShare=0., PayAt=pd.NaT),
-    ])
-    executors = [account(actions, deferred=True), account(actions, deferred=True)]
-    for executor, row in zip(executors, (pd.Series, MappingProxyType), strict=True):
-        plan, bar, constraint = transition(executor)
-        executor.execute(plan, row(bar), constraint=row(constraint))
-        with executor.transaction():
-            executor.snapshot_at(stamp, stamp)
-            plan, bar, constraint = transition(executor, 'SELL', 20, Open=5., High=5.2, Low=4.8, Close=5.)
-            constraint['SettlementAt'] = stamp+timedelta(hours=2)
-            executor.execute(plan, row(bar), constraint=row(constraint))
-        assert executor.quantity == 0 and executor.receivable == pytest.approx(99.9)
-        assert executor.cash == pytest.approx(904.9)
-        before = snapshot(executor)
-        with pytest.raises(RuntimeError, match='commit'):
-            with executor.transaction():
-                executor.snapshot_at(constraint['SettlementAt'], constraint['SettlementAt'])
-                assert executor.receivable == 0 and executor.cash == pytest.approx(1004.8)
-                raise RuntimeError('commit')
-        assert snapshot(executor) == before
-        executor.snapshot_at(constraint['SettlementAt'], constraint['SettlementAt'])
-        assert executor.receivable == 0 and executor.cash == pytest.approx(1004.8)
-    for name in TABLES:
-        pd.testing.assert_frame_equal(getattr(executors[0].finish(), name), getattr(executors[1].finish(), name))

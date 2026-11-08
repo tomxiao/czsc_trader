@@ -7,17 +7,15 @@ import math
 from enum import StrEnum
 from dataflows import TimeInterval, TradingSession
 from .signal_explanation import SignalExplanationSnapshot
-from .replay_contracts import AccountSnapshot, ReplayOrder, ReplayLeg, CycleBudget
-from .equity import EquityPortfolio, DecisionPoint, ResearchExecutionSpec
+from .replay_contracts import AccountSnapshot, CycleBudget
+from .equity import EquityPortfolio, DecisionPoint
 from .equity_replay import StateRecord, StrategyState
 from .equity_features import FeatureView, HistoryView
 from .dataset_observations import TableHistoryView
 
 
 class RecognizedEventKind(StrEnum):
-    SPLIT = 'SPLIT'
-    CASH_DIVIDEND = 'CASH_DIVIDEND'
-    DIVIDEND_PAYMENT = 'DIVIDEND_PAYMENT'
+    POSITION_ADJUSTMENT = 'POSITION_ADJUSTMENT'
     SALE_SETTLEMENT = 'SALE_SETTLEMENT'
 
 
@@ -30,7 +28,7 @@ class RecognizedAccountEvent:
     quantity_after: int
     cash_delta: float
     receivable_delta: float
-    ratio: float | None = None
+    reason: str = 'UNKNOWN'
 
     def __post_init__(self):
         if type(self.event_id) is not str or not self.event_id or type(self.kind) is not RecognizedEventKind:
@@ -44,11 +42,10 @@ class RecognizedAccountEvent:
             value=getattr(self,name)
             if type(value) not in (int,float) or not math.isfinite(value):
                 raise ValueError('recognized event deltas must be finite')
-        if self.kind is RecognizedEventKind.SPLIT:
-            if type(self.ratio) not in (int,float) or not math.isfinite(self.ratio) or self.ratio<=0:
-                raise ValueError('recognized split requires its confirmed ratio')
-        elif self.ratio is not None:
-            raise ValueError('only recognized splits declare a unit ratio')
+        if self.reason not in {'UNKNOWN', 'TRADE_SETTLEMENT'}:
+            raise ValueError('recognized event requires an explicit supported reason')
+        if self.kind is RecognizedEventKind.POSITION_ADJUSTMENT and self.reason != 'UNKNOWN':
+            raise ValueError('position adjustment cannot infer its cause')
 
 
 @dataclass(frozen=True, slots=True)
@@ -133,35 +130,17 @@ class PositionFeedback:
 class AccountDecision:
     target: float
     explanation: SignalExplanationSnapshot
-    orders: tuple[ReplayOrder, ...] = ()
-    legs: tuple[ReplayLeg, ...] = ()
-    capital_mode: str = 'target_equity_fraction'
-    cycle_before: CycleBudget | None = None
-    cycle_after: CycleBudget | None = None
-
     def __post_init__(self):
         if type(self.target) not in (float, int) or not math.isfinite(self.target) or not 0 <= self.target <= 1:
             raise ValueError('account target must be finite in [0,1]')
         if type(self.explanation) is not SignalExplanationSnapshot:
             raise TypeError('account decisions require structured explanation')
-        if type(self.orders) is not tuple or any(type(x) is not ReplayOrder for x in self.orders):
-            raise TypeError('account orders require ReplayOrder tuple')
-        if type(self.legs) is not tuple or any(type(x) is not ReplayLeg for x in self.legs):
-            raise TypeError('account legs require ReplayLeg tuple')
-        if self.orders and self.legs:
-            raise ValueError('orders and dependency legs are mutually exclusive')
-        if self.capital_mode not in ('target_equity_fraction', 'signal_cash_fraction', 'full_available_cash'):
-            raise ValueError('unsupported account capital mode')
-        if any(x is not None and type(x) is not CycleBudget for x in (self.cycle_before, self.cycle_after)):
-            raise TypeError('account cycle budgets require CycleBudget')
-        if self.capital_mode != 'signal_cash_fraction' and any(x is not None for x in (self.cycle_before,self.cycle_after)):
-            raise ValueError('cycle budgets require signal_cash_fraction')
 
     @classmethod
-    def from_facts(cls, target, reason, *, facts, next_watch, **kwargs):
+    def from_facts(cls, target, reason, *, facts, next_watch):
         from .equity_definition import EquityDecision
         base = EquityDecision.from_facts(int(target > 0), reason, facts=facts, next_watch=next_watch)
-        return cls(target, base.explanation, **kwargs)
+        return cls(target, base.explanation)
 
 
 @dataclass(frozen=True, slots=True)
@@ -175,18 +154,6 @@ class AccountStepResult:
             raise TypeError('account step requires a typed decision and account state')
         if self.cycle_values is not None and type(self.cycle_values) is not StateRecord:
             raise TypeError('cycle state must be StateRecord')
-
-
-@dataclass(frozen=True, slots=True)
-class AccountPlanningContext:
-    fee_rate: float
-    execution_spec: ResearchExecutionSpec
-
-    def __post_init__(self):
-        if type(self.fee_rate) not in (float, int) or not math.isfinite(self.fee_rate) or not 0 <= self.fee_rate < 1:
-            raise ValueError('planning fee must be finite in [0,1)')
-        if type(self.execution_spec) is not ResearchExecutionSpec:
-            raise TypeError('planning requires a typed execution specification')
 
 
 def _observation_views(values, when):
@@ -212,14 +179,11 @@ class AccountStepContext:
     session: TradingSession | None = None
     session_available_at: datetime | None = None
     observations: Mapping[str, TableHistoryView] = field(default_factory=dict)
-    planning: AccountPlanningContext | None = None
 
     def __post_init__(self):
         from .equity_definition import _freeze
         from types import MappingProxyType
         object.__setattr__(self, 'observations', _observation_views(self.observations, self.point.decision_at))
-        if self.planning is not None and type(self.planning) is not AccountPlanningContext:
-            raise TypeError('planning requires AccountPlanningContext')
         if type(self.point) is not DecisionPoint or type(self.portfolio) is not EquityPortfolio:
             raise TypeError('account step requires confirmed portfolio and point')
         if type(self.account) is not AccountSnapshot or type(self.position) is not PositionFeedback:

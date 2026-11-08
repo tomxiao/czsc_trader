@@ -1,4 +1,5 @@
 """Explicit seed-only periods never fabricate or fetch inactive dynamic inputs."""
+from test_v4_inspection_roundtrip import prepare_raw_reference
 from dataclasses import replace
 from datetime import date, datetime, timedelta
 from types import MappingProxyType, SimpleNamespace
@@ -70,14 +71,16 @@ def test_inactive_and_cross_activation_research_inspection_pte(tmp_path, market,
     else:
         assert len(payload['runs']['candidate']['fills']) == 1
     replay = EquityInspectionReplay(f.InspectionCoordinate('activation','standard'), request.input_binding,
-        request.requests(context.execution_spec), request.window, request.initial_cash, request.fee_rate)
+        request.requests(context.execution_spec), request.window, request.initial_cash, request.fee_rate,
+        execution_reference=prepare_raw_reference(context, request))
     isolated, copied = _copy_inputs(context.data, replay, tmp_path / 'isolated-inputs')
     observed = replay_account(request.candidate, isolated, copied)
     assert observed['facts']['fills'] == payload['runs']['candidate']['fills']
     for row in products[EquityProduct.BARS].iloc[1:].itertuples():
         interval = TimeInterval(row.BarStart.to_pydatetime(), row.Date.to_pydatetime())
         online = prepare_equity_decision(isolated, request.candidate, copied.input_binding,
-            copied.requests, interval, fee_rate=request.fee_rate)
+            copied.requests, interval, fee_rate=request.fee_rate,
+            execution_reference=copied.execution_reference.fetch(isolated, interval, latency_seconds=context.execution_spec.data_latency_seconds))
         from strategy_runtime.account_planning import AccountDecisionEngine
         view = AccountDecisionEngine(request.candidate, online.v4_replay).table_views(interval.start)['increment']
         expected = TableObservationStatus.INACTIVE if interval.start < binding.input.activation_at else TableObservationStatus.ACTIVE
@@ -133,10 +136,9 @@ def test_forward_recipe_transitions_from_inactive_binding_to_actual_request(tmp_
             sessions=tuple(s for s in source_sessions if p.query.start<=s.session_date<=p.query.end)
             following=next((s for s in source_sessions if s.session_date>p.query.end),None)
             following_record=session_record(following) if following is not None else metadata.get('following_session')
-            metadata=equity_metadata(query,sessions,availability_basis='SYNTHETIC_BAR_CLOSE')
-            if p.query.product is EquityProduct.TRADING_FACTS and following_record is not None:
+            metadata={**metadata, **equity_metadata(query,sessions,availability_basis='SYNTHETIC_BAR_CLOSE')}
+            if p.query.product in (EquityProduct.TRADING_FACTS, EquityProduct.SESSIONS) and following_record is not None:
                 metadata['following_session']=following_record
-            metadata['no_actions_verified']=True
             return frame,metadata
         return ProviderBinding(binding.name,binding.revision,fetch)
     context.data._equity_providers={k:ranged(v) for k,v in context.data._equity_providers.items()}
@@ -145,7 +147,8 @@ def test_forward_recipe_transitions_from_inactive_binding_to_actual_request(tmp_
     with ResearchExecutionSession(context,experiment=request.experiment) as session:
         request=context.evaluation.prepare(replace(request,window=seed_window),execution=session).request
     assert not calls
-    recipe=FormalV4Inputs('a'*64,request.input_binding.for_observations(),request.fee_rate)
+    recipe=FormalV4Inputs('a'*64,request.input_binding.for_observations(),request.fee_rate,
+        prepare_raw_reference(context, request))
     client=FormalV4AdviceClient(repo_root=tmp_path,store=SimpleNamespace(virtual_account=lambda account:{'last_decision_payload':None}),dataflows=context.data,data_dir=tmp_path/'forward')
     first=client._forward_inputs('fixture',recipe,seed_window,candidate=request.candidate)
     assert first.binding.observation_bindings[0].request is None
@@ -167,7 +170,7 @@ def test_forward_recipe_transitions_from_inactive_binding_to_actual_request(tmp_
     assert binding.content_sha256 and binding.inactive_through is None
     assert len(calls) == 1
     from paper_trading_engine.execution_inputs import resolve_live_context
-    calendar_request=next(query for role,query in active.binding.bind_requests(active.requests) if role=='sessions')
+    calendar_request=next(query for role,query in active.binding.bind_requests(active.strategy_requests) if role=='sessions')
     calendar=context.data.fetch(calendar_request,prepared=active.binding.prepared)
     assert calendar.ready
     sessions=sessions_from_metadata(calendar.identity.metadata)
@@ -179,8 +182,10 @@ def test_forward_recipe_transitions_from_inactive_binding_to_actual_request(tmp_
         TimeInterval(part.start+timedelta(days=1),part.end+timedelta(days=1)) for part in tail.segments))
     calendar_metadata={**calendar.identity.metadata,'sessions':[session_record(s) for s in (*sessions,next_session)]}
     execution_context=resolve_live_context(request.candidate,later,calendar.dataframe,calendar_metadata)
-    online=prepare_equity_decision(context.data,request.candidate,active.binding,active.requests,later,
-        fee_rate=request.fee_rate,live=True,execution_context=execution_context)
+    online=prepare_equity_decision(context.data,request.candidate,active.binding,active.strategy_requests,later,
+        fee_rate=request.fee_rate,live=True,execution_context=execution_context,
+        execution_reference=active.execution_reference.fetch(context.data,later,
+            latency_seconds=context.execution_spec.data_latency_seconds))
     from strategy_runtime.account_planning import AccountDecisionEngine
     view=AccountDecisionEngine(request.candidate,online.v4_replay).table_views(later.start)['increment']
     assert view.status is TableObservationStatus.ACTIVE and len(view) == 4

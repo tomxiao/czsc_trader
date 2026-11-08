@@ -9,7 +9,7 @@ from strategy_runtime.account_strategy import PositionFeedback
 from .contracts import AdviceDecision, OrderSpec, PlanLegSpec
 from execution_channels.futu.equity_account_state import (load_document, validate_document, position_from_dict,
     budget_from_dict, recognized_events)
-from .ec_boundary import (initial_account_record, strategy_position, strategy_budget, strategy_events, execution_plan, execution_admission, strategy_account_snapshot)
+from .ec_boundary import (initial_account_record, strategy_position, strategy_events, execution_plan, execution_admission, strategy_account_snapshot)
 
 
 def _cached(payload, actual, available, portfolio_revision, state_revision):
@@ -50,8 +50,7 @@ def account_decision(store, prepared, account, actual_quantity, available_cash, 
     feedback = PositionFeedback(active, strategy_position(position_from_dict(document["latest_closed"])))
     portfolio = EquityPortfolio(available_cash, actual_quantity, float(account["receivable"]), state.revision,
         cycle_entry=None if active is None else active.entry_interval.start,
-        cycle_cost=0. if active is None else active.buy_cost, feedback_source="CONFIRMED_EXECUTION",
-        reference_price_scale=prepared.reference_price_scale)
+        cycle_cost=0. if active is None else active.buy_cost, feedback_source="CONFIRMED_EXECUTION")
     snapshot = strategy_account_snapshot(account, document, rules, prepared.interval.start,
         Decimal(str(available_cash)), candidate.instrument)
     if snapshot.quantity != actual_quantity:
@@ -60,10 +59,12 @@ def account_decision(store, prepared, account, actual_quantity, available_cash, 
     events, cursor = recognized_events(store, account["account_id"], state.event_cursor, prepared.interval.start)
     owner = account["account_id"] + ":" + account["release_hash"]
     result = engine.propose(prepared.interval, portfolio, snapshot, state, feedback, owner=owner,
-        fee_rate=prepared.fee_rate, budget=strategy_budget(budget_from_dict(document["budget"])), events=strategy_events(events),
+        fee_rate=prepared.fee_rate, events=strategy_events(events),
         next_event_cursor=cursor)
     proposal = result.proposal
     plan = execution_plan(result, snapshot, definition.execution_spec, owner=owner,
+        reference=float(prepared.execution_reference.price), execution_policy=definition.execution_policy,
+        cycle_budget=budget_from_dict(document["budget"]), locked_quantity=document["locked_quantity"],
         implementation=candidate.implementation_hash, fee_rate=prepared.fee_rate,
         sell_remainder_policy=prepared.v4_constraint["SellRemainderPolicy"])
     effects = execution_admission(plan, snapshot, document, proposal,
@@ -77,7 +78,7 @@ def account_decision(store, prepared, account, actual_quantity, available_cash, 
         prepared.available_through, trading_date, actual_quantity, plan.target_quantity, plan.target_quantity,
         plan.target_quantity-actual_quantity, action,
         {"strategy_id": account["strategy_id"], "version": account["strategy_version"], "release_hash": account["release_hash"]},
-        reference, reference, prepared.available_through, orders[0] if orders else None,
+        float(prepared.history.Close.iloc[-1]), reference, prepared.available_through, orders[0] if orders else None,
         plan.plan_identity, plan.plan_identity, portfolio_revision, state_revision,
         orders=orders, available_cash=available_cash, fee_rate=prepared.fee_rate,
         estimated_order_cost=estimate, unallocated_cash=effects.unallocated_cash,

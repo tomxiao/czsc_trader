@@ -7,28 +7,20 @@ from strategy_manager import CandidateEvidence, CandidateRegistration, Candidate
 from strategy_manager import StrategyRegistry
 from strategy_runtime import InspectionControl
 from strategy_runtime.deployment import validate_release_package
-from czsc_trader.application import (record_research_decision,register_candidate,CandidateRegistrationRequest,
-    CandidateInspectionRequest, EquityInspectionReplay, EquityInspectionProtocol, FreezeTarget,
+from czsc_trader.application import (record_research_decision,CandidateInspectionRequest, FreezeTarget,
     InspectionDataKind, inspect_candidate, freeze_candidate, get_freeze_result,
     assemble_delivery, validate_delivery)
 from czsc_trader.application.research_evidence import validate_inspection
 from czsc_trader.application import run_backtest
-from czsc_trader.research_tools.delivery import EvaluationEvidenceRef
 from czsc_trader.research_tools import delivery as d
-from equity_test_support import setup_formal_equity
-from test_equity_pte import equity_protocol, prepare_inspection_inputs
 
 
-@pytest.mark.parametrize('auxiliary', [False, True], ids=['primary', 'auxiliary-session'])
-def test_formal_equity_inspect_freeze_exact_package(tmp_path, auxiliary):
-    from equity_test_support import setup_auxiliary
-    research, evaluation, _, _ = (setup_auxiliary(tmp_path, same_source=True) if auxiliary
-                                  else setup_formal_equity(tmp_path))
-    evaluation = prepare_inspection_inputs(research, evaluation)
-    with pytest.raises(ValueError,match='account contract 4'):
-        register_candidate(research.repository,CandidateRegistrationRequest(evaluation.candidate,evaluation.experiment,(),()))
-    seed_registered_frozen_candidate(research,evaluation)
-    inspect_freeze(research, evaluation, None)
+def test_native_inspect_cancel_freeze_and_delivery(tmp_path):
+    from dataflows import MarketId
+    from test_v4_inspection_roundtrip import native_fixture
+    research, evaluation, products, replay = native_fixture(tmp_path, MarketId.US)
+    seed_registered_frozen_candidate(research, evaluation)
+    inspect_freeze(research, evaluation, None, replay=replay, products=products)
 
 
 def seed_registered_frozen_candidate(research,evaluation):
@@ -55,19 +47,14 @@ def seed_registered_frozen_candidate(research,evaluation):
 
 def test_equity_inspection_requires_complete_auxiliary_identity(tmp_path):
     from dataclasses import replace
-    from equity_test_support import setup_auxiliary
-    research, evaluation, _, _ = setup_auxiliary(tmp_path)
-    evaluation = prepare_inspection_inputs(research, evaluation)
-    replay = EquityInspectionReplay(f.InspectionCoordinate('main', 'standard'), evaluation.input_binding,
-        evaluation.requests(research.execution_spec), evaluation.window, evaluation.initial_cash, evaluation.fee_rate)
-    assert len(replay.requests) == 6
-    with pytest.raises(ValueError, match='exact primary and auxiliary'):
+    from dataflows import MarketId
+    from test_v4_inspection_roundtrip import native_fixture
+    _, _, _, replay = native_fixture(tmp_path, MarketId.US)
+    with pytest.raises(ValueError, match='bound product selection|coverage'):
         replace(replay, requests=replay.requests[:-1])
-    with pytest.raises(ValueError, match='exact primary and auxiliary'):
-        replace(replay, requests=replay.requests + replay.requests[-1:])
 
 
-def inspect_freeze(research, evaluation, evidence, *, assessment_ref=None):
+def inspect_freeze(research, evaluation, evidence, *, replay, products, assessment_ref=None):
     """Continue an already registered synthetic candidate through the public R7 path."""
     context = research.repository
     registration = StrategyRegistry(context.research_registry_root).get_candidate_registration(evaluation.candidate.key)
@@ -78,12 +65,10 @@ def inspect_freeze(research, evaluation, evidence, *, assessment_ref=None):
     selection = record_research_decision(context, f.ResearchDecision('select-equity', 'S999', f.DecisionAction.APPROVE,
         f.CandidateSelectionSubject(registration.key, registration.content_sha256, registration.record_sha256),
         source, 'Select synthetic fixture only'))
-    replay = EquityInspectionReplay(f.InspectionCoordinate('main', 'standard'), evaluation.input_binding,
-        evaluation.requests(research.execution_spec), evaluation.window, evaluation.initial_cash, evaluation.fee_rate,
-        None if evidence is None else EvaluationEvidenceRef(evidence))
-    protocol = EquityInspectionProtocol('candidate-inspection-v2', 'ECONOMIC_V1', 0., equity_protocol(research, evaluation))
+    from test_v4_inspection_roundtrip import native_protocol
+    protocol = native_protocol(research, evaluation, products)
     request = CandidateInspectionRequest(registration.key, selection, research, evaluation.experiment,
-        FreezeTarget('v1', None, 'synthetic US closure', date(2026,10,2), date(2026,10,3)), protocol, (replay,), InspectionDataKind.SYNTHETIC)
+        FreezeTarget('v1', None, 'synthetic US closure', date(2026,10,15), date(2026,10,16)), protocol, (replay,), InspectionDataKind.SYNTHETIC)
     cancelled = inspect_candidate(context, request, control=InspectionControl(max_workers=1, cancelled=lambda: True))
     assert cancelled.status is f.InspectionStatus.INCOMPLETE
     assert validate_inspection(context.root, cancelled.reference) == cancelled
@@ -105,7 +90,7 @@ def inspect_freeze(research, evaluation, evidence, *, assessment_ref=None):
     package = validate_release_package(context.strategy_root, 'S999-v1')
     assert package.package_sha256 == report.release.package_sha256
     version = StrategyRegistry(context.strategy_root).get_version('S999', 'v1')
-    with pytest.raises(ValueError, match='explicit equity context cannot execute'):
+    with pytest.raises(TypeError, match='ResearchExecutionSession'):
         run_backtest(research, version, evaluation)
     source_file = package.source_root / evaluation.candidate.definition.source_files[0]
     original = source_file.read_bytes()

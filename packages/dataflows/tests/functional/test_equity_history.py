@@ -7,7 +7,7 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 import pytest
 
-from dataflows import (AssetClass, BarFrequency, Dataflows, DataSpace, EquityDataRequest,
+from dataflows import (AcquisitionMethod, AssetClass, BarFrequency, Dataflows, DataSpace, EquityDataRequest,
     EquityFrequencyFacts, EquityProduct, EquityQuery, EquitySourceCoverage, InstrumentId,
     MarketId, PreparePolicy, PriceAdjustment, ProviderConfig, SourceRef, TimeInterval,
     TradingSession, versioned_equity_bindings)
@@ -36,13 +36,10 @@ def facts(market):
             'Tradable': True, 'PriceLimitLower': 5. if market is MarketId.CN else None,
             'PriceLimitUpper': 15. if market is MarketId.CN else None})
         versions.append(EquityFrequencyFacts(frequency, bars, rules))
-    stamp = sessions[1].segments[0].start
-    actions = pd.DataFrame([{'Date': stamp, 'AvailableDate': stamp, 'EventId': 'cash-1',
-        'Kind': 'CASH_DIVIDEND', 'Ratio': 1., 'CashPerShare': .5, 'PayAt': sessions[2].segments[0].start}])
     coverage = EquitySourceCoverage(date(2026, 10, 27), date(2026, 10, 29),
-        'Synthetic complete independent-source receipt; not a real security-history attestation.', True)
+        'Synthetic complete independent-source receipt; not a real security-history attestation.')
     return dict(instrument=instrument, source=source, coverage=coverage,
-        sessions=sessions, frequencies=tuple(versions), actions=actions)
+        sessions=sessions, frequencies=tuple(versions))
 
 
 def request(source, product, frequency, *, start=None, end=None):
@@ -63,14 +60,14 @@ def test_both_markets_publish_pinned_raw_facts_with_exact_source_rules(tmp_path,
     rows = flows.fetch(requests[0], prepared=prepared.reference)
     assert rows.ready, rows.error
     assert len(rows.dataframe) == (3 if frequency is BarFrequency.DAILY else 24 if market is MarketId.CN else 39)
-    assert rows.identity.metadata['economic_price_basis'] == 'RAW'
-    assert rows.identity.metadata['action_history_complete'] is True
+    assert rows.identity.metadata['adjustment'] == 'none'
+    assert rows.identity.metadata['acquisition_method'] == 'PROVIDER_RAW'
     rules = flows.fetch(request(source, EquityProduct.TRADING_FACTS, frequency), prepared=prepared.reference)
     assert rules.ready, rules.error
     assert rules.dataframe.PriceLimitLower.notna().all() if market is MarketId.CN else rules.dataframe.PriceLimitLower.isna().all()
 
 
-def test_provider_owns_admitted_values_and_derives_empty_subrange_from_complete_history():
+def test_provider_owns_admitted_values_and_preserves_exact_subrange():
     source = facts(MarketId.CN)
     bindings = versioned_equity_bindings(**source)
     req = request(source, EquityProduct.BARS, BarFrequency.M30)
@@ -79,10 +76,9 @@ def test_provider_owns_admitted_values_and_derives_empty_subrange_from_complete_
     assert frame.Close.eq(10.).all()
     frame.loc[:, 'Close'] = 888.
     assert bindings[req.parameters.provider_key].fetch(req)[0].Close.eq(10.).all()
-    empty = request(source, EquityProduct.ACTIONS, BarFrequency.M30, end=date(2026, 10, 27))
-    selected, metadata = bindings[empty.parameters.provider_key].fetch(empty)
-    assert selected.Kind.tolist() == ['NONE'] and metadata['no_actions_verified'] is True
-    assert metadata['action_history_complete'] is True
+    subrange = request(source, EquityProduct.BARS, BarFrequency.M30, end=date(2026, 10, 27))
+    selected, metadata = bindings[subrange.parameters.provider_key].fetch(subrange)
+    assert len(selected) == 8
     assert metadata['coverage_evidence_sha256']
 
 
@@ -147,21 +143,11 @@ def test_source_selection_uses_admitted_indexes_without_reparsing_or_revalidatin
     assert metadata['coverage_start'] == metadata['coverage_end'] == '2026-10-28'
 
 
-@pytest.mark.parametrize('defect', ['partial-actions', 'unverified-none', 'event-outside', 'missing-pay',
-    'missing-grid', 'missing-facts', 'static-field', 'limit-bounds', 'unpaired-limits', 'late-fact'])
+@pytest.mark.parametrize('defect', ['missing-grid', 'missing-facts', 'static-field',
+    'limit-bounds', 'unpaired-limits', 'late-fact'])
 def test_source_admission_rejects_missing_or_inconsistent_facts(defect):
     source = facts(MarketId.CN)
-    if defect == 'partial-actions':
-        with pytest.raises(IncompleteDataError, match='complete'):
-            replace(source['coverage'], actions_complete=False)
-        return
-    if defect == 'unverified-none':
-        source['actions'].loc[:, 'Kind'] = 'NONE'
-    elif defect == 'event-outside':
-        source['actions'].loc[:, 'Date'] += pd.Timedelta(days=5)
-    elif defect == 'missing-pay':
-        source['actions'].loc[:, 'PayAt'] = None
-    elif defect == 'missing-grid':
+    if defect == 'missing-grid':
         item = source['frequencies'][0]
         source['frequencies'] = (replace(item, bars=item.bars.iloc[:-1]), source['frequencies'][1])
     else:
@@ -197,3 +183,29 @@ def test_fetch_has_no_adjustment_frequency_or_source_fallback(defect):
         req = EquityDataRequest(source['instrument'], SourceRef('other', 'v1'), req.parameters.query)
     with pytest.raises((DataContractError, IncompleteDataError)):
         binding.fetch(req)
+
+
+@pytest.mark.parametrize('market', list(MarketId))
+def test_adjusted_facts_keep_same_basis_across_frequencies_and_reject_raw_request(market):
+    source = facts(market)
+    source['frequencies'] = tuple(replace(item, adjustment=PriceAdjustment.BACKWARD,
+        acquisition_method=AcquisitionMethod.PROVIDER_ADJUSTED) for item in source['frequencies'])
+    bindings = versioned_equity_bindings(**source)
+    bases = set()
+    for frequency in BarFrequency:
+        for product in (EquityProduct.BARS, EquityProduct.TRADING_FACTS):
+            raw = request(source, product, frequency)
+            with pytest.raises(DataContractError, match='price basis'):
+                bindings[raw.parameters.provider_key].fetch(raw)
+            adjusted = EquityDataRequest(source['instrument'], source['source'],
+                replace(raw.parameters.query, adjustment=PriceAdjustment.BACKWARD))
+            rows, metadata = bindings[adjusted.parameters.provider_key].fetch(adjusted)
+            assert not rows.empty and metadata['adjustment'] == 'hfq'
+            bases.add(metadata['price_basis_id'])
+    assert len(bases) == 1
+
+
+def test_adjusted_facts_require_explicit_acquisition_method():
+    item = facts(MarketId.CN)['frequencies'][0]
+    with pytest.raises(DataContractError, match='acquisition method'):
+        replace(item, adjustment=PriceAdjustment.BACKWARD)

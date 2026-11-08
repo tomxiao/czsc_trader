@@ -23,55 +23,49 @@ def ledger(days=12):
     from execution_channels.policy import UsEquitySpec
     from execution_channels.policy import AccountPolicy
     from execution_channels.policy import CashAvailabilityPolicy
-    from execution_channels.contracts import SellRemainderPolicy
-    from execution_channels.planning import plan_account_decision
     from execution_channels.contracts import ReplayPoint
     from execution_channels.contracts import ExecutionPrecision
-    from execution_channels.contracts import ReplayOrder
+    from execution_channels.contracts import AccountExecutionPlan, ReplayOrder
     from execution_channels.session_contracts import OrderSide
     from execution_channels.session_contracts import OrderType
     from execution_channels.historical import PortfolioHistoricalExecutor
     spec=ResearchExecutionSpec(UsEquitySpec(),BarFrequency.M30,
         AccountPolicy('USD',CashAvailabilityPolicy.IMMEDIATE_RESEARCH),10,.01,.01,0.)
     instrument=InstrumentId(MarketId.US,AssetClass.STOCK,'TEST')
-    events=[]
-    for day in range(days):
-        at=datetime(2026,10,1,14,tzinfo=timezone.utc)+timedelta(days=day,minutes=30)
-        events.extend((dict(Date=at,AvailableDate=at,EventId=f'split-{day}',Kind='SPLIT',Ratio=2.,CashPerShare=0.,PayAt=None),
-            dict(Date=at,AvailableDate=at,EventId=f'dividend-{day}',Kind='CASH_DIVIDEND',Ratio=1.,CashPerShare=.1,PayAt=at+timedelta(minutes=90))))
-    actions=pd.DataFrame(events)
-    executor=PortfolioHistoricalExecutor(specification=spec,initial_cash=10000.,fee_rate=0.,actions=actions,price_basis='RAW')
+    executor=PortfolioHistoricalExecutor(specification=spec,initial_cash=10000.,fee_rate=0.,price_basis='HFQ')
     bars,rules=[],[]
     for day in range(days):
         base=datetime(2026,10,1,14,tzinfo=timezone.utc)+timedelta(days=day)
         bars.append(dict(Date=base,BarStart=base-timedelta(minutes=30),AvailableDate=base,
-            Open=10.,High=10.,Low=10.,Close=10.,Volume=1000.,Amount=10000.))
+            Open=5.,High=5.,Low=5.,Close=5.,Volume=1000.,Amount=10000.))
         for part in range(4):
             start=base+timedelta(minutes=part*30)
             end=start+timedelta(minutes=30)
-            price,close=[10.,5.,6.,6.][part],[8.,5.,6.,6.][part]
+            price,close=[5.,5.,6.1,6.1][part],[4.,5.,6.1,6.1][part]
             row=dict(Date=end,BarStart=start,AvailableDate=end,Open=price,High=max(price,close),Low=min(price,close),Close=close,Volume=1000.,Amount=10000.)
             rule=dict(Date=start,AvailableDate=start,QuantityStep=10,PriceTick=.01,Tradable=True,
                 BuySellableAt=start,SettlementAt=end,SellRemainderPolicy='FULL_LIQUIDATION',
                 PriceLimitPolicy='EXPLICIT_UNBOUNDED',PriceLimitLower=None,PriceLimitUpper=None)
             point=ReplayPoint(bars[-1]['Date'],start,start,end,start.date().isoformat(),ExecutionPrecision.BAR_INTERVAL)
             account=executor.account_snapshot(point,instrument)
-            orders=(ReplayOrder(OrderSide.BUY,10,OrderType.LIMIT,10.1),) if part==0 else (ReplayOrder(OrderSide.SELL,20,OrderType.MARKET),) if part==2 else ()
-            decision=_intent(1. if part<2 else 0.,'explicit synthetic cycle',facts={'part':part},next_watch='next bar',orders=orders,capital_mode='full_available_cash')
-            reference=[10.,4.,5.,6.][part]
-            proposal=plan_account_decision(decision,point,account,reference,spec,owner='candidate:fixture',
-                implementation='1'*64,fee_rate=0.,sell_remainder_policy=SellRemainderPolicy.FULL_LIQUIDATION)
+            orders=(ReplayOrder(OrderSide.BUY,20,OrderType.LIMIT,5.1),) if part==0 else (ReplayOrder(OrderSide.SELL,20,OrderType.MARKET),) if part==2 else ()
+            reference=[5.,4.,5.,6.1][part]
+            target=account.quantity+sum(o.quantity if o.side is OrderSide.BUY else -o.quantity for o in orders)
+            proposal=AccountExecutionPlan(f'{executor.revision+1:064x}', 'candidate:fixture', point,
+                account.revision, target, orders, capital_mode='full_available_cash',
+                evidence={'sizing':'EXPLICIT_ORDERS','target':1. if part<2 else 0.,
+                    'reference_price':reference,'specification_hash':spec.fingerprint,'fee_rate':0.})
             executor.execute_account_plan(proposal,row,constraint=rule)
             bars.append(row)
             rules.append(rule)
     result=executor.finish()
     def records(frame):
         return json.loads(frame.to_json(orient='records',date_format='iso',date_unit='us'))
-    return dict(initial_cash=10000.,fee_rate=0.,account_contract=4,
+    return dict(initial_cash=10000.,fee_rate=0.,account_contract=4, price_basis='HFQ', quantity_basis='SIMULATED_INTEGER_UNITS',
         specification=json.loads(json.dumps(asdict(spec))),bars=records(pd.DataFrame(bars)),
-        constraints=records(pd.DataFrame(rules)),action_facts=records(actions),
+        constraints=records(pd.DataFrame(rules)),
         **{name:records(getattr(result,source)) for name,source in (
-            ('decisions','decisions'),('orders','orders'),('fills','fills'),('actions','corporate_action_entries'),
+            ('decisions','decisions'),('orders','orders'),('fills','fills'),('account_entries','account_entries'),
             ('account_points','account_points'),('trades','trades'))})
 
 

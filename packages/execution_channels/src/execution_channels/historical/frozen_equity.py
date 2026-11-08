@@ -74,11 +74,8 @@ class _FrozenEquityExecutor(_EquityAccount):
             # Existing CN engine owns exchange-bound execution. Do not execute CN
             # bars without its price limits and sellability semantics.
             raise ValueError("UNSUPPORTED_EXECUTION_COMBINATION: CN bar execution is not admitted")
-        for event in self._action_events:
-            if event.Kind != "NONE" and interval.start < _timestamp(event.Date) < interval.end:
-                raise ValueError("CORPORATE_ACTION_UNSUPPORTED: event inside execution bar")
-        quantity, limit = self._events(interval.start, after=plan.point.decision_at,
-                                       plan_quantity=plan.quantity, limit_price=plan.limit_price)
+        self._pay(interval.start, inclusive=True)
+        quantity, limit = plan.quantity, plan.limit_price
         decision = {"decision_id": plan.plan_id, "observed_through": plan.point.observed_through,
                     "decision_at": plan.point.decision_at, "execution_start": interval.start,
                     "execution_end": interval.end, "target": plan.target, "reference_price": plan.reference_price,
@@ -171,7 +168,7 @@ class _FrozenEquityExecutor(_EquityAccount):
                                                "net_return": self.cycle_income / self.cycle_cost - 1,
                                                "status": "CLOSED"})
                     self.cycle = None
-        self._events(interval.end, after=interval.start, plan_quantity=0, limit_price=None, include_actions=False)
+        self._pay(interval.end, inclusive=True)
         if self.cash < -1e-8 or self.quantity < 0:
             raise ValueError("unlevered long-only account invariant violated")
         self.revision += 1

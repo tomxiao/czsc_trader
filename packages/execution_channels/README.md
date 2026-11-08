@@ -34,7 +34,7 @@ EC 拥有交易规则、订单规划与渠道账户。输入为宿主已经准�
 历史路径另合并DFLS事实，在线路径明确由渠道核验动态可交易性，不生成虚构的 `Tradable`。
 `market_rules.constraints`
 将静态规则与宿主提供的交易日历、停牌和当日价格边界组合成执行约束；不查询数据源。
-A 股价格边界必须由逐日事实明确提供，美股使用明确的无涨跌停声明。
+历史价格边界必须与 HFQ 行情使用相同单位；在线价格边界使用 RAW 单位。美股使用明确的无涨跌停声明。
 
 `planning.plan_account_decision` 接收 `TradeIntent`、决策点、账户快照和执行政策，
 统一计算 V4 数量、委托价格、周期预算与计划身份。SRT 只产生策略意图和待采纳状态，
@@ -47,7 +47,7 @@ A 股价格边界必须由逐日事实明确提供，美股使用明确的无涨
 
 ## 历史回放渠道
 
-`historical.HistoricalReplayChannel` 仅接受已经准备好的行情、执行约束和公司行动事实。
+`historical.HistoricalReplayChannel` 仅接受已经准备好的 HFQ 行情与执行约束。
 `advance` 推进模拟时钟并确认待执行区间，`snapshot` 提供账户、持仓周期、策略状态、
 已确认事件和预算，`adopt` 采纳 `HistoricalDecision` 并返回 `ADOPTED`、
 `ALREADY_ADOPTED`、`STALE_SNAPSHOT` 或 `BLOCKED`。采纳本身不制造成交；
@@ -57,14 +57,34 @@ A 股价格边界必须由逐日事实明确提供，美股使用明确的无涨
 之前已经确认的区间保留。重复计划不会产生重复成交，复用身份但改变内容会报错。
 执行事实在绑定时拒绝缺失或无时区时间。宿主续跑身份包含规范化执行约束；同一约束的
 时间字符串表示或行顺序变化不改变身份，切换未来区间的规则则不能接续原账户状态。
-交易成本、买入后可卖时间、结算、拆股数量换算以及交易收入账本沿用渠道的计算规则。
-现金派息不计入历史交易收益；输入筛选由研究宿主按已确认的收益口径完成。
+交易成本、买入后可卖时间、结算、整数步长与数字成交量上限保持。历史账户不识别、缩放或入账拆股、合股与派息。
 
-应用的 V4 回放入口在 `src/czsc_trader/application/account_replay.py`，冻结二元目标入口在
-`src/czsc_trader/application/frozen_equity_replay.py`。它们衔接 SRT 的计算和 EC 的账户，
+应用的 V4 回放入口在 `src/czsc_trader/application/account_replay.py`，衔接 SRT 的计算和 EC 的账户。
+旧V2 RAW技术回放入口明确要求迁移至HFQ V4，不作为失败后的替代通道；
 EC 不导入或回调 SRT。旧 TXE 的历史实现已迁至本包，不保留旧包转发接口。
 
 ## 核心验证
 
 聚焦验证覆盖 CN 决策采纳、原子预占/回滚、计划依赖、重启和幂等；US 验证覆盖累计成交、
 未知提交恢复、手续费差异、现金平账及执行区间拒绝。测试通过不代表生产发布或真实渠道操作授权。
+
+## HFQ 历史模型与目标仓位边界
+
+`TradeIntent` 只有 `target` 和 `explanation`。`plan_account_decision` 显式接收执行参考价、
+`ExecutionPolicy`、`cycle_budget` 与 `locked_quantity`，不从解释中提取订单参数。
+`TARGET_POSITION` 支持目标权益比例和持仓后不追加的全现金模式；`FROZEN_RULE` 复用冻结规则；
+`INTRADAY_OVERLAY` 复用核心仓位和依赖腿。EC负责报价、费用预算、取整、股数和资金。
+`signal_cash_fraction` 的首次正目标本身是开仓资金比例，预算锁定到退出；历史快照暴露
+`budget` 和 `locked_quantity` 供下一次规划使用。无法买入最低单位以 `INSUFFICIENT_LOT` 阻断。
+
+`PortfolioHistoricalExecutor(price_basis="HFQ")` 拒绝 RAW 和公司行动参数。
+报价、成交、估值及账户使用 HFQ 和整数模拟单位，不缩放行情、不降低手数、不使用小数股。
+结果标记 `price_basis=HFQ`、`quantity_basis=SIMULATED_INTEGER_UNITS`；`account_entries`
+只保留 `SALE_SETTLEMENT`。数字成交量上限是模拟容量约束，不承诺模拟单位与真实股数等价。
+模拟渠道则独立使用 RAW 执行、富途事实账户；数量对账变化标记 `POSITION_ADJUSTMENT`
+及 `reason=UNKNOWN`，不推断公司行动；未知现金差额归渠道平账账户。
+
+`PaperStore.reconcile_equity_positions` 仅接收已确认的渠道实际数量。多个策略账户按原持仓比例和
+最大余数分配整数变化，余数以账户ID稳定排序；存在未确认订单、缺少归属或旧账不一致时阻断。
+账本、成本、活动周期、预算目标、数量锁和可卖锁在同一事务更新，并记录
+`CHANNEL_POSITION_RECONCILED`。旧 `apply_equity_event`、`record_v4_action` 接口已删除。

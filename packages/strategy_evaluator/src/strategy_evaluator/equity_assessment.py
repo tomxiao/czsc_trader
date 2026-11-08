@@ -16,7 +16,7 @@ from .models import ValidationError
 
 
 LEDGER_FIELDS = frozenset({"initial_cash", "specification", "bars", "decisions", "orders",
-    "fills", "actions", "account_points", "trades", "action_facts", "constraints", "fee_rate", "account_contract"})
+    "fills", "account_entries", "account_points", "trades", "price_basis", "quantity_basis", "constraints", "fee_rate", "account_contract"})
 
 
 _active_certification = ContextVar("equity_account_certification", default=None)

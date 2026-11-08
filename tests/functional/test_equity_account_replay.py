@@ -29,7 +29,7 @@ def test_account_shared_snapshot_benchmark_without_independent_audit(tmp_path, m
     owners = []
     compute = equity_replay._compute_account
     def record_owner(*args):
-        owners.append(args[4])
+        owners.append(args[3])
         return compute(*args)
     monkeypatch.setattr(equity_replay, "_compute_account", record_owner)
     fetched = []
@@ -49,7 +49,7 @@ def test_account_shared_snapshot_benchmark_without_independent_audit(tmp_path, m
         assert pressure.benchmark_identity != left.benchmark_identity
         assert left.snapshot is right.snapshot
         assert left.benchmark_identity == right.benchmark_identity
-        assert len(fetched) == 4 and len(calls) == 4
+        assert len(fetched) == 3 and len(calls) == 3
         outcomes = access.evaluate_many((left, right, left), execution=execution)
         assert all(item.status.value == "SUCCEEDED" for item in outcomes), [item.error for item in outcomes]
         a, b, duplicate = (item.result for item in outcomes)
@@ -86,7 +86,7 @@ def test_account_shared_snapshot_benchmark_without_independent_audit(tmp_path, m
         assert statistics.candidate_runs == 2  # earlier public snapshot cannot change
         with pytest.raises(FrozenInstanceError):
             statistics.candidate_runs = 99
-        assert len(fetched) == 4
+        assert len(fetched) == 3
     first = build_equity_assessment(a)
     second = build_equity_assessment(b)
     assert first[0].result_sha256 == a.result_hash and second[0].result_sha256 == b.result_hash
@@ -143,10 +143,10 @@ def test_projection_preserves_metrics_without_recomputation(tmp_path, monkeypatc
         facts, = build_equity_assessment(result.result)
     ledgers = {}
     economic = {name: raw["audit_inputs"][name] for name in (
-        "bars", "action_facts", "constraints", "specification", "initial_cash", "fee_rate")}
+        "bars", "price_basis", "quantity_basis", "constraints", "specification", "initial_cash", "fee_rate")}
     for name, run in raw["runs"].items():
         ledgers[name] = {**economic, **{field: run[field] for field in (
-            "decisions", "orders", "fills", "actions", "account_points", "trades")}, "account_contract": 4}
+            "decisions", "orders", "fills", "account_entries", "account_points", "trades")}, "account_contract": 4}
     for basis in ("SESSION_CLOSE", "BAR_CLOSE"):
         compact = replace(facts, equity=replace(facts.equity, drawdown_basis=basis),
             metric_version=f"equity-assessment-v4:{basis}:{facts.equity.concentration_basis}")
@@ -308,7 +308,7 @@ def test_account_parameter_plan_uses_owned_preparation_without_refetch(tmp_path,
             prepared = context.evaluation.prepare(proposed, execution=execution)
             validate_parameter_request(prepared, context.data, execution=execution)
             bound.append(prepared)
-        assert len(fetched) == 4
+        assert len(fetched) == 3
         outcomes = context.evaluation.evaluate_many(tuple(bound), execution=execution)
         assert all(item.result is not None for item in outcomes), [item.error for item in outcomes]
         assert execution.stats.pool_starts == 1
@@ -320,7 +320,7 @@ def test_account_parameter_plan_uses_owned_preparation_without_refetch(tmp_path,
         changed = context.evaluation.prepare(replace(bound[0].request, initial_cash=1001., audit_inputs_sha256=None), execution=execution)
         assert changed.request.initial_cash == 1001.
         assert changed.contract_content != bound[0].contract_content
-        assert len(fetched) == 4
+        assert len(fetched) == 3
     with ResearchExecutionSession(context, experiment=request.experiment) as other_execution:
         with pytest.raises(ValueError, match="not issued"):
             validate_parameter_request(bound[0], context.data, execution=other_execution)

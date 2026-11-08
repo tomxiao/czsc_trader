@@ -7,13 +7,11 @@ from dataclasses import asdict
 from dataflows import TimeInterval
 from strategy_runtime.account_strategy import PositionCycle, RecognizedAccountEvent, RecognizedEventKind
 from strategy_runtime.equity_replay import StateRecord
-from strategy_runtime.replay_contracts import CycleBudget
-from strategy_runtime.entry_cycle import EntryCyclePhase
 
 from execution_channels.serialization import from_record, to_record
 from execution_channels.state import StateRecord as ExecutionStateRecord
 from execution_channels.contracts import AccountSnapshot, ReplayPoint, SellRemainderPolicy
-from execution_channels.policy import ResearchExecutionSpec
+from execution_channels.policy import ResearchExecutionSpec, ExecutionPolicy
 from execution_channels.planning import plan_account_decision
 from execution_channels.planning.intent import TradeIntent
 from execution_channels.futu.equity_contracts import EquityAccountRules
@@ -45,14 +43,6 @@ def strategy_position(value):
     return PositionCycle(**fields)
 
 
-def strategy_budget(value):
-    if value is None:
-        return None
-    fields = to_record(value)
-    fields['phase'] = EntryCyclePhase(fields['phase'])
-    return CycleBudget(**fields)
-
-
 def strategy_events(values):
     result = []
     for value in values:
@@ -62,15 +52,17 @@ def strategy_events(values):
     return tuple(result)
 
 
-def execution_plan(result, snapshot, specification, *, owner, implementation, fee_rate, sell_remainder_policy):
+def execution_plan(result, snapshot, specification, *, reference, execution_policy, cycle_budget, locked_quantity, owner, implementation, fee_rate, sell_remainder_policy):
     record = to_record(result.proposal.decision)
     record['explanation'] = {'facts': result.proposal.decision.explanation.to_dict()}
     return plan_account_decision(from_record(TradeIntent, record),
         from_record(ReplayPoint, to_record(result.point)),
-        from_record(AccountSnapshot, to_record(snapshot)), result.reference_price,
+        from_record(AccountSnapshot, to_record(snapshot)), reference,
         from_record(ResearchExecutionSpec, to_record(specification)), owner=owner,
         implementation=implementation, fee_rate=fee_rate,
-        sell_remainder_policy=SellRemainderPolicy(sell_remainder_policy), suppressed=result.suppressed)
+        sell_remainder_policy=SellRemainderPolicy(sell_remainder_policy),
+        execution_policy=from_record(ExecutionPolicy, to_record(execution_policy)),
+        cycle_budget=cycle_budget, locked_quantity=locked_quantity, suppressed=result.suppressed)
 
 
 def session_execution_plan(proposal, portfolio, state):

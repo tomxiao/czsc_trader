@@ -15,7 +15,7 @@ from execution_channels.historical import PortfolioHistoricalExecutor
 from execution_channels.instruments import AssetClass, BarFrequency, InstrumentId, MarketId
 from execution_channels.planning import plan_account_decision
 from execution_channels.planning.intent import DecisionExplanation, TradeIntent
-from execution_channels.policy import AccountPolicy, CashAvailabilityPolicy, CnEquitySpec, ResearchExecutionSpec, UsEquitySpec
+from execution_channels.policy import ExecutionPolicy, AccountPolicy, CashAvailabilityPolicy, CnEquitySpec, ResearchExecutionSpec, UsEquitySpec
 from execution_channels.serialization import from_record, to_record
 from execution_channels.historical.channel import HistoricalReplayChannel, HistoricalDecision, AdoptionStatus
 from execution_channels.state import StateRecord
@@ -48,12 +48,12 @@ def test_explicit_records_preserve_planning_and_confirmed_ledger(market):
     plan = plan_account_decision(from_record(TradeIntent, to_record(intent)), point,
         from_record(AccountSnapshot, json.loads(json.dumps(to_record(account, json_safe=True)))),
         10., restored, owner='test', implementation='a'*64, fee_rate=.001,
-        sell_remainder_policy=SellRemainderPolicy.FULL_LIQUIDATION)
+        execution_policy=ExecutionPolicy("TARGET_POSITION", {}), sell_remainder_policy=SellRemainderPolicy.FULL_LIQUIDATION)
     assert plan.orders[0].quantity == (900 if market is MarketId.CN else 989)
     assert plan.orders[0].limit_price == 10.1
     actions = pd.DataFrame(columns=['Date', 'AvailableDate', 'EventId', 'Kind'])
     executor = PortfolioHistoricalExecutor(specification=spec, initial_cash=10000., fee_rate=.001,
-                                          actions=actions, price_basis='RAW')
+                                          price_basis='HFQ')
     assert executor.account_snapshot(point, instrument).quantity == 0
     after = executor.execute_account_plan(plan, row, constraint=constraint)
     quantity = plan.orders[0].quantity
@@ -82,7 +82,7 @@ def test_suppressed_input_creates_no_orders_and_keeps_quantity():
     account = AccountSnapshot(instrument, 'USD', point.decision_at, 1, 10., 10., 0., 20, 20)
     plan = plan_account_decision(TradeIntent(0., DecisionExplanation({'reason': 'missing observation'})),
         point, account, 10., spec, owner='test', implementation='a'*64, fee_rate=.001,
-        sell_remainder_policy=SellRemainderPolicy.FULL_LIQUIDATION, suppressed=True)
+        execution_policy=ExecutionPolicy("TARGET_POSITION", {}), sell_remainder_policy=SellRemainderPolicy.FULL_LIQUIDATION, suppressed=True)
     assert not plan.orders and not plan.legs
     assert plan.target_quantity == 20
     assert plan.evidence['signal_status'] == 'SUPPRESSED_UNOBSERVED_BAR'
@@ -119,13 +119,13 @@ def test_channel_rejects_incomplete_execution_clocks_at_binding(field, invalid, 
     with pytest.raises(ValueError, match=field + ' requires'):
         if bound_executor:
             executor = PortfolioHistoricalExecutor(specification=spec,initial_cash=10000.,
-                fee_rate=.001,actions=actions,price_basis='RAW')
+                fee_rate=.001,price_basis='HFQ')
             HistoricalReplayChannel.from_executor(executor,account_id='account',instrument=instrument,
                 bars=[row],constraints=[rule])
         else:
             HistoricalReplayChannel(account_id='account',instrument=instrument,specification=spec,
                 initial_cash=10000.,fee_rate=.001,bars=pd.DataFrame([row]),
-                constraints=pd.DataFrame([rule]),actions=actions)
+                constraints=pd.DataFrame([rule]))
 
 
 @pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
@@ -143,20 +143,18 @@ def test_execution_constraint_clocks_normalize_without_mutating_input(market, te
     assert all(type(normalized[key]) is datetime and normalized[key].tzinfo is timezone.utc
                for key in CONSTRAINT_TIMES)
     channel = HistoricalReplayChannel(account_id='account',instrument=instrument,specification=spec,
-        initial_cash=10000.,fee_rate=.001,bars=pd.DataFrame([row]),constraints=pd.DataFrame([rule]),
-        actions=pd.DataFrame(columns=['Date','AvailableDate','EventId','Kind']))
+        initial_cash=10000.,fee_rate=.001,bars=pd.DataFrame([row]),constraints=pd.DataFrame([rule]),)
     assert channel._constraints[row['BarStart']] == normalized
 
 
 @pytest.mark.parametrize('field', ['Date','AvailableDate','BuySellableAt','SettlementAt'])
 def test_direct_executor_rejects_nat_constraints_even_for_buy(field):
     instrument, spec, point, row, rule = fixture(MarketId.US)
-    executor = PortfolioHistoricalExecutor(specification=spec, initial_cash=10000., fee_rate=.001,
-        actions=pd.DataFrame(columns=['Date','AvailableDate','EventId','Kind']),price_basis='RAW')
+    executor = PortfolioHistoricalExecutor(specification=spec, initial_cash=10000., fee_rate=.001,price_basis='HFQ')
     account = executor.account_snapshot(point,instrument)
     plan = plan_account_decision(TradeIntent(1.,DecisionExplanation({})),point,account,10.,spec,
         owner='account',implementation='a'*64,fee_rate=.001,
-        sell_remainder_policy=SellRemainderPolicy.FULL_LIQUIDATION)
+        execution_policy=ExecutionPolicy("TARGET_POSITION", {}), sell_remainder_policy=SellRemainderPolicy.FULL_LIQUIDATION)
     with pytest.raises(ValueError, match=field + ' requires'):
         executor.execute_account_plan(plan,row,constraint={**rule,field:pd.NaT})
     assert executor.cash == 10000. and executor.quantity == executor.revision == 0
@@ -190,13 +188,12 @@ def test_historical_channel_adopts_before_execution_and_preserves_idempotency(ma
                         'BuySellableAt': prior['BarStart'], 'SettlementAt': prior['Date']}
     channel = HistoricalReplayChannel(account_id='account', instrument=instrument, specification=spec,
         initial_cash=10000., fee_rate=.001, bars=pd.DataFrame([prior,row]),
-        constraints=pd.DataFrame([prior_constraint,constraint]),
-        actions=pd.DataFrame(columns=['Date','AvailableDate','EventId','Kind']))
+        constraints=pd.DataFrame([prior_constraint,constraint]),)
     channel.advance(point.decision_at)
     before = channel.snapshot('account', at=point.decision_at)
     plan = plan_account_decision(TradeIntent(1., DecisionExplanation({'reason':'entry'})), point,
         before.account, 10., spec, owner='account', implementation='a'*64, fee_rate=.001,
-        sell_remainder_policy=SellRemainderPolicy.FULL_LIQUIDATION)
+        execution_policy=ExecutionPolicy("TARGET_POSITION", {}), sell_remainder_policy=SellRemainderPolicy.FULL_LIQUIDATION)
     decision = HistoricalDecision(plan, before.strategy.revision, StateRecord((('seen',1),)),
                                   StateRecord(), before.next_event_cursor, 'owner-binding')
     assert channel.adopt('account', replace(decision,expected_state_revision=3)) is AdoptionStatus.STALE_SNAPSHOT

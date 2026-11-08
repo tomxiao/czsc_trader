@@ -31,9 +31,9 @@ def diagnose_equity_evidence(repository, request, *, execution=None):
             value = view.payload
             run = value["runs"]["candidate"]
             ledger = {**{field: value["audit_inputs"][field] for field in (
-                "bars", "action_facts", "constraints", "specification", "initial_cash", "fee_rate")},
+                "bars", "price_basis", "quantity_basis", "constraints", "specification", "initial_cash", "fee_rate")},
                 **{field: run[field] for field in (
-                    "decisions", "orders", "fills", "actions", "account_points", "trades")}, "account_contract": 4}
+                    "decisions", "orders", "fills", "account_entries", "account_points", "trades")}, "account_contract": 4}
             if value["request"]["candidate_definition"].get("execution_input") is not None:
                 ledger["execution_bars"] = value["audit_inputs"]["decision_inputs"]["execution"]["bars"]
             loaded.append((value, ledger))
@@ -42,7 +42,7 @@ def diagnose_equity_evidence(repository, request, *, execution=None):
             return {k: r[k] for k in ("instrument", "specification", "initial_cash", "fee_rate", "window", "benchmark",
                                        "drawdown_basis", "concentration_basis")} | {
                 "income_policy": r.get("income_policy"),
-                "data": {key: value["data"][key] for key in ("bars", "sessions", "actions", "trading_facts", "constraints")},
+                "data": {key: value["data"][key] for key in ("bars", "sessions", "trading_facts", "constraints")},
                 "execution_data": {k: v for k, v in value["data"].items() if k.startswith("execution:")}}
         if len(loaded) == 2 and comparable(loaded[0][0]) != comparable(loaded[1][0]):
             return fail(AccountDiagnosisStatus.INCOMPARABLE, "equity market, data, execution, cost or window differs")

@@ -1,4 +1,5 @@
 """Published tables keep their identity and causal views across V4 consumers."""
+from test_v4_inspection_roundtrip import prepare_raw_reference
 from dataclasses import replace
 from datetime import date, datetime, timedelta
 from hashlib import sha256
@@ -83,7 +84,8 @@ def test_tables_flow_through_research_inspection_and_pte(tmp_path, market, compu
         request = prepared.request
     assert {query.dataset for query in calls} == {Dataset.INDEX_CONSTITUENT_WEIGHT, Dataset.SHIBOR_DAILY}
     replay = EquityInspectionReplay(f.InspectionCoordinate('main', 'standard'), request.input_binding,
-        request.requests(context.execution_spec), request.window, request.initial_cash, request.fee_rate)
+        request.requests(context.execution_spec), request.window, request.initial_cash, request.fee_rate,
+        execution_reference=prepare_raw_reference(context, request))
     facts = replay_account(request.candidate, context.data, replay)
     assert facts['facts']['fills'] == materialized['runs']['candidate']['fills']
     isolated, copied = _copy_inputs(context.data, replay, tmp_path / 'inspection-inputs')
@@ -92,7 +94,8 @@ def test_tables_flow_through_research_inspection_and_pte(tmp_path, market, compu
     row = products[EquityProduct.BARS].iloc[1]
     interval = TimeInterval(row.BarStart.to_pydatetime(), row.Date.to_pydatetime())
     online = prepare_equity_decision(isolated, request.candidate, copied.input_binding,
-        copied.requests, interval, fee_rate=request.fee_rate)
+        copied.requests, interval, fee_rate=request.fee_rate,
+            execution_reference=copied.execution_reference.fetch(isolated, interval, latency_seconds=context.execution_spec.data_latency_seconds))
     from strategy_runtime.account_planning import AccountDecisionEngine
     observation = AccountDecisionEngine(request.candidate, online.v4_replay).observation(interval)
     assert observation is not None
@@ -108,24 +111,28 @@ def test_forward_tables_pin_intervals_and_keep_seed_bounds(tmp_path, market):
     context, request, products, _ = observation_fixture(tmp_path, market)
     with ResearchExecutionSession(context, experiment=request.experiment) as session:
         request = context.evaluation.prepare(request, execution=session).request
-    from dataflows.equity_data import equity_metadata, sessions_from_metadata
+    from dataflows.equity_data import equity_metadata, sessions_from_metadata, session_record
     def ranged(binding):
         def fetch(query):
             frame, metadata = binding.fetch(query)
             p = query.parameters
             days = frame.Date.dt.tz_convert(p.instrument.timezone).dt.date
             frame = frame.loc[(days >= p.query.start) & (days <= p.query.end)].copy()
-            sessions = tuple(s for s in sessions_from_metadata(metadata)
+            source_sessions = sessions_from_metadata(metadata)
+            sessions = tuple(s for s in source_sessions
                 if p.query.start <= s.session_date <= p.query.end)
-            metadata = equity_metadata(query, sessions, availability_basis='SYNTHETIC_BAR_CLOSE')
-            metadata['no_actions_verified'] = True
+            following = next((s for s in source_sessions if s.session_date > p.query.end), None)
+            metadata = {**metadata, **equity_metadata(query, sessions, availability_basis='SYNTHETIC_BAR_CLOSE')}
+            if following is not None and p.query.product in (EquityProduct.TRADING_FACTS, EquityProduct.SESSIONS):
+                metadata['following_session'] = session_record(following)
             return frame, metadata
         return ProviderBinding(binding.name, binding.revision, fetch)
     context.data._equity_providers = {key: ranged(value) for key, value in context.data._equity_providers.items()}
     client = FormalV4AdviceClient(repo_root=tmp_path, store=SimpleNamespace(
         virtual_account=lambda account: {'last_decision_payload': None}),
         dataflows=context.data, data_dir=tmp_path / 'forward')
-    recipe = FormalV4Inputs('a' * 64, request.input_binding.for_observations(), request.fee_rate)
+    recipe = FormalV4Inputs('a' * 64, request.input_binding.for_observations(), request.fee_rate,
+        prepare_raw_reference(context, request))
     row = products[EquityProduct.BARS].iloc[1]
     interval = TimeInterval(row.BarStart.to_pydatetime(), row.Date.to_pydatetime())
     value = client._forward_inputs('fixture', recipe, interval, candidate=request.candidate)

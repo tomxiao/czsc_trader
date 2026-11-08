@@ -3076,10 +3076,24 @@ class PaperStore(ChannelAccountStore, EquityEventStore):
             "SELECT 1 FROM events WHERE event_type='CANCEL_REQUESTED' AND order_id=? "
             "AND actor_type='OPERATOR' LIMIT 1", (order["channel_order_id"],),
         ).fetchone()
-        if (not requests or manual or requests[0]["actor_type"] != "ENGINE"
-                or requests[0]["source"] != "futu_execution"
-                or requests[0]["details"].get("reason") != "planned_deadline"):
+        if manual:
             return None
+        if requests:
+            if (requests[0]["actor_type"] != "ENGINE" or requests[0]["source"] != "futu_execution"
+                    or requests[0]["details"].get("reason") != "planned_deadline"):
+                return None
+        else:
+            # A confirmed zero-fill DAY limit order may expire at the broker
+            # before the engine sends a cancel. Only an explicit aware execution
+            # deadline and a later terminal report establish normal expiry.
+            decision = self.account_decision(intent['account_id'], intent['decision_id'])['payload']
+            interval = decision.get('equity_execution_interval')
+            if not interval or not report.get('updated_at'):
+                return None
+            deadline = datetime.fromisoformat(interval['end'])
+            reported = datetime.fromisoformat(report['updated_at'])
+            if deadline.utcoffset() is None or reported.utcoffset() is None or reported < deadline:
+                return None
         return IntentTerminationReason.NORMAL_UNFILLED
 
     def release_account_intent(

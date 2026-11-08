@@ -10,9 +10,7 @@ from datetime import datetime
 from dataflows import BarFrequency, TimeInterval
 
 from .account_strategy import (AccountDecision, AccountStepContext, AccountStepResult,
-    AccountStrategyState, BatchAccountContext, BatchObservation, PositionFeedback,
-    AccountPlanningContext)
-from .contracts import OrderSide
+    AccountStrategyState, BatchAccountContext, BatchObservation, PositionFeedback)
 from .equity import DecisionPoint, EquityPortfolio, equity_hash
 from .equity_definition import EquityStrategyCandidate
 from .equity_replay import PreparedObservations, StateRecord, _FeatureEvaluator, _Visibility
@@ -24,16 +22,12 @@ from .replay_contracts import (AccountSnapshot, ExecutionPrecision,
 class AccountDecisionProposal:
     proposal: AccountStepResult
     point: ReplayPoint
-    reference_price: float
     next_event_cursor: int
     suppressed: bool = False
 
     def __post_init__(self):
         if type(self.proposal) is not AccountStepResult or type(self.point) is not ReplayPoint:
             raise TypeError('account proposal requires typed strategy state and decision point')
-        import math
-        if type(self.reference_price) is not float or not math.isfinite(self.reference_price) or self.reference_price <= 0:
-            raise ValueError('strategy proposal requires a finite positive reference price')
         if type(self.suppressed) is not bool:
             raise TypeError('strategy proposal suppression requires bool')
         if type(self.next_event_cursor) is not int or self.next_event_cursor < 0:
@@ -241,17 +235,15 @@ class AccountDecisionEngine:
             features, history, budget=budget, events=events, auxiliary_histories=views,
             session=session if definition.session_context else None,
             session_available_at=available if definition.session_context else None,
-            observations=self.table_views(point.decision_at),
-            planning=AccountPlanningContext(fee_rate, spec) if definition.planning_context else None)
+            observations=self.table_views(point.decision_at))
         cursor = state.event_cursor + len(events) if next_event_cursor is None else next_event_cursor
         if type(cursor) is not int or cursor < state.event_cursor + len(events):
             raise ValueError('recognized account event cursor cannot regress')
-        reference = float(history.last()['Close']) * portfolio.reference_price_scale
         if suppressed:
             proposal = AccountStepResult(AccountDecision.from_facts(float(portfolio.quantity > 0),
                 'unobserved input', facts={'suppressed': True}, next_watch='next observed bar'),
                 state.account, state.cycle.values if state.cycle else None)
-            return AccountDecisionProposal(proposal, replay_point, reference, state.event_cursor, True)
+            return AccountDecisionProposal(proposal, replay_point, state.event_cursor, True)
         from .equity_source_runtime import active_invocation
         scope = nullcontext() if active_invocation(self.candidate) is not None else self.candidate.bind_replay()
         with scope:
@@ -262,8 +254,6 @@ class AccountDecisionEngine:
                 proposal = AccountStepResult(batch_decision, state.account, StateRecord())
             else:
                 proposal = self.candidate.account_step(context, state)
-        if (portfolio.quantity or proposal.decision.target
-                or any(order.side is OrderSide.BUY for order in proposal.decision.orders)
-                or any(leg.order.side is OrderSide.BUY for leg in proposal.decision.legs)) and proposal.cycle_values is None:
+        if (portfolio.quantity or proposal.decision.target) and proposal.cycle_values is None:
             raise ValueError('holding/entry requires typed cycle state')
-        return AccountDecisionProposal(proposal, replay_point, reference, cursor)
+        return AccountDecisionProposal(proposal, replay_point, cursor)

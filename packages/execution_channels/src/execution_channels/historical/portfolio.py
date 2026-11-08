@@ -1,4 +1,4 @@
-"""Capability-v4 raw-price account execution for explicitly dated market rules.
+"""HFQ simulated-unit account execution for explicitly dated market rules.
 
 Orders are full-fill or unfilled. The shared replay kernel owns iteration;
 this model consumes one immutable plan and one observed execution interval.
@@ -9,14 +9,12 @@ from decimal import Decimal
 import math
 from collections.abc import Mapping
 from contextlib import contextmanager
-from bisect import bisect_left, bisect_right
 from types import MappingProxyType
 
 import pandas as pd
 from ..instruments import InstrumentId, TimeInterval, MarketId
 from ..session_contracts import OrderSide, OrderType
 from ..policy import CashAvailabilityPolicy
-from ..contracts import EquityPortfolio
 from ..identity import equity_hash
 from ..contracts import AccountExecutionPlan, AccountSnapshot, ReplayPoint
 
@@ -132,46 +130,22 @@ def _restore_execution_quotes(market, by_start, by_end, by_slot, identity):
 
 
 class PortfolioHistoricalExecutor(_EquityAccount):
-    """One long-only raw-price account with sizes, dependencies and dated rules."""
+    """One long-only HFQ simulated-unit account with sizes, dependencies and dated rules."""
 
-    def __init__(self, *, specification, initial_cash, fee_rate, actions, price_basis, execution_bars=None):
-        if price_basis != 'RAW':
-            raise ValueError('v4 economic execution requires RAW prices and explicit actions')
-        if not isinstance(actions, pd.DataFrame) or not {'Date','AvailableDate','EventId','Kind'}.issubset(actions.columns):
-            raise TypeError('economic events require explicit dated facts')
-        if actions.EventId.duplicated().any():
-            raise ValueError('economic event identities must be unique')
-        for event in actions.itertuples(index=False):
-            at, available = _timestamp(event.Date), _timestamp(event.AvailableDate)
-            if (pd.isna(at) or pd.isna(available) or at.tzinfo is None or available.tzinfo is None
-                    or available > at or type(event.EventId) is not str or not event.EventId
-                    or event.Kind not in {'NONE','SPLIT','CASH_DIVIDEND'}):
-                raise ValueError('invalid economic event facts or causal time')
-            if event.Kind == 'SPLIT':
-                if not math.isfinite(float(event.Ratio)) or float(event.Ratio) <= 0:
-                    raise ValueError('invalid split ratio')
-            elif event.Kind == 'CASH_DIVIDEND':
-                pay = _timestamp(event.PayAt)
-                if (not math.isfinite(float(event.CashPerShare)) or float(event.CashPerShare) < 0
-                        or pd.isna(pay) or pay.tzinfo is None or pay < at):
-                    raise ValueError('invalid dividend entitlement or payment')
-        super().__init__(specification=specification, initial_cash=initial_cash, fee_rate=fee_rate, actions=actions)
+    def __init__(self, *, specification, initial_cash, fee_rate, price_basis, execution_bars=None):
+        if price_basis != 'HFQ':
+            raise ValueError('historical execution requires direct HFQ prices')
+        super().__init__(specification=specification, initial_cash=initial_cash, fee_rate=fee_rate)
         self._buy_locks = []
         self._position_last_interval = None
         self._position_fees = 0.
         self._position_buys = self._position_sells = 0
         self._latest_position = None
         self._cycle_budget = None
-        self._cycle_applied = set()
+        self._locked_quantity = None
         self._cycle_spent = Decimal(0)
         self._broken = False
         self._instrument = None
-        self._economic_events = tuple(event for event in self._action_events if event.Kind != "NONE")
-        self._event_times = tuple(_timestamp(event.Date) for event in self._economic_events)
-        self._event_cursor = 0
-        self._split_events = tuple(event for event in self._economic_events if event.Kind == 'SPLIT')
-        self._split_times = tuple(_timestamp(event.Date) for event in self._split_events)
-        self._split_ratios = {event.EventId: float(event.Ratio) for event in self._economic_events if event.Kind == "SPLIT"}
         self._quotes_by_start, self._quotes_by_end, self._quotes_by_slot = {}, {}, {}
         if execution_bars is not None:
             quotes = (execution_bars if type(execution_bars) is PreparedExecutionQuotes
@@ -185,11 +159,11 @@ class PortfolioHistoricalExecutor(_EquityAccount):
     def transaction(self):
         # A confirmed earlier execution leg is a fact, not a reversible plan.
         extra = ('_position_last_interval', '_position_fees', '_position_buys',
-                 '_position_sells', '_latest_position', '_cycle_budget', '_cycle_spent', '_event_cursor')
+                 '_position_sells', '_latest_position', '_cycle_budget', '_cycle_spent', '_locked_quantity')
         state = {name: getattr(self, name) for name in (*_ACCOUNT_STATE, *extra)}
         state['_buy_locks'] = list(self._buy_locks)
         checkpoint = _TransitionCheckpoint(state, list(self.pending),
-            {name: len(rows) for name, rows in self.rows.items()}, [], [])
+            {name: len(rows) for name, rows in self.rows.items()}, [])
         self._transactions.append(checkpoint)
         try:
             yield self
@@ -201,8 +175,6 @@ class PortfolioHistoricalExecutor(_EquityAccount):
                 self.pending = checkpoint.pending
                 for key in checkpoint.completed_added:
                     self.completed.pop(key, None)
-                for key in checkpoint.applied_added:
-                    self.applied.discard(key)
                 for name, length in checkpoint.lengths.items():
                     del self.rows[name][length:]
             raise
@@ -214,45 +186,13 @@ class PortfolioHistoricalExecutor(_EquityAccount):
             raise ValueError('failed account cannot produce successful results')
         return super().finish()
 
-    def _events(self, through, **kwargs):
-        end = (bisect_right if kwargs.get('include_actions', True) else bisect_left)(self._event_times, through)
-        ready = end > self._event_cursor
-        due = any(stamp <= through for stamp, *_ in self.pending)
-        if not ready and not due:
-            return kwargs["plan_quantity"], kwargs["limit_price"]
-        with self.transaction():
-            before = len(self.rows['actions'])
-            result = self._apply_events(self._economic_events[self._event_cursor:end], through, **kwargs)
-            for row in self.rows['actions'][before:]:
-                if row['kind'] == 'SPLIT':
-                    ratio = self._split_ratios[row['event_id']]
-                    locks = [(stamp, quantity * ratio) for stamp, quantity in self._buy_locks]
-                    if any(not float(quantity).is_integer() for _, quantity in locks):
-                        raise ValueError('fractional split sellability entitlement is unsupported')
-                    self._buy_locks = [(stamp, int(quantity)) for stamp, quantity in locks]
-                    if self._cycle_budget is not None:
-                        from dataclasses import replace
-                        target = self._cycle_budget.target_quantity * ratio
-                        if not float(target).is_integer():
-                            raise ValueError('fractional split budget entitlement is unsupported')
-                        self._cycle_budget = replace(self._cycle_budget, target_quantity=int(target))
-            self._event_cursor = max(self._event_cursor, end)
-            return result
-
-    def snapshot_at(self, observed_through, decision_at):
-        scale = 1.
-        first, end = bisect_left(self._split_times, observed_through), bisect_right(self._split_times, decision_at)
-        for event in self._split_events[first:end]:
-            scale /= float(event.Ratio)
-        with self.transaction():
-            self._events(decision_at, after=decision_at, plan_quantity=0, limit_price=None)
-            return EquityPortfolio(self.cash, self.quantity, self.receivable, self.revision,
-                self.cycle_entry, self.cycle_cost, reference_price_scale=scale,
-                closed_cycle_feedback=self._closed_cycle_feedback)
-
     @property
     def cycle_budget(self):
         return self._cycle_budget
+
+    @property
+    def locked_quantity(self):
+        return self._locked_quantity
 
     def _sellable(self, stamp):
         return self.quantity - sum(quantity for unlock, quantity in self._buy_locks if unlock > stamp)
@@ -276,7 +216,7 @@ class PortfolioHistoricalExecutor(_EquityAccount):
         corporate-action source rows are inspected or exposed to the strategy.
         """
         from ..contracts import RecognizedAccountEvent, RecognizedEventKind
-        rows = self.rows['actions']
+        rows = self.rows['entries']
         if type(cursor) is not int or not 0 <= cursor <= len(rows):
             raise ValueError('recognized event cursor is outside this account journal')
         through = _timestamp(through)
@@ -291,8 +231,7 @@ class PortfolioHistoricalExecutor(_EquityAccount):
             effective = at.to_pydatetime() if hasattr(at,'to_pydatetime') else at
             output.append(RecognizedAccountEvent(row['event_id'],RecognizedEventKind(row['kind']),
                 effective,int(row['quantity_before']),int(row['quantity_after']),
-                float(row['cash_delta']),float(row['receivable_delta']),
-                self._split_ratios[row['event_id']] if row['kind']=='SPLIT' else None))
+                float(row['cash_delta']),float(row['receivable_delta']), reason='TRADE_SETTLEMENT'))
             cursor += 1
         return tuple(output), cursor
 
@@ -366,9 +305,8 @@ class PortfolioHistoricalExecutor(_EquityAccount):
             if quote is not None:
                 for actual, expected in ((first[2][0], quote[0]),(last[2][3], quote[3])):
                     if actual is not None and not math.isclose(actual,expected,rel_tol=1e-10,abs_tol=0.):
-                        raise ValueError('execution and decision quotes use inconsistent RAW price units')
-        if bisect_right(self._event_times, start) < bisect_left(self._event_times, end):
-            raise ValueError('CORPORATE_ACTION_UNSUPPORTED: event inside execution interval')
+                        raise ValueError('execution and decision quotes use inconsistent HFQ price units')
+
         return quote, limits, unlock, status, bool(blocked)
 
     def _checkpoint(self, leg, point, quote, status='OBSERVED', blocked=False):
@@ -440,13 +378,8 @@ class PortfolioHistoricalExecutor(_EquityAccount):
             return self.snapshot()
         if plan.expected_revision != self.revision or (self.last_end is not None and plan.point.execution_start < self.last_end):
             raise ValueError('stale revision or unordered execution interval')
-        left = bisect_right(self._split_times, plan.point.decision_at)
-        right = bisect_right(self._split_times, plan.point.execution_start)
-        for event in self._split_events[left:right]:
-            if event.EventId not in self.applied:
-                raise ValueError('CORPORATE_ACTION_UNSUPPORTED: submitted plan spans quantity units')
         quote, limits, unlock, status, blocked = self._constraints(plan, bar, constraint)
-        self._events(plan.point.execution_start, after=plan.point.decision_at, plan_quantity=0, limit_price=None)
+        self._pay(plan.point.execution_start, inclusive=True)
         if plan.capital_mode not in {'target_equity_fraction', 'full_available_cash', 'signal_cash_fraction'}:
             raise ValueError('unsupported account capital mode')
         if plan.capital_mode == 'signal_cash_fraction':
@@ -505,6 +438,10 @@ class PortfolioHistoricalExecutor(_EquityAccount):
         point = plan.point
         self._buy_locks = [(stamp, quantity) for stamp, quantity in self._buy_locks if stamp > point.execution_start]
         self._neutral_owner = plan.owner
+        locked = evidence.get('locked_quantity')
+        if locked is not None and (type(locked) is not int or locked <= 0):
+            raise ValueError('invalid execution quantity lock')
+        self._locked_quantity = locked
         if plan.capital_mode == "signal_cash_fraction":
             if plan.cycle_after is not None:
                 self._cycle_budget = plan.cycle_after
@@ -601,7 +538,7 @@ class PortfolioHistoricalExecutor(_EquityAccount):
                 self._post_position_fill(plan, order, identity, price, fill_interval, unlock, constraint,
                     precision, (touch_at if leg is not None else point.execution_start if precision == 'MODEL_BAR_OPEN' else point.execution_end), source)
                 consumed[volume_key] = consumed.get(volume_key,0) + order.quantity
-        self._events(point.execution_end, after=point.execution_start, plan_quantity=0, limit_price=None, include_actions=False)
+        self._pay(point.execution_end, inclusive=True)
         stale = status != 'OBSERVED'
         if not stale:
             self.last_mark_price, self.last_mark_time = quote[3], point.execution_end
@@ -614,7 +551,8 @@ class PortfolioHistoricalExecutor(_EquityAccount):
             'equity': self.cash + self.receivable + self.quantity * self.last_mark_price,
             'bar_status': status, 'valuation_stale': stale, 'valuation_price_at': self.last_mark_time,
             'execution_blocked': blocked, 'cycle_id': self.cycle, 'decision_id': plan.plan_identity})
-        if self.quantity == 0 and plan.target_quantity == 0:
+        if self.quantity == 0 and plan.target_quantity == 0 and evidence["target"] == 0:
+            self._locked_quantity = None
             self._cycle_budget = None
             self._cycle_spent = Decimal(0)
         self.revision += 1

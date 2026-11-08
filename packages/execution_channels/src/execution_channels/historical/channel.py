@@ -52,6 +52,7 @@ class HistoricalSnapshot:
     position: PositionFeedback
     strategy: AccountStrategyState
     budget: CycleBudget | None
+    locked_quantity: int | None
     events: tuple[RecognizedAccountEvent, ...]
     next_event_cursor: int
 
@@ -66,7 +67,7 @@ class HistoricalReplayChannel:
     channel_id = 'historical_replay'
 
     def __init__(self, *, account_id, instrument, specification, initial_cash, fee_rate,
-                 bars, constraints, actions, execution_bars=None, initial_account=None):
+                 bars, constraints, execution_bars=None, initial_account=None):
         if type(account_id) is not str or not account_id or type(instrument) is not InstrumentId:
             raise TypeError('historical channel requires account and instrument identities')
         specification.require_instrument(instrument)
@@ -86,8 +87,8 @@ class HistoricalReplayChannel:
         self._ends = tuple(sorted(row['Date'] for row in self._bars.values()))
         self._end_set = frozenset(self._ends)
         self.executor = PortfolioHistoricalExecutor(specification=specification,
-            initial_cash=initial_cash, fee_rate=fee_rate, actions=actions,
-            price_basis='RAW', execution_bars=execution_bars)
+            initial_cash=initial_cash, fee_rate=fee_rate,
+            price_basis='HFQ', execution_bars=execution_bars)
         self.state = AccountStrategyState(account=StateRecord() if initial_account is None else initial_account)
         self._pending = None
         self._pending_before_state = None
@@ -185,7 +186,7 @@ class HistoricalReplayChannel:
             self.executor.cash, self.executor.cash, self.executor.receivable,
             self.executor.quantity, self.executor._sellable(at))
         return HistoricalSnapshot(account, portfolio, self.executor.position_feedback, self.state,
-                                  self.executor.cycle_budget, events, cursor)
+                                  self.executor.cycle_budget, self.executor.locked_quantity, events, cursor)
 
     def adopt(self, account_id: str, proposal: HistoricalDecision) -> AdoptionStatus:
         self._account(account_id)

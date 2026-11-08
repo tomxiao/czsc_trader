@@ -250,6 +250,7 @@ def fetch_stock_ohlcv(
     if market == MARKET_A_SHARE:
         raw_daily = dataframe.copy() if normalized_period not in INTRADAY_PERIOD_MINUTES else None
         factors = _fetch_hfq_factors(ts_code, source_start, source_end, env_file=env_file)
+        raw_input_sha256 = frame_content_sha256(dataframe)
         dataframe = apply_hfq_adjustment(dataframe, factors)
         if normalized_period == "weekly":
             daily = dataframe
@@ -280,6 +281,9 @@ def fetch_stock_ohlcv(
         metadata.update(
             {
                 "adjustment": "hfq",
+                "acquisition_method": "DFLS_ADJUSTED",
+                "adjustment_algorithm": "OHLC_MULTIPLY_VOLUME_DIVIDE_FACTOR_V1",
+                "raw_input_sha256": raw_input_sha256,
                 "adjustment_factor_source": "adj_factor",
                 "adjustment_factor_sha256": adjustment_factor_sha256(factors),
                 "adjustment_factor_publication_schedule": "trade day 09:15-09:20 Asia/Shanghai",

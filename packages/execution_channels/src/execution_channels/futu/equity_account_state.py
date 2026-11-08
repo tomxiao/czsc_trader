@@ -58,10 +58,10 @@ def load_document(account, initial_account: StateRecord | None = None):
             raise ValueError("V4 account state migration is required for an existing holding")
         if type(initial_account) is not StateRecord:
             raise TypeError("initial V4 state requires an explicit channel state record")
-        return {"schema_version": 1,
+        return {"schema_version": 2,
                 "state": AccountStrategyState(account=initial_account).to_dict(),
                 "pending_cycle": None, "active": None, "latest_closed": None,
-                "budget": None, "buy_locks": [], "last_interval": None, "last_inputs": None}
+                "budget": None, "locked_quantity": None, "buy_locks": [], "last_interval": None, "last_inputs": None}
     result = json.loads(raw)
     validate_document(result)
     return result
@@ -69,9 +69,11 @@ def load_document(account, initial_account: StateRecord | None = None):
 
 def validate_document(value):
     fields = {"schema_version", "state", "pending_cycle", "active", "latest_closed", "budget",
-              "buy_locks", "last_interval", "last_inputs"}
-    if type(value) is not dict or set(value) != fields or value["schema_version"] != 1:
+              "buy_locks", "last_interval", "last_inputs", "locked_quantity"}
+    if type(value) is not dict or set(value) != fields or value["schema_version"] != 2:
         raise ValueError("invalid V4 account state document")
+    if value["locked_quantity"] is not None and (type(value["locked_quantity"]) is not int or value["locked_quantity"] <= 0):
+        raise ValueError("invalid EC quantity lock")
     state = AccountStrategyState.from_dict(value["state"])
     active, closed = position_from_dict(value["active"]), position_from_dict(value["latest_closed"])
     PositionFeedback(active, closed)
@@ -168,34 +170,45 @@ def record_v4_fill(store, account_id, decision_id, fill_id, side, increment, val
     else:
         document["active"], document["latest_closed"] = None, position_to_dict(active)
         document["pending_cycle"], document["budget"], document["buy_locks"] = None, None, []
+        document['locked_quantity'] = None
     document["state"] = replace(state, cycle=cycle).to_dict()
     save_document(store, account_id, document)
 
 
-def record_v4_action(store, account_id, *, ratio=None, income_delta=Decimal(0)):
+def record_v4_position_reconciliation(store, account_id, *, quantity_before, quantity_after, at):
+    """Synchronize all EC-owned quantity state with one confirmed holding change."""
     account = store.virtual_account(account_id)
     if account.get("account_v4_json") is None:
         return
     document = load_document(account)
     state = validate_document(document)
-    if ratio is not None:
-        active = position_from_dict(document["active"])
-        if active is not None:
-            document["active"] = position_to_dict(replace(active, quantity=account["quantity"]))
-        for lock in document["buy_locks"]:
-            amount = Decimal(lock["quantity"]) * ratio
-            if amount != amount.to_integral_value():
-                raise ValueError("split produces unsupported fractional sellability lock")
-            lock["quantity"] = int(amount)
-        budget = budget_from_dict(document["budget"])
+    active = position_from_dict(document['active'])
+    if active is None or active.quantity != quantity_before or account['quantity'] != quantity_after:
+        raise ValueError('position reconciliation differs from confirmed V4 position')
+    active = replace(active, quantity=quantity_after)
+    if not quantity_after:
+        document['active'], document['latest_closed'] = None, position_to_dict(active)
+        document['pending_cycle'], document['budget'], document['buy_locks'] = None, None, []
+        document['locked_quantity'] = None
+        state = replace(state, cycle=None)
+    else:
+        from .equity_events import allocate_quantities
+        document['active'] = position_to_dict(active)
+        locks = [lock for lock in document['buy_locks'] if datetime.fromisoformat(lock['at']) > at]
+        locked = sum(lock['quantity'] for lock in locks)
+        if locked > quantity_before:
+            raise ValueError('sellability locks exceed confirmed position')
+        weights = {str(i): lock['quantity'] for i, lock in enumerate(locks)}
+        weights['sellable'] = quantity_before - locked
+        scaled = allocate_quantities(weights, quantity_after)
+        document['buy_locks'] = [dict(at=lock['at'], quantity=scaled[str(i)])
+            for i, lock in enumerate(locks) if scaled[str(i)]]
+        budget = budget_from_dict(document['budget'])
         if budget is not None:
-            target = Decimal(budget.target_quantity) * ratio
-            if target != target.to_integral_value():
-                raise ValueError("split produces unsupported fractional budget entitlement")
-            document["budget"] = budget_to_dict(replace(budget, target_quantity=int(target)))
-    if income_delta and document["active"] is not None:
-        active = position_from_dict(document["active"])
-        document["active"] = position_to_dict(replace(active, sell_income=active.sell_income + float(income_delta)))
+            document['budget'] = budget_to_dict(replace(budget,
+                target_quantity=budget.target_quantity * quantity_after // quantity_before))
+        if document['locked_quantity'] is not None:
+            document['locked_quantity'] = document['locked_quantity'] * quantity_after // quantity_before
     document["state"] = state.to_dict()
     save_document(store, account_id, document)
 
@@ -208,7 +221,7 @@ def recognized_events(store, account_id, cursor, through):
     rows = store._connection.execute("SELECT rowid,* FROM account_ledger WHERE account_id=? AND rowid>? ORDER BY rowid", (account_id, cursor))
     for row in rows:
         kind = row["entry_type"]
-        if kind not in {"SPLIT", "CASH_DIVIDEND", "EQUITY_PAYMENT"}:
+        if kind not in {"POSITION_ADJUSTMENT", "SALE_SETTLEMENT"}:
             next_cursor = row["rowid"]
             continue
         stamp = datetime.fromisoformat(row["occurred_at"])
@@ -221,5 +234,5 @@ def recognized_events(store, account_id, cursor, through):
         actual_kind = event["recognized_kind"]
         output.append(RecognizedAccountEvent(row["ledger_entry_id"], RecognizedEventKind(actual_kind), stamp,
             row["quantity_after"] - row["quantity_delta"], row["quantity_after"], float(row["cash_delta"]),
-            float(event["receivable_delta"]), None if kind != "SPLIT" else float(event["definition"]["ratio"])))
+            float(event["receivable_delta"]), event['reason']))
     return tuple(output), next_cursor

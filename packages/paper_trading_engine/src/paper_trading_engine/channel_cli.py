@@ -115,14 +115,16 @@ def run_channel_command(args):
             return account
         if args.channel_action in {'bind-inputs', 'bind-recipe'}:
             from strategy_runtime import EquityInputBinding
-            if type(value) is not dict or set(value) != {'account_id', 'release_hash', 'fee_rate', 'binding'}:
+            from .execution_reference import ExecutionReferenceBinding
+            if type(value) is not dict or set(value) != {'account_id', 'release_hash', 'fee_rate', 'binding', 'execution_reference'}:
                 raise ValueError('invalid explicit V4 input definition')
+            reference = ExecutionReferenceBinding.from_dict(value['execution_reference'])
             if args.channel_action == 'bind-recipe':
                 from .formal_v4_advice import FormalV4Inputs
                 return {'input_identity': client.register_recipe(value['account_id'], FormalV4Inputs(
-                    value['release_hash'], EquityInputBinding.from_dict(value['binding']), value['fee_rate']))}
+                    value['release_hash'], EquityInputBinding.from_dict(value['binding']), value['fee_rate'], reference))}
             return {'input_identity': client.register_inputs(value['account_id'], EquityInputBinding.from_dict(value['binding']),
-                expected_release_hash=value['release_hash'], fee_rate=value['fee_rate'])}
+                expected_release_hash=value['release_hash'], fee_rate=value['fee_rate'], execution_reference=reference)}
         if args.channel_action == 'resume':
             from execution_channels.futu.futu_gateway import FutuGateway
             from execution_channels.futu.futu_execution import ChannelExecution, FeeReconciliationPolicy

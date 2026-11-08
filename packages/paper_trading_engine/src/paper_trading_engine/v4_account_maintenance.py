@@ -64,6 +64,7 @@ def _plan_identity(release, updates):
     def state_identity(state):
         value = {"source_runtime_release_id": state.source_runtime_release_id, "evidence": state.evidence}
         if type(state) is not V4StateContinuation:
+            value["execution_locked_quantity"] = state.execution_locked_quantity
             for name in ("account_values", "cycle_values", "pending_cycle_values"):
                 record = getattr(state, name)
                 value[name] = None if record is None else record.to_dict()
@@ -180,7 +181,7 @@ def _legacy_document(facts, treatment, update):
         raise ValueError("legacy pending state requires a confirmed cycle budget")
     cursor = max((row["rowid"] for row in rows["account_ledger"]), default=0)
     state = AccountStrategyState(account=treatment.account_values, cycle=cycle, event_cursor=cursor)
-    return {"schema_version": 1, "state": state.to_dict(), "active": position_to_dict(active),
+    return {"schema_version": 2, "locked_quantity": treatment.execution_locked_quantity, "state": state.to_dict(), "active": position_to_dict(active),
             "latest_closed": position_to_dict(closed), "budget": budget_to_dict(budget), "buy_locks": [],
             "pending_cycle": None if treatment.pending_cycle_values is None else treatment.pending_cycle_values.to_dict(),
             "last_interval": None, "last_inputs": None}
@@ -196,19 +197,38 @@ def _v4_document(store, facts, update, candidate, runtime_root, load_release, da
     if treatment.source_runtime_release_id is None:
         raise ValueError("existing V4 state requires an exact source runtime release")
     source_runtime = load_release(runtime_root, treatment.source_runtime_release_id)
+    # Offline migration authenticates the immutable source document without executing or
+    # interpreting its retired strategy input contract through the current SRT loader.
+    from strategy_runtime import StrategyRelease
+    from strategy_runtime.equity_definition import execution_spec_from_dict
+    source_path = source_runtime.release_root / 'strategies' / account['strategy_id'] / 'versions' / (account['strategy_version'] + '.json')
+    old_release = StrategyRelease.from_mapping(json.loads(source_path.read_text(encoding='utf-8')))
+    if old_release.release_hash != account['release_hash']:
+        raise ValueError('source runtime release differs from the confirmed account binding')
+    old_definition = dict(old_release.payload['equity_definition'])
+    old_specification = execution_spec_from_dict(old_definition['execution_spec'])
     source_client = FormalV4AdviceClient(repo_root=source_runtime.release_root, store=store,
                                          dataflows=None, data_dir=data_dir)
-    _, old_release, old_candidate = source_client._account_release(update.account_id)
-    old_inputs = source_client.inputs(update.account_id)
-    old_inputs.validate_candidate(old_release.release_hash, old_candidate)
-    if old_inputs.fee_rate != update.inputs.fee_rate:
-        raise ValueError("V4 rebinding cannot change the model fee or use inputs for another release")
-    document = load_document(account, initial_account_record(old_candidate.definition))
+    source_record = store.v4_runtime_binding(update.account_id)
+    old_inputs = source_record['inputs'] if source_record is not None else json.loads(
+        source_client._path(update.account_id).read_text(encoding='utf-8'))
+    if old_inputs['release_hash'] != old_release.release_hash or old_inputs['fee_rate'] != update.inputs.fee_rate:
+        raise ValueError('V4 rebinding cannot change the model fee or use inputs for another release')
+    if account.get('account_v4_json') is None:
+        document = load_document(account, initial_account_record(candidate.definition))
+    else:
+        document = json.loads(account['account_v4_json'])
+        if document.get('schema_version') == 1:
+            if type(treatment) is V4StateContinuation:
+                raise ValueError('retired V4 account document requires explicit V4 mapping')
+            document = {**document, 'schema_version': 2, 'locked_quantity': treatment.execution_locked_quantity}
     validate_document(document)
-    old_state = AccountStrategyState.from_dict(document["state"])
-    old_binding = _state_binding(update.account_id, old_release.release_hash, old_candidate, old_inputs.fee_rate)
+    old_state = AccountStrategyState.from_dict(document['state'])
+    old_binding = equity_hash({'owner': f"{update.account_id}:{old_release.release_hash}",
+        'implementation': canonical_sha256(old_definition), 'specification': old_specification.fingerprint,
+        'fee_rate': old_inputs['fee_rate']})
     if old_state.binding != old_binding and (old_state.revision or old_state.binding is not None):
-        raise ValueError("current V4 state binding differs from the source release")
+        raise ValueError('current V4 state binding differs from the source release')
     active = position_from_dict(document["active"])
     if (active.quantity if active is not None else 0) != account["quantity"]:
         raise ValueError("current V4 position does not match the confirmed account holdings")
@@ -217,7 +237,7 @@ def _v4_document(store, facts, update, candidate, runtime_root, load_release, da
                            or document["buy_locks"] or Decimal(account["receivable"]) != 0):
         raise ValueError("active positions, budgets or settlement require compatible execution rules")
     if type(treatment) is V4StateContinuation:
-        if not same_rules or candidate.definition.state_schema != old_candidate.definition.state_schema:
+        if not same_rules or canonical_sha256(candidate.definition.state_schema.to_dict()) != canonical_sha256(old_definition['state_schema']):
             raise ValueError("state or execution contract changed, explicit V4 mapping is required")
         return document
     if (old_state.cycle is None) != (treatment.cycle_values is None):
@@ -226,6 +246,7 @@ def _v4_document(store, facts, update, candidate, runtime_root, load_release, da
         raise ValueError("V4 pending cycle mapping must preserve current pending state")
     cycle = None if old_state.cycle is None else replace(old_state.cycle, values=treatment.cycle_values)
     document["state"] = replace(old_state, account=treatment.account_values, cycle=cycle).to_dict()
+    document["locked_quantity"] = treatment.execution_locked_quantity
     if treatment.pending_cycle_values is not None:
         document["pending_cycle"] = treatment.pending_cycle_values.to_dict()
     return document
@@ -285,11 +306,6 @@ def _apply(store, update, prepared, plan_sha256):
     binding, version, document, pending = prepared
     account_id = update.account_id
     old = store.virtual_account(account_id)
-    previous_runtime = store.v4_runtime_binding(account_id)
-    if previous_runtime is not None:
-        legacy_actions_before = previous_runtime.get("legacy_actions_before")
-    else:
-        legacy_actions_before = None if old["equity_rules_json"] else update.effective_interval.start.isoformat()
     for decision_id in pending:
         store._transition_decision(account_id, decision_id, DecisionState.CANCELLED, "V4_BINDING_CUTOVER")
     changed = store._connection.execute(
@@ -304,8 +320,7 @@ def _apply(store, update, prepared, plan_sha256):
     save_document(store, account_id, document)
     live_inputs = replace(update.inputs, binding=update.inputs.binding.for_observations())
     record = {"inputs": live_inputs.to_dict(), "forward": True,
-              "effective_interval": _interval_dict(update.effective_interval), "plan_sha256": plan_sha256,
-              "legacy_actions_before": legacy_actions_before}
+              "effective_interval": _interval_dict(update.effective_interval), "plan_sha256": plan_sha256}
     store._save_v4_runtime_binding(account_id, record)
     store._insert_audit_event(store._new_audit_event(
         "ACCOUNT_STRATEGY_BOUND", source="account_maintenance", actor_type="OPERATOR", account_id=account_id,
@@ -313,7 +328,7 @@ def _apply(store, update, prepared, plan_sha256):
         correlation_id=plan_sha256, details={"reason": "V4_BINDING_CUTOVER", "previous_version": old["strategy_version"],
         "previous_release_hash": old["release_hash"], "state_treatment": type(update.state).__name__,
         "state_evidence": update.state.evidence, "inputs_sha256": canonical_sha256(record["inputs"]),
-        "effective_interval": record["effective_interval"], "legacy_actions_before": legacy_actions_before},
+        "effective_interval": record["effective_interval"]},
     ))
     store._connection.executemany("DELETE FROM settings WHERE key=?", [
         (store._setting_key(f"{prefix}:{account_id}"),) for prefix in (

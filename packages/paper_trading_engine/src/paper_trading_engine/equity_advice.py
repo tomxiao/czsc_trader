@@ -1,73 +1,33 @@
 """US SRT adapter consumed by the normal AccountEngine and PaperStore."""
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from collections.abc import Mapping
 from datetime import datetime
-from decimal import Decimal
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
 from dataflows import TimeInterval, EquityProduct, TradingSession
 from dataflows.equity_data import sessions_from_metadata
-from strategy_runtime import EquityPortfolio, StrategyRuntime, TradableWindow
+from strategy_runtime import TradableWindow
 from strategy_runtime.equity_definition import EquityStrategyCandidate, EquityInputBinding
-from .contracts import AdviceDecision, OrderSpec
+from .execution_reference import PreparedExecutionReference
 
 if TYPE_CHECKING:
     import pandas as pd
 
 
-@dataclass(frozen=True, slots=True)
-class PreparedEquityAction:
-    """One source-bound economic event, independent of publication window size."""
-    event_id: str
-    kind: str
-    effective_at: datetime
-    available_at: datetime
-    source_sha256: str
-    ratio: Decimal | None = None
-    cash_per_share: Decimal | None = None
-    pay_at: datetime | None = None
-
-    def __post_init__(self):
-        import re
-        if (type(self.event_id) is not str or not self.event_id
-                or self.kind not in {'SPLIT', 'CASH_DIVIDEND'}
-                or re.fullmatch('[0-9a-f]{64}', self.source_sha256) is None):
-            raise ValueError('prepared action requires a known event and source identity')
-        if any(type(value) is not datetime or value.utcoffset() is None
-               for value in (self.effective_at, self.available_at)):
-            raise ValueError('prepared action requires aware timestamps')
-        if self.available_at > self.effective_at:
-            raise ValueError('prepared action was unavailable at its effective time')
-        if self.kind == 'SPLIT':
-            if (type(self.ratio) is not Decimal or not self.ratio.is_finite() or self.ratio <= 0
-                    or self.cash_per_share is not None or self.pay_at is not None):
-                raise ValueError('prepared split requires a positive ratio')
-        elif (type(self.cash_per_share) is not Decimal or not self.cash_per_share.is_finite()
-                or self.cash_per_share < 0 or self.ratio is not None
-                or type(self.pay_at) is not datetime or self.pay_at.utcoffset() is None
-                or self.pay_at < self.effective_at):
-            raise ValueError('prepared dividend requires its amount and payment time')
-
-    def identity_facts(self):
-        return {key: value.isoformat() if isinstance(value, datetime) else str(value)
-                if isinstance(value, Decimal) else value for key, value in asdict(self).items()}
-
-
 def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *, fee_rate, live=False,
-                            actions_from=None, execution_context=None):
+                            execution_reference, execution_context=None):
     """Read pinned products and authenticate their identities before a normal PTE decision."""
-    if actions_from is not None and (not live or type(actions_from) is not datetime
-            or actions_from.utcoffset() is None or actions_from > interval.start):
-        raise ValueError('equity action boundary must be aware and no later than the live interval')
     import pandas as pd
     from strategy_runtime.data_preparation import (
         CalendarCoverage, causal_history, fetch_prepared_products, prepare_observations,
     )
     if type(binding) is not EquityInputBinding or type(candidate) is not EquityStrategyCandidate:
         raise TypeError("equity preparation requires typed candidate and binding")
+    if candidate.definition.contract_version != 4:
+        raise ValueError('PTE equity runtime requires V4; migrate the frozen strategy and account explicitly')
     if (binding.instrument != candidate.instrument or binding.specification_hash != candidate.execution_spec_hash
             or binding.warmup_bars != candidate.warmup_bars
             or tuple(x.input for x in binding.auxiliary_inputs) != candidate.definition.auxiliary_inputs
@@ -97,45 +57,11 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
             raise ValueError('live execution context requires an explicit channel price-limit policy')
         last = SimpleNamespace(**execution_context)
     else:
-        from .execution_inputs import execution_constraints
-        constraints, _ = execution_constraints(candidate.definition, products, metadata)
-        known = constraints.loc[(constraints.Date == interval.start) & (constraints.AvailableDate <= interval.start)]
-        if len(known) != 1:
-            raise ValueError("no current trading facts for this decision")
-        last = known.iloc[-1]
-        if not bool(last.Tradable):
-            raise ValueError("current trading facts mark this interval untradable")
+        from types import SimpleNamespace
+        from .execution_inputs import resolve_live_context
+        last = SimpleNamespace(**resolve_live_context(candidate, interval, products['sessions'], metadata['sessions']))
     if int(last.QuantityStep) != candidate.definition.execution_spec.quantity_step or float(last.PriceTick) != candidate.definition.execution_spec.price_tick:
         raise ValueError("prepared equity trading units differ from account rules")
-    scale = 1.
-    actions = products.get("actions")
-    action_rows = () if actions is None else tuple(actions.itertuples())
-    for row in action_rows:
-        if row.Kind == "SPLIT" and history.Date.iloc[-1] <= row.Date <= interval.start and row.AvailableDate <= interval.start:
-            scale /= float(row.Ratio)
-    required = tuple((str(row.EventId), identities["actions"]) for row in action_rows
-                     if row.Kind != "NONE" and row.Date <= interval.start and row.AvailableDate <= interval.start)
-    live_actions = ()
-    if live and action_rows:
-        from strategy_runtime import canonical_sha256
-        action_request = next(request for role, request in binding.bind_requests(requests) if role == 'actions')
-        source = {'instrument': asdict(action_request.parameters.instrument),
-                  'source': asdict(action_request.parameters.source), 'schema_version': 1}
-        records = []
-        for row in action_rows:
-            if (row.Kind != 'SPLIT' or row.Date > interval.start or row.AvailableDate > interval.start
-                    or (actions_from is not None and row.Date < actions_from)):
-                continue
-            def stamp(value):
-                return value.to_pydatetime() if hasattr(value, 'to_pydatetime') else value
-            facts = dict(event_id=str(row.EventId), kind=str(row.Kind),
-                effective_at=stamp(row.Date), available_at=stamp(row.AvailableDate),
-                ratio=Decimal(str(row.Ratio)), cash_per_share=None, pay_at=None)
-            encoded = {key: value.isoformat() if isinstance(value, datetime) else str(value)
-                       if isinstance(value, Decimal) else value for key, value in facts.items()}
-            records.append(PreparedEquityAction(**facts, source_sha256=canonical_sha256({**source, 'event': encoded})))
-        live_actions = tuple(sorted(records, key=lambda item: (item.effective_at, item.event_id)))
-        required = tuple((item.event_id, item.source_sha256) for item in live_actions)
     auxiliary = {}
     for item in candidate.definition.auxiliary_inputs:
         frame = products[item.data_key(EquityProduct.BARS)]
@@ -164,9 +90,9 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
         unlock = last.BuySellableAt.to_pydatetime() if hasattr(last.BuySellableAt, 'to_pydatetime') else last.BuySellableAt
         if type(unlock) is not datetime or unlock.utcoffset() is None or unlock < interval.start:
             raise ValueError('V4 prepared constraint lacks a valid BuySellableAt')
-    return PreparedEquityDecision(candidate, binding, history, interval, fee_rate, scale, required,
+    return PreparedEquityDecision(candidate, binding, history, interval, fee_rate, execution_reference,
                                   auxiliary, sessions, trading_sessions, v4_replay=replay, buy_sellable_at=unlock,
-                                  v4_constraint=v4_constraint, live_interval=live, live_actions=live_actions)
+                                  v4_constraint=v4_constraint, live_interval=live)
 
 
 @dataclass(frozen=True)
@@ -176,8 +102,7 @@ class PreparedEquityDecision:
     history: object
     interval: TimeInterval
     fee_rate: float
-    reference_price_scale: float = 1.
-    required_actions: tuple[tuple[str, str], ...] = ()
+    execution_reference: PreparedExecutionReference
     auxiliary_histories: Mapping[str, pd.DataFrame] = field(default_factory=dict)
     sessions: pd.DataFrame | None = None
     trading_sessions: tuple[TradingSession, ...] = ()
@@ -185,16 +110,16 @@ class PreparedEquityDecision:
     v4_replay: object = None
     buy_sellable_at: datetime | None = None
     live_interval: bool = False
-    live_actions: tuple[PreparedEquityAction, ...] = ()
     history_sha256: str = field(init=False)
     decision_inputs_sha256: str = field(init=False)
 
     def __post_init__(self):
         if type(self.live_interval) is not bool:
             raise TypeError('prepared live interval mode must be boolean')
-        if (type(self.live_actions) is not tuple or any(type(item) is not PreparedEquityAction for item in self.live_actions)
-                or self.live_actions and not self.live_interval):
-            raise TypeError('prepared live actions require immutable typed records and live mode')
+        if type(self.execution_reference) is not PreparedExecutionReference:
+            raise TypeError('prepared decision requires a separate RAW execution reference')
+        if self.execution_reference.observed_through > self.interval.start:
+            raise ValueError('execution reference is later than the decision')
         if type(self.candidate) is not EquityStrategyCandidate or type(self.binding) is not EquityInputBinding or type(self.interval) is not TimeInterval:
             raise TypeError("prepared equity decision requires typed candidate/input/interval")
         import pandas as pd
@@ -204,6 +129,8 @@ class PreparedEquityDecision:
         available = pd.to_datetime(self.history.AvailableDate)
         if ends.dt.tz is None or available.dt.tz is None or ends.max() > self.interval.start or available.max() > self.interval.start:
             raise ValueError("prepared equity decision contains future information")
+        if self.execution_reference.observed_through != ends.iloc[-1]:
+            raise ValueError('HFQ signal and RAW execution reference must share the completed observation time')
         self.candidate.verify()
         if not isinstance(self.auxiliary_histories, Mapping):
             raise TypeError('prepared auxiliary histories require a mapping')
@@ -235,6 +162,7 @@ class PreparedEquityDecision:
     def _decision_inputs_hash(self):
         from strategy_runtime import canonical_sha256
         value = {
+            'execution_reference': self.execution_reference.to_dict(),
             'auxiliary': {key: frame.to_json(date_format='iso', date_unit='us') for key, frame in self.auxiliary_histories.items()},
             'sessions': None if self.sessions is None else self.sessions.to_json(date_format='iso', date_unit='us'),
             'calendar': [{'session_date': x.session_date.isoformat(), 'timezone': x.timezone,
@@ -248,7 +176,7 @@ class PreparedEquityDecision:
                 buy_sellable_at=None if self.buy_sellable_at is None else self.buy_sellable_at.isoformat())
             if self.live_interval:
                 value['live_interval'] = True
-                value['live_actions'] = [item.identity_facts() for item in self.live_actions]
+
         return canonical_sha256(value)
 
     @property
@@ -265,11 +193,11 @@ class PreparedEquityDecision:
     @property
     def data_identity(self):
         from strategy_runtime import canonical_sha256
-        return canonical_sha256(self.binding.to_dict())
+        return canonical_sha256(self.data_reference)
 
     @property
     def data_reference(self):
-        return self.binding.to_dict()
+        return {'strategy': self.binding.to_dict(), 'execution_reference': self.execution_reference.to_dict()}
 
 
 class EquityAdviceClient:
@@ -295,15 +223,16 @@ class EquityAdviceClient:
         point = prepared.interval.start
         if any(datetime.fromisoformat(fill["occurred_at"]) > point for fill in self.store.account_fills(account_id)):
             raise ValueError("confirmed equity fill is later than the requested decision point")
+        if any(datetime.fromisoformat(row["occurred_at"]) > point for row in self.store._connection.execute(
+                "SELECT occurred_at FROM account_ledger WHERE account_id=? AND entry_type IN (?,?)",
+                (account_id, 'POSITION_ADJUSTMENT', 'SALE_SETTLEMENT'))):
+            raise ValueError('confirmed account reconciliation is later than the requested decision point')
         for event in events.values():
             definition = event.get("definition")
             if definition is not None and datetime.fromisoformat(definition["effective_at"]) > point:
                 raise ValueError("confirmed equity action is later than the requested decision point")
             if event.get("kind") == "RECEIVABLE" and event["paid"] and datetime.fromisoformat(event["pay_at"]) > point:
                 raise ValueError("confirmed equity payment is later than the requested decision point")
-        for event_id, source_hash in prepared.required_actions:
-            if events.get(event_id,{}).get("definition",{}).get("source_sha256") != source_hash:
-                raise ValueError("prepared equity action must be applied before decision")
         if any(e.get("kind") == "RECEIVABLE" and not e["paid"]
                and (not prepared.live_interval or e.get("recognized_kind") != "CASH_DIVIDEND")
                and datetime.fromisoformat(e["pay_at"]) <= prepared.interval.start for e in events.values()):
@@ -312,45 +241,8 @@ class EquityAdviceClient:
         if (rules is None or rules.to_dict() != execution_rules(candidate.instrument, candidate.definition.execution_spec).to_dict()
                 or strategy_id != candidate.strategy_id or symbol != candidate.instrument.symbol or asset != candidate.instrument.asset_class.value.lower()):
             raise ValueError("equity candidate differs from account market binding")
-        if candidate.definition.contract_version == 4:
-            from .equity_v4_advice import account_decision
-            return account_decision(self.store, prepared, account, actual_quantity, available_cash,
-                trading_date, portfolio_revision, state_revision)
-        cost = float(Decimal(account["average_cost"]) * actual_quantity)
-        records = self.store._connection.execute("SELECT occurred_at,quantity_after FROM account_ledger WHERE account_id=? ORDER BY rowid", (account_id,)).fetchall()
-        opened = None
-        for row in records:
-            if int(row["quantity_after"]) == 0:
-                opened = None
-            elif opened is None:
-                opened = datetime.fromisoformat(row["occurred_at"])
-        portfolio = EquityPortfolio(available_cash, actual_quantity, float(account["receivable"]),
-                                    portfolio_revision, cycle_entry=opened, cycle_cost=cost,
-                                    feedback_source="CONFIRMED_EXECUTION", reference_price_scale=prepared.reference_price_scale)
-        runtime = StrategyRuntime(execution_spec=candidate.definition.execution_spec)
-        instance = runtime.create(candidate)
-        intent = instance.propose(prepared.history, prepared.interval, portfolio,
-            auxiliary_histories=prepared.auxiliary_histories, sessions=prepared.sessions,
-            trading_sessions=prepared.trading_sessions)
-        from execution_channels.serialization import from_record, to_record
-        from execution_channels.contracts import EquityPortfolio as ExecutionPortfolio
-        from execution_channels.planning.frozen_equity import FrozenEquityIntent, plan_frozen_equity
-        plan = plan_frozen_equity(from_record(FrozenEquityIntent, to_record(intent)),
-            from_record(ExecutionPortfolio, to_record(portfolio)), rules.execution,
-            owner=candidate.candidate_id, implementation=candidate.implementation_hash,
-            fee_rate=prepared.fee_rate)
-        target = actual_quantity + (plan.quantity if plan.side == "BUY" else -plan.quantity if plan.side == "SELL" else 0)
-        price = plan.limit_price if plan.limit_price is not None else plan.reference_price
-        orders = (() if not plan.quantity else (OrderSpec(plan.side, plan.quantity,
-            "LIMIT" if plan.side == "BUY" else "MARKET", price, "DAY"),))
-        fee = prepared.fee_rate
-        estimate = 0 if plan.side != "BUY" else price * plan.quantity * (1 + fee)
-        return AdviceDecision("advice.equity.v1", plan.plan_id, symbol, prepared.available_through,
-            trading_date, actual_quantity, target, target, target - actual_quantity, plan.side,
-            {"strategy_id": strategy_id, "version": strategy_version, "release_hash": account["release_hash"]},
-            plan.reference_price, plan.reference_price, prepared.available_through,
-            orders[0] if orders else None, plan.plan_id, plan.plan_id, portfolio_revision, state_revision,
-            orders=orders, available_cash=available_cash, fee_rate=fee, estimated_order_cost=estimate,
-            unallocated_cash=available_cash - estimate, strategy_output={"explanation": plan.explanation},
-            equity_execution_interval={"start": prepared.interval.start.isoformat(), "end": prepared.interval.end.isoformat()},
-            equity_observed_through=plan.point.observed_through.isoformat())
+        if candidate.definition.contract_version != 4:
+            raise ValueError('PTE equity runtime requires V4; migrate the frozen strategy and account explicitly')
+        from .equity_v4_advice import account_decision
+        return account_decision(self.store, prepared, account, actual_quantity, available_cash,
+            trading_date, portfolio_revision, state_revision)

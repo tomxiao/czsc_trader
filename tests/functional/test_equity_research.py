@@ -26,7 +26,7 @@ def test_us_public_prepare_evaluate_publish_uses_current_contract(tmp_path):
         outcome, = publish_evidence_many(context, (EvaluationEvidenceWrite(request.experiment, "account", prepared, result),), execution=execution)
         assert outcome.reference.schema_version == 4
         assert outcome.reference.resolve(context.repository.root).read_bytes() == result.content
-    assert len(calls) == 4
+    assert len(calls) == 3
     assert not hasattr(context.evaluation, "evaluate")
     current = current_account_request(context,request)
     with pytest.raises(TypeError, match="session|Session|prepare"):
@@ -46,13 +46,10 @@ def test_equity_cross_market_and_source_revision_fail_before_calculation(tmp_pat
 
 def test_settled_only_sale_cannot_fund_same_day_reentry(tmp_path):
     context, request, _, _ = setup_equity(tmp_path, cash_policy=CashAvailabilityPolicy.SETTLED_ONLY)
-    result = replay_payload(context, request)["runs"]["candidate"]
-    # Residual cash may purchase one share, but unsettled proceeds cannot fund
-    # another full-size entry. Once that residual is spent the account waits.
-    assert [row["quantity"] for row in result["fills"] if row["side"] == "BUY"] == [98, 1]
-    assert result["account_points"][1]["receivable"] > 900
-    assert result["account_points"][-1]["receivable"] == 0
-    assert result["account_points"][-1]["cash"] > 990
+    # Once residual cash is exhausted, unsettled proceeds cannot be spent.
+    # The approved model blocks rather than silently altering the intent.
+    with pytest.raises(ValueError, match='INSUFFICIENT_LOT'):
+        replay_payload(context, request)
 
 
 def test_audit_rejects_tampered_account(tmp_path):
@@ -63,10 +60,10 @@ def test_audit_rejects_tampered_account(tmp_path):
     facts = json.loads(products[EquityProduct.BARS].to_json(orient="records", date_format="iso"))
     with pytest.raises(ValueError, match="cash"):
         audit_equity_account(initial_cash=request.initial_cash, specification=asdict(context.execution_spec), bars=facts,
-                             action_facts=json.loads(products[EquityProduct.ACTIONS].to_json(orient="records", date_format="iso")),
+                             price_basis="HFQ", quantity_basis="SIMULATED_INTEGER_UNITS",
                              constraints=payload["audit_inputs"]["constraints"],
                              fee_rate=request.fee_rate,account_contract=4,decision_contract="FORMAL_V4",
-                             **{key: run[key] for key in ("decisions", "orders", "fills", "actions", "account_points", "trades")})
+                             **{key: run[key] for key in ("decisions", "orders", "fills", "account_entries", "account_points", "trades")})
 
 
 def test_missing_bar_fails_instead_of_forward_filling(tmp_path):
@@ -76,28 +73,19 @@ def test_missing_bar_fails_instead_of_forward_filling(tmp_path):
         replay_payload(context, request)
 
 
-def test_split_changes_quantity_but_dividend_does_not_fund_replay(tmp_path):
-    context, request, products, _ = setup_equity(tmp_path, decide=hold)
-    bars = products[EquityProduct.BARS]
-    stamp = bars.BarStart.iloc[13]
-    pay = bars.Date.iloc[-1]
-    bars.loc[13:, ["Open", "High", "Low", "Close"]] /= 2
-    products[EquityProduct.ACTIONS] = pd.DataFrame([
-        {"Date": stamp, "AvailableDate": stamp, "EventId": "1-split", "Kind": "SPLIT", "Ratio": 2., "CashPerShare": 0., "PayAt": None},
-        {"Date": stamp, "AvailableDate": stamp, "EventId": "2-dividend", "Kind": "CASH_DIVIDEND", "Ratio": 1., "CashPerShare": .1, "PayAt": pay},
-    ])
+def test_hfq_account_has_no_corporate_action_input_or_income(tmp_path):
+    context, request, _, calls = setup_equity(tmp_path, decide=hold)
     with account_research(context, request) as (_, result, payload, _):
-        assert payload["request"]["income_policy"] == "EXCLUDE_NON_TRADING_INCOME"
-        assert payload["benchmark_identity"]["income_policy"] == payload["request"]["income_policy"]
-        assert [row["Kind"] for row in payload["audit_inputs"]["action_facts"]] == ["SPLIT"]
-        source = json.loads(next(item.content for item in result.artifacts if item.kind == "equity_input"))
-        assert [row["Kind"] for row in source["products"]["actions"]] == ["SPLIT", "CASH_DIVIDEND"]
-        for run in payload["runs"].values():
-            assert run["account_points"][11]["quantity"] == 98
-            assert run["account_points"][12]["quantity"] == 196
-            assert all(row["receivable"] == 0 for row in run["account_points"])
-            assert run["account_points"][-1]["equity"] == pytest.approx(999.02)
-            assert [row["kind"] for row in run["actions"]] == ["SPLIT"]
+        assert payload['request']['price_basis'] == 'HFQ'
+        assert payload['request']['quantity_basis'] == 'SIMULATED_INTEGER_UNITS'
+        source = json.loads(next(item.content for item in result.artifacts if item.kind == 'equity_input'))
+        assert 'actions' not in source['products']
+        for run in payload['runs'].values():
+            assert {point['quantity'] for point in run['account_points']} == {98}
+            assert not run['account_entries']
+            assert run['account_points'][-1]['equity'] == pytest.approx(999.02)
+    assert {q.parameters.query.product for q in calls} == set(EquityProduct)
+
 
 
 def test_future_bar_changes_do_not_change_prior_decisions(tmp_path):
@@ -150,19 +138,15 @@ def test_execution_requires_current_trading_constraints_and_volume(tmp_path, def
         assert run["metrics"]["total_return"] == 0
 
 
-def test_dividend_payment_in_session_gap_does_not_change_replay_cash(tmp_path):
-    context, request, products, _ = setup_equity(tmp_path, decide=hold)
-    bars = products[EquityProduct.BARS]
-    ex, split = bars.BarStart.iloc[4], bars.BarStart.iloc[13]
-    pay = bars.Date.iloc[12] + pd.Timedelta(hours=1)
-    bars.loc[13:, ["Open", "High", "Low", "Close"]] /= 2
-    products[EquityProduct.ACTIONS] = pd.DataFrame([
-        {"Date": ex, "AvailableDate": ex, "EventId": "div", "Kind": "CASH_DIVIDEND", "Ratio": 1., "CashPerShare": .1, "PayAt": pay},
-        {"Date": split, "AvailableDate": split, "EventId": "split", "Kind": "SPLIT", "Ratio": 2., "CashPerShare": 0., "PayAt": None},
-    ])
-    run = replay_payload(context, request)["runs"]["candidate"]
-    assert [row["kind"] for row in run["actions"]] == ["SPLIT"]
-    assert run["account_points"][-1]["equity"] == pytest.approx(999.02)
+def test_old_raw_result_cannot_be_read_as_hfq_evidence(tmp_path):
+    from czsc_trader.research_tools.equity_replay import validate_result_structure
+    context, request, _, _ = setup_equity(tmp_path, decide=hold)
+    with account_research(context, request) as (_, result, _, _):
+        payload = result.payload
+        payload['request']['price_basis'] = 'RAW'
+        with pytest.raises(ValueError, match='HFQ simulated units'):
+            validate_result_structure(payload)
+
 
 
 def test_publication_rejects_truncated_account_even_with_intact_request_hash(tmp_path):

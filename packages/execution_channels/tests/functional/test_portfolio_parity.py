@@ -27,16 +27,14 @@ from execution_channels.entry_cycle import EntryCyclePhase
 from execution_channels.historical import PortfolioHistoricalExecutor
 
 
-def setup(market, *, cash_policy=CashAvailabilityPolicy.IMMEDIATE_RESEARCH, actions=None):
+def setup(market, *, cash_policy=CashAvailabilityPolicy.IMMEDIATE_RESEARCH):
     zone = ZoneInfo('Asia/Shanghai' if market is MarketId.CN else 'America/New_York')
     stamp = datetime(2026, 10, 8, 9, 30, tzinfo=zone)
     spec = ResearchExecutionSpec(CnEquitySpec() if market is MarketId.CN else UsEquitySpec(),
         BarFrequency.M30, AccountPolicy('CNY' if market is MarketId.CN else 'USD', cash_policy),
         100, .01, .01, 0.)
-    if actions is None:
-        actions = pd.DataFrame([dict(Date=stamp, AvailableDate=stamp,EventId='none',Kind='NONE',Ratio=1.,CashPerShare=0.,PayAt=None)])
     executor = PortfolioHistoricalExecutor(specification=spec, initial_cash=10000., fee_rate=.001,
-        actions=actions, price_basis='RAW')
+        price_basis='HFQ')
     instrument = InstrumentId(market, AssetClass.STOCK, '600722.SH' if market is MarketId.CN else 'LITE')
     return executor, stamp, instrument
 
@@ -170,31 +168,6 @@ def test_dependency_contract_rejects_any_condition_other_than_complete_fill(cond
         ReplayLeg(1,order(OrderSide.SELL,100),'CLOSE',stamp,stamp+timedelta(minutes=30),0,condition)
 
 
-@pytest.mark.parametrize('market',[MarketId.CN,MarketId.US])
-def test_split_dividend_payment_and_sale_settlement_account_once(market):
-    executor,stamp,instrument=setup(market,cash_policy=CashAvailabilityPolicy.SETTLED_ONLY)
-    split=stamp+timedelta(minutes=30)
-    pay=stamp+timedelta(minutes=90)
-    actions=pd.DataFrame([dict(Date=split,AvailableDate=split,EventId='split',Kind='SPLIT',Ratio=2.,CashPerShare=0.,PayAt=None),
-        dict(Date=split,AvailableDate=split,EventId='dividend',Kind='CASH_DIVIDEND',Ratio=1.,CashPerShare=.1,PayAt=pay)])
-    executor,_,_=setup(market,cash_policy=CashAvailabilityPolicy.SETTLED_ONLY,actions=actions)
-    bar,dated=facts(stamp)
-    executor.execute_account_plan(plan(executor,stamp,(order(OrderSide.BUY,100,10.1),)),bar,constraint=dated)
-    point=ReplayPoint(stamp,split,split,split+timedelta(minutes=30),split.date().isoformat(),ExecutionPrecision.BAR_INTERVAL)
-    snapshot=executor.account_snapshot(point,instrument)
-    assert snapshot.quantity==200 and snapshot.receivable==20.
-    assert executor.account_snapshot(point,instrument)==snapshot
-    bar,dated=facts(split)
-    for key in ('Open','High','Low','Close'):
-        bar[key]/=2
-    executor.execute_account_plan(plan(executor,split,(order(OrderSide.SELL,200),)),bar,constraint=dated)
-    assert executor.cash==pytest.approx(8999.) and executor.receivable==pytest.approx(1019.)
-    at=dated['SettlementAt']
-    bar,dated=facts(at)
-    executor.execute_account_plan(plan(executor,at),bar,constraint=dated)
-    assert executor.cash==pytest.approx(10018.) and executor.receivable==pytest.approx(0.)
-    assert [row['kind'] for row in executor.rows['actions']].count('DIVIDEND_PAYMENT')==1
-    assert executor.rows['trades'][0]['net_pnl']==pytest.approx(18.)
 
 
 def test_later_leg_failure_keeps_confirmed_prefix_and_blocks_successful_finalization():
@@ -272,11 +245,10 @@ def test_closed_budget_does_not_consume_the_next_position_budget():
 def test_dated_full_liquidation_rule_handles_integer_split_remainders(market):
     executor,stamp,instrument=setup(market)
     split=stamp+timedelta(minutes=30)
-    actions=pd.DataFrame([dict(Date=split,AvailableDate=split,EventId='split',Kind='SPLIT',Ratio=1.5,CashPerShare=0.,PayAt=None)])
-    executor,_,_=setup(market,actions=actions)
     bar,dated=facts(stamp)
     executor.execute_account_plan(plan(executor,stamp,(order(OrderSide.BUY,100,10.1),)),bar,constraint=dated)
     point=ReplayPoint(stamp,split,split,split+timedelta(minutes=30),split.date().isoformat(),ExecutionPrecision.BAR_INTERVAL)
+    executor.quantity = 150
     assert executor.account_snapshot(point,instrument).quantity==150
     bar,dated=facts(split)
     for key in ('Open','High','Low','Close'):
@@ -291,11 +263,10 @@ def test_dated_full_liquidation_rule_handles_integer_split_remainders(market):
 def test_unfilled_earlier_order_cannot_turn_full_exit_remainder_into_partial_odd_sale():
     executor,stamp,instrument=setup(MarketId.CN)
     split=stamp+timedelta(minutes=30)
-    actions=pd.DataFrame([dict(Date=split,AvailableDate=split,EventId='split',Kind='SPLIT',Ratio=1.5,CashPerShare=0.,PayAt=None)])
-    executor,_,_=setup(MarketId.CN,actions=actions)
     bar,dated=facts(stamp)
     executor.execute_account_plan(plan(executor,stamp,(order(OrderSide.BUY,100,10.1),)),bar,constraint=dated)
     point=ReplayPoint(stamp,split,split,split+timedelta(minutes=30),split.date().isoformat(),ExecutionPrecision.BAR_INTERVAL)
+    executor.quantity = 150
     executor.account_snapshot(point,instrument)
     bar,dated=facts(split)
     for key in ('Open','High','Low','Close'):
@@ -330,7 +301,7 @@ def test_daily_plan_uses_real_intraday_checkpoints_and_volume_per_quote_bar(mark
         rows.append(dict(BarStart=begin,Date=begin+timedelta(minutes=30),Open=opening,
             High=max(opening,ending),Low=min(opening,ending),Close=ending,Volume=volume,Amount=1000.))
     executor=PortfolioHistoricalExecutor(specification=replace(executor.spec,decision_clock=BarFrequency.DAILY),
-        initial_cash=10000.,fee_rate=.001,actions=executor.actions,price_basis='RAW',execution_bars=pd.DataFrame(rows))
+        initial_cash=10000.,fee_rate=.001,price_basis='HFQ',execution_bars=pd.DataFrame(rows))
     point=ReplayPoint(stamp-timedelta(minutes=30),stamp,stamp,close,stamp.date().isoformat(),ExecutionPrecision.BAR_INTERVAL)
     legs=(ReplayLeg(0,order(OrderSide.BUY,100),'OPEN',stamp,close),
         ReplayLeg(1,order(OrderSide.SELL,100),'11:30_CLOSE',stamp,close,0,'FILLED_ALL'),
@@ -356,7 +327,7 @@ def test_two_checkpoint_legs_cannot_each_consume_the_whole_same_execution_bar(ma
     end=stamp+timedelta(minutes=30)
     bar,dated=facts(stamp,volume=150.)
     executor=PortfolioHistoricalExecutor(specification=executor.spec,initial_cash=10000.,fee_rate=.001,
-        actions=executor.actions,price_basis='RAW',execution_bars=pd.DataFrame([bar]))
+        price_basis='HFQ',execution_bars=pd.DataFrame([bar]))
     legs=(ReplayLeg(0,order(OrderSide.BUY,100),'OPEN',stamp,end),
           ReplayLeg(1,order(OrderSide.SELL,100),'CLOSE',stamp,end,0,'FILLED_ALL'))
     executor.execute_account_plan(plan(executor,stamp,legs=legs),bar,constraint=dated)
@@ -384,7 +355,7 @@ def test_prepared_execution_quotes_are_shared_immutable_and_pickle_without_reind
         compiled.by_start[stamp]=None
     frame.loc[:,['Open','High','Low','Close']]=999.
     accounts=[PortfolioHistoricalExecutor(specification=executor.spec,initial_cash=10000.,fee_rate=.001,
-        actions=executor.actions,price_basis='RAW',execution_bars=compiled) for _ in range(2)]
+        price_basis='HFQ',execution_bars=compiled) for _ in range(2)]
     assert accounts[0]._quotes_by_start is accounts[1]._quotes_by_start
     end=stamp+timedelta(minutes=30)
     leg=ReplayLeg(0,order(OrderSide.BUY,100),'OPEN',stamp,end)
@@ -394,37 +365,6 @@ def test_prepared_execution_quotes_are_shared_immutable_and_pickle_without_reind
     assert len(calls)==1
 
 
-@pytest.mark.parametrize('market',[MarketId.CN,MarketId.US])
-def test_due_dividend_cash_is_available_before_later_real_checkpoint(market):
-    executor,stamp,instrument=setup(market)
-    today=stamp+timedelta(days=1)
-    pay=today.replace(hour=11,minute=0)
-    actions=pd.DataFrame([dict(Date=today,AvailableDate=today,EventId='dividend',Kind='CASH_DIVIDEND',
-        Ratio=1.,CashPerShare=.2,PayAt=pay)])
-    execution_bar,unused=facts(today.replace(hour=11,minute=0),volume=1000.)
-    earlier_bar,_=facts(stamp)
-    opening_bar,_=facts(today)
-    closing_bar,_=facts(today.replace(hour=14,minute=30))
-    executor=PortfolioHistoricalExecutor(specification=replace(executor.spec,decision_clock=BarFrequency.DAILY),
-        initial_cash=10000.,fee_rate=.001,actions=actions,price_basis='RAW',
-        execution_bars=pd.DataFrame([earlier_bar,opening_bar,execution_bar,closing_bar]))
-    bar,dated=facts(stamp)
-    executor.execute_account_plan(plan(executor,stamp,(order(OrderSide.BUY,100,10.1),)),bar,constraint=dated)
-    close=today.replace(hour=15,minute=0)
-    point=ReplayPoint(bar['Date'],today,today,close,today.date().isoformat(),ExecutionPrecision.BAR_INTERVAL)
-    account=executor.account_snapshot(point,instrument)
-    assert account.cash==8999. and account.receivable==20.
-    leg=ReplayLeg(0,order(OrderSide.BUY,900),'11:30_CLOSE',today,close)
-    proposal=AccountExecutionPlan('e'*64,'fixture',point,1,1000,legs=(leg,),
-        evidence={'sizing':'EXPLICIT_ORDERS','target':1.,'reference_price':10.,
-            'specification_hash':executor.spec.fingerprint,'fee_rate':.001})
-    bar,dated=facts(today)
-    bar.update(Date=close,AvailableDate=close)
-    executor.execute_account_plan(proposal,bar,constraint=dated)
-    assert executor.quantity==1000 and executor.cash==pytest.approx(10.)
-    assert executor.receivable==pytest.approx(0.)
-    payment=next(row for row in executor.rows['actions'] if row['kind']=='DIVIDEND_PAYMENT')
-    assert payment['time']==pay
 
 
 def test_execution_quote_prices_cannot_silently_mix_adjusted_and_raw_units():
@@ -434,52 +374,16 @@ def test_execution_quote_prices_cannot_silently_mix_adjusted_and_raw_units():
     for key in ('Open','High','Low','Close'):
         raw[key]*=2
     executor=PortfolioHistoricalExecutor(specification=executor.spec,initial_cash=10000.,fee_rate=.001,
-        actions=executor.actions,price_basis='RAW',execution_bars=pd.DataFrame([raw]))
+        price_basis='HFQ',execution_bars=pd.DataFrame([raw]))
     end=stamp+timedelta(minutes=30)
     leg=ReplayLeg(0,order(OrderSide.BUY,100),'OPEN',stamp,end)
-    with pytest.raises(ValueError,match='RAW price units'):
+    with pytest.raises(ValueError,match='HFQ price units'):
         executor.execute_account_plan(plan(executor,stamp,legs=(leg,)),main,constraint=dated)
     assert executor.quantity==0 and not executor.rows['fills']
 
 
-def test_recognized_event_cursor_exposes_confirmed_asof_facts_not_future_source_events():
-    from dataclasses import FrozenInstanceError
-    executor,stamp,instrument=setup(MarketId.US)
-    future=stamp+timedelta(days=1)
-    actions=pd.DataFrame([dict(Date=stamp,AvailableDate=stamp,EventId='split',Kind='SPLIT',Ratio=1.5,CashPerShare=0.,PayAt=None),
-        dict(Date=future,AvailableDate=stamp,EventId='future',Kind='CASH_DIVIDEND',Ratio=1.,CashPerShare=.2,PayAt=future)])
-    executor,_,_=setup(MarketId.US,actions=actions)
-    point=ReplayPoint(stamp-timedelta(minutes=30),stamp,stamp,stamp+timedelta(minutes=30),
-        stamp.date().isoformat(),ExecutionPrecision.BAR_INTERVAL)
-    assert executor.recognized_events_since(0,future)==((),0)
-    executor.account_snapshot(point,instrument)
-    assert executor.recognized_events_since(0,stamp-timedelta(seconds=1))==((),0)
-    events,cursor=executor.recognized_events_since(0,stamp)
-    assert cursor==1 and len(events)==1 and events[0].ratio==1.5
-    assert events[0].quantity_before==events[0].quantity_after==0
-    with pytest.raises(FrozenInstanceError):
-        events[0].ratio=2.
-    assert executor.recognized_events_since(cursor,future)==((),cursor)
 
 
-def test_event_index_never_rescans_source_and_rolls_back_with_failed_split():
-    executor,stamp,_=setup(MarketId.US)
-    split=stamp+timedelta(minutes=30)
-    actions=pd.DataFrame([dict(Date=split,AvailableDate=stamp,EventId='split',Kind='SPLIT',
-        Ratio=1.5,CashPerShare=0.,PayAt=None)])
-    executor,_,_=setup(MarketId.US,actions=actions)
-    # The original source is never traversed by the V4 per-decision path.
-    executor._action_events=None
-    executor.quantity=1
-    with pytest.raises(ValueError,match='fractional split'):
-        executor.snapshot_at(stamp,split)
-    assert executor.quantity==1 and executor._event_cursor==0 and not executor.applied
-    executor.quantity=2
-    snapshot=executor.snapshot_at(stamp,split)
-    assert snapshot.quantity==3 and snapshot.reference_price_scale==1/1.5
-    assert executor._event_cursor==1 and len(executor.rows['actions'])==1
-    assert executor.snapshot_at(stamp,split)==snapshot
-    assert len(executor.rows['actions'])==1
 
 
 def test_unfilled_outer_transaction_rejection_does_not_retain_idempotency_key():

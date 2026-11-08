@@ -36,9 +36,9 @@ def test_equity_projection_keeps_explicit_semantics_and_audit_detects_tampering(
     def audit(value):
         payload = materialize_equity(value).payload
         inputs = {name: payload['audit_inputs'][name] for name in (
-            'initial_cash', 'specification', 'bars', 'action_facts', 'constraints', 'fee_rate')}
+            'initial_cash', 'specification', 'bars', 'price_basis', 'quantity_basis', 'constraints', 'fee_rate')}
         run = {name: payload['runs']['candidate'][name] for name in (
-            'decisions', 'orders', 'fills', 'actions', 'account_points', 'trades')}
+            'decisions', 'orders', 'fills', 'account_entries', 'account_points', 'trades')}
         return audit_equity_account(**inputs, **run, account_contract=4, decision_contract='FORMAL_V4')
 
     baseline, = build_equity_assessment(result)
@@ -88,7 +88,6 @@ def test_formal_equity_diagnosis_retains_intraday_cycles_and_continuous_slice(tm
 
 
 def test_equity_diagnosis_reconciles_split_when_source_also_has_dividend(tmp_path):
-    import pandas as pd
     from dataflows import EquityProduct
     from datetime import date
     from czsc_trader.application import diagnose_accounts
@@ -102,12 +101,6 @@ def test_equity_diagnosis_reconciles_split_when_source_also_has_dividend(tmp_pat
     definition = replace(request.candidate.definition, source_sha256=equity_source_hash(source.parent, ("strategy.py",)))
     request = replace(request, candidate=replace(request.candidate, definition=definition))
     bars = products[EquityProduct.BARS]
-    stamp, pay = bars.BarStart.iloc[13], bars.Date.iloc[-1]
-    bars.loc[13:, ["Open", "High", "Low", "Close"]] /= 2
-    products[EquityProduct.ACTIONS] = pd.DataFrame([
-        {"Date":stamp,"AvailableDate":stamp,"EventId":"split","Kind":"SPLIT","Ratio":2.,"CashPerShare":0.,"PayAt":None},
-        {"Date":stamp,"AvailableDate":stamp,"EventId":"dividend","Kind":"CASH_DIVIDEND","Ratio":1.,"CashPerShare":.1,"PayAt":pay},
-    ])
     with account_research(context, request) as (prepared, result, payload, execution):
         ref = publish_account(context, prepared, result, execution, "events")
         identity = dict(payload["evaluation_identity"])
@@ -120,24 +113,17 @@ def test_equity_diagnosis_reconciles_split_when_source_also_has_dividend(tmp_pat
         assert payload["runs"]["candidate"]["account_points"][-1]["equity"] == pytest.approx(999.02)
 
 
-def test_formal_benchmark_applies_opening_split_before_integer_share_budget(tmp_path):
-    import pandas as pd
+def test_formal_benchmark_uses_hfq_integer_unit_budget(tmp_path):
     from dataflows import EquityProduct
     context, request, products, _ = setup_formal_equity(tmp_path)
     bars = products[EquityProduct.BARS]
-    stamp = bars.BarStart.iloc[1]
-    bars.loc[1:, ["Open", "High", "Low", "Close"]] /= 2
-    bars["Volume"] = 1000.
-    products[EquityProduct.ACTIONS] = pd.DataFrame([
-        {"Date":stamp,"AvailableDate":stamp,"EventId":"opening-split","Kind":"SPLIT", "Ratio":2.,"CashPerShare":0.,"PayAt":None},
-    ])
+    bars['Volume'] = 1000.
     payload = replay_payload(context, request)
-    # Floor is applied after converting the visible reference to post-split units.
-    # Rounding a pre-split order and then multiplying would incorrectly buy 196.
+    # Budget uses the explicit HFQ reference and unchanged whole-unit rounding.
     for run in payload["runs"].values():
-        assert run["fills"][0]["quantity"] == 197
-        assert run["decisions"][0]["reference_price"] == 5.
-        assert run["decisions"][0]["limit_price"] == 5.05
+        assert run["fills"][0]["quantity"] == 98
+        assert run["decisions"][0]["reference_price"] == 10.
+        assert run["decisions"][0]["limit_price"] == 10.10
 
 
 def test_equity_checkpoint_corruption_and_source_drift_fail_explicitly(tmp_path):
@@ -176,7 +162,7 @@ def test_equity_worker_death_is_unknown_and_does_not_restart_pool(tmp_path, monk
         outcomes = context.evaluation.evaluate_many((prepared, prepared), execution=execution)
         # Identical prepared handles share one candidate and one benchmark task.
         # Both callers inherit the same unknown result after actual pool death.
-        assert [x.status.value for x in outcomes] == ["UNKNOWN", "UNKNOWN"]
+        assert [x.status.value for x in outcomes] == ["UNKNOWN", "UNKNOWN"], [x.error for x in outcomes]
         assert outcomes[0].request_hash == outcomes[1].request_hash
         assert all(item.result is None and item.error.code == 'BrokenProcessPool' for item in outcomes)
         assert execution.stats.pool_starts == 1

@@ -10,13 +10,14 @@ from zoneinfo import ZoneInfo
 
 import pandas as pd
 from dataflows import (AssetClass, BarFrequency, EquityProduct, EquityDataRequest, EquityQuery, InstrumentId, MarketId,
-    ProviderBinding, ProviderConfig, ProviderKey, SourceRef, TimeInterval, TradingSession)
+    PriceAdjustment, ProviderBinding, ProviderConfig, ProviderKey, SourceRef, TimeInterval, TradingSession)
 from dataflows.equity_data import equity_metadata, session_record
 from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy,
     ExecutionResources, ResearchExecutionSpec, UsEquitySpec, StrategyComputation)
 from strategy_runtime.equity_definition import (EquityAuxiliaryInput, EquityStrategyCandidate,
     EquityStrategyDefinition, equity_source_hash)
 from strategy_runtime.equity_features import FeatureGraph
+from strategy_runtime.models import ExecutionPolicy
 from strategy_runtime.equity_replay import StrategyStateSchema
 from czsc_trader.application.context import RepositoryContext
 from czsc_trader.application.research_governance_service import (
@@ -98,9 +99,7 @@ def setup_equity(tmp_path, decide=alternate, *, cash_policy=CashAvailabilityPoli
                          "Low": 9.8, "Close": 10., "Volume": 100., "Amount": 1000.})
     trading_facts = pd.DataFrame({"Date": [b.start for b in grid], "AvailableDate": [b.start for b in grid],
                                   "Tradable": True, "PriceLimitLower": None, "PriceLimitUpper": None})
-    actions = pd.DataFrame([{"Date": grid[0].start, "AvailableDate": grid[0].start, "EventId": "none",
-                             "Kind": "NONE", "Ratio": 1., "CashPerShare": 0., "PayAt": None}])
-    products = {EquityProduct.BARS: bars, EquityProduct.TRADING_FACTS: trading_facts, EquityProduct.ACTIONS: actions,
+    products = {EquityProduct.BARS: bars, EquityProduct.TRADING_FACTS: trading_facts,
                 EquityProduct.SESSIONS: pd.DataFrame({"Date": [s.segments[0].start for s in sessions],
                 "AvailableDate": [s.segments[0].start for s in sessions],
                 "SessionDate": [s.session_date.isoformat() for s in sessions]})}
@@ -113,7 +112,8 @@ def setup_equity(tmp_path, decide=alternate, *, cash_policy=CashAvailabilityPoli
             next_day = date(2026, 10, 5)
             metadata["following_session"] = session_record(TradingSession(next_day, str(zone), (TimeInterval(
                 datetime(2026, 10, 5, 9, 30, tzinfo=zone), datetime(2026, 10, 5, 16, tzinfo=zone)),)))
-        metadata["no_actions_verified"] = True
+        if request.parameters.query.product is EquityProduct.BARS:
+            metadata["acquisition_method"] = "PROVIDER_ADJUSTED" if request.parameters.query.adjustment is PriceAdjustment.BACKWARD else "PROVIDER_RAW"
         return products[request.parameters.query.product].copy(deep=True), metadata
 
     config = ProviderConfig(bindings={}, equity_bindings={ProviderKey(product, MarketId.US, source):
@@ -124,7 +124,7 @@ def setup_equity(tmp_path, decide=alternate, *, cash_policy=CashAvailabilityPoli
     candidate = _FixtureCandidate(strategy_id='S999', candidate_id='C0001', instrument=instrument,
         execution_spec_hash=spec.fingerprint, warmup_bars=1, decide=decide)
     request = _FixtureRequest(experiment, candidate, TimeInterval(grid[1].start, grid[-1].end),
-                                      date(2026, 10, 1), EquitySources(source, source, source, source), 1000., .001)
+                                      date(2026, 10, 1), EquitySources(source, source, source), 1000., .001)
     return context, request, products, calls
 
 
@@ -140,7 +140,7 @@ def setup_formal_equity(tmp_path):
         encoding="utf-8")
     files = ("strategy.py",)
     definition = EquityStrategyDefinition(old.candidate.instrument, context.execution_spec, 1,
-                                          "strategy:decide", files, equity_source_hash(root, files), '{"enter":1}')
+                                          "strategy:decide", files, equity_source_hash(root, files), '{"enter":1}', analysis_price="RAW")
     candidate = EquityStrategyCandidate(context.strategy_id, "C0001", definition, root)
     request = replace(old, candidate=candidate, benchmark=EvaluationBenchmark(EquityBuyHold(context.execution_spec)),
                       drawdown_basis="BAR_CLOSE", concentration_basis="MAX_SINGLE")
@@ -161,7 +161,7 @@ def setup_auxiliary(tmp_path, *, auxiliary_days=(1, 2), max_age_seconds=86400, s
     old = replace(old, window=TimeInterval(old.window.start, grid[-1].end))
     source = old.sources.bars if same_source else SourceRef("auxiliary-fixture", "v1")
     auxiliary = EquityAuxiliaryInput("market", InstrumentId(MarketId.US, AssetClass.ETF, "SPY"),
-        source, old_context.execution_spec.decision_clock, 1, max_age_seconds)
+        source, old_context.execution_spec.decision_clock, 1, max_age_seconds, analysis_price="RAW")
     products["auxiliary"] = {product: products[product].copy(deep=True)
                               for product in (EquityProduct.BARS, EquityProduct.SESSIONS)}
     products["auxiliary"][EquityProduct.BARS].loc[:, ["Open", "High", "Low", "Close"]] *= 10
@@ -178,7 +178,8 @@ def setup_auxiliary(tmp_path, *, auxiliary_days=(1, 2), max_age_seconds=86400, s
             next_day = date(2026, 10, 5)
             metadata["following_session"] = session_record(TradingSession(next_day, str(zone), (TimeInterval(
                 datetime(2026, 10, 5, 9, 30, tzinfo=zone), datetime(2026, 10, 5, 16, tzinfo=zone)),)))
-        metadata["no_actions_verified"] = True
+        if request.parameters.query.product is EquityProduct.BARS:
+            metadata["acquisition_method"] = "PROVIDER_ADJUSTED" if request.parameters.query.adjustment is PriceAdjustment.BACKWARD else "PROVIDER_RAW"
         return data[request.parameters.query.product].copy(deep=True), metadata
 
     bindings = {ProviderKey(product, MarketId.US, old.sources.bars): ProviderBinding("fixture", "v1", fetch)
@@ -216,7 +217,8 @@ def setup_account_research(tmp_path):
     definition = EquityStrategyDefinition(legacy.candidate.instrument, context.execution_spec, 1,
         "strategy:step", ("strategy.py",), equity_source_hash(root, ("strategy.py",)),
         contract_version=4, computation=StrategyComputation.STATEFUL_STEP,
-        feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema())
+        feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema(), analysis_price="HFQ",
+        execution_policy=ExecutionPolicy("TARGET_POSITION", {"capital_mode": "full_available_cash"}))
     candidate = EquityStrategyCandidate("S999", "C0001", definition, root)
     request = EquityEvaluationRequest(legacy.experiment,candidate,legacy.window,legacy.history_start,
         legacy.sources,legacy.initial_cash,legacy.fee_rate,
@@ -240,17 +242,18 @@ def current_account_request(context, request):
                    'def decide(ctx):\n'
                    f'    return EquityDecision.from_facts({target}, "fixture", facts={{"quantity":ctx.portfolio.quantity}}, next_watch="next bar")\n')
         definition = EquityStrategyDefinition(request.candidate.instrument, context.execution_spec,
-            request.candidate.warmup_bars, "strategy:decide", ("strategy.py",), "0" * 64)
+            request.candidate.warmup_bars, "strategy:decide", ("strategy.py",), "0" * 64, analysis_price="RAW")
     content += ('\nfrom strategy_runtime import AccountDecision, AccountStepResult, StateRecord\n'
                 'def step(ctx, state):\n'
                 '    result=decide(ctx)\n'
-                '    return AccountStepResult(AccountDecision(result.target,result.explanation,capital_mode="full_available_cash"), cycle_values=StateRecord())\n')
+                '    return AccountStepResult(AccountDecision(result.target,result.explanation), cycle_values=StateRecord())\n')
     root = request.experiment.resolve(context.repository.root) / ".tmp" / sha256(content.encode()).hexdigest()
     root.mkdir(parents=True, exist_ok=True)
     (root / "strategy.py").write_text(content, encoding="utf-8")
-    definition = replace(definition, entrypoint="strategy:step", source_sha256=equity_source_hash(root, ("strategy.py",)),
+    definition = replace(definition, auxiliary_inputs=tuple(replace(item, analysis_price="HFQ") for item in definition.auxiliary_inputs), entrypoint="strategy:step", source_sha256=equity_source_hash(root, ("strategy.py",)),
         contract_version=4, computation=StrategyComputation.STATEFUL_STEP,feedback_mode='CONFIRMED_EXECUTION',
-        feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema())
+        feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema(), analysis_price="HFQ",
+        execution_policy=ExecutionPolicy("TARGET_POSITION", {"capital_mode": "full_available_cash"}))
     candidate_id = request.candidate.candidate_id if request.formal else "C0001"
     candidate = EquityStrategyCandidate(request.candidate.strategy_id, candidate_id, definition, root)
     return EquityEvaluationRequest(request.experiment,candidate,request.window,request.history_start,

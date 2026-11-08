@@ -13,7 +13,7 @@ from typing import Mapping, TypeAlias
 
 from .errors import RuntimeContractError
 from .models import canonical_sha256
-from .pricing import ExecutionPriceBasis, ExecutionPricing
+from .pricing import ExecutionPricing
 from .entry_cycle import CycleTarget, EntryCycleState, EntryCyclePlanStatus, EntryCyclePhase
 
 
@@ -266,16 +266,10 @@ class PriceReference:
     signal_basis: str
     execution_basis: str
     pricing: ExecutionPricing = field(default_factory=ExecutionPricing, kw_only=True)
-    price_scale: Decimal = field(default=Decimal("1"), kw_only=True)
 
     def __post_init__(self) -> None:
         if not isinstance(self.pricing, ExecutionPricing):
             raise RuntimeContractError("price reference requires ExecutionPricing")
-        object.__setattr__(self, "price_scale", _money(self.price_scale, "price_scale"))
-        if not self.price_scale.is_finite() or self.price_scale <= 0:
-            raise RuntimeContractError("price scale must be positive and finite")
-        if self.pricing.basis is ExecutionPriceBasis.UNADJUSTED and self.price_scale != 1:
-            raise RuntimeContractError("unadjusted price references require unit scale")
         object.__setattr__(self, "signal_price", _money(self.signal_price, "signal_price"))
         object.__setattr__(
             self, "execution_price", _money(self.execution_price, "execution_price")

@@ -8,14 +8,13 @@ import time
 from uuid import uuid4
 
 import pandas as pd
-from dataflows import Dataflows, DataSpace, ProviderConfig, ProviderKey, ProviderBinding, PreparePolicy, EquityProduct
+from dataflows import Dataflows, DataSpace, ProviderConfig, ProviderKey, ProviderBinding, PreparePolicy
 from dataflows.equity_contracts import EquityParameters
-from dataflows.equity_data import sessions_from_metadata
-from strategy_runtime import EquityStrategyCandidate, EquityStrategyDefinition, StrategyRuntime, canonical_sha256
+from strategy_runtime import EquityStrategyCandidate, EquityStrategyDefinition, canonical_sha256
 from strategy_runtime.inspection import InspectionRuntimePermit, InspectionStage
 from strategy_runtime.deployment import validate_release_package
 from strategy_manager import StrategyRegistry, freeze_contracts as f
-from ..research_tools.equity_evaluation import TRADING_INCOME_POLICY, replay_actions, replay_action_facts
+from ..research_tools.equity_evaluation import TRADING_INCOME_POLICY
 from ._inspection_candidate import _load_inspection_candidate
 from .inspection_execution import Controller, Interrupted, equivalence_jobs, goal
 from .inspection_contracts import InspectionPublicationError
@@ -34,6 +33,8 @@ def replay_identity(replay, runtime_kind='US_EQUITY'):
         'input_binding': _json(replay.input_binding.to_dict()),
         'window': _json(asdict(replay.window)), 'initial_cash': replay.initial_cash,
         'one_way_cost': replay.one_way_cost, 'income_policy': TRADING_INCOME_POLICY,
+        'price_basis': 'HFQ', 'quantity_basis': 'SIMULATED_INTEGER_UNITS',
+        'execution_reference': replay.execution_reference.to_dict(),
         'baseline': None if replay.baseline is None else replay.baseline.to_dict()}
 
 
@@ -67,31 +68,7 @@ def replay_account(candidate, flows, replay):
         candidate.definition, products, {k: v["metadata"] for k, v in identities.items()})
     if candidate.definition.contract_version == 4:
         return _replay_account_v4(candidate, replay, products, identities)
-    from execution_channels.historical.frozen_equity import _FrozenEquityExecutor
-    from strategy_evaluator.frozen_equity import _audit_frozen_equity_account
-    from .ec_boundary import execution_spec
-    from .frozen_equity_replay import run_frozen_equity
-    specification = candidate.definition.execution_spec
-    executor = _FrozenEquityExecutor(specification=execution_spec(specification), initial_cash=replay.initial_cash,
-                                        fee_rate=replay.one_way_cost, actions=replay_actions(products['actions']))
-    account = run_frozen_equity(StrategyRuntime(execution_spec=specification).create(candidate),
-        products['bars'], products['constraints'], executor, start=replay.window.start,
-        end=replay.window.end, fee_rate=replay.one_way_cost,
-        auxiliary_histories={x.name: products[x.data_key(EquityProduct.BARS)] for x in candidate.definition.auxiliary_inputs},
-        sessions=products['sessions'] if candidate.definition.session_context else None,
-        trading_sessions=sessions_from_metadata(identities['sessions']['metadata']) if candidate.definition.session_context else ())
-    facts = {name: _records(getattr(account, attr)) for name, attr in (
-        ('decisions','decisions'), ('orders','orders'), ('fills','fills'), ('actions','corporate_action_entries'),
-        ('account_points','account_points'), ('account_daily','account_daily'), ('trades','trades'))}
-    source = {name: _records(frame) for name, frame in products.items()}
-    audit = _audit_frozen_equity_account(initial_cash=replay.initial_cash, specification=asdict(specification),
-        bars=source['bars'], action_facts=replay_action_facts(source['actions'], TRADING_INCOME_POLICY),
-        constraints=source['constraints'],
-        fee_rate=replay.one_way_cost, decision_contract="FORMAL_V2",
-        **{k: facts[k] for k in ('decisions','orders','fills','actions','account_points','trades')})
-    return _json({'facts': facts, 'metrics': asdict(audit), 'source': source, 'data': identities,
-                  'definition': candidate.definition.to_dict(), 'content_sha256': candidate.content_identity.content_sha256,
-                  'input': replay_identity(replay)})
+    raise ValueError('legacy RAW technical replay requires explicit migration to HFQ V4')
 
 
 def _replay_account_v4(candidate, replay, products, identities):
@@ -113,14 +90,14 @@ def _replay_account_v4(candidate, replay, products, identities):
                              ', '.join(point.isoformat() for point in checked.differing_points))
         batch_consistency = {'status': 'PASS', 'checked_points': checked.checked_points}
     executor = PortfolioHistoricalExecutor(specification=execution_spec(spec), initial_cash=replay.initial_cash,
-        fee_rate=replay.one_way_cost, actions=replay_actions(products['actions']), price_basis='RAW',
+        fee_rate=replay.one_way_cost, price_basis='HFQ',
         execution_bars=None if definition.execution_input is None else products['execution:bars'])
     outcome = run_replay(prepared, candidate, executor, start=replay.window.start, end=replay.window.end,
         fee_rate=replay.one_way_cost, constraints=products['constraints'],
         owner=f'candidate:{candidate.strategy_id}:{candidate.candidate_id}:{candidate.content_identity.content_sha256}')
     account = outcome.execution_result
     facts = {name: _records(getattr(account, attr)) for name, attr in (
-        ('decisions','decisions'), ('orders','orders'), ('fills','fills'), ('actions','corporate_action_entries'),
+        ('decisions','decisions'), ('orders','orders'), ('fills','fills'), ('account_entries','account_entries'),
         ('account_points','account_points'), ('account_daily','account_daily'), ('trades','trades'))}
     state = outcome.state
     final_state = {'revision': state.revision, 'account': state.account.to_dict(),
@@ -153,7 +130,7 @@ def _pte_compute(connection, payload):
         flows = Dataflows(base_dir=binding.base_dir, space=binding.space, providers=ProviderConfig(bindings={}))
         result = inspect_equity_release(candidate=candidate, dataflows=flows, binding=replay.input_binding,
             requests=replay.requests, initial_cash=replay.initial_cash, fee_rate=replay.one_way_cost,
-            permit=permit, protocol=protocol)
+            permit=permit, protocol=protocol, execution_reference=replay.execution_reference)
         connection.send((True, result))
     except BaseException as exc:
         connection.send((False, {'type': type(exc).__name__, 'message': str(exc)}))
@@ -207,9 +184,16 @@ def _copy_inputs(flows, replay, workspace):
         # DFLS strips consumer coverage/cutoff before calling the provider.
         return (query.dataset, query.symbol, query.start, query.end, query.frequency, query.parameters)
     products, identities = _products(flows, replay)
+    raw = flows.fetch(replay.execution_reference.request, prepared=replay.execution_reference.prepared)
+    if not raw.ready or raw.identity.content_sha256 != replay.execution_reference.content_sha256:
+        raise ValueError('inspection RAW execution input is unavailable or changed')
+    products['execution_reference'] = raw.dataframe
+    identities['execution_reference'] = {'metadata': dict(raw.identity.metadata)}
     # DFLS normalizes subclasses to DataRequest before invoking a provider;
     # EquityParameters retains the complete instrument/source/bounded query.
     requests = {source_selection(q): name for name, q in replay.input_binding.bind_requests(replay.requests)}
+    requests[source_selection(replay.execution_reference.request)] = 'execution_reference'
+    all_requests = replay.requests + (replay.execution_reference.request,)
     def fetch(request):
         key = source_selection(request)
         if key not in requests:
@@ -217,17 +201,18 @@ def _copy_inputs(flows, replay, workspace):
         name = requests[key]
         return products[name].copy(deep=True), dict(identities[name]['metadata'])
     bindings = {ProviderKey(q.parameters.query.product, q.parameters.instrument.market, q.parameters.source):
-                ProviderBinding(q.parameters.source.provider, q.parameters.source.revision, fetch) for q in replay.requests
+                ProviderBinding(q.parameters.source.provider, q.parameters.source.revision, fetch) for q in all_requests
                 if type(q.parameters) is EquityParameters}
     observations = {q.dataset: ProviderBinding('inspection', 'v1', fetch) for q in replay.requests
                     if type(q.parameters) is not EquityParameters}
     target = Dataflows(base_dir=workspace, space=DataSpace(Path('inputs/equity/data')),
                       providers=ProviderConfig(equity_bindings=bindings, bindings=observations))
-    prepared = target.prepare(replay.requests, policy=PreparePolicy.REFRESH)
+    prepared = target.prepare(all_requests, policy=PreparePolicy.REFRESH)
     if not prepared.ready:
         raise ValueError('isolated equity preparation failed: ' + '; '.join(
             item.error.message for item in prepared.items if not item.ready))
-    copied = replace(replay, input_binding=replace(replay.input_binding, prepared=prepared.reference))
+    copied = replace(replay, input_binding=replace(replay.input_binding, prepared=prepared.reference),
+        execution_reference=replace(replay.execution_reference, prepared=prepared.reference))
     _products(target, copied)
     return target, copied
 
@@ -365,14 +350,7 @@ def validate_pass_facts(root, report, normalized, protocol):
             if left.get('batch_consistency', {}).get('status') != expected_batch_status:
                 raise ValueError('V4 historical/online batch consistency is missing')
         else:
-            from strategy_evaluator.frozen_equity import _audit_frozen_equity_account
-            audit = _audit_frozen_equity_account(initial_cash=replay['initial_cash'], specification=asdict(definition.execution_spec),
-                bars=source['bars'], action_facts=replay_action_facts(source['actions'], replay.get('income_policy')),
-                constraints=source['constraints'],
-                fee_rate=replay['one_way_cost'], decision_contract="FORMAL_V2",
-                **{k: ledger[k] for k in ('decisions','orders','fills','actions','account_points','trades')})
-            if _json(asdict(audit)) != left['metrics']:
-                raise ValueError('equity replay audit differs')
+            raise ValueError('legacy RAW inspection evidence cannot certify the HFQ runtime')
         expected_times = [x['Date'] for x in source['bars'] if pd.Timestamp(x['BarStart']) >= pd.Timestamp(replay['window']['start'])
                           and pd.Timestamp(x['Date']) <= pd.Timestamp(replay['window']['end'])]
         if [x['time'] for x in ledger['account_points']] != expected_times:

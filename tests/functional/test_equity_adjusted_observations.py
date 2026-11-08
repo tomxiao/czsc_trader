@@ -1,4 +1,4 @@
-"""CN/US adjusted observations retain raw execution and exact evidence roles."""
+"""CN/US HFQ research and independently prepared RAW simulation quotations."""
 from dataclasses import replace
 from datetime import date, datetime, timedelta
 import json
@@ -15,6 +15,7 @@ from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy, CnEquitySpe
     EquityAuxiliaryInput, EquityInputBinding, EquityStrategyCandidate, EquityStrategyDefinition,
     ExecutionResources, ResearchExecutionSpec, StrategyComputation, equity_source_hash)
 from strategy_runtime.equity_features import FeatureGraph
+from strategy_runtime.models import ExecutionPolicy
 from strategy_runtime.equity_replay import StrategyStateSchema
 from czsc_trader.application import publish_evidence_many
 from czsc_trader.application.context import RepositoryContext
@@ -59,9 +60,6 @@ def setup_adjusted(tmp_path, market, computation=StrategyComputation.STATEFUL_ST
         EquityProduct.SESSIONS: pd.DataFrame({"Date": [b.start for b in grid],
             "AvailableDate": [b.start for b in grid],
             "SessionDate": [s.session_date.isoformat() for s in sessions]}),
-        EquityProduct.ACTIONS: pd.DataFrame([{"Date": grid[0].start,
-            "AvailableDate": grid[0].start, "EventId": "none", "Kind": "NONE", "Ratio": 1.,
-            "CashPerShare": 0., "PayAt": None}]),
         EquityProduct.TRADING_FACTS: pd.DataFrame({"Date": [b.start for b in grid],
             "AvailableDate": [b.start for b in grid], "Tradable": True,
             "PriceLimitLower": 9. if cn else None, "PriceLimitUpper": 11. if cn else None})}
@@ -74,12 +72,17 @@ def setup_adjusted(tmp_path, market, computation=StrategyComputation.STATEFUL_ST
         if p.query.product is EquityProduct.BARS and p.query.adjustment is PriceAdjustment.BACKWARD:
             data = adjusted if p.instrument == instrument else sector_bars
         metadata = equity_metadata(request, sessions, availability_basis="SYNTHETIC_BAR_CLOSE")
-        if cn and p.query.product is EquityProduct.TRADING_FACTS:
+        if cn and p.query.product in (EquityProduct.TRADING_FACTS, EquityProduct.SESSIONS):
             delta = timedelta(days=1)
             following = TradingSession(sessions[-1].session_date + delta, str(zone),
                 tuple(TimeInterval(part.start + delta, part.end + delta) for part in sessions[-1].segments))
             metadata["following_session"] = session_record(following)
-        metadata["no_actions_verified"] = True
+        if p.query.product is EquityProduct.BARS:
+            metadata['acquisition_method'] = 'PROVIDER_ADJUSTED' if p.query.adjustment is PriceAdjustment.BACKWARD else 'PROVIDER_RAW'
+        if p.query.product is EquityProduct.TRADING_FACTS and p.query.adjustment is PriceAdjustment.BACKWARD:
+            data = data.copy(deep=True)
+            for column in ('PriceLimitLower', 'PriceLimitUpper'):
+                data[column] = data[column].map(lambda value: None if value is None else value * 2)
         return data.copy(deep=True), metadata
 
     repository = RepositoryContext(tmp_path, tmp_path / "research", tmp_path / "research/registrations",
@@ -101,7 +104,7 @@ def setup_adjusted(tmp_path, market, computation=StrategyComputation.STATEFUL_ST
         "def decision(ctx):\n"
         "    raw = float(ctx.history.last()['Close'])\n"
         "    observed = [float(view.last()['Close']) for view in ctx.auxiliary_histories.values()]\n"
-        "    assert raw == 10.\n"
+        "    assert raw == 20.\n"
         "    assert not observed or observed == [20., 200.]\n"
         "    return AccountDecision.from_facts(1, 'hold', "
         "facts={'raw': raw, 'observed': str(observed)}, next_watch='next session')\n"
@@ -115,10 +118,11 @@ def setup_adjusted(tmp_path, market, computation=StrategyComputation.STATEFUL_ST
     definition = EquityStrategyDefinition(instrument, spec, 1, entrypoint, ("strategy.py",),
         equity_source_hash(root, ("strategy.py",)), contract_version=4,
         computation=computation, feature_graph=FeatureGraph((), ()),
-        state_schema=StrategyStateSchema(), auxiliary_inputs=auxiliary)
+        state_schema=StrategyStateSchema(), auxiliary_inputs=auxiliary,
+        execution_policy=ExecutionPolicy("TARGET_POSITION", {"capital_mode": "target_equity_fraction"}))
     candidate = EquityStrategyCandidate("S999", "C0001", definition, root)
     request = EquityEvaluationRequest(experiment, candidate, TimeInterval(grid[1].start, grid[-1].end),
-        date(2026, 10, 12), EquitySources(source, source, source, source), 10000., .001,
+        date(2026, 10, 12), EquitySources(source, source, source), 10000., .001,
         benchmark=EvaluationBenchmark(EquityBuyHold(spec)), drawdown_basis="BAR_CLOSE",
         concentration_basis="TOP_DECILE")
     return context, request, products, adjusted, calls
@@ -140,24 +144,24 @@ def economic_rows(rows):
 
 @pytest.mark.parametrize("market", (MarketId.CN, MarketId.US))
 @pytest.mark.parametrize("computation", (StrategyComputation.STATEFUL_STEP, StrategyComputation.BATCH_HISTORY))
-def test_adjusted_observations_prepare_evaluate_publish_read_preserve_raw_execution(tmp_path, market, computation):
+def test_adjusted_observations_prepare_evaluate_publish_read_use_hfq_execution(tmp_path, market, computation):
     context, request, _, _, calls = setup_adjusted(tmp_path, market, computation)
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         prepared, result, payload = evaluate(context, request, execution)
         binding = prepared.request.input_binding
-        assert len(binding.expected_identities) == 8
+        assert len(binding.expected_identities) == 7
         items = binding.bind_requests(prepared.request.requests(context.execution_spec))
         assert set(key for key, _ in items) == set(binding.expected_identities)
         physical = dict(items)
         assert physical["sessions"] == physical["auxiliary:stock_hfq:sessions"]
-        assert physical["bars"].parameters.query.adjustment is PriceAdjustment.NONE
+        assert physical["bars"].parameters.query.adjustment is PriceAdjustment.BACKWARD
         assert physical["auxiliary:stock_hfq:bars"].parameters.query.adjustment is PriceAdjustment.BACKWARD
         assert EquityInputBinding.from_dict(json.loads(json.dumps(binding.to_dict()))) == binding
-        assert payload["data"]["bars"]["metadata"]["adjustment"] == PriceAdjustment.NONE.value
+        assert payload["data"]["bars"]["metadata"]["adjustment"] == PriceAdjustment.BACKWARD.value
         assert payload["data"]["auxiliary:stock_hfq:bars"]["metadata"]["adjustment"] == PriceAdjustment.BACKWARD.value
-        assert payload["data"]["bars"]["content_sha256"] != payload["data"]["auxiliary:stock_hfq:bars"]["content_sha256"]
+        assert payload["data"]["bars"]["content_sha256"] == payload["data"]["auxiliary:stock_hfq:bars"]["content_sha256"]
         fills = payload["runs"]["candidate"]["fills"]
-        assert fills and all(row["price"] == 10. for row in fills)
+        assert fills and all(row["price"] == 20. for row in fills)
         assert all(row["quantity"] % (100 if market is MarketId.CN else 1) == 0 for row in fills)
         published, = publish_evidence_many(context,
             (EvaluationEvidenceWrite(request.experiment, "adjusted", prepared, result),), execution=execution)
@@ -173,10 +177,10 @@ def test_adjusted_observations_prepare_evaluate_publish_read_preserve_raw_execut
         for name in ("fills", "account_daily"):
             assert economic_rows(raw_payload["runs"]["candidate"][name]) == economic_rows(payload["runs"]["candidate"][name])
         assert execution.equity_statistics.benchmark_runs == 1
-    # Eight logical roles share one physical calendar request; adding a RAW-only
-    # candidate must not re-download either price stream or duplicate the calendar.
-    assert len(calls) == 7
-    assert len(set(calls)) == 7
+    # Seven logical roles share the primary HFQ stream and calendar.
+    # Removing auxiliary observations must reuse the same physical products.
+    assert len(calls) == 5
+    assert len(set(calls)) == 5
 
 
 @pytest.mark.parametrize("market", (MarketId.CN, MarketId.US))
@@ -197,7 +201,7 @@ def test_alias_change_uses_distinct_snapshot_and_reuses_physical_data(tmp_path, 
             assert economic_rows(original["runs"]["candidate"][name]) == economic_rows(renamed_payload["runs"]["candidate"][name])
         assert execution.equity_statistics.input_snapshots == 2
         assert execution.equity_statistics.benchmark_runs == 1
-    assert len(calls) == 7
+    assert len(calls) == 5
 
 
 @pytest.mark.parametrize("market", (MarketId.CN, MarketId.US))
@@ -205,10 +209,25 @@ def test_adjusted_observation_availability_is_causal(tmp_path, market):
     context, request, _, adjusted, _ = setup_adjusted(tmp_path, market)
     # The second day's adjusted close is unavailable until after the whole run.
     # Its outlier would fail the strategy assertion if visibility used Date only.
-    adjusted.loc[1, ["Open", "High", "Low", "Close"]] = [99., 100., 98., 99.]
+    adjusted.loc[1, ["Open", "High", "Low", "Close"]] = [21., 21.5, 20.5, 21.]
     adjusted.loc[1, "AvailableDate"] += pd.Timedelta(days=10)
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         _, _, payload = evaluate(context, request, execution)
         assert len(payload["runs"]["candidate"]["decisions"]) == 3
         recorded = payload["audit_inputs"]["decision_inputs"]["auxiliary"]["stock_hfq"]["bars"]
-        assert recorded[1]["Close"] == 99.
+        assert recorded[1]["Close"] == 21.
+
+
+@pytest.mark.parametrize('basis', [None, '', 'another-adjustment-base'])
+def test_hfq_limits_cannot_mix_adjustment_bases(basis):
+    from czsc_trader.application.execution_inputs import execution_constraints
+    metadata = {'bars': {'adjustment': 'hfq', 'price_basis_id': 'primary'},
+                'trading_facts': {'adjustment': 'hfq', 'price_basis_id': basis}}
+    with pytest.raises(ValueError, match='price limits must use the primary HFQ basis'):
+        execution_constraints(None, {}, metadata)
+
+
+def test_research_identity_pins_shared_execution_rules(tmp_path):
+    context, request, _, _, _ = setup_adjusted(tmp_path, MarketId.US)
+    identity = request.identity(context.execution_spec)
+    assert 'execution_channels.planning.session_rules' in identity['engine_sources']

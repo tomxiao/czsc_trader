@@ -167,7 +167,7 @@ def test_resource_path_case_alias_is_rejected_before_registration(tmp_path):
 
 @pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
 @pytest.mark.parametrize('fee', [.001, .002])
-def test_planning_context_and_table_are_bound_to_actual_step(tmp_path, market, fee):
+def test_strategy_sees_tables_without_execution_planning_context(tmp_path, market, fee):
     c, p, executor, bars, constraints, sessions, session_frame = setup(
         tmp_path, market, BarFrequency.DAILY, StrategyComputation.STATEFUL_STEP)
     original = c.definition.to_dict()
@@ -175,18 +175,17 @@ def test_planning_context_and_table_are_bound_to_actual_step(tmp_path, market, f
     assert EquityStrategyDefinition.from_dict(original).to_dict() == original
     (tmp_path / 'strategy.py').write_text('''from strategy_runtime import AccountDecision, AccountStepResult, StateRecord
 def step(ctx, state):
-    assert ctx.planning.fee_rate == ctx.parameters['expected_fee']
-    assert ctx.planning.execution_spec.quantity_step == ctx.parameters['step']
+    assert not hasattr(ctx, 'planning')
     assert len(ctx.observations['index']) == 2
     assert ctx.observations['index'].as_of == ctx.point.decision_at
-    return AccountStepResult(AccountDecision.from_facts(0., 'observed', facts={'fee': ctx.planning.fee_rate}, next_watch='next'), state.account)
+    return AccountStepResult(AccountDecision.from_facts(0., 'observed', facts={'rows': len(ctx.observations['index'])}, next_watch='next'), state.account)
 ''', encoding='utf-8')
     declaration = DatasetObservationInput('index', Dataset.INDEX_CONSTITUENT_WEIGHT, '000905.SH')
     c = replace(c, definition=replace(c.definition, entrypoint='strategy:step',
         parameters_json=json.dumps({'expected_fee': fee, 'step': c.definition.execution_spec.quantity_step}),
         parameter_schema_json=None,
         source_sha256=equity_source_hash(tmp_path, ('strategy.py',)),
-        observation_inputs=(declaration,), planning_context=True))
+        observation_inputs=(declaration,)))
     stamp = p._data.ends[0]
     frame = pd.DataFrame({'Date': [stamp, stamp], 'AvailableDate': [stamp, stamp],
                           'ConstituentSymbol': ['A', 'B'], 'Weight': [1., 2.]})
@@ -207,9 +206,8 @@ def step(ctx, state):
     proposal = AccountDecisionEngine(c, p).propose(interval, portfolio, account,
         AccountStrategyState(), PositionFeedback(), owner='fixture', fee_rate=fee)
     assert proposal.proposal.decision.target == 0.
-    assert not proposal.proposal.decision.orders
-    with pytest.raises(ValueError, match='STATEFUL_STEP'):
-        replace(c.definition, computation=StrategyComputation.BATCH_HISTORY)
+    assert not hasattr(proposal.proposal.decision, "orders")
+    assert replace(c.definition, computation=StrategyComputation.BATCH_HISTORY).observation_inputs == c.definition.observation_inputs
     # Two constituents on one date are one observation, not two warmup days.
     strict = replace(c, definition=replace(c.definition, observation_inputs=(
         replace(declaration, coverage=DataCoverageRequirement(minimum_observations=2, minimum_sessions=2)),)))

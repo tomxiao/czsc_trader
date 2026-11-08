@@ -390,7 +390,7 @@ TDR的[同版本升级API](../../src/czsc_trader/README.md#同版本发布包升
 独立账户审计分别核对缺失、零量和已声明中断导致的订单过期原因，并拒绝这些区间中的成交。
 信号抑制只能依据执行开始前已完成且可得的行情：当前执行区间最终缺失不能提前影响该区间的决策。
 缺失或零量后的下一次决策记录 `SUPPRESSED_UNOBSERVED_BAR`，保持持仓、不创建订单；有量行情恢复后再评价策略。
-估值沿用最近有效收盘价，拆股同步调整估值价；`valuation_stale` 和 `valuation_price_at` 必须与行情及公司行动一致。
+估值沿用最近有效HFQ收盘价；`valuation_stale` 和 `valuation_price_at` 必须与行情一致，不额外处理公司行动。
 这些字段表明研究假设与估值盲区，不证明历史停牌，也不代表缺口期间净值没有波动。
 
 美股正式账户仍通过 `assess_candidates`、`compare_candidates` 完成自检与比较。
@@ -419,7 +419,7 @@ TDR的`build_assessment_evidence`将当前V4账户观测适配为`AssessmentEvid
 
 美股连续账户分解由 `strategy_evaluator.equity_diagnosis.diagnose_equity_accounts` 消费认证后的原始账本。
 事件按账户修订序号归属，避免下一根 bar 开盘事件被提前计入上一根收盘；切片从已有连续账户保留期初持仓和净值。
-股息权益计入持有损益，到账与卖出交收只做资产内部转移；同日多个周期按实际入场区间匹配，无法唯一归属每日周期时保留空值。
+历史只统计HFQ交易与持有损益，卖出交收只做资产内部转移；同日多个周期按实际入场区间匹配，无法唯一归属每日周期时保留空值。
 
 ## 权益账户审计
 
@@ -432,14 +432,16 @@ decision_contract="FORMAL_V4")`路由至独立纯事实审计。审计不导入S
 不把撤销、过期、未知或部分成交解释为依赖完成，也不改写已保存的历史证据。
 原始来源和执行规则必须齐全；格式相似或持久化PASS均不能替代数值认证。
 
-拆股、分红应收、支付和交收分别核验；细报价独立核对价格单位、主柱边界、检查点来源及容量。
-不支持的碎股或事件时序明确失败。候选与基准必须为同一账户版本和经济合同，CN仅接纳V4。
+账本要求 `price_basis=HFQ`、`quantity_basis=SIMULATED_INTEGER_UNITS`；
+`account_entries` 只接受 `SALE_SETTLEMENT`，不接收 `actions` 或 `action_facts`。
+细报价独立核对HFQ单位、主柱边界、检查点来源和既有模拟容量。
+候选与基准必须为同一账户版本和经济合同，CN仅接纳V4。
 V4 `EquityAssessmentFacts`按实际市场时区、币种及交易日聚合，指标版本为
 `equity-assessment-v4:<drawdown_basis>:<concentration_basis>`；旧账本不改标为V4。
 
 `diagnose_equity_accounts`支持CN/US、同柱多笔成交及加减仓，按成交顺序和FIFO将收益分配至
 入场、持有、退出和费用，并核对逐日剩余差额。FIFO是账户归因规则，不是策略退出规则。
-股息只计一次收益，支付和交收仅为资产内部转移；一次持仓周期中的多次加仓不会被重复计作新周期。
+不追加股息收益或数量折算，交收仅为资产内部转移；一次持仓周期中的多次加仓不会被重复计作新周期。
 
 ### V4的会话内认证复用
 

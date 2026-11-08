@@ -58,6 +58,9 @@ def futu_equity_bindings(*, source: SourceRef, quote_context, maximum_pages: int
         code = "US." + p.instrument.symbol
         pages, key, keys, receipts = [], None, set(), []
         autype = {PriceAdjustment.NONE: "None", PriceAdjustment.FORWARD: "qfq", PriceAdjustment.BACKWARD: "hfq"}[p.query.adjustment]
+        metadata["acquisition_method"] = ("PROVIDER_RAW" if p.query.adjustment is PriceAdjustment.NONE
+                                           else "PROVIDER_ADJUSTED")
+        metadata["price_source_api"] = "futu.request_history_kline"
         for index in range(maximum_pages):
             ret, frame, next_key = quote_context.request_history_kline(
                 code, start=start, end=end, ktype="K_30M" if p.query.frequency is BarFrequency.M30 else "K_DAY",

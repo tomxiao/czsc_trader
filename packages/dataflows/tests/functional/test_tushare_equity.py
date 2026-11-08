@@ -34,6 +34,11 @@ class Pro:
 
     fund_daily = daily
 
+    def stk_factor_pro(self, *, ts_code, start_date, end_date, fields):
+        return pd.DataFrame({"ts_code": [ts_code], "trade_date": ["20260928"],
+            "open_hfq": [8.], "high_hfq": [8.], "low_hfq": [8.],
+            "close_hfq": [8.], "vol": [8.], "amount": [3.2]})
+
     def stk_mins(self, **kwargs):
         assert kwargs["freq"] == "30min"
         stamps = pd.date_range("2026-09-28 10:00", "2026-09-28 11:30", freq="30min").append(
@@ -77,15 +82,24 @@ def test_cn_hfq_prepare_reload_preserves_prices_units_calendar_and_availability(
     assert fetched.ready, fetched.error
     frame, metadata = fetched.dataframe, fetched.identity.metadata
     assert frame.Close.eq(8.).all()
-    assert frame.Volume.sum() == 400. and frame.Amount.sum() == 3200.
+    provider_adjusted = asset_class is AssetClass.STOCK and frequency is BarFrequency.DAILY
+    assert frame.Volume.sum() == (800. if provider_adjusted else 400.)
+    assert frame.Amount.sum() == 3200.
     sessions = sessions_from_metadata(metadata)
     assert len(sessions) == 1 and len(sessions[0].segments) == 2
     assert metadata["adjustment"] == "hfq"
-    assert metadata["adjustment_factor_source"] == ("adj_factor" if asset_class is AssetClass.STOCK else "fund_adj")
-    assert metadata["adjustment_factor_revision_history_verified"] is False
-    if frequency is BarFrequency.DAILY or asset_class is AssetClass.ETF:
-        assert frame.AvailableDate.dt.tz_convert("Asia/Shanghai").dt.hour.eq(17).all()
+    assert metadata['acquisition_method'] == ('PROVIDER_ADJUSTED' if provider_adjusted else 'DFLS_ADJUSTED')
+    if provider_adjusted:
+        assert metadata['price_source_api'] == 'tushare.stk_factor_pro'
+        assert metadata['source_response_sha256']
+        assert frame.AvailableDate.dt.tz_convert('Asia/Shanghai').dt.hour.eq(20).all()
     else:
+        assert metadata["adjustment_factor_source"] == ("adj_factor" if asset_class is AssetClass.STOCK else "fund_adj")
+        assert metadata["adjustment_factor_revision_history_verified"] is False
+        assert metadata['raw_input_sha256'] and metadata['adjustment_algorithm']
+    if not provider_adjusted and (frequency is BarFrequency.DAILY or asset_class is AssetClass.ETF):
+        assert frame.AvailableDate.dt.tz_convert("Asia/Shanghai").dt.hour.eq(17).all()
+    elif not provider_adjusted:
         assert frame.AvailableDate.equals(frame.Date)
         assert frame.Date.dt.tz_convert("Asia/Shanghai").dt.strftime("%H:%M").tolist() == [
             "10:00", "10:30", "11:00", "11:30", "13:30", "14:00", "14:30", "15:00"]
@@ -156,3 +170,28 @@ def test_cn_explicit_raw_binding_preserves_unadjusted_prices(monkeypatch, tmp_pa
     assert output.dataframe.Volume.sum()==800.
     assert output.identity.metadata['adjustment']=='none'
     assert output.identity.metadata['publication_time_verified'] is False
+
+
+@pytest.mark.parametrize('defect', ['permission', 'missing_fields', 'wrong_instrument', 'duplicate'])
+def test_provider_adjusted_failure_never_switches_to_computed_method(monkeypatch, tmp_path, defect):
+    client, requests, bindings, _ = setup(monkeypatch, tmp_path, AssetClass.STOCK, BarFrequency.DAILY)
+    original = client.stk_factor_pro
+
+    def response(**kwargs):
+        if defect == 'permission':
+            raise RuntimeError('provider permission denied')
+        frame = original(**kwargs)
+        if defect == 'missing_fields':
+            return frame.drop(columns=['close_hfq'])
+        if defect == 'wrong_instrument':
+            frame['ts_code'] = '000001.SZ'
+        return pd.concat([frame, frame]) if defect == 'duplicate' else frame
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError('a supplier failure must not change the acquisition method')
+
+    monkeypatch.setattr(client, 'stk_factor_pro', response)
+    monkeypatch.setattr(tushare_equity, 'fetch_stock_ohlcv', forbidden)
+    req = requests[0]
+    with pytest.raises((RuntimeError, DataContractError)):
+        bindings[req.parameters.provider_key].fetch(req)

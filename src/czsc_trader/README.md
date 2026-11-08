@@ -808,33 +808,34 @@ assert receipt.status.value == "COMMITTED"
 使用现有 `EquityEvaluationRequest`及下面的会话式 `prepare/evaluate_many`，不增加市场专属业务入口。
 CN和US共用策略计算、回放编排、账户记账、独立数值审计及证据发布；市场差异放在日历、时区、币种、
 价格与数量单位及逐区间规则中。旧`EvaluationRequest`普通研究链已退役，A股与美股统一使用V4；
-既有原型、冻结及PTE不会自动迁移到V4 RAW单位。
+历史回放统一采用 HFQ 后复权模拟单位；旧 RAW 证据、冻结包及 PTE 账户须显式迁移，不自动混用。
 
 | 能力 | CN与US的V4契约 |
 | --- | --- |
 | 计算及频率 | 显式批量历史／逐步状态；日线／30分钟；均要求完整真实日历 |
-| 仓位及订单 | 0至1比例、分批建减仓、多个订单、检查点依赖腿及Decimal周期预算 |
+| 仓位及订单 | SRT 只输出 0 至 1 的目标仓位和解释；EC 按冻结执行政策生成报价、数量、依赖腿和周期预算 |
 | 盘中检查点 | 日线可声明独立M30执行报价，使用真实开盘、11:30等边界；不从日线OHLC猜价 |
-| 账户反馈 | 实际可用现金／可卖数量、多次成交周期、已确认机械权益事件及显式状态初值 |
-| 经济账本 | RAW成交、拆股、现金分红应收／支付及卖出交收；碎股权益和区间内公司行动拒绝 |
+| 账户反馈 | 渠道确认的可用现金／可卖数量、成交周期及显式状态初值；模拟盘未知数量变化按对账事实反馈 |
+| 历史账本 | HFQ 报价、成交、成本及估值，数量为整数模拟单位；只记录交易及卖出交收，不处理拆股或派息事件 |
 | 研究闭环 | 参数计划、批量评价、评估事实、连续损益诊断、候选登记、发布及阶段交付校验 |
 
 定义必须显式声明 `computation=StrategyComputation.BATCH_HISTORY`或 `STATEFUL_STEP`；
 前者入口返回逐观察的 `AccountDecision`元组，后者返回 `AccountStepResult`。
-非空状态字段必须有与schema一致的 `initial_account: StateRecord`。策略通过已确认事件自行处理止损价等
-状态的拆股单位变化，平台不自动修改任意字段。批量视图逐观察截断，研究仍须检验实现没有跨观察前视。
+非空状态字段必须有与 schema 一致的 `initial_account: StateRecord`。策略只读取 HFQ 行情；
+不接收原价换算系数或公司行动事件。批量视图逐观察截断，研究仍须检验实现没有跨观察前视。
 完整类型与状态规则见[SRT V4](../../packages/strategy_runtime/README.md#跨市场账户研究-v4)。
 
 日线盘中腿通过 `execution_input=ExecutionInput(instrument, source, BarFrequency.M30)`声明。
 准备增加 `execution:bars`和 `execution:sessions`两项绑定，只覆盖执行窗口，不把未来报价放进策略历史。
-细报价与主报价须为同一RAW单位且边界一致；普通订单仍使用主柱区间。该角色不能与同一辅助产品重名复用。
+细报价与主报价须为同一 HFQ 基准且边界一致；普通订单仍使用主柱区间。执行报价不会进入策略观察。
 细报价一次索引并按来源身份共享，候选使用其独立账本事实，买持基准不消费该执行专用产品。
 
 CN/US 均可通过 `auxiliary_inputs` 声明 `analysis_price="HFQ"` 的后复权研究观察，
 包括交易标的自身及另一标的；用 `ctx.auxiliary_histories[别名]` 读取。
-主行情、执行报价、账户估值、费用及公司行动继续采用 RAW，买持基准只依赖主输入。
-美股观察使用 DFLS Futu 复权 BARS 与独立 SESSIONS；A股股票／ETF观察使用
-`tushare_equity_observation_bindings`，接入现有后复权行情及交易日历，不将其替代 RAW 经济事件源。
+主行情及辅助行情均为 HFQ，历史报价、成交和账户处理保持相同尺度，买持基准只依赖主输入。
+DFLS 优先取得供应商后复权行情，供应商不支持时由 DFLS 计算。返回元数据
+`acquisition_method` 明确区分 `PROVIDER_ADJUSTED` 与 `DFLS_ADJUSTED`，供应商身份另行记录。
+PTE 独立准备 RAW 执行参考价，由 EC 结合富途账户和订单回报处理实际股数与资金。
 准备、证据与缓存同时绑定逻辑别名、来源、频率和复权方式；同一物理日历可供多个角色复用，
 修改别名不会误用旧别名快照。`EquityInputBinding.bind_requests` 提供角色到物理请求的完整映射。
 按来源 `AvailableDate` 执行可见性检查；供应商后复权不自动等于分红再投资总回报，
@@ -848,7 +849,7 @@ V4 的非行情及周线观察通过 `observation_inputs: tuple[DatasetObservati
 使用既有 DFLS 产品，不将指数伪装成股票，也不将成分权重或资金流拼成 OHLCV。
 `EquityInputBinding.observation_bindings` 保存完整请求和内容身份，原行情 `request_bindings` 格式保持。
 `EquityEvaluationRequest.observation_requests` 可显式选择各观察输入独立的预热区间，
-例如主 RAW 仅准备账户所需区间，而 ETF 信号表读取此前 300 个交易日；不改变策略定义或主 RAW 起点。
+例如主 HFQ 仅准备账户所需区间，而 ETF 信号表读取此前 300 个交易日；不改变策略定义或主 HFQ 起点。
 准备仍核对产品、覆盖要求、固定边界、真实资金流交易日及完整周线；动态截止不得超过评价结束日，
 已启用输入不能通过较早截止或空请求跳过。各显式选择进入会话缓存及输入身份，不能串用预热数据。
 固定冻结种子仍按已声明边界载入，并由原有可用时刻过滤规则控制早期可见性。
@@ -868,18 +869,21 @@ V4 的非行情及周线观察通过 `observation_inputs: tuple[DatasetObservati
 有资源的候选注册快照按完整内容身份隔离，部署根目录不进入策略定义身份。静态种子不随前瞻日延长。
 请求按完整选择身份去重，表格身份进入输入快照、worker 与恢复依赖，买持仍只依赖主交易输入。
 
-逐步策略显式设置 `planning_context=True` 时，`ctx.planning` 提供本次运行的预算费率和执行规范，
-可配合 `CycleBudget` 保留含费周期目标及部分成交补买。实际成交费用继续由执行层记账。
-默认不开启且不序列化新增空声明，已有 S018 原生定义身份保持；普通准备、升级不会隐式复算历史等价性。
+V4 必须显式声明 `execution_policy`。`TARGET_POSITION` 声明仓位资金模式；
+`FROZEN_RULE` 和 `INTRADAY_OVERLAY` 保留冻结规则及盘中策略的订单语义，由 EC 统一规划。
+策略 `AccountDecision` 不再接受订单、依赖腿、资金模式或预算修改，`AccountDecisionProposal` 不再携带报价。
+原 `planning_context` 和价格换算系数已删除；执行状态锁由 EC 维护。
 
-V4要求显式逐区间价格限制、可卖时点及余股清仓规则，延迟交收须有结算时间。
-来源准入见[DFLS](../../packages/dataflows/README.md#cnus版本化raw事实源)，执行语义见
-[EC](../../packages/execution_channels/README.md)。不能用一个供应商样本或复权因子
-证明多年完整经济事件；现有A股数据集不自动变成RAW事件源。缺少历史凭据时应报告数据尚未就绪。
+历史回放保留既定数量步长、价位、费用和结算规则。资金不能购买一个合法整数单位时明确返回
+`INSUFFICIENT_LOT`，不改变规则或归一化价格。HFQ 数量为研究模拟单位，不要求逐笔复现模拟盘。
+历史价格限制也须为 HFQ；细报价与主报价的 `price_basis_id` 必须一致。真实模拟盘的接单限制由渠道检查。
+平台不判断除权除息事件，接受 T 日参考价在 T+1 日不合适的业务限制；成交与账户以渠道实际事实为准。
+来源能力见 [DFLS](../../packages/dataflows/README.md)，订单与账户规则见 [EC](../../packages/execution_channels/README.md)。
 
 V4结果为 `equity-research/v4`，发布引用为 `EvidenceRef(schema="equity_research", schema_version=4)`，
 沿用输入、候选、基准三项不可变依赖闭包及参数计划schema4。检查点严格匹配版本、请求、引擎和输入，
-恢复核对检查点请求及依赖字节；准备对象固定当前V4时钟上下文。诊断、缺口日期和交易日聚合使用实际市场时区，
+恢复核对检查点请求及依赖字节；请求及账本显式记录 `price_basis=HFQ`、
+`quantity_basis=SIMULATED_INTEGER_UNITS`，不把旧 RAW 证据当作当前模型。准备对象固定当前V4时钟上下文。诊断、缺口日期和交易日聚合使用实际市场时区，
 缺失细报价单独留证。PTE部署、生产状态持久化、技术检验及冻结准入仍按原已支持版本处理，V4研究通过不自动取得这些能力。
 
 三阶段公共验收见[账户能力](../../tests/functional/test_account_parity_acceptance.py)及
@@ -962,9 +966,9 @@ CN/US个股权益研究统一采用V4；既有A股日期模型仅服务其明确
 | `TradingSession` | 交易日、市场时区、显式交易段；UTC 存储，根据当地时区生成 30 分钟网格 |
 | `ResearchExecutionSpec` | 市场规则版本、频率、币种、现金可用规则、数量步长、价位、买入溢价、滑点、触价与延迟假设 |
 | `EquityStrategyDefinition` / `EquityStrategyCandidate` | 源码闭包、入口、强类型参数模式及参数、精确依赖版本、标的、执行合同、预热及结构化解释；内容身份可登记和重新加载 |
-| `EquityInputBinding` | 准备引用、四类产品内容哈希、标的、执行合同哈希及预热；准备完成后锁定 |
+| `EquityInputBinding` | 准备引用、三类产品内容哈希、标的、执行合同哈希及预热；准备完成后锁定 |
 | `DecisionPoint` | `observed_through <= decision_at <= execution_interval.start`，时间全部带时区 |
-| `EquityEvaluationRequest` | 实验、候选、评价区间、历史起点、四类来源、资金、费率、精确基准、场景及统计口径；准备后绑定输入与审计材料哈希 |
+| `EquityEvaluationRequest` | 实验、候选、评价区间、历史起点、三类来源、资金、费率、精确基准、场景及统计口径；准备后绑定输入与审计材料哈希 |
 | `EquityEvaluationResult` | 固定请求哈希、不可变 JSON 字节及内容哈希；读取 `payload` 返回独立副本 |
 
 状态入口为 `step(context, state) -> AccountStepResult`，返回 `AccountDecision`与显式状态；
@@ -973,36 +977,34 @@ CN/US个股权益研究统一采用V4；既有A股日期模型仅服务其明确
 
 ### 10.3 数据产品
 
-四个产品均经现有 DFLS 管理，使用同一准备引用。各产品声明的交易时段必须完全一致。
+三个产品均经现有 DFLS 管理，使用同一准备引用。各产品声明的交易时段必须完全一致。
 
 | 产品 | 必需字段 | 发布时检查 |
 | --- | --- | --- |
 | `equity.bars` | `Date/BarStart/AvailableDate/Open/High/Low/Close/Volume/Amount` | 完整独立日历网格、OHLC 范围、非负量额、可用时间不早于结束时间 |
 | `equity.sessions` | `Date/AvailableDate/SessionDate` 及交易段元数据 | 唯一顺序交易日、市场时区、请求覆盖 |
-| `equity.actions` | `Date/AvailableDate/EventId/Kind/Ratio/CashPerShare/PayAt` | 唯一事件、正拆股比例、现金分红金额及支付时点 |
 | `equity.trading_facts` | `Date/AvailableDate/Tradable/PriceLimitLower/PriceLimitUpper` | 每个执行区间完整覆盖，区间起点已可得 |
 
-`EquitySources.trading_facts` 声明上述动态产品的来源。TDR 在执行准备中调用 SRT 组装层，独立读取
+`EquitySources.trading_facts` 声明上述动态产品的来源。TDR 在执行准备中独立读取
 [EC 市场规则](../../packages/execution_channels/README.md) 的固定规则，与 DFLS 交易日历及动态事实合并。输入证据
 保存原始动态产品和派生约束的身份，派生约束包含适用的 EC 市场规则版本和指纹。
 
-`Date` 对行情表示区间结束，对交易事实表示区间开始，对公司行动表示生效时间。
+`Date` 对行情表示区间结束，对交易事实表示区间开始。
 卖出区间的 `SettlementAt` 按 EC 市场规则的结算模型及交易日历推导。动态事实由宿主明确指定来源和修订。
 EC 市场规则的数量步长和价位必须与执行合同一致。制度切换导致不一致时，需另行划分合同。
 
-无公司行动也必须有来源核实记录：一条 `Kind=NONE` 和 `no_actions_verified=true`。
 默认缺行情、缺约束、日历冲突、来源修订不符、无合法准备引用等均失败，不补齐、不换源。
-执行始终使用未复权价。拆股及份额折算更新持有数量，TDR 回放忽略现金派息等非交易收入。
+历史回放使用后复权价，不请求公司行动产品；模拟盘使用原价并以富途实际成交、持仓及余额对账。
 
 `futu_equity_bindings(source=..., quote_context=...)` 绑定美股行情和日历。
 宿主管理行情连接生命周期，适配器不打开交易连接，不提交券商订单。
 历史 K 线使用 RTH 和分页；美东本地时间转换成 UTC，支持正常交易日、半日和夏令时。
 适配器记录 `BAR_CLOSE_RESEARCH_ASSUMPTION`，它是研究中的行情可用时间假设，不是历史发布延迟实测。
-持有数量变动事件由独立的动态来源提供，拆股比例为调整后数量除以调整前数量。
+模拟盘未知数量变化由 EC 对账，不推断拆股原因；未知非交易现金差额归渠道平账账户。
 接口时区及分页依据见 [Futu 历史 K 线文档](https://openapi.futunn.com/futu-api-doc/quote/request-history-kline.html)。
 
 宿主可显式传入 `UsEquityBarPolicy(quantity_step=1, price_tick=0.01, unavailable_intervals=())`
-作为 `futu_equity_bindings(..., research_policy=...)` 的研究假设，启用第四类约束绑定及行情缺口标记。
+作为 `futu_equity_bindings(..., research_policy=...)` 的研究假设，启用动态交易事实绑定及行情缺口标记。
 规则与已知不可交易区间写入来源元数据并随准备引用固定；来源修订应明确表达这项假设，不能标为历史停牌事实。
 该模式只在独立日历和分页下载完整结束后，将网格缺口标为 `MISSING`，原始零量行情标为 `ZERO_VOLUME`；
 `MISSING` 保留空 OHLCV，不填造价格。已声明中断与行情区间重叠时标记 `ExecutionBlocked`，执行整段不成交。
@@ -1105,19 +1107,19 @@ V4研究可运行不代表具备生产状态持久化、PTE部署或新的冻结
 [美股公共链路](../../tests/functional/test_equity_research.py)、
 [DFLS 隔离契约](../../packages/dataflows/tests/functional/test_equity_products.py) 和
 [Futu 适配器](../../packages/dataflows/tests/functional/test_futu_equity.py)。
-覆盖同日往返、整数股、下一段执行、未来行情不影响此前决策、资金交收、拆股分红、支付日期缺失、
+覆盖同日往返、整数股、下一段执行、未来行情不影响此前决策、资金交收、获取方法、复权基准混用拒绝、
 半日/夏令时、分页异常、数据缺失、跨市场拒绝、重复提交、失败回滚、独立审计及不可变发布。
 同时运行原 A 股股票/ETF 执行、数据准备、批量评价与证据发布的相关测试。
-验证基于隔离夹具，不等同于真实历史公司行动验证、全仓回归或券商验收。
+验证基于隔离夹具，不等同于真实数据完整性验收、全仓回归或券商验收。
 
-真实研究启动前仍须由已授权批次固定标的、窗口、资金政策、统计口径，并核验四类来源的实际覆盖。
-软件合成夹具通过不替代真实数据准备，尤其不能证明历史交易约束或分红支付数据已经可用。
+真实研究启动前仍须由已授权批次固定标的、窗口、资金政策、统计口径，并核验三类来源的实际覆盖。
+软件合成夹具通过不替代真实数据准备，尤其不能证明历史动态交易事实已经完整可用。
 
 ### 10.8 选型稳定性：读取原账户的窗口事实
 
 `project_selection_window_facts(repository, request)`批量消费显式的 V4 `EvidenceRef`，
 返回选择／观察窗口的紧凑数值事实、来源绑定、失败明细和执行统计。
-支持 A股／美股、日线／M30；保持原账户持仓和公司行动后的权益，不从窗口起点重新建仓。
+支持 A股／美股、日线／M30；保持原账户持仓及其后复权账本权益，不从窗口起点重新建仓。
 预期观察点来自已保存的独立交易日历及决策频率；缺柱、陈旧估值按所属窗口报告不足，
 不会用全样本共同交集删日，也不会将逐柱回撤自动降为日末回撤。
 

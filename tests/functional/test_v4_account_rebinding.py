@@ -116,7 +116,7 @@ def test_rebind_active_v4_and_block_historical_execution(formal_v4, tmp_path, mo
         request = V4AccountBindingUpdate(AccountBindingUpdate('formal', source_hash, new_hash, 'v1'),
             'formal-channel', account_binding_facts_sha256(scoped, 'formal'), effective,
             execution_rules(candidate.instrument, candidate.definition.execution_spec),
-            FormalV4Inputs(new_hash, evaluation.input_binding, evaluation.fee_rate),
+            FormalV4Inputs(new_hash, evaluation.input_binding, evaluation.fee_rate, client.inputs('formal').execution_reference),
             V4StateContinuation('source', 'reviewed fixture state'))
         untouched = list(database._connection.iterdump())
         with pytest.raises(ValueError, match='reviewed snapshot'):
@@ -174,7 +174,7 @@ def test_rebind_to_qualified_successor_version(formal_v4, tmp_path, monkeypatch)
         request = V4AccountBindingUpdate(AccountBindingUpdate('formal', before['release_hash'], target.release_hash, 'v2'),
             'formal-channel', account_binding_facts_sha256(scoped, 'formal'), cutover,
             execution_rules(candidate.instrument, candidate.definition.execution_spec),
-            FormalV4Inputs(target.release_hash, evaluation.input_binding, evaluation.fee_rate),
+            FormalV4Inputs(target.release_hash, evaluation.input_binding, evaluation.fee_rate, client.inputs('formal').execution_reference),
             V4StateContinuation('source', 'reviewed successor compatibility'))
         assert update_account_bindings(runtime, 'target', (request,)).status is AccountBindingUpdateStatus.COMMITTED
         after = scoped.virtual_account('formal')
@@ -210,7 +210,7 @@ def test_legacy_migration_reconciles_positions_and_rolls_back_batch(formal_v4, t
         updates = tuple(V4AccountBindingUpdate(AccountBindingUpdate(name, old_hash, target_hash, 'v1'),
             'formal-channel', account_binding_facts_sha256(scoped, name), effective,
             execution_rules(candidate.instrument, candidate.definition.execution_spec),
-            FormalV4Inputs(target_hash, evaluation.input_binding, evaluation.fee_rate),
+            FormalV4Inputs(target_hash, evaluation.input_binding, evaluation.fee_rate, client.inputs('formal').execution_reference),
             V4StateMigration(StateRecord(), 'reviewed fixture migration', StateRecord() if name == 'formal' else None))
             for name in ('formal', 'flat'))
         unchanged = list(database._connection.iterdump())
@@ -237,7 +237,7 @@ def test_legacy_migration_reconciles_positions_and_rolls_back_batch(formal_v4, t
         assert after['cash'] == before['cash']
         assert scoped.account_fills('formal') == [fill]
         record = scoped.v4_runtime_binding('formal')
-        assert record['legacy_actions_before'] == effective.start.isoformat()
+        assert 'legacy_actions_before' not in record
         assert scoped.v4_runtime_binding('flat')['plan_sha256'] == record['plan_sha256']
         with pytest.raises(ValueError, match='cutover'):
             scoped.save_account_decision('formal', {**json.loads(before['last_decision_payload']),

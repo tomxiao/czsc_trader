@@ -8,6 +8,17 @@ from execution_channels.policy import ResearchExecutionSpec
 
 
 def execution_constraints(definition, products, metadata):
+    for role in ('bars', 'trading_facts'):
+        if metadata[role].get('adjustment') != 'hfq':
+            raise ValueError('historical execution requires HFQ bars and price limits: ' + role)
+    basis = metadata['bars'].get('price_basis_id')
+    if not basis or metadata['trading_facts'].get('price_basis_id') != basis:
+        raise ValueError('historical price limits must use the primary HFQ basis')
+    if 'execution:bars' in metadata:
+        finer = metadata['execution:bars']
+        if (finer.get('adjustment') != 'hfq' or not finer.get('price_basis_id') or
+                finer['price_basis_id'] != metadata['bars'].get('price_basis_id')):
+            raise ValueError('historical checkpoint prices must use the primary HFQ basis')
     sessions = sessions_from_metadata(metadata['sessions'])
     following = dict(zip((s.session_date for s in sessions), sessions[1:]))
     record = metadata['trading_facts'].get('following_session')

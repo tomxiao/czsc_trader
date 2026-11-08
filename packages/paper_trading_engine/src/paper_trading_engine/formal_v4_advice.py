@@ -6,7 +6,7 @@ may extend beyond completed historical prices; no future OHLCV row is fabricated
 """
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, replace
+from dataclasses import dataclass, replace
 from datetime import date, datetime, timedelta
 import json
 import math
@@ -24,6 +24,7 @@ from strategy_runtime.equity_definition import EquityInputBinding, EquityStrateg
 from strategy_runtime.equity_definition import EquityAuxiliaryBinding
 
 from .account_binding import AccountStrategyBinding
+from .execution_reference import ExecutionReferenceBinding
 from .equity_advice import EquityAdviceClient, PreparedEquityDecision, prepare_equity_decision
 from .srt_advice_client import _strategy_identity
 from .scheduling_contracts import ScheduledDecision
@@ -34,28 +35,39 @@ class FormalV4Inputs:
     release_hash: str
     binding: EquityInputBinding
     fee_rate: float
+    execution_reference: ExecutionReferenceBinding
 
     def __post_init__(self):
         if type(self.release_hash) is not str or re.fullmatch('[0-9a-f]{64}', self.release_hash) is None:
             raise ValueError('V4 inputs require the exact release hash')
         if type(self.binding) is not EquityInputBinding or not self.binding.request_bindings:
             raise ValueError('formal V4 inputs require explicit request roles')
+        if (type(self.execution_reference) is not ExecutionReferenceBinding
+                or self.execution_reference.parameters.instrument != self.binding.instrument):
+            raise ValueError('formal V4 inputs require a separate RAW execution binding for the traded instrument')
         if type(self.fee_rate) not in (float, int) or not math.isfinite(self.fee_rate) or not 0 <= self.fee_rate < 1:
             raise ValueError('formal V4 inputs require a finite model fee')
 
     @property
-    def requests(self) -> tuple[DataRequest, ...]:
+    def strategy_requests(self) -> tuple[DataRequest, ...]:
         unique = dict.fromkeys(parameters for _, parameters in self.binding.request_bindings)
         return (tuple(EquityDataRequest(p.instrument, p.source, p.query) for p in unique)
                 + tuple(item.request for item in self.binding.observation_bindings if item.request is not None))
 
+    @property
+    def requests(self) -> tuple[DataRequest, ...]:
+        return self.strategy_requests + (self.execution_reference.request,)
+
     def to_dict(self):
-        return dict(schema_version=2, release_hash=self.release_hash,
-                    binding=self.binding.to_dict(), fee_rate=self.fee_rate)
+        return dict(schema_version=3, release_hash=self.release_hash,
+                    binding=self.binding.to_dict(), fee_rate=self.fee_rate,
+                    execution_reference=self.execution_reference.to_dict())
 
     def validate_candidate(self, release_hash: str, candidate: EquityStrategyCandidate) -> None:
         """Check a saved input declaration against the exact frozen definition."""
         binding, definition = self.binding, candidate.definition
+        if self.execution_reference.parameters.query.frequency is not definition.execution_spec.decision_clock:
+            raise ValueError('execution reference frequency differs from the frozen decision clock')
         execution = None if binding.execution_input is None else binding.execution_input.input
         if (self.release_hash != release_hash or binding.instrument != candidate.instrument
                 or binding.specification_hash != candidate.execution_spec_hash
@@ -64,14 +76,15 @@ class FormalV4Inputs:
                 or tuple(item.input for item in binding.auxiliary_inputs) != definition.auxiliary_inputs
                 or (binding.scope is InputBindingScope.EXECUTION and execution != definition.execution_input)):
             raise ValueError('formal V4 input identity differs from account release')
-        binding.bind_requests(self.requests)
+        binding.bind_requests(self.strategy_requests)
 
     @classmethod
     def from_dict(cls, value):
-        if (type(value) is not dict or set(value) != {'schema_version', 'release_hash', 'binding', 'fee_rate'}
-                or type(value['schema_version']) is not int or value['schema_version'] != 2):
+        if (type(value) is not dict or set(value) != {'schema_version', 'release_hash', 'binding', 'fee_rate', 'execution_reference'}
+                or type(value['schema_version']) is not int or value['schema_version'] != 3):
             raise ValueError('unsupported formal V4 input contract; migrate the account data recipe')
-        return cls(value['release_hash'], EquityInputBinding.from_dict(value['binding']), value['fee_rate'])
+        return cls(value['release_hash'], EquityInputBinding.from_dict(value['binding']), value['fee_rate'],
+                   ExecutionReferenceBinding.from_dict(value['execution_reference']))
 
 
 class _CalendarPreparationError(ValueError):
@@ -133,8 +146,8 @@ class FormalV4AdviceClient:
         return account, release, candidate
 
     def register_inputs(self, account_id: str, binding: EquityInputBinding, *,
-                        expected_release_hash: str, fee_rate: float) -> str:
-        return self._register(account_id, FormalV4Inputs(expected_release_hash, binding, fee_rate), forward=False)
+                        expected_release_hash: str, fee_rate: float, execution_reference: ExecutionReferenceBinding) -> str:
+        return self._register(account_id, FormalV4Inputs(expected_release_hash, binding, fee_rate, execution_reference), forward=False)
 
     def _register(self, account_id: str, inputs: FormalV4Inputs, *, forward: bool) -> str:
         _, release, candidate = self._account_release(account_id)
@@ -251,8 +264,13 @@ class FormalV4AdviceClient:
     def _forward_requests(self, recipe, interval, candidate, *, cutoff):
         calendars = self._calendar_products(recipe, interval.start)
         from strategy_runtime.data_preparation import forward_requests
-        return forward_requests(self.dataflows, recipe.binding, interval, candidate.definition,
+        requests, items, observations, ends = forward_requests(self.dataflows, recipe.binding, interval, candidate.definition,
                                 candidate.source_root, calendars, cutoff=cutoff)
+        primary = next(parameters for role, parameters in items if role == 'bars')
+        raw = recipe.execution_reference.parameters
+        raw = replace(raw, query=replace(raw.query, end=primary.query.end))
+        raw_request = EquityDataRequest(raw.instrument, raw.source, raw.query)
+        return requests + (raw_request,), items, observations, ends
 
     def _forward_inputs(self, account_id, recipe, interval, *, candidate=None):
         path = self._interval_path(account_id, recipe.release_hash, interval)
@@ -281,7 +299,10 @@ class FormalV4AdviceClient:
                     if query is None else DatasetObservationBinding(bound.input, query,
                     identities[request_selection(query)]) for bound, (_, query) in zip(
                         recipe.binding.observation_bindings, observation_items, strict=True)))
-            value = FormalV4Inputs(recipe.release_hash, binding, recipe.fee_rate)
+            raw_request = requests[-1]
+            raw_binding = ExecutionReferenceBinding(raw_request.parameters, result.reference,
+                identities[request_selection(raw_request)])
+            value = FormalV4Inputs(recipe.release_hash, binding, recipe.fee_rate, raw_binding)
             self._save_interval(path, value)
             return value
 
@@ -315,18 +336,17 @@ class FormalV4AdviceClient:
         inputs = self._pinned_inputs(account_id, interval) if recipe is None else self._forward_inputs(account_id, recipe, interval, candidate=candidate)
         if inputs.release_hash != release.release_hash:
             raise ValueError('formal V4 prepared inputs belong to another release')
-        record = self.store.v4_runtime_binding(account_id)
-        boundary = None if record is None else record.get('legacy_actions_before')
         from .execution_inputs import resolve_live_context
-        session_request = next(request for role, request in inputs.binding.bind_requests(inputs.requests)
+        session_request = next(request for role, request in inputs.binding.bind_requests(inputs.strategy_requests)
                                if role == 'sessions')
         calendar = self.dataflows.fetch(session_request, prepared=inputs.binding.prepared)
         if not calendar.ready:
             raise ValueError('live execution calendar is unavailable')
         context = resolve_live_context(candidate, interval, calendar.dataframe, calendar.identity.metadata)
-        return prepare_equity_decision(self.dataflows, candidate, inputs.binding, inputs.requests,
+        return prepare_equity_decision(self.dataflows, candidate, inputs.binding, inputs.strategy_requests,
                                        interval, fee_rate=inputs.fee_rate, live=True,
-                                       actions_from=None if boundary is None else datetime.fromisoformat(boundary),
+                                       execution_reference=inputs.execution_reference.fetch(self.dataflows, interval,
+                                           latency_seconds=candidate.definition.execution_spec.data_latency_seconds),
                                        execution_context=context)
 
     def get_decision(self, *args, **kwargs):
@@ -338,30 +358,11 @@ class FormalV4AdviceClient:
             kwargs['account_id'], release.release_hash, prepared.interval).read_text(encoding='utf-8')))
         if (not prepared.live_interval or prepared.candidate != candidate
                 or inputs.release_hash != release.release_hash or inputs.binding != prepared.binding
-                or inputs.fee_rate != prepared.fee_rate):
+                or inputs.fee_rate != prepared.fee_rate
+                or inputs.execution_reference.content_sha256 != prepared.execution_reference.content_sha256):
             raise ValueError('formal V4 proposal differs from loaded deployment')
         return EquityAdviceClient(self.store).get_decision(*args, **kwargs)
 
-    def apply_account_events(self, account_id: str, prepared: PreparedEquityDecision) -> None:
-        """Recognize only pinned, effective events before planning the current account."""
-        if (type(prepared) is not PreparedEquityDecision or not prepared.live_interval
-                or prepared._decision_inputs_hash() != prepared.decision_inputs_sha256):
-            raise ValueError('formal account events require unchanged prepared live inputs')
-        _, release, candidate = self._account_release(account_id)
-        if prepared.candidate != candidate or not self._interval_allowed(account_id, prepared.interval):
-            raise ValueError('formal account events differ from loaded deployment')
-        inputs = FormalV4Inputs.from_dict(json.loads(self._interval_path(
-            account_id, release.release_hash, prepared.interval).read_text(encoding='utf-8')))
-        if inputs.binding != prepared.binding or inputs.fee_rate != prepared.fee_rate:
-            raise ValueError('formal account events differ from archived interval inputs')
-        with self.store.atomic_decision_update():
-            self.store.require_no_pending_dividend(account_id)
-            for action in prepared.live_actions:
-                if (action.kind != 'SPLIT' or action.effective_at > prepared.interval.start
-                        or action.available_at > prepared.interval.start):
-                    raise ValueError('formal account event is unavailable at the decision')
-                self.store.apply_equity_event(account_id, **asdict(action))
-            self.store.settle_equity_receivables(account_id, at=prepared.interval.start, trade_only=True)
 
 
 class FormalV4ScheduleProvider:
@@ -378,7 +379,7 @@ class FormalV4ScheduleProvider:
         if rules is None or inputs.release_hash != account['release_hash']:
             raise ValueError('V4 schedule input identity differs from account')
         if recipe is None:
-            request = next(request for role, request in inputs.binding.bind_requests(inputs.requests) if role == 'sessions')
+            request = next(request for role, request in inputs.binding.bind_requests(inputs.strategy_requests) if role == 'sessions')
             fetched = self.client.dataflows.fetch(request, prepared=inputs.binding.prepared)
         else:
             fetched = self.client._calendar_products(recipe, observed_at)['sessions']
@@ -444,7 +445,7 @@ class FormalV4ScheduleProvider:
 
     def _adopt(self, account_id, task, observed_at, *, source, actor):
         prepared = self.client.prepare_interval(account_id, task.interval, observed_at=observed_at)
-        self.client.apply_account_events(account_id, prepared)
+        self.client.store.settle_equity_receivables(account_id, at=prepared.interval.start)
         from execution_channels.futu.audit import AuditRecorder
         AuditRecorder(self.client.store).record('MARKET_DATA_PREPARED', source=source,
             actor_type=actor, account_id=account_id, correlation_id=task.task_id,

@@ -1,143 +1,137 @@
-"""Durable account-owned equity events, sharing PaperStore transactions/ledger."""
+"""Broker quantity reconciliation and trade settlement in the owning ledger."""
 from datetime import datetime
 from decimal import Decimal
 import json
 from uuid import NAMESPACE_URL, uuid5
 
 
+def allocate_quantities(weights, total):
+    """Largest remainder allocation, with stable identity ordering for ties."""
+    if type(total) is not int or total < 0 or any(type(v) is not int or v < 0 for v in weights.values()):
+        raise ValueError('position allocation requires nonnegative integer quantities')
+    denominator = sum(weights.values())
+    if denominator == 0:
+        if total:
+            raise ValueError('broker position has no confirmed account owner')
+        return {key: 0 for key in weights}
+    result = {key: value * total // denominator for key, value in weights.items()}
+    remaining = total - sum(result.values())
+    ranked = sorted(weights, key=lambda key: (-(weights[key] * total % denominator), key))
+    for key in ranked[:remaining]:
+        result[key] += 1
+    return result
+
+
 class EquityEventStore:
     def require_no_pending_dividend(self, account_id: str) -> None:
-        """Block cutover while the legacy strategy ledger has dividend receivables."""
+        """Reject migration of an unsettled legacy nontrade receivable."""
         self.virtual_account(account_id)
         with self._lock:
             rows = self._connection.execute(
-                "SELECT payload FROM equity_account_events WHERE account_id=?", (account_id,),
-            ).fetchall()
+                'SELECT payload FROM equity_account_events WHERE account_id=?', (account_id,)).fetchall()
         for row in rows:
-            event = json.loads(row["payload"])
-            if (event.get("recognized_kind") == "CASH_DIVIDEND" and not event["paid"]
-                    and Decimal(event["amount"]) != 0):
-                raise ValueError(f"{account_id}: unsettled legacy dividend requires ledger reconciliation")
+            event = json.loads(row['payload'])
+            if event.get('recognized_kind') == 'CASH_DIVIDEND' and not event['paid'] and Decimal(event['amount']):
+                raise ValueError(f'{account_id}: unsettled legacy dividend requires ledger reconciliation')
 
-    def apply_equity_event(self, account_id, *, event_id, kind, effective_at, available_at,
-                           source_sha256, ratio=None, cash_per_share=None, pay_at=None):
-        import re
-        if not event_id or kind not in {"SPLIT", "CASH_DIVIDEND"}:
-            raise ValueError("unsupported equity event")
-        if not re.fullmatch(r"[0-9a-f]{64}", source_sha256):
-            raise ValueError("equity event requires source content identity")
-        if any(type(t) is not datetime or t.utcoffset() is None for t in (effective_at, available_at)):
-            raise ValueError("equity event timestamps must be aware")
-        if available_at > effective_at:
-            raise ValueError("equity event was unavailable at its effective time")
-        definition = {"kind": kind, "effective_at": effective_at.isoformat(), "available_at": available_at.isoformat(),
-                      "source_sha256": source_sha256, "ratio": None if ratio is None else str(ratio),
-                      "cash_per_share": None if cash_per_share is None else str(cash_per_share),
-                      "pay_at": None if pay_at is None else pay_at.isoformat()}
-        with self._lock, self._write_context(False):
-            if self.equity_account_rules(account_id) is None:
-                raise ValueError("equity event requires a US account")
-            previous = self._connection.execute("SELECT payload FROM equity_account_events WHERE account_id=? AND event_id=?",
-                                                (account_id, event_id)).fetchone()
-            if previous:
-                if json.loads(previous[0]).get("definition") != definition:
-                    raise ValueError("equity event identity was reused with different facts")
-                return False
-            times = [datetime.fromisoformat(row[0]) for row in self._connection.execute(
-                "SELECT occurred_at FROM fills WHERE account_id=?",(account_id,))]
-            for row in self._connection.execute("SELECT payload FROM equity_account_events WHERE account_id=?",(account_id,)):
-                prior = json.loads(row[0]).get("definition")
-                if prior is not None:
-                    times.append(datetime.fromisoformat(prior["effective_at"]))
-            if times and effective_at < max(times):
-                raise ValueError("equity event cannot be applied behind confirmed account events")
-            account = self.virtual_account(account_id)
-            quantity, cash = int(account["quantity"]), Decimal(account["cash"])
-            cost, receivable = Decimal(account["average_cost"]), Decimal(account["receivable"])
-            assets, realized = Decimal(account["total_assets"]), Decimal(account["realized_pnl"])
-            old_quantity, old_cash, old_receivable = quantity, cash, receivable
-            if kind == "SPLIT":
-                from .broker import TERMINAL_INTENT_STATUSES
-                if any(x["status"] not in TERMINAL_INTENT_STATUSES for x in self.account_intents(account_id)):
-                    raise ValueError("split requires reconciliation of outstanding channel orders")
-                multiplier = Decimal(str(ratio))
-                if not multiplier.is_finite() or multiplier <= 0 or quantity * multiplier != (quantity * multiplier).to_integral_value():
-                    raise ValueError("split has invalid ratio or unsupported fractional entitlement")
-                quantity = int(quantity * multiplier)
-                cost /= multiplier
-                result = {"definition": definition}
-            else:
-                per_share = Decimal(str(cash_per_share))
-                if (not per_share.is_finite() or per_share < 0 or type(pay_at) is not datetime
-                        or pay_at.utcoffset() is None or pay_at < effective_at):
-                    raise ValueError("cash dividend requires nonnegative amount and payment time")
-                amount = per_share * quantity
-                assets += amount
-                realized += amount
-                if pay_at == effective_at:
-                    cash += amount
-                else:
-                    receivable += amount
-                result = {"definition": definition, "kind": "RECEIVABLE", "amount": str(amount),
-                          "pay_at": pay_at.isoformat(), "paid": pay_at == effective_at}
-            result.update(ledger_entry_id=str(uuid5(NAMESPACE_URL, f"equity-event:{account_id}:{event_id}")),
-                          recognized_kind=kind, receivable_delta=str(receivable-old_receivable))
-            self._connection.execute("INSERT INTO equity_account_events VALUES(?,?,?)",
-                                     (account_id, event_id, json.dumps(result, sort_keys=True)))
-            self._connection.execute("UPDATE virtual_accounts SET quantity=?,cash=?,average_cost=?,receivable=?,"
-                "total_assets=?,realized_pnl=? WHERE account_id=?",
-                (quantity, str(cash), str(cost), str(receivable), str(assets), str(realized), account_id))
-            self._equity_ledger(account_id, event_id, kind, cash - old_cash, quantity - old_quantity,
-                                cash, quantity, effective_at)
-            from .equity_account_state import record_v4_action
-            record_v4_action(self, account_id, ratio=multiplier if kind == "SPLIT" else None,
-                             income_delta=amount if kind == "CASH_DIVIDEND" else Decimal(0))
-            return True
-
-    def settle_equity_receivables(self, account_id, *, at, trade_only: bool = False):
+    def reconcile_equity_positions(self, symbol, *, quantity: int, at: datetime):
+        """Align a confirmed broker holding without attributing its cause."""
+        from .broker import TERMINAL_INTENT_STATUSES
+        from .equity_account_state import record_v4_position_reconciliation
         if type(at) is not datetime or at.utcoffset() is None:
-            raise ValueError("settlement requires aware timestamp")
+            raise ValueError('position reconciliation requires an aware timestamp')
+        if type(quantity) is not int or quantity < 0:
+            raise ValueError('broker quantity must be a nonnegative integer')
+        with self._lock, self._write_context(False):
+            accounts = sorted((a for a in self.strategy_virtual_accounts()
+                if a['symbol'] == symbol and a.get('run_state') != 'RETIRED'), key=lambda a: a['account_id'])
+            before = {a['account_id']: int(a['quantity']) for a in accounts}
+            if sum(before.values()) == quantity:
+                return ()
+            if not accounts or sum(before.values()) == 0:
+                raise ValueError('broker position has no confirmed account owner')
+            if any(intent['status'] not in TERMINAL_INTENT_STATUSES for a in accounts
+                   for intent in self.account_intents(a['account_id'])):
+                raise ValueError('position difference requires confirmation of every outstanding order')
+            if self.account_invariant_violations():
+                raise ValueError('position reconciliation requires consistent existing ledgers')
+            allocated = allocate_quantities(before, quantity)
+            changed = []
+            for account in accounts:
+                account_id = account['account_id']
+                old, new = before[account_id], allocated[account_id]
+                if old == new:
+                    continue
+                # Preserve acquisition cost. An unknown adjustment is never a
+                # sale, a fill, or realized trading profit.
+                cost = Decimal(account['average_cost']) * old / new if new else Decimal(0)
+                event_id = 'position:' + str(uuid5(NAMESPACE_URL,
+                    f'{account_id}:{at.isoformat()}:{old}:{new}'))
+                ledger_id = str(uuid5(NAMESPACE_URL, f'equity-event:{account_id}:{event_id}'))
+                event = {'ledger_entry_id': ledger_id, 'recognized_kind': 'POSITION_ADJUSTMENT',
+                    'reason': 'UNKNOWN', 'receivable_delta': '0', 'broker_quantity': quantity,
+                    'quantity_before': old, 'quantity_after': new, 'occurred_at': at.isoformat()}
+                target = account.get('cycle_target')
+                target = None if target is None or not new else int(target) * new // old
+                cycle_json = account.get('entry_cycle_json')
+                if cycle_json is not None:
+                    from dataclasses import replace
+                    from ..entry_cycle import EntryCycleState
+                    cycle = EntryCycleState.from_dict(json.loads(cycle_json))
+                    cycle_json = (json.dumps(replace(cycle, target_quantity=cycle.target_quantity * new // old).to_dict())
+                        if new else None)
+                self._connection.execute('UPDATE virtual_accounts SET quantity=?,average_cost=?,cycle_target=?,entry_cycle_json=?,updated_at=? WHERE account_id=?',
+                    (new, str(cost), target, cycle_json, at.isoformat(), account_id))
+                self._equity_ledger(account_id, event_id, 'POSITION_ADJUSTMENT', Decimal(0), new-old,
+                    Decimal(account['cash']), new, at)
+                self._connection.execute('INSERT INTO equity_account_events VALUES(?,?,?)',
+                    (account_id, event_id, json.dumps(event, sort_keys=True)))
+                record_v4_position_reconciliation(self, account_id, quantity_before=old, quantity_after=new, at=at)
+                changed.append(event | {'account_id': account_id})
+            return tuple(changed)
+
+    def settle_equity_receivables(self, account_id, *, at):
+        """Settle sales only; nontrade cash uses channel reconciliation."""
+        if type(at) is not datetime or at.utcoffset() is None:
+            raise ValueError('settlement requires aware timestamp')
         with self._lock, self._write_context(False):
             if self.equity_account_rules(account_id) is None:
-                raise ValueError("settlement requires a US account")
+                raise ValueError('settlement requires an admitted equity account')
+            self.require_no_pending_dividend(account_id)
             account = self.virtual_account(account_id)
-            cash, receivable = Decimal(account["cash"]), Decimal(account["receivable"])
+            cash, receivable = Decimal(account['cash']), Decimal(account['receivable'])
             count = 0
-            rows = self._connection.execute("SELECT event_id,payload FROM equity_account_events WHERE account_id=? ORDER BY event_id",
-                                            (account_id,)).fetchall()
+            rows = self._connection.execute('SELECT event_id,payload FROM equity_account_events WHERE account_id=? ORDER BY event_id',
+                (account_id,)).fetchall()
             for row in rows:
-                event = json.loads(row["payload"])
-                if event.get("kind") != "RECEIVABLE" or event["paid"] or datetime.fromisoformat(event["pay_at"]) > at:
+                event = json.loads(row['payload'])
+                if event.get('kind') != 'RECEIVABLE' or event['paid'] or datetime.fromisoformat(event['pay_at']) > at:
                     continue
-                if trade_only and event.get("recognized_kind") == "CASH_DIVIDEND":
-                    continue
-                amount = Decimal(event["amount"])
+                if 'definition' in event or event.get('recognized_kind') == 'CASH_DIVIDEND':
+                    raise ValueError('nontrade receivable is outside trade settlement')
+                amount = Decimal(event['amount'])
                 if amount > receivable:
-                    raise ValueError("payment exceeds account receivable")
+                    raise ValueError('payment exceeds account receivable')
                 cash += amount
                 receivable -= amount
-                event["paid"] = True
-                self._connection.execute("UPDATE equity_account_events SET payload=? WHERE account_id=? AND event_id=?",
-                    (json.dumps(event, sort_keys=True), account_id, row["event_id"]))
-                self._equity_ledger(account_id, row["event_id"] + ":payment", "EQUITY_PAYMENT", amount, 0,
-                                    cash, int(account["quantity"]), datetime.fromisoformat(event["pay_at"]))
-                payment_id = row["event_id"] + ":payment"
-                payment = {"ledger_entry_id": str(uuid5(NAMESPACE_URL, f"equity-event:{account_id}:{payment_id}")),
-                    "recognized_kind": "DIVIDEND_PAYMENT" if "definition" in event else "SALE_SETTLEMENT",
-                    "receivable_delta": str(-amount)}
-                self._connection.execute("INSERT INTO equity_account_events VALUES(?,?,?)",
+                event['paid'] = True
+                self._connection.execute('UPDATE equity_account_events SET payload=? WHERE account_id=? AND event_id=?',
+                    (json.dumps(event, sort_keys=True), account_id, row['event_id']))
+                payment_id = row['event_id'] + ':payment'
+                self._equity_ledger(account_id, payment_id, 'SALE_SETTLEMENT', amount, 0,
+                    cash, int(account['quantity']), datetime.fromisoformat(event['pay_at']))
+                payment = {'ledger_entry_id': str(uuid5(NAMESPACE_URL, f'equity-event:{account_id}:{payment_id}')),
+                    'recognized_kind': 'SALE_SETTLEMENT', 'reason': 'TRADE_SETTLEMENT', 'receivable_delta': str(-amount)}
+                self._connection.execute('INSERT INTO equity_account_events VALUES(?,?,?)',
                     (account_id, payment_id, json.dumps(payment, sort_keys=True)))
                 count += 1
-            self._connection.execute("UPDATE virtual_accounts SET cash=?,receivable=? WHERE account_id=?",
-                                     (str(cash), str(receivable), account_id))
-            if count:
-                from .equity_account_state import record_v4_action
-                record_v4_action(self, account_id)
+            self._connection.execute('UPDATE virtual_accounts SET cash=?,receivable=? WHERE account_id=?',
+                (str(cash), str(receivable), account_id))
             return count
 
     def _equity_ledger(self, account_id, event_id, kind, cash_delta, quantity_delta, cash, quantity, at):
-        self._connection.execute("INSERT INTO account_ledger(ledger_entry_id,account_id,entry_type,order_id,fill_id,"
-            "cash_delta,frozen_cash_delta,quantity_delta,fee,balance_after,quantity_after,occurred_at) "
-            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
-            (str(uuid5(NAMESPACE_URL, f"equity-event:{account_id}:{event_id}")), account_id, kind, None, None,
-             str(cash_delta), "0", quantity_delta, "0", str(cash), quantity, at.isoformat()))
+        self._connection.execute('INSERT INTO account_ledger(ledger_entry_id,account_id,entry_type,order_id,fill_id,'
+            'cash_delta,frozen_cash_delta,quantity_delta,fee,balance_after,quantity_after,occurred_at) '
+            'VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
+            (str(uuid5(NAMESPACE_URL, f'equity-event:{account_id}:{event_id}')), account_id, kind, None, None,
+             str(cash_delta), '0', quantity_delta, '0', str(cash), quantity, at.isoformat()))

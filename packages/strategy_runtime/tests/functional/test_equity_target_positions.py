@@ -34,7 +34,6 @@ def plan(target, cash=10000., actual=1000, *, settings=None, scale=1., reference
         available_cash=cash, position_quantity=actual, target_position=target,
         policy=ExecutionPolicy("FROZEN_RULE", settings or SETTINGS),
         signal_reference_price=reference*scale, execution_reference_price=reference*scale,
-        unadjusted_reference_price=reference if scale != 1 else None, price_scale=scale,
     )
 
 

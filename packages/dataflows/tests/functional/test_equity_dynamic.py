@@ -51,10 +51,6 @@ def setup(market, frequency, defect):
                      Tradable=index != 0, PriceLimitLower=5. if cn and index else None,
                      PriceLimitUpper=15. if cn and index else None)
                 for index, bar in enumerate(grid)] if selection["product"] == EquityProduct.TRADING_FACTS else []
-        if defect == "split":
-            stamp = grid[0].start.isoformat()
-            rows = [dict(Date=stamp, AvailableDate=stamp, EventId="split-1",
-                         Kind="SPLIT", Ratio=2., CashPerShare=0., PayAt=None)]
         if defect == "gap":
             rows.pop()
         elif defect == "static":
@@ -77,20 +73,20 @@ def setup(market, frequency, defect):
 
 @pytest.mark.parametrize("market", [MarketId.CN, MarketId.US])
 @pytest.mark.parametrize("frequency", [BarFrequency.DAILY, BarFrequency.M30])
-def test_verified_dynamic_facts_and_known_no_events(tmp_path, market, frequency):
+def test_verified_dynamic_facts_preserve_limits_and_calendar(tmp_path, market, frequency):
     bindings, request = setup(market, frequency, None)
     flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path("assets")),
                       providers=ProviderConfig(bindings={}, equity_bindings=bindings))
-    facts, actions = (request(p) for p in (EquityProduct.TRADING_FACTS, EquityProduct.ACTIONS))
-    result = flows.prepare((facts, actions), policy=PreparePolicy.REUSE)
+    facts = request(EquityProduct.TRADING_FACTS)
+    result = flows.prepare((facts,), policy=PreparePolicy.REUSE)
     assert result.ready, [item.error for item in result.items]
     trading = flows.fetch(facts, prepared=result.reference)
     assert trading.ready and not trading.dataframe.Tradable.iloc[0]
     assert set(trading.dataframe) == {"Date", "AvailableDate", "Tradable", "PriceLimitLower", "PriceLimitUpper"}
     if market is MarketId.CN:
         assert trading.identity.metadata["following_session"]["session_date"] == "2026-11-09"
-    events = flows.fetch(actions, prepared=result.reference)
-    assert events.ready and events.identity.metadata["no_actions_verified"]
+    assert trading.identity.metadata['adjustment'] == 'none'
+    assert trading.identity.metadata['price_basis_id']
 
 
 @pytest.mark.parametrize("defect,error", [("gap", IncompleteDataError), ("static", DataContractError),
@@ -102,10 +98,6 @@ def test_dynamic_facts_reject_unknown_and_out_of_contract_rows(defect, error):
         bindings[req.parameters.provider_key].fetch(req)
 
 
-def test_mechanical_split_preserves_effective_and_available_dates():
-    bindings, request = setup(MarketId.US, BarFrequency.DAILY, "split")
-    req = request(EquityProduct.ACTIONS)
-    rows, meta = bindings[req.parameters.provider_key].fetch(req)
-    assert rows[["Kind", "Ratio"]].values.tolist() == [["SPLIT", 2.0]]
-    assert rows.Date.equals(rows.AvailableDate)
-    assert meta["action_history_complete"]
+def test_actions_product_has_been_removed():
+    with pytest.raises(ValueError):
+        EquityProduct('equity.actions')

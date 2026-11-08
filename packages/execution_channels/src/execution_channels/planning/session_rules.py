@@ -26,22 +26,14 @@ class ExecutionRuleInput:
     target_position: float
     signal_reference_price: float
     execution_reference_price: float
-    price_scale: float = 1.0
-    unadjusted_reference_price: float | None = None
     cycle_target: CycleTarget | None = None
     entry_cycle: EntryCycleState | None = None
     opening_signal_identity: str | None = None
     account_id: str | None = None
 
-    def __post_init__(self) -> None:
-        if not isfinite(self.price_scale) or self.price_scale <= 0:
-            raise RuntimeContractError("execution price scale must be positive and finite")
-        if self.price_scale != 1 and self.unadjusted_reference_price is None:
-            raise RuntimeContractError("scaled pricing requires its unadjusted reference")
-
     @property
     def quote_reference(self) -> float:
-        return self.execution_reference_price if self.unadjusted_reference_price is None else self.unadjusted_reference_price
+        return self.execution_reference_price
 
 
 def _round_tick(value: float, tick: float, rounding: str) -> float:
@@ -117,7 +109,7 @@ def _target_plan(
     if equity_target:
         # Size against the same causal price basis as the actual account holdings.
         # Fees, lots, limit execution and price movement can prevent exact weights.
-        reference = Decimal(str(execution_reference_price)) * Decimal(str(request.price_scale))
+        reference = Decimal(str(execution_reference_price))
         equity = cash + Decimal(actual) * reference
         desired = int((equity * Decimal(str(target_position)) / (reference * lot))
                       .to_integral_value(rounding=ROUND_FLOOR)) * lot
@@ -138,7 +130,7 @@ def _target_plan(
             tick,
             "half_up",
         )
-        price = min(requested, upper_guard) * request.price_scale
+        price = min(requested, upper_guard)
         allocation = Decimal(str(capital.get("allocation_fraction", 1.0)))
         unit_cost = Decimal(str(price)) * (1 + Decimal(str(capital["fee_rate"])))
         affordable = actual + int(
@@ -163,7 +155,7 @@ def _target_plan(
             _round_tick(execution_reference_price, tick, "half_up")
             if order_type == "MARKET"
             else lower_guard
-        ) * request.price_scale
+        )
         target = desired if equity_target else 0
         delta = target - actual
         action = "SELL" if delta else ("HOLD" if actual else "WAIT")
@@ -232,7 +224,7 @@ def _signal_cash_plan(request: ExecutionRuleInput) -> dict[str, Any]:
     actual = request.position_quantity
     if not cash.is_finite() or cash < 0 or not fee.is_finite() or not 0 <= fee < 1:
         raise RuntimeContractError("invalid cycle cash or fee")
-    if type(actual) is not int or actual < 0 or actual % 100:
+    if type(actual) is not int or actual < 0 or actual % int(request.settings["instrument"]["lot_size"]):
         raise RuntimeContractError("invalid cycle position quantity")
     if previous is not None and not isinstance(previous, EntryCycleState):
         raise RuntimeContractError("entry cycle state requires typed facts")
@@ -291,7 +283,7 @@ def _intraday_overlay_plan(
     lot = int(settings["lot_size"])
     fee = Decimal(str(settings["one_way_cost"]))
     buy_limit = Decimal(
-        str(_round_tick(request.quote_reference * 1.10, 0.001, "floor") * request.price_scale)
+        str(_round_tick(request.quote_reference * 1.10, 0.001, "floor"))
     )
 
     def affordable(budget: Decimal) -> int:

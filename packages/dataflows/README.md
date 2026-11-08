@@ -5,12 +5,13 @@
 `tushare_equity_bindings(source=..., env_file=...)` 提供 A 股股票和 ETF 的未复权、后复权日线与 30 分钟线，以及独立交易日历。`futu_equity_bindings` 提供美股常规时段的行情及交易日历。行情继续沿用既有质量契约和供应商发布时间的限制。
 
 `dynamic_equity_bindings(source=..., market=..., endpoint=..., calendar_source=..., calendar_binding=...)`
-按市场和来源身份接入动态数据。它返回两个独立产品：
+按市场和来源身份接入动态可交易事实：
 
 - `equity.trading_facts` 每个执行区间一行，包含 `Date`、`AvailableDate`、`Tradable`、`PriceLimitLower`、`PriceLimitUpper`。上下限成对出现或成对为空。A 股下一个实际交易日来自独立日历。
-- `equity.actions` 提供影响账户实际持有数量的拆股、合股及份额折算，行字段为 `Date`、`AvailableDate`、`EventId`、`Kind`、`Ratio`、`CashPerShare`、`PayAt`。动态适配器仅接收 `Kind=SPLIT`，比例为调整后数量除以调整前数量，`CashPerShare=0`，`PayAt=null`。生产现金差额由 PTE 按富途账本对账。
 
-端点通过 HTTPS（隔离测试允许回环 HTTP）接收 `market/symbol/asset_class/product/start/end/frequency/session`。响应包含 `source`（`provider/revision`）、`selection`（与请求参数一致）、`coverage`（`start/end/complete/receipt`）及 `rows`。时间戳包含明确时区，数据必须覆盖请求区间。`rows=[]` 只有在行动覆盖已明确核实且 `complete=true` 时才表示没有行动。缺行、覆盖不足、来源不符和未及时可得均明确失败。数据责任方负责核实并维护 `receipt` 所指的来源记录，DFLS 校验响应契约和请求身份。
+端点通过 HTTPS（隔离测试允许回环 HTTP）接收 `market/symbol/asset_class/product/start/end/frequency/session/adjustment`。响应包含 `source`（`provider/revision`）、`selection`（与请求参数一致）、`coverage`（`start/end/complete/receipt`）及 `rows`。时间戳包含明确时区，事实覆盖完整区间，限价必须采用请求指定的价格口径。缺行、覆盖不足、来源不符和未及时可得均明确失败。DFLS 不把空数据推断为无停牌，也不把 RAW 限价标记为 HFQ。
+
+公司行动产品及事件处理接口已删除。历史回放使用 HFQ 行情完成报价、成交和账户记账；模拟盘执行由宿主单独读取 RAW，非交易数量、现金差额由 EC 按富途账本对账。
 
 A 股 ETF 的上下限可通过现有 `SECURITY_PRICE_LIMITS`（Tushare `etf_limit`）取得。该产品仅证明限价字段，完整的动态产品还要求可交易状态。EC 内部 market_rules 提供交易单位、价格步长、零股、可卖与结算模型。PTE、TDR 和技术检验在宿主层显式投影 DFLS 动态事实，调用 EC 约束组装器；SRT 不组装执行规则。参见 [EC 市场规则](../execution_channels/README.md) 和 [PTE](../paper_trading_engine/README.md)。
 
@@ -348,62 +349,60 @@ Q日K尚非主力的记录也保留。该组合及信号计算属于研究层；
 ## 市场限定的权益数据产品
 
 `EquityDataRequest` 通过 `ProviderKey(产品, 市场, SourceRef)` 精确绑定来源修订，继续复用本包的数据空间和准备引用。
-行情、日历、公司行动及逐区间交易约束的字段与失败语义见[TDR美股研究接口](../../src/czsc_trader/README.md#us-equity-research)。
+行情、日历及逐区间交易约束的字段与失败语义见[TDR美股研究接口](../../src/czsc_trader/README.md#us-equity-research)。
 原 A 股数据集及供应商绑定保持不变。
 
-### CN/US版本化RAW事实源
+### CN/US版本化价格事实
 
 `versioned_equity_bindings(instrument=..., source=..., coverage=..., sessions=...,
-frequencies=..., actions=...)`为两市场的V4账户提供精确来源绑定。调用方提交：
+frequencies=...)`为两市场提供精确来源绑定。调用方提交：
 
-- `EquitySourceCoverage(start, end, evidence, actions_complete, no_actions_verified=False)`：覆盖及来源核验凭据；必须明确行动历史完整。
-- 独立 `TradingSession`序列，以及每个已提供频率的 `EquityFrequencyFacts(frequency, bars, constraints)`。
-- RAW行情、真实生效及可用时间的公司行动；现金股息须有支付时间，核实无行动须有显式NONE及相应凭据。
+- `EquitySourceCoverage(start, end, evidence)`：覆盖及来源核验凭据。
+- 独立 `TradingSession` 序列，以及 `EquityFrequencyFacts(frequency, bars, trading_facts, adjustment, acquisition_method)`。HFQ 必须明确 `PriceAdjustment.BACKWARD` 和实际获取方法。
+- 行情与限价必须在同一价格基准。同一频率可分别提供 RAW/HFQ，未供应的频率或价格基准明确失败。
 
 只接纳已声明频率，不用日线重采样补30分钟，也不从复权因子推测拆股或分红。
 逐区间执行约束合并动态价格限制与静态可卖时间、余股清仓政策，字段见[EC](../execution_channels/README.md)。
 完整事实在安装绑定时校验并复制；请求按本地交易日索引切片，返回独立数值容器，不在每次请求重扫全历史。
-已认证完整行动源的无事件子窗口可以生成带明确凭据的NONE；未经核验的空接口响应不能据此声明历史无事件。
 
 显式观察状态使用 `observation_contract=EXPLICIT_SOURCE_OBSERVATIONS_V1`，CN/US均可保留
 `MISSING`、`ZERO_VOLUME`和执行阻断事实；所有频率必须一致提供状态字段及完整网格。
 缺失柱的OHLC与量额全空，不补价格，不将缺口解释为历史停牌。缺行、伪造价格或未完成来源核验仍失败。
 原A股后复权数据集及现有Futu研究政策各自保留原契约，不因新增事实源自动采用上述约定。
 
-此入口接纳调用方已核验的事实，不提供自动拼装完整A股历史权益事件的Tushare适配器。
-供应商日线、分钟、涨跌停及分红接口可用性须与全历史覆盖、准确到账时点、送股可卖时间分别核验。
-供应商的分红日期不自动等于盘中到账时点；软件验收和单日样本取数不能证明某标的多年RAW研究数据已经就绪。
+此入口接纳调用方已经核实的动态事实。软件测试通过不代表供应商历史停牌及限价数据已完整覆盖研究窗口。
 
 ### CN/US后复权研究观察
 
-研究观察与RAW账户执行分别准备。`EquityQuery`的`adjustment`进入请求及准备资产身份；
+历史研究全链路采用 HFQ，模拟盘计算 HFQ 与执行 RAW 分别准备。`EquityQuery`的`adjustment`进入请求及准备资产身份；
 行情使用`PriceAdjustment.BACKWARD`，对应日历仍使用`PriceAdjustment.NONE`。
-同一标的的RAW及HFQ行情可以并存；后复权行情不替代执行价格、公司行动或交易约束。
+同一标的的 RAW 及 HFQ 行情可以并存，行情与动态限价必须使用一致的 `price_basis_id`。该标识由供应商、版本、市场、资产类别、标的和复权口径组成，跨频率稳定。
 
 - 美股：`futu_equity_bindings(source=..., quote_context=...)`使用SDK要求的大小写敏感参数
   `None/qfq/hfq`分别请求原价/前复权/后复权；常规会话、半日市及分页契约保持一致。
 - A股股票及ETF：`tushare_equity_observation_bindings(source=..., env_file=...)`返回
   `equity.bars`与`equity.sessions`的CN绑定，支持日线及30分钟。BARS只接受BACKWARD，
-  复用现有股票`adj_factor`、ETF `fund_adj`后复权计算、单位转换及行情质量检查；
-  SESSIONS独立读取上市日期与完整`trade_cal`，保留午间休市。该入口不提供RAW、行动或交易约束。
+  股票日线固定使用供应商 `stk_factor_pro` 的 `open_hfq/high_hfq/low_hfq/close_hfq`；股票分钟线、ETF 行情固定复用 `adj_factor`、`fund_adj` 的 DFLS 后复权计算。
+  SESSIONS 独立读取上市日期与完整 `trade_cal`，保留午间休市。该入口不提供 RAW 或交易约束。
 
 将工厂结果加入`ProviderConfig(equity_bindings=...)`，随后使用普通`prepare/fetch`。
 A股`Date/BarStart`转换为带时区的实际收盘/开盘时刻，`AvailableDate`保留原适配器的可用时间：
-股票日线及ETF后复权行情按当日17:00，股票分钟线按柱结束；不会提前到当日开盘。
-元数据保留因子来源、因子哈希、发布时间约定及历史发布时间/修订未经验证的标记。
+股票供应商直供日线按当日 20:00 保守可用，ETF 后复权行情按当日 17:00，股票分钟线按柱结束；不会提前到当日开盘。
+`acquisition_method` 必须区分 `PROVIDER_ADJUSTED` 与 `DFLS_ADJUSTED`；RAW 为 `PROVIDER_RAW`。供应商身份单列，不将获取方法当作数据来源。方法由端点能力明确选择，权限、网络或数据异常不触发换方法兜底。
+DFLS 计算结果保留原始数据及因子哈希、算法版本；直供保留供应商响应哈希或请求分页凭据。供应商直供股票日线保留未复权股数成交量，既有 DFLS 计算成交量按复权因子反除，使用方须留意此量纲差异。
 日历缺失、行情不覆盖完整会话网格或源数据口径不符时失败，不填价格、不删除会话绕过缺口。
 
 供应商后复权计算定义由来源约定，HFQ并不自动等于分红再投资总收益指数；
 可用时间约束也不能证明供应商从未修订历史值。研究层负责选择来源和解释这些限制。
-版本化 RAW 事实源在 `EquityFrequencyFacts.trading_facts` 中接收动态交易事实。
+版本化事实在 `EquityFrequencyFacts.trading_facts` 中接收对应价格基准的动态交易事实。
 
-正式美股研究准备须一次明确行情、会话、公司行动、动态交易事实四个 `SourceRef`，并由
+正式美股研究准备须一次明确行情、会话、动态交易事实三个 `SourceRef`，并由
 `ProviderConfig(equity_bindings=...)` 提供精确 `ProviderKey` 映射。各来源声明同一独立交易日历；
 准备结果冻结来源修订、完整覆盖及内容身份，TDR 将其保存为 `EquityInputBinding`。
 后续并行评价只读准备资产，worker 不连接数据供应商；来源、范围或内容变化须重新准备。
 
-`futu_equity_bindings` 提供行情和会话。宿主需显式绑定有凭据的动态交易事实和行动来源。
-已核实无公司行动仍须有覆盖声明。缺绑定、缺覆盖、时间不一致均明确失败。
+`futu_equity_bindings` 提供行情和会话。宿主需显式绑定有凭据的动态交易事实。
+缺绑定、缺覆盖、时间不一致均明确失败。
 准备前应记录每类来源的标的、可覆盖窗口、修订和可用时间依据；供应商权限或覆盖未经实际验证时，
 研究数据就绪状态仍为未验证。合成测试和适配器存在不能替代首个获准标的的真实 `prepare`。
 

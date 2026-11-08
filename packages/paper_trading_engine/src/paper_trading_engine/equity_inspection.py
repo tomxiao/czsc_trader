@@ -65,27 +65,6 @@ class EquityPteReconcile(Record):
 
 
 @dataclass(frozen=True)
-class EquityPteAction(Record):
-    event_id: str
-    kind: str
-    effective_at: datetime
-    available_at: datetime
-    source_sha256: str
-    ratio: Decimal | None = None
-    cash_per_share: Decimal | None = None
-    pay_at: datetime | None = None
-
-    def __post_init__(self):
-        from .inspection_contracts import _hash, _id
-        _id(self.event_id)
-        _hash(self.source_sha256)
-        _time(self.effective_at)
-        _time(self.available_at)
-        if self.kind not in {"SPLIT", "CASH_DIVIDEND"}:
-            raise ValueError("invalid equity action")
-
-
-@dataclass(frozen=True)
 class EquityPteSettle(Record):
     at: datetime
 
@@ -93,7 +72,7 @@ class EquityPteSettle(Record):
         _time(self.at)
 
 
-EquityPteStep = EquityPteDecision | EquityPteReport | EquityPteRestart | EquityPteReconcile | EquityPteAction | EquityPteSettle
+EquityPteStep = EquityPteDecision | EquityPteReport | EquityPteRestart | EquityPteReconcile | EquityPteSettle
 
 
 @dataclass(frozen=True)
@@ -107,7 +86,7 @@ class EquityPteScenario(Record):
     def __post_init__(self):
         _case_id(self.case_id)
         if type(self.steps) is not tuple or not self.steps or any(type(s) not in (
-                EquityPteDecision, EquityPteReport, EquityPteRestart, EquityPteReconcile, EquityPteAction, EquityPteSettle) for s in self.steps):
+                EquityPteDecision, EquityPteReport, EquityPteRestart, EquityPteReconcile, EquityPteSettle) for s in self.steps):
             raise TypeError("scenario requires typed equity steps")
         _money(self.expected_cash)
         _money(self.expected_receivable)
@@ -152,7 +131,7 @@ def _facts(store):
             "events": [dict(r) for r in store._connection.execute("SELECT * FROM equity_account_events WHERE account_id='equity' ORDER BY event_id")]}
 
 
-def inspect_equity_release(*, candidate, dataflows, binding, requests, initial_cash, fee_rate, permit, protocol, control=None):
+def inspect_equity_release(*, candidate, dataflows, binding, requests, execution_reference, initial_cash, fee_rate, permit, protocol, control=None):
     """Consume explicit channel facts; never infer fills from a historical price bar."""
     if type(protocol) is not EquityPteInspectionProtocol:
         raise TypeError("equity inspection requires explicit channel protocol")
@@ -220,7 +199,9 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, initial_c
                 elif type(step) is EquityPteDecision:
                     now, channel.outcome = step.at, step.outcome
                     expired_intents = []
-                    prepared = prepare_equity_decision(dataflows, candidate, binding, requests, step.interval, fee_rate=fee_rate)
+                    prepared = prepare_equity_decision(dataflows, candidate, binding, requests, step.interval, fee_rate=fee_rate,
+                        execution_reference=execution_reference.fetch(dataflows, step.interval,
+                            latency_seconds=candidate.definition.execution_spec.data_latency_seconds))
                     try:
                         AccountEngine(store, EquityAdviceClient(store), now=lambda: now).refresh_account("equity", prepared=prepared)
                         before_submission = {row['intent_id']: row['status'] for row in store.account_intents('equity')}
@@ -267,25 +248,6 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, initial_c
                     if step.status == "FILLED_ALL":
                         local_coverage.add("COMPLETED")
                     observed.append({"kind": "REPORT", "channel_order_id": report.channel_order_id, **step.to_dict()})
-                elif type(step) is EquityPteAction:
-                    from dataclasses import asdict
-                    action_query, = (q for role, q in binding.bind_requests(requests) if role == 'actions')
-                    source = dataflows.fetch(action_query, prepared=binding.prepared)
-                    if source.identity.content_sha256 != dict(binding.content_identities)["actions"] or step.source_sha256 != source.identity.content_sha256:
-                        raise ValueError("equity action source differs from pinned input")
-                    rows = source.dataframe.loc[source.dataframe.EventId == step.event_id]
-                    if len(rows) != 1:
-                        raise ValueError("equity action absent from pinned input")
-                    row = rows.iloc[0]
-                    if (row.Kind, row.Date, row.AvailableDate) != (step.kind, step.effective_at, step.available_at):
-                        raise ValueError("equity action dates differ from pinned facts")
-                    if step.kind == "SPLIT" and Decimal(str(row.Ratio)) != step.ratio:
-                        raise ValueError("equity split ratio differs from pinned facts")
-                    if step.kind == "CASH_DIVIDEND" and (Decimal(str(row.CashPerShare)), row.PayAt) != (step.cash_per_share, step.pay_at):
-                        raise ValueError("equity dividend payment differs from pinned facts")
-                    changed = store.apply_equity_event("equity", **asdict(step))
-                    local_coverage.add(step.kind if changed else "DUPLICATE_EVENT")
-                    observed.append({"kind": "ACTION", "applied": changed, **step.to_dict()})
                 elif type(step) is EquityPteSettle:
                     count = store.settle_equity_receivables("equity", at=step.at)
                     if count:
@@ -404,8 +366,6 @@ def verify_equity_inspection_facts(outcome: dict, protocol: dict):
                 coverage.add("RESTART")
             elif type(step) is EquityPteReconcile and actual.get("status") == "BLOCKED":
                 coverage.add("RECONCILIATION_BLOCKED")
-            elif type(step) is EquityPteAction:
-                coverage.add(step.kind if actual["applied"] else "DUPLICATE_EVENT")
             elif type(step) is EquityPteSettle and actual["count"]:
                 coverage.add("SETTLEMENT")
         if sorted(coverage) != facts["coverage"]:

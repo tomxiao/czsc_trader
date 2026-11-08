@@ -72,7 +72,10 @@ def run_replay(prepared, candidate, executor, *, constraints, start, end, fee_ra
                     definition.state_schema.validate_record(result.proposal.cycle_values, scope='cycle')
                 plan = execution_plan(result, account, definition.execution_spec, owner=owner,
                     implementation=candidate.implementation_hash, fee_rate=fee_rate,
-                    sell_remainder_policy=constraint['SellRemainderPolicy'])
+                    sell_remainder_policy=constraint['SellRemainderPolicy'],
+                    reference_price=float(observation[2].last()['Close']),
+                    execution_policy=definition.execution_policy, cycle_budget=snapshot.budget,
+                    locked_quantity=snapshot.locked_quantity)
                 proposal = HistoricalDecision(plan, snapshot.strategy.revision,
                     ChannelStateRecord.from_dict(result.proposal.account.to_dict()),
                     None if result.proposal.cycle_values is None else ChannelStateRecord.from_dict(result.proposal.cycle_values.to_dict()),

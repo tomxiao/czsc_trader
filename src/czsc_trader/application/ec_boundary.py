@@ -7,7 +7,7 @@ from strategy_runtime.entry_cycle import EntryCyclePhase
 from execution_channels.serialization import from_record, to_record
 from execution_channels import contracts as ec
 from execution_channels.instruments import InstrumentId
-from execution_channels.policy import ResearchExecutionSpec
+from execution_channels.policy import ResearchExecutionSpec, ExecutionPolicy
 from execution_channels.planning import plan_account_decision
 from execution_channels.planning.intent import TradeIntent
 
@@ -75,12 +75,14 @@ def strategy_events(values):
     return tuple(RecognizedAccountEvent(**{**to_record(value), 'kind': RecognizedEventKind(value.kind.value)}) for value in values)
 
 
-def execution_plan(result, snapshot, specification, *, owner, implementation, fee_rate, sell_remainder_policy):
+def execution_plan(result, snapshot, specification, *, owner, implementation, fee_rate, sell_remainder_policy, reference_price, execution_policy, cycle_budget=None, locked_quantity=None):
     record = to_record(result.proposal.decision)
     record['explanation'] = {'facts': result.proposal.decision.explanation.to_dict()}
     return plan_account_decision(from_record(TradeIntent, record),
         from_record(ec.ReplayPoint, to_record(result.point)),
-        from_record(ec.AccountSnapshot, to_record(snapshot)), result.reference_price,
+        from_record(ec.AccountSnapshot, to_record(snapshot)), reference_price,
         execution_spec(specification), owner=owner, implementation=implementation,
         fee_rate=fee_rate, sell_remainder_policy=ec.SellRemainderPolicy(sell_remainder_policy),
-        suppressed=result.suppressed)
+        execution_policy=from_record(ExecutionPolicy, to_record(execution_policy)),
+        cycle_budget=from_record(ec.CycleBudget, to_record(cycle_budget)) if cycle_budget is not None else None,
+        locked_quantity=locked_quantity, suppressed=result.suppressed)

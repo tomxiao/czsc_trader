@@ -12,11 +12,9 @@ from equity_test_support import setup_equity
 from equity_test_support import setup_formal_equity, account_research, replay_payload
 
 
-def gap_context(tmp_path, *, formal=True, missing=(2, 3, 25), zero=(4,), blocked=(7,), split=False):
+def gap_context(tmp_path, *, formal=True, missing=(2, 3, 25), zero=(4,), blocked=(7,)):
     context, request, products, _ = (setup_formal_equity if formal else setup_equity)(tmp_path)
     bars = products[EquityProduct.BARS].copy()
-    if split:
-        bars.loc[13:, ['Open', 'High', 'Low', 'Close']] /= 2
     for index in zero:
         bars.loc[index, ['Open', 'High', 'Low', 'Close']] = 20.
         bars.loc[index, ['Volume', 'Amount']] = 0.
@@ -45,24 +43,17 @@ def gap_context(tmp_path, *, formal=True, missing=(2, 3, 25), zero=(4,), blocked
     def dynamic_facts(query):
         from dataflows.equity_data import equity_metadata, sessions_from_metadata
         from dataflows import EquityDataRequest
-        calendar_query = replace(query.parameters.query, product=EquityProduct.SESSIONS)
+        calendar_query = replace(query.parameters.query, product=EquityProduct.SESSIONS, adjustment=__import__("dataflows").PriceAdjustment.NONE)
         req = EquityDataRequest(query.parameters.instrument, query.parameters.source, calendar_query)
         _, evidence = bindings[req.parameters.provider_key].fetch(req)
         sessions = sessions_from_metadata(evidence)
         metadata = equity_metadata(query, sessions, availability_basis="FIXTURE_MARKET_STATUS")
         product = query.parameters.query.product
         frame = products[product].copy()
-        if product is EquityProduct.ACTIONS:
-            metadata["no_actions_verified"] = not split
-            if split:
-                stamp = sessions[1].segments[0].start
-                frame = pd.DataFrame([dict(Date=stamp, AvailableDate=stamp, EventId="fixture-split",
-                    Kind="SPLIT", Ratio=2., CashPerShare=0., PayAt=None)])
         return frame, metadata
 
     bindings[key] = ProviderBinding(request.sources.trading_facts.provider,
                                     request.sources.trading_facts.revision, dynamic_facts)
-    bindings[replace(key, product=EquityProduct.ACTIONS)] = bindings[key]
     context = create_research_context(context.repository, context.batch,
         providers=ProviderConfig(bindings={}, equity_bindings=bindings),
         execution_spec=context.execution_spec)
@@ -138,16 +129,16 @@ def test_gap_evidence_rejects_fabricated_marks_and_diagnostics(tmp_path, tamper)
             EquityEvaluationResult(result.request_hash, result.content, tuple(artifacts))
 
 
-def test_held_position_across_split_and_consecutive_gaps_has_no_phantom_gain(tmp_path):
-    context, request, bars = gap_context(tmp_path, missing=(13, 14), zero=(), blocked=(), split=True)
+def test_held_position_across_consecutive_hfq_gaps_has_no_phantom_gain(tmp_path):
+    context, request, bars = gap_context(tmp_path, missing=(13, 14), zero=(), blocked=())
     with account_research(context, request) as (prepared, result, payload, execution):
         from czsc_trader.application import publish_evidence_many
         published, = publish_evidence_many(context, (EvaluationEvidenceWrite(request.experiment, "gap-account", prepared, result),), execution=execution)
         assert published.reference.schema_version == 4
     run = payload['runs']['buy_hold']
     before, first, second, restored = run['account_points'][11:15]
-    assert before['quantity'] == 98 and first['quantity'] == second['quantity'] == 196
-    assert first['close'] == second['close'] == 5 and before['close'] == 10
+    assert before['quantity'] == first['quantity'] == second['quantity'] == 98
+    assert first['close'] == second['close'] == before['close'] == 10
     assert first['equity'] == second['equity'] == restored['equity'] == before['equity']
     assert first['valuation_stale'] and second['valuation_stale'] and not restored['valuation_stale']
     assert pd.Timestamp(first['valuation_price_at']) == bars.Date.iloc[12]
@@ -182,5 +173,6 @@ def test_first_execution_gap_flat_benchmark_passes_assessment(tmp_path):
         suppressed = run['decisions'][1]
         assert suppressed['signal_status'] == 'SUPPRESSED_UNOBSERVED_BAR'
         assert suppressed['target'] == 0 and suppressed['side'] == 'HOLD'
-        assert suppressed['explanation'] is None
+        assert suppressed['explanation']['case_key'] == 'flat'
+        assert suppressed['explanation']['basis'] == [{'key': 'suppressed', 'text': 'True'}]
         assert build_equity_assessment(result)

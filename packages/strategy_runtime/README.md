@@ -9,7 +9,7 @@
 旧 schema 1 的字段集、来源解释和包字节不变；普通首次冻结仍采用 schema 1。缺字段、非法运行 ID
 或指纹不一致明确拒绝，不替换历史来源，不放宽候选键格式。
 
-## V4 数据表观察与规划上下文
+## V4 数据表观察与目标仓位
 
 `EquityStrategyDefinition.observation_inputs` 声明 `DatasetObservationInput`，用于现有 DFLS 周线、
 指数、成分权重、资金流、宏观、ETF份额及冻结种子产品。它与 `auxiliary_inputs` 行情及
@@ -49,10 +49,8 @@ S003 的严格前日快照、SPX 对齐及既有填充规则仍由策略表达�
 不加入只允许 Python 的 `source_files`，也不改变 `source_sha256` 的代码闭包含义。
 冻结种子必须声明固定起止日期；准备层通过现有 DFLS evidence 产品读取，策略不得自行读磁盘。
 
-`planning_context=True` 仅适用于 `STATEFUL_STEP`。此时 `ctx.planning` 是
-`AccountPlanningContext(fee_rate, execution_spec)`，由运行环境提供本次预算费率及执行规范，
-用于保持含费周期目标和补单规则；实际成交费用仍由执行报告记账。
-未声明时 `ctx.planning is None`。新增字段为空或关闭时不序列化，已有 S018 定义和内容身份不变。
+策略不再接收 `planning_context` 或 `ctx.planning`。V4的 `execution_policy` 为必填强类型声明，
+由宿主显式投影给EC；策略只输出目标仓位及解释，预算、报价、股数、订单和依赖腿由EC计算。
 
 ## 历史模型与账户宿主
 
@@ -90,8 +88,8 @@ CN/US共用策略计算、回放内核与计划契约；市场差异由 `Researc
 | --- | --- |
 | `computation` | 必须显式选择 `StrategyComputation.BATCH_HISTORY` 或 `STATEFUL_STEP` |
 | 决策时钟 | `BarFrequency.DAILY` 或 `M30`；两者都要求真实交易段、可用时间及完整网格 |
-| 输入 | RAW执行行情、公司行动、日历、逐区间交易规则；辅助观察可声明CN/US的RAW或HFQ来源 |
-| 决策 | `AccountDecision`，目标比例为有限的0至1；支持显式订单、依赖腿和周期预算 |
+| 输入 | 主行情、辅助行情及历史执行报价统一HFQ；观察按可用时间裁剪，不读取公司行动或RAW执行价 |
+| 决策 | `AccountDecision(target, explanation)`，目标为有限0至1；不含报价、资金、股数或订单 |
 | 状态 | `StrategyStateSchema`及匹配的 `initial_account: StateRecord`；字段非空时必须声明初值 |
 | 成交反馈 | `AccountSnapshot`、`PositionFeedback`和已确认的 `RecognizedAccountEvent` |
 
@@ -99,26 +97,24 @@ CN/US共用策略计算、回放内核与计划契约；市场差异由 `Researc
 V4的 `feedback_mode`固定为 `CONFIRMED_EXECUTION`；旧V2闭合周期模式仅供原冻结合同使用。
 `AccountStepResult`返回决策、账户记录及周期记录；仅真实成交改变持仓，全部卖出才关闭周期。
 `ctx.position`保留多次加减仓的数量、累计买入成本、卖出收入、费用和成交次数。
-框架通过 `ctx.events`提供截至决策时点已确认的拆股、分红应收、支付和交收事实；`event_cursor`
-在状态提交时推进，缺失行情导致的抑制不会吞掉事件。策略据此显式调整止损价等自己的字段，
-框架不会猜测任意状态字段的价格单位或自动缩放。未来事件和执行区间结束时才到账的资金不会提前进入决策上下文。
+框架通过 `ctx.events` 提供已确认的 `POSITION_ADJUSTMENT` 和 `SALE_SETTLEMENT`。
+数量对账的 `reason=UNKNOWN`，不附带或推断拆股比例；历史HFQ账户只产生交易交收。
+`event_cursor` 在状态提交时推进，缺失行情抑制不会吞掉确认事件。
 
 批量入口为 `calculate(ctx: BatchAccountContext) -> tuple[AccountDecision, ...]`，按
 `ctx.observations`逐项返回决策。每项行情、特征、辅助历史均按该观察时点截断，不提供未来账户和执行报价。
 批量计算只适用于不依赖实际成交反馈的信号，不能声明账户或周期状态字段。任意Python实现仍须通过
 研究侧前缀／未来扰动检验；拿到全部观察项不等于平台已证明策略不存在跨项前视。
 
-`capital_mode`支持 `target_equity_fraction`、`full_available_cash`及 `signal_cash_fraction`。
-比例模式允许加减仓；全现金模式持仓后目标1表示继续持有，不因股息或剩余现金自动追加投资。
-显式 `ReplayOrder`数量与目标比例分别留证；`ReplayLeg`声明真实检查点、提交区间及前腿所需结果。
-原生依赖条件统一为 `FILLED_ALL`，只表示前腿全部确认成交；`FILLED`账本状态、部分成交、撤销、
-过期及未知均不能作为依赖条件传入。历史研究模型和PTE分别以实际执行事实判定完整成交。
-周期预算以Decimal保留，不能中途重写已锁定预算；可卖数量、整手、余股清仓及价格限制由EC逐步执行。
+资金模式属于冻结 `execution_policy`，不属于策略决策。`TARGET_POSITION` 的 `capital_mode`
+支持 `target_equity_fraction` 和 `full_available_cash`；`FROZEN_RULE` 的 `signal_cash_fraction`
+将首次正目标作为资金比例，EC锁定预算到退出。EC不从解释中读取交易参数，无法买入最低单位时明确阻断。
+订单、依赖腿和 `FILLED_ALL` 条件由EC生成并按确认成交处理。
 
 日线策略若需开盘、11:30等盘中检查点，声明
 `execution_input=ExecutionInput(instrument, source, BarFrequency.M30)`。
 该产品只供执行器读取，独立绑定行情和会话哈希，不进入特征或辅助历史；不从日线OHLC推测盘中成交。
-同一精确产品不能同时声明为执行与辅助角色。普通订单仍按主决策柱的价格区间执行。
+同一物理产品可以通过明确逻辑角色共享。普通订单仍按主决策柱的价格区间执行。
 V4研究回放沿用一次装载、不可变可见历史、内存复用和完整证据闭包。
 正式PTE从已部署的精确冻结包加载V4定义，并要求对应发布身份具有模拟或实盘准入资格；
 不能直接把研究候选目录作为运行源码。部署、账户启用和生产变更仍分别按授权执行。
@@ -216,10 +212,9 @@ PTE、TDR和技术检验通过 `data_preparation.fetch_prepared_products` 读取
 交给 [EC](../execution_channels/README.md) 内的市场规则模块生成历史执行约束；在线动态可交易性由渠道核定。
 
 `EquityInputBinding.scope` 显式区分历史执行所需的 `EXECUTION` 与策略观察 `OBSERVATION`。
-历史绑定序列化保持原有字节结构；新在线登记及重绑调用 `for_observations()` 生成独立绑定，
-保留主/辅助行情、日历与观察数据表，以及交给账户宿主处理的动态公司行动，
-不依赖历史交易事实或执行专用报价。公司行动只用于拆股/份额折算和参考价换算，不进入策略观察准备；
-在线现金派息以渠道账户对账为准。行动查询截至当前日，保留原始起点覆盖停机期间漏处理的事件。
+新在线登记及重绑通过 `for_observations()` 保留主/辅助HFQ行情、日历和观察数据表。
+SRT不读取RAW执行价和公司行动；PTE为EC独立准备RAW，历史宿主为EC准备HFQ。
+新价格语义产生新身份，旧RAW定义必须显式迁移，不能静默回退。
 未迁移的历史配方不能直接用于前向准备。`forward_requests` 按各数据产品的实际可用时点展开范围，
 日历可包含已声明的未来会话，行情只能包含已完成会话；不以假行情填补未来。
 
@@ -241,17 +236,12 @@ prepared = PreparedObservations.from_frames(
 `prepared.with_graph(graph)` 共享这些不可变输入，不能改变候选声明的特征图。
 辅助行情仍需显式声明；`ctx.auxiliary_histories[name]` 提供完整可见 HistoryView，保留最新柱状态、
 warmup 和 max_age 检查。首版主特征图不隐式读取辅助别名，辅助指标由策略显式访问视图计算并承担相应成本。
-V4 的 `EquityAuxiliaryInput.analysis_price` 支持 `RAW` 或 `HFQ`（后复权）；默认仍为 `RAW`。
-`HFQ` 的 BARS 请求使用 `PriceAdjustment.BACKWARD`，SESSIONS 始终使用 `NONE`。
-允许同一交易标的、来源和频率另行声明 HFQ 观察，例如 `EquityAuxiliaryInput("adjusted", instrument,
-source, BarFrequency.DAILY, 20, 604800, analysis_price="HFQ")`。主 `analysis_price`、`ctx.history`、
-主特征图及执行专用报价仍为 RAW；后复权数值不作为成交、估值或公司行动记账价格。
-HFQ 仅声明供应商后复权口径，不等于分红再投资总回报；因子基准、含息方式及历史修订语义需结合来源元数据解释。
-可见性继续按 `AvailableDate` 加延迟裁剪，不将复权柱提前暴露，也不把可用时间检查当成供应商历史版本无前视的证明。
-V4 准备结果在 `EquityInputBinding.request_bindings` 固定逻辑角色和完整请求参数，
-`bind_requests(requests)` 可将同一物理日历展开到主行情和辅助观察角色，身份必须一致。
-单个请求存在多个角色时 `request_key` 拒绝猜测；读取完整输入应使用 `bind_requests`。
-旧 RAW 定义和无显式请求绑定的历史序列化保持兼容；V2 不接受 HFQ 辅助观察。
+V4主 `analysis_price`、主特征、辅助行情及历史执行报价统一为 `HFQ`。
+BARS请求使用 `PriceAdjustment.BACKWARD`，SESSIONS使用 `NONE`。DFLS可提供供应商HFQ或按其
+已声明合同计算HFQ，元数据保留 `adjustment_origin`；SRT不先访问RAW再换算。
+HFQ不承诺派息再投资总回报，因子基准、含息方式及历史修订语义由来源元数据解释。
+观察按 `AvailableDate` 加延迟裁剪，不将复权柱提前暴露。
+`EquityInputBinding.request_bindings` 固定逻辑角色与完整请求；同一物理产品可绑定多个角色，身份须一致。
 session 上下文通过认证日历的精确执行区间索引选择，并核验日历可见时间。
 
 TDR宿主的 `ReplayOutcome` 返回EC的 `execution_result`、最终 `state` 和 `statistics`。
@@ -669,7 +659,7 @@ TDR技术检验可以在隔离空间验证拟冻结发布包，检验通过不�
 
 ### 冻结V2定义与加载
 
-`EquityStrategyCandidate` 与研究专用函数式 `EquityCandidate` 明确区分。正式定义使用
+本节仅说明旧包的只读解析格式；当前TDR/PTE账户执行要求显式迁移到V4，不能按旧RAW合同运行。旧定义使用
 `EquityStrategyDefinition`：标的、执行合同、预热、`module:function` 入口、相对源码清单、
 `equity_source_hash` 源码闭包哈希、有限 JSON 参数及精确 `ImplementationDependency`。
 `definition.to_dict()/from_dict()` 可序列化；`definition.content_identity` 不依赖机器路径和候选名称。
@@ -679,7 +669,7 @@ TDR技术检验可以在隔离空间验证拟冻结发布包，检验通过不�
 交易点和权威账户快照，返回整数 0/1 目标及非空 `reason`。每次决策使用独立模块命名空间，
 不以模块全局变量保存跨决策状态。账户提供周期进入时间、成本和反馈来源；区间成交时点不解释为逐笔时点。
 `StrategyRuntime.identify/create/describe` 支持正式候选；加载、登记和运行前认证源码与依赖。
-`EquityInputBinding` 绑定四类准备产品的内容身份、执行合同和预热，可序列化供回放复用。
+`EquityInputBinding` 绑定三类准备产品的内容身份、执行合同和预热，可序列化供回放复用。
 
 声明 `auxiliary_inputs` 或 `session_context` 时，`build_equity_decision_context` 按决策时点
 构造辅助行情与当前交易会话；直接调用候选 `decide` 也重新检查这些输入。辅助行情按完成时间和

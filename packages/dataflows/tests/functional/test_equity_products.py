@@ -87,3 +87,16 @@ def test_session_grid_uses_exchange_timezone_and_half_day():
         InstrumentId(MarketId.US, AssetClass.STOCK, "US.LITE")
     with pytest.raises(TypeError):
         ProviderKey("equity.bars", MarketId.US, SourceRef("fixture", "v1"))
+
+
+def test_adjusted_generic_provider_must_declare_acquisition_method():
+    from dataclasses import replace
+    from dataflows import PriceAdjustment
+    from dataflows.equity_data import validate_equity_frame
+    from dataflows.errors import DataContractError
+    request, frame, metadata = fixture_product()
+    adjusted = EquityDataRequest(request.parameters.instrument, request.parameters.source,
+        replace(request.parameters.query, adjustment=PriceAdjustment.BACKWARD))
+    metadata['adjustment'] = 'hfq'
+    with pytest.raises(DataContractError, match='acquisition method'):
+        validate_equity_frame(frame, adjusted, metadata)

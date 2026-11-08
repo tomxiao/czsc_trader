@@ -50,6 +50,7 @@ def test_quote_adapter_half_day_timezone_and_adjustment_request(adjustment, auty
     assert frame.Date.iloc[-1].hour == 18  # 13:00 local half-day close.
     assert quotes.calls[0]["autype"] == autype and quotes.calls[0]["session"] == "RTH"
     assert metadata["adjustment"] == adjustment.value
+    assert metadata['acquisition_method'] == ('PROVIDER_RAW' if adjustment is PriceAdjustment.NONE else 'PROVIDER_ADJUSTED')
 
 
 def test_repeated_page_key_is_a_failure():

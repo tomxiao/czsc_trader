@@ -12,7 +12,7 @@ from hashlib import sha256
 import platform
 
 import pandas as pd
-from dataflows import (DataRequest, EquityDataRequest, EquityProduct, EquityQuery, PreparedDataRef, SourceRef, TimeInterval)
+from dataflows import (DataRequest, EquityDataRequest, EquityProduct, EquityQuery, PreparedDataRef, SourceRef, TimeInterval, PriceAdjustment)
 from strategy_runtime.equity import equity_hash
 from strategy_runtime.runtime import StrategyRuntime
 from strategy_runtime.equity_definition import EquityStrategyCandidate, EquityInputBinding
@@ -28,11 +28,10 @@ from ..backtesting.benchmark_contracts import EvaluationBenchmark, EquityBuyHold
 class EquitySources:
     bars: SourceRef
     sessions: SourceRef
-    actions: SourceRef
     trading_facts: SourceRef
 
     def __post_init__(self):
-        if any(type(value) is not SourceRef for value in (self.bars, self.sessions, self.actions, self.trading_facts)):
+        if any(type(value) is not SourceRef for value in (self.bars, self.sessions, self.trading_facts)):
             raise TypeError("each equity product requires an explicit versioned source")
 
 
@@ -112,7 +111,7 @@ class EquityEvaluationRequest:
         end = pd.Timestamp(self.window.end).tz_convert(self.candidate.instrument.timezone).date()
         primary = tuple((product.name.lower(), EquityDataRequest(
             self.candidate.instrument, getattr(self.sources, product.name.lower()),
-            EquityQuery(product, self.history_start, end, specification.decision_clock))) for product in EquityProduct)
+            EquityQuery(product, self.history_start, end, specification.decision_clock, PriceAdjustment.NONE if product is EquityProduct.SESSIONS else PriceAdjustment.BACKWARD))) for product in EquityProduct)
         auxiliary = tuple(
             (item.data_key(query.parameters.query.product), query)
             for item in self.candidate.definition.auxiliary_inputs
@@ -140,7 +139,7 @@ class EquityEvaluationRequest:
         from execution_channels.historical import channel
         from execution_channels import contracts, policy, state, serialization, entry_cycle, identity, instruments, session_contracts
         from execution_channels import planning, market_rules
-        from execution_channels.planning import intent
+        from execution_channels.planning import intent, session_rules
         from execution_channels.market_rules import constraints as rule_constraints
         from execution_channels.historical import market, input_facts
         from strategy_runtime import data_preparation
@@ -152,7 +151,7 @@ class EquityEvaluationRequest:
                 observation_preparation, account_planning, se_assessment,
                 equity_replay, equity_assessment, parameter_evaluation, account_preparation, accounting,
                 portfolio, account_ledger, channel, contracts, policy, state, serialization,
-                entry_cycle, planning, intent, market_rules, rule_constraints,
+                entry_cycle, planning, intent, session_rules, market_rules, rule_constraints,
                 ec_boundary, execution_inputs, data_preparation, identity, instruments, session_contracts, market, input_facts):
             engine_sources[module.__name__] = sha256(Path(module.__file__).read_bytes()).hexdigest()
         return self._identity_with_sources(specification, engine_sources)
@@ -170,7 +169,8 @@ class EquityEvaluationRequest:
                 "engine_sources": engine_sources, "python_version": platform.python_version(),
                 "pandas_version": pd.__version__,
                 "data_manifest": self.prepared.manifest_sha256 if self.prepared is not None else None,
-                "income_policy": TRADING_INCOME_POLICY}
+                "income_policy": TRADING_INCOME_POLICY, "price_basis": "HFQ",
+                "quantity_basis": "SIMULATED_INTEGER_UNITS"}
         identity = self.candidate.content_identity
         contract.update(candidate_identity=asdict(identity), content_sha256=identity.content_sha256,
                         candidate_definition=self.candidate.definition.to_dict(),
@@ -265,22 +265,8 @@ def _fetch_products(access, request):
 TRADING_INCOME_POLICY = "EXCLUDE_NON_TRADING_INCOME"
 
 
-def replay_actions(frame):
-    """Keep quantity adjustments and exclude cash dividends from TDR accounts."""
-    return frame.loc[frame["Kind"].ne("CASH_DIVIDEND")]
-
-
-def replay_action_facts(records, income_policy):
-    """Project the original source facts using the accounting rule in the evidence."""
-    if income_policy is None:
-        return records  # Older evidence used the full corporate action ledger.
-    if income_policy != TRADING_INCOME_POLICY:
-        raise ValueError("unsupported equity replay income policy")
-    return [row for row in records if row["Kind"] != "CASH_DIVIDEND"]
-
-
 def _audit_inputs(request, specification, products):
-    inputs = {"bars": _records(products["bars"]), "action_facts": _records(replay_actions(products["actions"])),
+    inputs = {"bars": _records(products["bars"]), "price_basis": "HFQ", "quantity_basis": "SIMULATED_INTEGER_UNITS",
               "constraints": _records(products["constraints"]), "specification": asdict(specification),
               "initial_cash": request.initial_cash, "fee_rate": request.fee_rate}
     definition = request.candidate.definition

@@ -49,7 +49,6 @@ class Dataset(StrEnum):
     ETF_OHLCV = "etf.ohlcv"
     EQUITY_BARS = "equity.bars"
     EQUITY_SESSIONS = "equity.sessions"
-    EQUITY_ACTIONS = "equity.actions"
     EQUITY_TRADING_FACTS = "equity.trading_facts"
     ETF_UNADJUSTED_DAILY = "etf.unadjusted_daily"
     ETF_UNADJUSTED_INTRADAY = "etf.unadjusted_intraday"
@@ -397,7 +396,7 @@ class DataRequest:
         frequencies = {"daily"}
         if dataset is Dataset.EQUITY_BARS:
             frequencies = {"daily", "30m"}
-        elif dataset in {Dataset.EQUITY_SESSIONS, Dataset.EQUITY_ACTIONS, Dataset.EQUITY_TRADING_FACTS}:
+        elif dataset in {Dataset.EQUITY_SESSIONS, Dataset.EQUITY_TRADING_FACTS}:
             frequencies = {"daily", "30m"}
         elif dataset in {Dataset.ETF_OHLCV, Dataset.STOCK_OHLCV}:
             frequencies = {"daily", "weekly", *intraday}
@@ -419,7 +418,6 @@ class DataRequest:
         allowed = {
             Dataset.EQUITY_BARS: (EquityParameters,),
             Dataset.EQUITY_SESSIONS: (EquityParameters,),
-            Dataset.EQUITY_ACTIONS: (EquityParameters,),
             Dataset.EQUITY_TRADING_FACTS: (EquityParameters,),
             Dataset.ETF_CREATION_REDEMPTION_BASKET: (NoParameters, PcfParameters),
             Dataset.STOCK_MONEYFLOW: (NoParameters, MoneyflowParameters),

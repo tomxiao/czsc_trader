@@ -94,7 +94,6 @@ def replay_limit_buyhold(signals, data, initial_cash, benchmark, fee_rate):
             "ADJUSTED_CLOSE",
             "UNADJUSTED_CLOSE" if pricing.basis is ExecutionPriceBasis.UNADJUSTED else "NORMALIZED_HFQ_CLOSE",
             pricing=pricing,
-            price_scale=Decimal(str(scales[signal_day])),
         )
         raw = build_execution_plan(
             deployment_settings={"cycle_target_quantity": state.cycle_target_quantity},
@@ -104,8 +103,6 @@ def replay_limit_buyhold(signals, data, initial_cash, benchmark, fee_rate):
             policy=policy,
             signal_reference_price=float(references.signal_price),
             execution_reference_price=float(references.execution_price),
-            price_scale=float(references.price_scale),
-            unadjusted_reference_price=float(references.execution_price / references.price_scale),
         )
         orders = tuple(
             PlannedOrder(

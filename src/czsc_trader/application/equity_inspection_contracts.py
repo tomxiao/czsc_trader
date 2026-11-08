@@ -1,9 +1,10 @@
 """Explicit US equity inputs for the shared technical-inspection lifecycle."""
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import math
 from dataflows import DataRequest, TimeInterval
 from strategy_runtime import EquityInputBinding
 from strategy_manager import freeze_contracts as f
+from paper_trading_engine.execution_reference import ExecutionReferenceBinding
 from ..research_tools.delivery import EvaluationEvidenceRef
 
 
@@ -15,9 +16,13 @@ class EquityInspectionReplay:
     window: TimeInterval
     initial_cash: float
     one_way_cost: float
+    execution_reference: ExecutionReferenceBinding = field(kw_only=True)
     baseline: EvaluationEvidenceRef | None = None
 
     def __post_init__(self):
+        if (type(self.execution_reference) is not ExecutionReferenceBinding or
+                self.execution_reference.parameters.instrument != self.input_binding.instrument):
+            raise ValueError('inspection requires independent RAW execution prices for the same instrument')
         if type(self.coordinate) is not f.InspectionCoordinate or type(self.input_binding) is not EquityInputBinding:
             raise TypeError('equity inspection requires typed coordinate and input binding')
         if type(self.window) is not TimeInterval or type(self.requests) is not tuple:

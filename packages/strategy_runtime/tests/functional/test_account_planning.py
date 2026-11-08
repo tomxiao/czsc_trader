@@ -28,7 +28,7 @@ def test_independent_single_steps_match_research_with_state_restart(tmp_path, ma
         start=bars.BarStart.iloc[1].to_pydatetime(), end=bars.Date.iloc[-1].to_pydatetime(),
         fee_rate=.001).execution_result
     executor = PortfolioHistoricalExecutor(specification=execution_spec(candidate.definition.execution_spec),
-        initial_cash=100000., fee_rate=.001, actions=baseline.actions.drop(columns=['_priority']), price_basis='RAW')
+        initial_cash=100000., fee_rate=.001, price_basis='HFQ')
     state = AccountStrategyState()
     for index in range(1, len(bars)):
         # New planner and decoded state emulate independent durable calls/restarts.
@@ -45,7 +45,7 @@ def test_independent_single_steps_match_research_with_state_restart(tmp_path, ma
                 strategy_feedback(executor.position_feedback), owner='durable-account', fee_rate=.001,
                 budget=strategy_budget(executor.cycle_budget), events=strategy_events(events), next_event_cursor=cursor)
             prior = state.to_dict()
-            after = executor.execute_account_plan(execution_plan(result, account, candidate.definition.execution_spec, owner="durable-account", implementation=candidate.implementation_hash, fee_rate=.001, sell_remainder_policy=constraints.iloc[index].SellRemainderPolicy), prepared._data.rows[index], constraint=constraints.iloc[index].to_dict())
+            after = executor.execute_account_plan(execution_plan(result, account, candidate.definition.execution_spec, owner="durable-account", implementation=candidate.implementation_hash, fee_rate=.001, sell_remainder_policy=constraints.iloc[index].SellRemainderPolicy, reference_price=float(bars.Close.iloc[index-1]), execution_policy=candidate.definition.execution_policy, cycle_budget=executor.cycle_budget, locked_quantity=executor.locked_quantity), prepared._data.rows[index], constraint=constraints.iloc[index].to_dict())
             assert state.to_dict() == prior  # Planning and execution never mutate caller-owned strategy state.
             cycle = None if not after.quantity else CycleState(executor.cycle, after.cycle_entry, result.proposal.cycle_values)
             state = AccountStrategyState(after.revision, result.proposal.account, cycle,
@@ -83,7 +83,7 @@ def test_future_event_and_backward_observation_are_rejected(tmp_path):
                         sessions[2].session_date.isoformat(), ExecutionPrecision.BAR_INTERVAL)
     portfolio = strategy_portfolio(e.snapshot_at(point.observed_through, point.decision_at))
     account = strategy_snapshot(e.account_snapshot(from_record(ExecutionPoint, to_record(point)), execution_instrument(c.instrument)), c.instrument)
-    event = RecognizedAccountEvent('future', RecognizedEventKind.CASH_DIVIDEND,
+    event = RecognizedAccountEvent('future', RecognizedEventKind.POSITION_ADJUSTMENT,
                                   interval.end, 0, 0, 1., 0.)
     with pytest.raises(ValueError, match='future facts'):
         engine.propose(interval, portfolio, account, AccountStrategyState(), PositionFeedback(),

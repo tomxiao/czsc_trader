@@ -6,6 +6,7 @@ import json
 
 import pandas as pd
 import pytest
+from strategy_runtime.models import ExecutionPolicy
 from dataflows import AssetClass, BarFrequency, InstrumentId, MarketId, TradingSession, TimeInterval
 from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy, CnEquitySpec, UsEquitySpec,
     ResearchExecutionSpec, EquityStrategyCandidate, EquityStrategyDefinition, equity_source_hash,
@@ -36,7 +37,7 @@ def setup(root, market, frequency, computation):
     spec=ResearchExecutionSpec(CnEquitySpec() if market is MarketId.CN else UsEquitySpec(),frequency,
         AccountPolicy('CNY' if market is MarketId.CN else 'USD',CashAvailabilityPolicy.IMMEDIATE_RESEARCH),100,.01,.01,0.)
     definition=EquityStrategyDefinition(instrument,spec,1,'strategy:step' if computation is StrategyComputation.STATEFUL_STEP else 'strategy:calculate',
-        ('strategy.py',),equity_source_hash(root,('strategy.py',)),contract_version=4,computation=computation,
+        ('strategy.py',),equity_source_hash(root,('strategy.py',)),contract_version=4,execution_policy=ExecutionPolicy("TARGET_POSITION", {}),computation=computation,
         feature_graph=FeatureGraph((RawField('close',BarField.CLOSE),),('close',)),state_schema=StrategyStateSchema())
     candidate=EquityStrategyCandidate('S999','C0001',definition,root)
     zone=ZoneInfo(instrument.timezone)
@@ -51,7 +52,7 @@ def setup(root, market, frequency, computation):
     actions=pd.DataFrame([{'Date':starts[0],'AvailableDate':starts[0],'EventId':'none','Kind':'NONE','Ratio':1.,'CashPerShare':0.,'PayAt':None}])
     session_frame=pd.DataFrame({'Date':[s.segments[0].start for s in sessions], 'AvailableDate':[s.segments[0].start for s in sessions], 'SessionDate':[s.session_date.isoformat() for s in sessions]})
     prepared=PreparedObservations.from_frames(bars,definition.feature_graph,frequency=frequency,timezone=instrument.timezone,sessions=session_frame,trading_sessions=sessions)
-    executor=PortfolioHistoricalExecutor(specification=execution_spec(spec),initial_cash=100000.,fee_rate=.001,actions=actions,price_basis='RAW')
+    executor=PortfolioHistoricalExecutor(specification=execution_spec(spec),initial_cash=100000.,fee_rate=.001,price_basis='HFQ')
     return candidate,prepared,executor,bars,constraints,sessions,session_frame
 
 
@@ -92,10 +93,10 @@ def test_account_replay_requires_real_clock_and_rejects_retired_definition(tmp_p
     with pytest.raises(ValueError,match='calendar|session'):
         run_replay(PreparedObservations.from_frames(bars,p.graph,frequency=BarFrequency.DAILY,timezone=c.instrument.timezone),c,
             PortfolioHistoricalExecutor(specification=execution_spec(c.definition.execution_spec),initial_cash=100000.,fee_rate=.001,
-                actions=pd.DataFrame([{'Date':bars.BarStart.iloc[0],'AvailableDate':bars.BarStart.iloc[0],'EventId':'none','Kind':'NONE','Ratio':1.,'CashPerShare':0.,'PayAt':None}]),price_basis='RAW'),
+                price_basis='HFQ'),
             constraints=constraints, start=bars.BarStart.iloc[1].to_pydatetime(),end=bars.Date.iloc[-1].to_pydatetime(),fee_rate=.001)
     with pytest.raises(ValueError,match='unsupported equity definition'):
-        replace(c.definition,contract_version=3,computation=None)
+        replace(c.definition,contract_version=3,computation=None,execution_policy=None)
 
 
 @pytest.mark.parametrize('mode', ['MARKET_INTENT', 'CONFIRMED_CLOSED_CYCLE_V1'])
@@ -105,21 +106,14 @@ def test_account_replay_rejects_retired_feedback_contract(tmp_path, mode):
         replace(candidate.definition,feedback_mode=mode)
 
 
-EXPLICIT = """from strategy_runtime import AccountDecision,AccountStepResult,ReplayOrder
-from strategy_runtime.contracts import OrderSide,OrderType
+EXPLICIT = """from strategy_runtime import AccountDecision,AccountStepResult
 from strategy_runtime.equity_replay import StateRecord
 def step(ctx,state):
-    q=ctx.portfolio.quantity
-    if ctx.portfolio.revision==0:
-        orders=(ReplayOrder(OrderSide.BUY,100,OrderType.LIMIT,11.),ReplayOrder(OrderSide.BUY,100,OrderType.LIMIT,11.))
-    elif q:
-        orders=(ReplayOrder(OrderSide.SELL,100,OrderType.MARKET),)
-    else: orders=()
+    target=(.02,.015,0.)[min(ctx.portfolio.revision,2)]
     feedback=ctx.position.active or ctx.position.latest_closed
     facts={'buys':feedback.buy_fills if feedback else 0,'sells':feedback.sell_fills if feedback else 0}
-    return AccountStepResult(AccountDecision.from_facts(.5 if ctx.portfolio.revision==0 else 0.,'explicit ladder',facts=facts,next_watch='next bar',orders=orders),cycle_values=StateRecord())
+    return AccountStepResult(AccountDecision.from_facts(target,'position ladder',facts=facts,next_watch='next bar'),cycle_values=StateRecord())
 """
-
 
 @pytest.mark.parametrize('market',[MarketId.CN,MarketId.US])
 def test_explicit_orders_retain_position_cycle_feedback(tmp_path,market):
@@ -128,15 +122,15 @@ def test_explicit_orders_retain_position_cycle_feedback(tmp_path,market):
     c=replace(c,definition=replace(c.definition,source_sha256=equity_source_hash(tmp_path,('strategy.py',))))
     result=run_replay(p,c,e,constraints=constraints, start=b.BarStart.iloc[1].to_pydatetime(),end=b.Date.iloc[-1].to_pydatetime(),fee_rate=.001)
     fills=result.execution_result.fills
-    assert fills.side.tolist()==['BUY','BUY','SELL','SELL']
-    assert fills.quantity.tolist()==[100,100,100,100]
-    assert e.position_feedback.latest_closed.buy_fills==2
+    assert fills.side.tolist()==['BUY','SELL','SELL']
+    assert fills.quantity.tolist()==[200,100,100]
+    assert e.position_feedback.latest_closed.buy_fills==1
     assert e.position_feedback.latest_closed.sell_fills==2
     assert e.position_feedback.latest_closed.quantity==0
     facts=[{row['key']:row['text'] for row in explanation['basis']} for explanation in result.execution_result.decisions.explanation]
-    assert facts[1]=={'buys':'2','sells':'0'}
-    assert facts[2]=={'buys':'2','sells':'1'}
-    assert facts[3]=={'buys':'2','sells':'2'}
+    assert facts[1]=={'buys':'1','sells':'0'}
+    assert facts[2]=={'buys':'1','sells':'1'}
+    assert facts[3]=={'buys':'1','sells':'2'}
 
 
 @pytest.mark.parametrize('computation',[StrategyComputation.BATCH_HISTORY,StrategyComputation.STATEFUL_STEP])
@@ -148,9 +142,8 @@ def test_future_suffix_does_not_change_prefix_accounts(tmp_path,computation):
     altered.loc[8:,['Open','High','Low','Close']]*=10
     current=PreparedObservations.from_frames(altered,c.definition.feature_graph,frequency=BarFrequency.M30,
         timezone=c.instrument.timezone,sessions=frame,trading_sessions=sessions)
-    actions=e.actions.drop(columns=['_priority'])
     second=run_replay(current,c,PortfolioHistoricalExecutor(specification=execution_spec(c.definition.execution_spec),initial_cash=100000.,
-        fee_rate=.001,actions=actions,price_basis='RAW'),constraints=r, start=b.BarStart.iloc[1].to_pydatetime(),end=end,fee_rate=.001).execution_result
+        fee_rate=.001,price_basis='HFQ'),constraints=r, start=b.BarStart.iloc[1].to_pydatetime(),end=end,fee_rate=.001).execution_result
     for key in ('cash','quantity','equity'):
         assert first.account_points[key].iloc[:7].tolist()==second.account_points[key].iloc[:7].tolist()
     assert first.decisions.explanation.iloc[:7].tolist()==second.decisions.explanation.iloc[:7].tolist()
@@ -173,8 +166,7 @@ def test_execution_quote_role_is_typed_and_not_an_auxiliary_alias(tmp_path):
     assert execution.data_key(EquityProduct.BARS)=='execution:bars'
     assert {x.parameters.query.product for x in execution.requests(date(2024,3,4),date(2024,3,8))}=={EquityProduct.BARS,EquityProduct.SESSIONS}
     aux=EquityAuxiliaryInput('execution_alias',c.instrument,source,BarFrequency.M30,1,3600)
-    with pytest.raises(ValueError,match='duplicates an auxiliary'):
-        replace(definition,auxiliary_inputs=(aux,))
+    assert replace(definition,auxiliary_inputs=(aux,)).auxiliary_inputs == (aux,)
     with pytest.raises(ValueError,match='DAILY'):
         replace(definition,execution_spec=replace(definition.execution_spec,decision_clock=BarFrequency.M30))
 
@@ -183,9 +175,9 @@ def test_legacy_definitions_do_not_acquire_v4_fields_or_cn_auxiliary(tmp_path):
     from dataflows import SourceRef
     from strategy_runtime import EquityAuxiliaryInput
     c,_,_,_,_,_,_=setup(tmp_path,MarketId.US,BarFrequency.M30,StrategyComputation.STATEFUL_STEP)
-    legacy=replace(c.definition,contract_version=2,computation=None,feature_graph=None,state_schema=None)
+    legacy=replace(c.definition,contract_version=2,computation=None,feature_graph=None,state_schema=None,execution_policy=None,analysis_price="RAW")
     with pytest.raises(ValueError,match='unsupported equity definition'):
-        replace(c.definition,contract_version=3,computation=None)
+        replace(c.definition,contract_version=3,computation=None,execution_policy=None)
     encoded=legacy.to_dict()
     assert encoded['runtime_kind']=='US_EQUITY'
     assert 'computation' not in encoded and 'execution_input' not in encoded
@@ -219,10 +211,8 @@ def test_calendar_breaks_and_dst_drive_actual_clock_without_filling_closed_time(
     prepared=PreparedObservations.from_frames(bars,c.definition.feature_graph,frequency=BarFrequency.M30,
         timezone=c.instrument.timezone,sessions=calendar,trading_sessions=sessions)
     # Reset the synthetic NONE timestamp to this independently declared history.
-    actions=e.actions.drop(columns=['_priority']).copy()
-    actions.loc[0,'Date']=actions.loc[0,'AvailableDate']=starts[0]
     account=run_replay(prepared,c,PortfolioHistoricalExecutor(specification=execution_spec(c.definition.execution_spec),initial_cash=100000.,fee_rate=.001,
-        actions=actions,price_basis='RAW'),constraints=rules, start=starts[1].to_pydatetime(),end=ends[-1].to_pydatetime(),fee_rate=.001).execution_result
+        price_basis='HFQ'),constraints=rules, start=starts[1].to_pydatetime(),end=ends[-1].to_pydatetime(),fee_rate=.001).execution_result
     assert len(account.account_points)==len(periods)-1
     assert account.account_daily.session.tolist()==[day.isoformat() for day in days]
     if market is MarketId.CN:
@@ -264,61 +254,15 @@ def calculate(ctx):
         assert pd.Timestamp(facts['close']).tz_convert('Asia/Shanghai').strftime('%H:%M')=='11:30'
 
 
-EVENT_STATE = """from strategy_runtime import AccountDecision,AccountStepResult,RecognizedEventKind
-from strategy_runtime.equity_replay import StateRecord
-def step(ctx,state):
-    stop=state.account.get('stop')
-    splits=state.account.get('splits')
-    payments=state.account.get('payments')
-    for event in ctx.events:
-        assert event.effective_at<=ctx.point.decision_at
-        if event.kind is RecognizedEventKind.SPLIT:
-            stop/=event.ratio
-            splits+=1
-        if event.kind is RecognizedEventKind.DIVIDEND_PAYMENT:
-            payments+=1
-    facts={'stop':stop,'splits':splits,'payments':payments}
-    return AccountStepResult(AccountDecision.from_facts(1,'unit-aware holding',facts=facts,next_watch='next bar',capital_mode='full_available_cash'),
-        account=StateRecord((('stop',stop),('splits',splits),('payments',payments))),cycle_values=StateRecord())
-"""
+@pytest.mark.parametrize('field', ['orders','legs','capital_mode','cycle_before','cycle_after'])
+def test_position_decision_rejects_execution_fields(field):
+    from strategy_runtime import AccountDecision
+    with pytest.raises(TypeError):
+        AccountDecision.from_facts(.5,'target',facts={},next_watch='next',**{field:()})
 
 
-@pytest.mark.parametrize('suppressed_at_split',[False,True])
-def test_recognized_split_adjusts_explicit_state_once_and_preserves_end_payment(tmp_path,suppressed_at_split):
-    from strategy_runtime.equity_replay import StateRecord,StateField,StateValueType
-    c,_,e,b,r,sessions,frame=setup(tmp_path,MarketId.US,BarFrequency.M30,StrategyComputation.STATEFUL_STEP)
-    (tmp_path/'strategy.py').write_text(EVENT_STATE,encoding='utf-8')
-    schema=StrategyStateSchema(account_fields=(StateField('stop',StateValueType.FLOAT),StateField('splits',StateValueType.INT),StateField('payments',StateValueType.INT)))
-    initial=StateRecord((('stop',10.),('splits',0),('payments',0)))
-    definition=replace(c.definition,state_schema=schema,initial_account=initial,source_sha256=equity_source_hash(tmp_path,('strategy.py',)))
-    assert EquityStrategyDefinition.from_dict(json.loads(json.dumps(definition.to_dict())))==definition
-    c=replace(c,definition=definition)
-    first_split=b.BarStart.iloc[3]
-    dividend=b.BarStart.iloc[4]
-    pay=b.Date.iloc[4]
-    future_split=b.BarStart.iloc[8]
-    b.loc[3:,['Open','High','Low','Close']]/=2
-    b.loc[8:,['Open','High','Low','Close']]/=2
-    if suppressed_at_split:
-        b['BarStatus']='OBSERVED'
-        b.loc[2,'BarStatus']='MISSING'
-        b.loc[2,['Open','High','Low','Close','Volume','Amount']]=float('nan')
-    actions=pd.DataFrame([
-        {'Date':first_split,'AvailableDate':first_split,'EventId':'split-one','Kind':'SPLIT','Ratio':2.,'CashPerShare':0.,'PayAt':None},
-        {'Date':dividend,'AvailableDate':dividend,'EventId':'dividend','Kind':'CASH_DIVIDEND','Ratio':1.,'CashPerShare':.1,'PayAt':pay},
-        {'Date':future_split,'AvailableDate':future_split,'EventId':'split-future','Kind':'SPLIT','Ratio':2.,'CashPerShare':0.,'PayAt':None}])
-    prepared=PreparedObservations.from_frames(b,definition.feature_graph,frequency=BarFrequency.M30,timezone=c.instrument.timezone,
-        sessions=frame,trading_sessions=sessions)
-    executor=PortfolioHistoricalExecutor(specification=execution_spec(definition.execution_spec),initial_cash=100000.,fee_rate=.001,actions=actions,price_basis='RAW')
-    result=run_replay(prepared,c,executor,constraints=r, start=b.BarStart.iloc[1].to_pydatetime(),end=b.Date.iloc[7].to_pydatetime(),fee_rate=.001)
-    assert result.state.account.get('stop')==5.
-    assert result.state.account.get('splits')==1
-    assert result.state.account.get('payments')==1
-    explanation=result.execution_result.decisions.explanation
-    before={row['key']:row['text'] for row in explanation.iloc[3]['basis']}
-    after={row['key']:row['text'] for row in explanation.iloc[4]['basis']}
-    assert before['payments']=='0' and after['payments']=='1'
-    assert before['splits']=='1' and after['splits']=='1'
-    assert len(result.execution_result.fills)==1  # dividends do not cause residual reinvestment
-    assert result.state.event_cursor==len(executor.rows['actions'])
-    assert not any(row['event_id']=='split-future' for row in executor.rows['actions'])
+@pytest.mark.parametrize('settings', [{'capital_mode':'signal_cash_fraction'}, {'capital_mode':True}, {'quantity':100}])
+def test_target_position_policy_rejects_unowned_or_unsupported_settings(settings):
+    from strategy_runtime.errors import RuntimeContractError
+    with pytest.raises(RuntimeContractError):
+        ExecutionPolicy('TARGET_POSITION',settings)

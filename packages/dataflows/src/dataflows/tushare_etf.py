@@ -390,6 +390,7 @@ def fetch_etf_ohlcv(
         ts_code, pd.Timestamp(start_date).date().isoformat(),
         pd.Timestamp(end_date).date().isoformat(), env_file=env_file,
     )
+    raw_input_sha256 = frame_content_sha256(dataframe)
     dataframe = apply_hfq_adjustment(dataframe, factors)
     published_daily = dataframe if normalized_period == "weekly" else None
     if normalized_period == "weekly":
@@ -410,6 +411,9 @@ def fetch_etf_ohlcv(
         "period": normalized_period,
         "asset_type": "etf",
         "adjustment": "hfq",
+        "acquisition_method": "DFLS_ADJUSTED",
+        "adjustment_algorithm": "OHLC_MULTIPLY_VOLUME_DIVIDE_FACTOR_V1",
+        "raw_input_sha256": raw_input_sha256,
         "adjustment_factor_source": "fund_adj",
         "adjustment_factor_sha256": adjustment_factor_sha256(factors),
         "adjustment_factor_publication_schedule": "daily 17:00 Asia/Shanghai",

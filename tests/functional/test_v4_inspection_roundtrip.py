@@ -5,7 +5,6 @@ from decimal import Decimal
 from hashlib import sha256
 import json
 
-import pandas as pd
 import pytest
 from dataflows import MarketId, EquityProduct, TimeInterval
 from strategy_runtime import InspectionControl, StrategyComputation
@@ -24,15 +23,8 @@ from test_equity_inspection_roundtrip import seed_registered_frozen_candidate
 
 
 def native_fixture(tmp_path, market, computation=StrategyComputation.STATEFUL_STEP, *, initial_state=False,
-                   dividend=False, etf=False):
+                   etf=False):
     context, request, products, _, _ = setup_adjusted(tmp_path, market, computation, etf=etf)
-    if dividend:
-        bars = products[EquityProduct.BARS]
-        stamp = bars.BarStart.iloc[-2]
-        products[EquityProduct.ACTIONS] = pd.DataFrame([{
-            'Date': stamp, 'AvailableDate': stamp, 'EventId': 'dividend', 'Kind': 'CASH_DIVIDEND',
-            'Ratio': 1., 'CashPerShare': .1, 'PayAt': bars.BarStart.iloc[-1],
-        }])
     if initial_state:
         from strategy_runtime import equity_source_hash, StateRecord
         from strategy_runtime.equity_replay import StrategyStateSchema, StateField, StateValueType
@@ -47,9 +39,22 @@ def native_fixture(tmp_path, market, computation=StrategyComputation.STATEFUL_ST
         request = replace(request, candidate=replace(request.candidate, definition=definition))
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         request = context.evaluation.prepare(request, execution=execution).request
+    reference = prepare_raw_reference(context, request)
     replay = EquityInspectionReplay(f.InspectionCoordinate('main', 'standard'), request.input_binding,
-        request.requests(context.execution_spec), request.window, request.initial_cash, request.fee_rate)
+        request.requests(context.execution_spec), request.window, request.initial_cash, request.fee_rate,
+        execution_reference=reference)
     return context, request, products, replay
+
+
+def prepare_raw_reference(context, request):
+    from dataflows import EquityDataRequest, PriceAdjustment, PreparePolicy
+    from paper_trading_engine.execution_reference import ExecutionReferenceBinding
+    hfq = dict(request.request_items(context.execution_spec))["bars"]
+    raw_request = EquityDataRequest(hfq.parameters.instrument, hfq.parameters.source, replace(hfq.parameters.query, adjustment=PriceAdjustment.NONE))
+    raw_prepared = context.data.prepare((raw_request,), policy=PreparePolicy.REUSE)
+    assert raw_prepared.ready
+    raw = context.data.fetch(raw_request, prepared=raw_prepared.reference)
+    return ExecutionReferenceBinding(raw_request.parameters, raw_prepared.reference, raw.identity.content_sha256)
 
 
 def native_protocol(context, request, products):
@@ -81,19 +86,19 @@ def native_protocol(context, request, products):
 
 @pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
 @pytest.mark.parametrize('computation', [StrategyComputation.STATEFUL_STEP, StrategyComputation.BATCH_HISTORY])
-def test_native_technical_replay_preserves_adjusted_inputs_raw_fills_and_state(tmp_path, market, computation, monkeypatch):
-    context, request, _, replay = native_fixture(tmp_path, market, computation, dividend=True)
+def test_native_technical_replay_preserves_hfq_inputs_fills_and_state(tmp_path, market, computation, monkeypatch):
+    context, request, _, replay = native_fixture(tmp_path, market, computation)
     def forbidden(*args, **kwargs):
         raise AssertionError('native replay must not run the retired V2 accounting audit')
     monkeypatch.setattr('strategy_evaluator.frozen_equity._audit_frozen_equity_account', forbidden)
     facts = replay_account(request.candidate, context.data, replay)
     assert facts['input']['runtime_kind'] == 'ACCOUNT_REPLAY'
     assert facts['input']['income_policy'] == 'EXCLUDE_NON_TRADING_INCOME'
-    assert [row['Kind'] for row in facts['source']['actions']] == ['CASH_DIVIDEND']
-    assert not {'CASH_DIVIDEND', 'DIVIDEND_PAYMENT'} & {row['kind'] for row in facts['facts']['actions']}
+    assert 'actions' not in facts['source']
+    assert not {'CASH_DIVIDEND', 'DIVIDEND_PAYMENT', 'SPLIT'} & {row['kind'] for row in facts['facts']['account_entries']}
     assert facts['definition']['contract_version'] == 4
     assert facts['final_state']['revision'] == 3
-    assert facts['facts']['fills'] and all(x['price'] < 11 for x in facts['facts']['fills'])
+    assert facts['facts']['fills'] and all(x['price'] == 20 for x in facts['facts']['fills'])
     assert facts['source'][request.candidate.definition.auxiliary_inputs[0].data_key(EquityProduct.BARS)][0]['Close'] == 20.
     assert facts['source'][request.candidate.definition.auxiliary_inputs[1].data_key(EquityProduct.BARS)][0]['Close'] == 200.
 
@@ -133,7 +138,7 @@ def native_inspection_request(tmp_path, context, request, products, replay):
 def freeze_native_inspection(repository, inspection, source, *, version='v1'):
     """Run the real inspection and commit once; callers own lifecycle assertions."""
     report = inspect_candidate(repository, inspection, control=InspectionControl(max_workers=1, timeout_seconds=90))
-    assert report.status is f.InspectionStatus.PASS, [(x.case_id,x.summary) for g in (report.behavior_equivalence,report.pte_runtime) for x in g.cases]
+    assert report.status is f.InspectionStatus.PASS, '\n'.join(x.case_id + ': ' + x.summary for g in (report.behavior_equivalence, report.pte_runtime) for x in g.cases if x.status is not f.InspectionStatus.PASS)
     suffix = '' if version == 'v1' else '-' + version
     approval = record_research_decision(repository, f.ResearchDecision('native-freeze' + suffix, 'S999', f.DecisionAction.APPROVE,
         f.FreezeSubject(report.origin.candidate, report.origin.content_sha256, report.reference, report.plan.sha256, version), source, 'approve exact synthetic package'))
@@ -167,52 +172,8 @@ def test_native_dual_market_inspection_freezes_exact_v4_package(tmp_path, market
     assert json.loads((package.source_root.parent.parent/'runtime_binding.json').read_text())['observation_sha256']
 
 
-@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
-def test_explicit_leg_expiry_keeps_no_order_and_records_only_new_transition(tmp_path, market):
-    from copy import deepcopy
-    from test_v4_pte import replace_strategy
-    from paper_trading_engine.equity_inspection import verify_equity_inspection_facts
-    context, request, products, _, _ = setup_adjusted(tmp_path, market)
-    quantity = 900 if market is MarketId.CN else 989
-    request = replace_strategy(request, f'''from datetime import timedelta
-from strategy_runtime import AccountDecision, AccountStepResult, StateRecord, ReplayOrder, ReplayLeg
-from strategy_runtime.contracts import OrderSide, OrderType
-def step(ctx,state):
-    start = ctx.point.execution_interval.start
-    legs = () if ctx.portfolio.quantity else (ReplayLeg(0,
-        ReplayOrder(OrderSide.BUY, {quantity}, OrderType.LIMIT, 10.10),
-        'OPEN', start, start+timedelta(minutes=5)),)
-    return AccountStepResult(AccountDecision.from_facts(1, 'explicit entry', facts={{'quantity':{quantity}}}, next_watch='next', legs=legs), cycle_values=StateRecord())
-''')
-    with ResearchExecutionSession(context, experiment=request.experiment) as execution:
-        request = context.evaluation.prepare(request, execution=execution).request
-    replay = EquityInspectionReplay(f.InspectionCoordinate('explicit', 'standard'), request.input_binding,
-        request.requests(context.execution_spec), request.window, request.initial_cash, request.fee_rate)
-    inspection, _ = native_inspection_request(tmp_path, context, request, products, replay)
-    scenarios = []
-    for scenario in inspection.protocol.pte.scenarios:
-        if scenario.case_id == 'EXPIRED':
-            decision = replace(scenario.steps[1], expected='NO_ORDER')
-            scenario = replace(scenario, steps=(scenario.steps[0], decision),
-                               expected_cash=Decimal(str(request.initial_cash)))
-        scenarios.append(scenario)
-    inspection = replace(inspection, protocol=replace(inspection.protocol,
-        pte=replace(inspection.protocol.pte, scenarios=tuple(scenarios))))
-    report = inspect_candidate(context.repository, inspection, control=InspectionControl(max_workers=1, timeout_seconds=90))
-    assert report.status is f.InspectionStatus.PASS, '\n'.join(x.case_id + ': ' + x.summary
-        for goal in (report.behavior_equivalence, report.pte_runtime) for x in goal.cases if x.status is not f.InspectionStatus.PASS)
-    facts = json.loads(report.pte_runtime.evidence[0].resolve(tmp_path).read_text())
-    expiry = next(x for x in facts['scenarios'] if x['case_id'] == 'EXPIRED')['facts']
-    first = expiry['observed'][1]
-    assert first['outcome'] == 'NO_ORDER'
-    assert first['expired_intents']
-    assert verify_equity_inspection_facts(facts, inspection.protocol.pte.to_dict())
-    for status in ('EXPIRED', 'REJECTED', 'SUBMISSION_UNCERTAIN'):
-        changed = deepcopy(facts)
-        observation = next(x for x in changed['scenarios'] if x['case_id'] == 'EXPIRED')['facts']['observed'][1]
-        observation['submission_intents_before'][first['expired_intents'][0]] = status
-        with pytest.raises(ValueError, match='not a new submit-time transition'):
-            verify_equity_inspection_facts(changed, inspection.protocol.pte.to_dict())
-    for name in ('REJECTED', 'UNKNOWN'):
-        recorded = next(x for x in facts['scenarios'] if x['case_id'] == name)['facts']
-        assert 'EXPIRED' not in recorded['coverage']
+def test_strategy_cannot_supply_execution_orders_or_legs():
+    from strategy_runtime import AccountDecision
+    for name in ('orders', 'legs', 'capital_mode', 'cycle_before', 'cycle_after'):
+        with pytest.raises(TypeError):
+            AccountDecision.from_facts(1., 'target', facts={}, next_watch='next', **{name: ()})

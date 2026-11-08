@@ -1,11 +1,10 @@
-"""Independent numerical audit of V4 sized, multi-order RAW equity accounts.
+"""Independent numerical audit of V4 sized, multi-order HFQ simulated-unit accounts.
 
 Only serialized source and ledger facts are consumed. Runtime planners, fill
 resolvers and execution engines are deliberately not dependencies of this audit.
 """
 
 from collections import defaultdict
-from bisect import bisect_left, bisect_right
 from datetime import timedelta
 from decimal import Decimal, ROUND_FLOOR
 import math
@@ -164,14 +163,17 @@ def audit_account_v4(
     decisions,
     orders,
     fills,
-    actions,
+    account_entries,
     account_points,
     trades,
-    action_facts,
     constraints,
     fee_rate,
     execution_bars=None,
+    price_basis,
+    quantity_basis,
 ):
+    if price_basis != 'HFQ' or quantity_basis != 'SIMULATED_INTEGER_UNITS':
+        raise ValueError('audit requires the HFQ simulated-unit account model')
     initial_cash = _finite(initial_cash, "initial cash", positive=True)
     fee_rate = _finite(fee_rate, "fee rate")
     if fee_rate >= 1 or not decisions or len(decisions) != len(account_points):
@@ -260,24 +262,10 @@ def audit_account_v4(
     if set(by_decision) - {row["decision_id"] for row in decisions}:
         raise ValueError("v4 order lacks its decision")
     first_start, last_end = _time(decisions[0]["decision_at"]), _time(account_points[-1]["time"])
-    source = _unique(action_facts, "EventId")
-    source_events = sorted(
-        (
-            row
-            for row in source.values()
-            if row["Kind"] != "NONE" and first_start <= _time(row["Date"]) < last_end
-        ),
-        key=lambda row: (_time(row["Date"]), 0 if row["Kind"] == "SPLIT" else 1, row["EventId"]),
-    )
-    for fact in source_events:
-        if fact["Kind"] not in {"SPLIT", "CASH_DIVIDEND"} or _time(fact["AvailableDate"]) > _time(
-            fact["Date"]
-        ):
-            raise ValueError("v4 source corporate action is unavailable or unsupported")
-    split_facts = [fact for fact in source_events if fact["Kind"] == "SPLIT"]
-    split_times = [_time(fact["Date"]) for fact in split_facts]
-    actual_actions = list(actions)
-    action_index = event_index = 0
+    actual_actions = list(account_entries)
+    if any(row['kind'] != 'SALE_SETTLEMENT' for row in actual_actions):
+        raise ValueError('HFQ replay journal only permits trade settlement entries')
+    action_index = 0
     pending, locks = {}, []
     cash, quantity, receivable, fees = initial_cash, 0, 0.0, 0.0
     cycle = None
@@ -379,7 +367,7 @@ def audit_account_v4(
                     if actual is not None and not math.isclose(
                         actual, expected, rel_tol=1e-10, abs_tol=0.0
                     ):
-                        raise ValueError("v4 execution RAW price units differ")
+                        raise ValueError("v4 execution HFQ price units differ")
         if status not in {"OBSERVED", "ZERO_VOLUME", "MISSING"} or type(blocked) is not bool:
             raise ValueError("v4 invalid source observation status")
         if status == "MISSING":
@@ -411,49 +399,6 @@ def audit_account_v4(
                     raise ValueError("v4 source prices exceed dated price limits")
         elif rule["PriceLimitPolicy"] != "EXPLICIT_UNBOUNDED" or not bounds_absent:
             raise ValueError("v4 price limits lack an explicit source policy")
-        while (
-            event_index < len(source_events) and _time(source_events[event_index]["Date"]) <= start
-        ):
-            fact = source_events[event_index]
-            stamp, before = _time(fact["Date"]), quantity
-            payments(stamp, revision, inclusive=False)
-            if fact["Kind"] == "SPLIT":
-                ratio = _finite(fact["Ratio"], "split ratio", positive=True)
-                changed = quantity * ratio
-                if not changed.is_integer():
-                    raise ValueError("v4 fractional split entitlement is unsupported")
-                quantity = int(changed)
-                if any(not float(qty * ratio).is_integer() for _, qty in locks):
-                    raise ValueError("v4 fractional split sellability entitlement")
-                locks = [(unlock_at, int(qty * ratio)) for unlock_at, qty in locks]
-                if mark is not None:
-                    mark /= ratio
-                journal(fact["EventId"], stamp, "SPLIT", before, quantity, 0.0, 0.0, 0.0, revision)
-            else:
-                amount = quantity * _finite(fact["CashPerShare"], "cash dividend")
-                pay_at = _time(fact["PayAt"])
-                if pay_at < stamp:
-                    raise ValueError("v4 dividend payment precedes entitlement")
-                pending[fact["EventId"]] = (pay_at, amount, "DIVIDEND_PAYMENT")
-                journal(
-                    fact["EventId"],
-                    stamp,
-                    "CASH_DIVIDEND",
-                    before,
-                    quantity,
-                    amount,
-                    0.0,
-                    amount,
-                    revision,
-                )
-                if cycle is not None:
-                    cycle_income += amount
-            event_index += 1
-        if (
-            event_index < len(source_events)
-            and start < _time(source_events[event_index]["Date"]) < end
-        ):
-            raise ValueError("v4 corporate event occurs inside an indivisible price interval")
         locks = [(unlock_at, qty) for unlock_at, qty in locks if unlock_at > start]
         payments(start, revision)
         locks = [(stamp, qty) for stamp, qty in locks if stamp > start]
@@ -484,10 +429,6 @@ def audit_account_v4(
         if decision.get("signal_status") != expected_signal:
             raise ValueError("v4 signal suppression differs from latest available observation")
         reference = float(latest["Close"])
-        for fact in split_facts[
-            bisect_left(split_times, observed) : bisect_right(split_times, start)
-        ]:
-            reference /= float(fact["Ratio"])
         plan = decision["plan"]
         evidence = plan["evidence"]
         _integer(plan["expected_revision"], "plan revision")
@@ -907,10 +848,9 @@ def audit_account_v4(
         daily[point["session"]] = point["equity"]
     if (
         action_index != len(actual_actions)
-        or event_index != len(source_events)
         or any(stamp <= last_end for stamp, _, _ in pending.values())
     ):
-        raise ValueError("v4 action coverage or due payment journal differs")
+        raise ValueError("HFQ settlement coverage or due payment journal differs")
     if len(expected_trades) != len(trades):
         raise ValueError("v4 closed-position count differs")
     by_session = dict.fromkeys(daily, 0)

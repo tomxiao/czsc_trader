@@ -1,5 +1,5 @@
 """Portable, explicitly versioned equity strategy source and decision contracts."""
-from dataclasses import asdict, dataclass, replace, field
+from dataclasses import asdict, dataclass, replace, field, fields, is_dataclass
 from datetime import date, datetime
 from enum import StrEnum
 import math
@@ -24,7 +24,7 @@ from dataflows import (InstrumentId, MarketId, AssetClass, BarFrequency, Prepare
                       TradingSession, EquitySession)
 from dataflows.equity_contracts import EquityParameters
 from .identity import CandidateContentIdentity, ImplementationDependency
-from .models import canonical_sha256
+from .models import canonical_sha256, ExecutionPolicy
 from .dataset_observations import DatasetObservationInput, DatasetObservationBinding
 from .signal_explanation import SignalExplanationSnapshot, SignalBasisSnapshot
 from .equity import (ResearchExecutionSpec, UsEquitySpec, CnEquitySpec, AccountPolicy,
@@ -152,7 +152,7 @@ class EquityAuxiliaryInput:
     frequency: BarFrequency
     warmup_bars: int
     max_age_seconds: float
-    analysis_price: str = 'RAW'
+    analysis_price: str = 'HFQ'
 
     def __post_init__(self):
         import re
@@ -164,8 +164,8 @@ class EquityAuxiliaryInput:
             raise ValueError('auxiliary inputs require supported equity instruments')
         if type(self.frequency) is not BarFrequency or self.frequency not in (BarFrequency.M30, BarFrequency.DAILY):
             raise ValueError('auxiliary frequency must be M30 or DAILY')
-        if type(self.analysis_price) is not str or self.analysis_price not in ('RAW', 'HFQ'):
-            raise ValueError('auxiliary inputs require RAW or HFQ prices')
+        if type(self.analysis_price) is not str or self.analysis_price not in {'RAW', 'HFQ'}:
+            raise ValueError('auxiliary input requires a declared RAW or HFQ price basis')
         if type(self.warmup_bars) is not int or self.warmup_bars < 1:
             raise ValueError('auxiliary warmup must be positive')
         if type(self.max_age_seconds) not in (int, float) or not math.isfinite(self.max_age_seconds) or self.max_age_seconds < 0:
@@ -197,7 +197,7 @@ class EquityAuxiliaryInput:
 
 @dataclass(frozen=True)
 class ExecutionInput:
-    """Finer raw execution quotations; never strategy observations."""
+    """Finer HFQ historical execution quotations; never strategy observations."""
     instrument: InstrumentId
     source: SourceRef
     frequency: BarFrequency
@@ -216,7 +216,7 @@ class ExecutionInput:
         return f'execution:{product.name.lower()}'
 
     def requests(self,start,end):
-        return tuple(EquityDataRequest(self.instrument,self.source,EquityQuery(product,start,end,self.frequency))
+        return tuple(EquityDataRequest(self.instrument,self.source,EquityQuery(product,start,end,self.frequency, PriceAdjustment.BACKWARD if product is EquityProduct.BARS else PriceAdjustment.NONE))
             for product in (EquityProduct.BARS,EquityProduct.SESSIONS))
 
     @classmethod
@@ -311,7 +311,7 @@ class EquityInputBinding:
         """Explicitly project a research selection into strategy-only inputs."""
         if not self.request_bindings:
             raise ValueError('observation projection requires explicit source bindings')
-        primary = {'bars', 'sessions', 'actions'}
+        primary = {'bars', 'sessions'}
         keep = primary | {item.input.data_key(product) for item in self.auxiliary_inputs
                           for product in (EquityProduct.BARS, EquityProduct.SESSIONS)}
         return replace(self, scope=InputBindingScope.OBSERVATION,
@@ -347,18 +347,20 @@ class EquityInputBinding:
             return matches[0]
         execution = self.execution_input
         if execution is not None and (execution.input.instrument,execution.input.source,execution.input.frequency)==(p.instrument,p.source,p.query.frequency):
-            if p.query.adjustment is not PriceAdjustment.NONE:
-                raise ValueError('execution quotations must be RAW')
+            if p.query.adjustment is not (PriceAdjustment.BACKWARD if p.query.product is EquityProduct.BARS else PriceAdjustment.NONE):
+                raise ValueError('historical execution quotations must be HFQ')
             return execution.input.data_key(p.query.product)
         matches = [b.input for b in self.auxiliary_inputs if
                    (b.input.instrument, b.input.source, b.input.frequency) ==
                    (p.instrument, p.source, p.query.frequency)]
         if matches:
-            if len(matches) != 1 or p.query.adjustment is not PriceAdjustment.NONE:
-                raise ValueError('ambiguous or adjusted auxiliary request')
+            if len(matches) != 1 or p.query.adjustment is not (PriceAdjustment.BACKWARD if p.query.product is EquityProduct.BARS else PriceAdjustment.NONE):
+                raise ValueError('ambiguous or non-HFQ auxiliary request')
             return matches[0].data_key(p.query.product)
         if p.instrument != self.instrument or p.query.product.name.lower() not in dict(self.content_identities):
             raise ValueError('request is absent from equity input binding')
+        if p.query.adjustment is not (PriceAdjustment.NONE if p.query.product is EquityProduct.SESSIONS else PriceAdjustment.BACKWARD):
+            raise ValueError('primary input requires HFQ prices')
         return p.query.product.name.lower()
 
     def bind_requests(self, requests: tuple[EquityDataRequest, ...]) -> tuple[tuple[str, EquityDataRequest], ...]:
@@ -450,8 +452,8 @@ class EquityInputBinding:
         import re
         if not re.fullmatch("[a-f0-9]{64}", self.specification_hash):
             raise ValueError("invalid execution fingerprint")
-        required = ({'bars', 'sessions', 'actions'} if self.scope is InputBindingScope.OBSERVATION else
-                    {'bars', 'sessions', 'actions', 'trading_facts'})
+        required = ({'bars', 'sessions'} if self.scope is InputBindingScope.OBSERVATION else
+                    {'bars', 'sessions', 'trading_facts'})
         if {k for k, _ in self.content_identities} != required or len(self.content_identities) != len(required):
             raise ValueError("equity binding products differ from the declared input scope")
         if any(not re.fullmatch("[a-f0-9]{64}", v) for _, v in self.content_identities):
@@ -471,8 +473,8 @@ class EquityInputBinding:
                 query = parameters.query
                 if key in primary_roles:
                     if (parameters.instrument != self.instrument or query.product.name.lower() != key
-                            or query.adjustment is not PriceAdjustment.NONE):
-                        raise ValueError('primary request binding must use traded RAW products')
+                            or query.adjustment is not (PriceAdjustment.NONE if query.product is EquityProduct.SESSIONS else PriceAdjustment.BACKWARD)):
+                        raise ValueError('primary request binding must use traded HFQ products')
                 else:
                     declaration = (self.execution_input.input if key.startswith('execution:') else
                         next(x.input for x in self.auxiliary_inputs if key.startswith(f'auxiliary:{x.input.name}:')))
@@ -501,7 +503,7 @@ class EquityStrategyDefinition:
     contract_version: int = 2
     parameter_schema_json: str | None = None
     feedback_mode: str = 'CONFIRMED_EXECUTION'
-    analysis_price: str = 'RAW'
+    analysis_price: str = 'HFQ'
     explanation_cases: tuple[str, ...] = ('flat', 'long')
     auxiliary_inputs: tuple[EquityAuxiliaryInput, ...] = ()
     session_context: bool = False
@@ -511,7 +513,7 @@ class EquityStrategyDefinition:
     execution_input: ExecutionInput | None = None
     initial_account: object | None = None
     observation_inputs: tuple[DatasetObservationInput, ...] = ()
-    planning_context: bool = False
+    execution_policy: ExecutionPolicy | None = None
 
     def __post_init__(self):
         import re
@@ -519,10 +521,14 @@ class EquityStrategyDefinition:
             raise TypeError('definition requires typed observation inputs')
         if len({x.name for x in self.observation_inputs}) != len(self.observation_inputs):
             raise ValueError('duplicate observation alias')
-        if type(self.planning_context) is not bool:
-            raise TypeError('planning context declaration requires bool')
-        if self.contract_version != 4 and (self.observation_inputs or self.planning_context):
-            raise ValueError('dataset observations and planning context require V4')
+        from .models import ExecutionPolicy
+        if self.contract_version == 4 and type(self.execution_policy) is not ExecutionPolicy:
+            raise TypeError('V4 requires an explicit execution policy')
+        if self.contract_version == 4 and self.execution_policy.policy_type not in {
+                'TARGET_POSITION', 'FROZEN_RULE', 'INTRADAY_OVERLAY'}:
+            raise ValueError('V4 requires a supported channel execution policy')
+        if self.contract_version != 4 and (self.observation_inputs or self.execution_policy is not None):
+            raise ValueError('dataset observations and execution policy require V4')
         self.frozen_assets
         if type(self.contract_version) is not int or self.contract_version not in (2, 4) or type(self.execution_spec) is not ResearchExecutionSpec:
             raise ValueError("unsupported equity definition contract")
@@ -536,8 +542,6 @@ class EquityStrategyDefinition:
         elif self.feature_graph is not None or self.state_schema is not None:
             raise ValueError('equity V2 cannot declare account replay features or state')
         from .replay_contracts import StrategyComputation
-        if self.planning_context and self.computation is not StrategyComputation.STATEFUL_STEP:
-            raise ValueError('planning context requires STATEFUL_STEP')
         from dataflows import BarFrequency
         if self.contract_version == 4:
             if type(self.computation) is not StrategyComputation:
@@ -562,6 +566,8 @@ class EquityStrategyDefinition:
                 raise ValueError('execution quotation request duplicates an auxiliary role')
         if self.contract_version!=4 and any(x.instrument.market is not MarketId.US for x in self.auxiliary_inputs):
             raise ValueError('legacy auxiliary input contract supports US only')
+        if self.contract_version == 4 and any(x.analysis_price != 'HFQ' for x in self.auxiliary_inputs):
+            raise ValueError('V4 auxiliary inputs require HFQ prices')
         if self.contract_version != 4 and any(x.analysis_price != 'RAW' for x in self.auxiliary_inputs):
             raise ValueError('adjusted observations require V4')
 
@@ -618,7 +624,7 @@ class EquityStrategyDefinition:
             if 'enum' in rule and (type(rule['enum']) is not list or value not in rule['enum']):
                 raise ValueError(f'parameter outside declared choices: {key}')
         object.__setattr__(self, 'parameter_schema_json', json.dumps(schema, sort_keys=True, separators=(',', ':'), allow_nan=False))
-        if self.feedback_mode not in {'MARKET_INTENT', 'CONFIRMED_EXECUTION', 'CONFIRMED_CLOSED_CYCLE_V1'} or self.analysis_price != 'RAW':
+        if self.feedback_mode not in {'MARKET_INTENT', 'CONFIRMED_EXECUTION', 'CONFIRMED_CLOSED_CYCLE_V1'} or self.analysis_price != ('HFQ' if self.contract_version == 4 else 'RAW'):
             raise ValueError('unsupported equity feedback or analysis price contract')
         if tuple(self.explanation_cases) != ('flat', 'long'):
             raise ValueError('equity explanations must declare both target branches')
@@ -655,13 +661,23 @@ class EquityStrategyDefinition:
         return _freeze(json.loads(self.parameters_json))
 
     def to_dict(self):
-        result = {"runtime_kind": "ACCOUNT_REPLAY" if self.contract_version == 4 else "US_EQUITY", **asdict(self)}
+        # Policy settings are immutable mappings; dataclasses.asdict cannot
+        # deepcopy mappingproxy. Serialize that owned contract explicitly.
+        def record(value):
+            if is_dataclass(value):
+                return {item.name: record(getattr(value, item.name)) for item in fields(value)}
+            if isinstance(value, Mapping):
+                return {key: record(item) for key, item in value.items()}
+            if isinstance(value, (tuple, list)):
+                return type(value)(record(item) for item in value)
+            return value
+        result = {"runtime_kind": "ACCOUNT_REPLAY" if self.contract_version == 4 else "US_EQUITY", **record(self)}
         if self.observation_inputs:
             result['observation_inputs'] = [item.to_dict() for item in self.observation_inputs]
         else:
             result.pop('observation_inputs')
-        if not self.planning_context:
-            result.pop('planning_context')
+        if self.execution_policy is None:
+            result.pop('execution_policy')
         if self.contract_version != 4:
             result.pop("computation")
         else:
@@ -694,6 +710,9 @@ class EquityStrategyDefinition:
         instrument['asset_class'] = AssetClass(instrument['asset_class'])
         value['instrument'] = InstrumentId(**instrument)
         value['execution_spec'] = execution_spec_from_dict(value['execution_spec'])
+        if value.get('execution_policy') is not None:
+            from .models import ExecutionPolicy
+            value['execution_policy'] = ExecutionPolicy(**value['execution_policy'])
         value['source_files'] = tuple(value['source_files'])
         value['dependencies'] = tuple(ImplementationDependency(**x) for x in value['dependencies'])
         value['auxiliary_inputs'] = tuple(EquityAuxiliaryInput.from_dict(x) for x in value.get('auxiliary_inputs', ()))

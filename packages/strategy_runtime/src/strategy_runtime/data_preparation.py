@@ -114,6 +114,13 @@ def causal_history(bars, at, *, latency_seconds=0, minimum_observations=0):
 def prepare_observations(definition, products, identities, *, bindings=(), as_of=None):
     """Prepare strategy-only observations without execution facts or market rules."""
     from .equity_replay import PreparedObservations
+    roles = ('bars',) + tuple(item.data_key(EquityProduct.BARS) for item in definition.auxiliary_inputs)
+    for role in roles:
+        metadata = identities[role]['metadata']
+        if metadata.get('adjustment') != 'hfq':
+            raise ValueError('strategy observations require HFQ prices: ' + role)
+        if metadata.get('acquisition_method') not in ('PROVIDER_ADJUSTED', 'DFLS_ADJUSTED'):
+            raise ValueError('HFQ observations require an explicit acquisition method: ' + role)
     bars = products["bars"]
     if as_of is not None:
         bars = causal_history(bars, as_of,
@@ -149,10 +156,6 @@ def forward_requests(dataflows, binding, interval, definition, source_root, cale
             # Calendar dates, not future market observations, are needed to
             # schedule the next legal sellability/settlement boundary.
             day += timedelta(days=14)
-        elif parameters.query.product is EquityProduct.ACTIONS:
-            # Dynamic share adjustments remain a host/account input, never a
-            # strategy observation or a fabricated current tradability fact.
-            pass
         else:
             raise ValueError('strategy-only recipe contains an execution product')
         items.append((role, replace(parameters, query=replace(parameters.query, end=day))))

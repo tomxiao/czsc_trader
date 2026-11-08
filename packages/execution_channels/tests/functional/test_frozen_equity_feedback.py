@@ -24,7 +24,7 @@ def executor(actions=None):
         AccountPolicy('USD', CashAvailabilityPolicy.IMMEDIATE_RESEARCH), 1, .01, .01, 0.)
     if actions is None:
         actions = pd.DataFrame(columns=['Date', 'EventId', 'Kind'])
-    return _FrozenEquityExecutor(specification=spec, initial_cash=1000., fee_rate=.001, actions=actions)
+    return _FrozenEquityExecutor(specification=spec, initial_cash=1000., fee_rate=.001)
 
 
 def transition(account, side, quantity, *, limit=10.1, blocked=False, price=10.):
@@ -86,41 +86,8 @@ def test_closed_cycle_only_after_confirmed_exit_and_survives_reentry_and_restore
         'cycle_id', 'entry_at', 'exit_at', 'cost', 'income', 'net_pnl', 'net_return', 'status'}
 
 
-@pytest.mark.parametrize('complexity', ['additional_buy', 'partial_sell', 'split'])
-def test_unrepresentable_cycles_keep_old_execution_and_recover_only_after_new_close(complexity):
-    actions = None
-    if complexity == 'split':
-        actions = pd.DataFrame([dict(Date=START + timedelta(minutes=30), EventId='split', Kind='SPLIT',
-                                     Ratio=2., CashPerShare=0., PayAt=pd.NaT)])
-    account = executor(actions)
-    execute(account, 'BUY', 10)
-    if complexity == 'additional_buy':
-        unsupported = execute(account, 'BUY', 5)
-        assert unsupported.quantity == 15
-    elif complexity == 'partial_sell':
-        unsupported = execute(account, 'SELL', 5)
-        assert unsupported.quantity == 5
-    else:
-        unsupported = account.snapshot_at(START + timedelta(minutes=30), START + timedelta(minutes=30))
-        assert unsupported.quantity == 20
-    assert unsupported.closed_cycle_feedback is None
-    assert execute(account, 'SELL', account.quantity).closed_cycle_feedback is None
-    assert execute(account, 'BUY', 5).closed_cycle_feedback is None
-    recovered = execute(account, 'SELL', 5).closed_cycle_feedback.latest
-    assert recovered.entry_quantity == 5 and recovered.entry_cost == pytest.approx(50.05)
-    assert len(account.finish().trades) == 2
 
 
-def test_split_invalidates_old_raw_closed_feedback_even_while_flat():
-    stamp = START + timedelta(minutes=60)
-    actions = pd.DataFrame([dict(Date=stamp, EventId='split', Kind='SPLIT', Ratio=2.,
-                                 CashPerShare=0., PayAt=pd.NaT)])
-    account = executor(actions)
-    execute(account, 'BUY', 10)
-    assert execute(account, 'SELL', 10).closed_cycle_feedback.latest is not None
-    assert account.snapshot_at(stamp, stamp).closed_cycle_feedback is None
-    assert execute(account, 'BUY', 5).closed_cycle_feedback is None
-    assert execute(account, 'SELL', 5).closed_cycle_feedback.latest.entry_quantity == 5
 
 
 def test_rejected_transition_rolls_back_feedback_and_journal():
@@ -138,21 +105,3 @@ def test_rejected_transition_rolls_back_feedback_and_journal():
     plan = replace(plan, quantity=10, point=replace(plan.point, observed_through=START))
     assert account.execute(plan, bar, constraint=constraint).closed_cycle_feedback is None
     assert account.quantity == 0 and len(account.finish().trades) == 1
-
-
-def test_failed_split_restores_feedback_capability_and_account():
-    stamp = START + timedelta(minutes=30)
-    actions = pd.DataFrame([dict(Date=stamp, EventId='split', Kind='SPLIT', Ratio=1.5,
-                                 CashPerShare=0., PayAt=pd.NaT)])
-    account = executor(actions)
-    execute(account, 'BUY', 1)
-    before = account.snapshot()
-    with pytest.raises(ValueError, match='fractional split entitlement'):
-        account.snapshot_at(stamp, stamp)
-    assert account.snapshot() == before
-    assert account.applied == set() and account.rows['actions'] == []
-    # execute's separate transaction wrapper must preserve the same state.
-    with pytest.raises(ValueError, match='fractional split entitlement'):
-        execute(account, 'SELL', 1)
-    assert account.snapshot() == before
-    assert len(account.rows['decisions']) == 1 and len(account.rows['fills']) == 1

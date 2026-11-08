@@ -117,8 +117,11 @@ class V4StateMigration:
     cycle_values: StateRecord | None = None
     pending_cycle_values: StateRecord | None = None
     source_runtime_release_id: str | None = None
+    execution_locked_quantity: int | None = None
 
     def __post_init__(self) -> None:
+        if self.execution_locked_quantity is not None and (type(self.execution_locked_quantity) is not int or self.execution_locked_quantity <= 0):
+            raise ValueError("state migration requires a positive EC quantity lock or None")
         if type(self.evidence) is not str or not self.evidence.strip():
             raise ValueError("state migration requires review evidence")
         if self.source_runtime_release_id is not None and (

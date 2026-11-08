@@ -191,5 +191,4 @@ class PreparedStrategyData:
             "ADJUSTED_CLOSE",
             "UNADJUSTED_CLOSE" if self._pricing.pricing.basis is ExecutionPriceBasis.UNADJUSTED else "NORMALIZED_HFQ_CLOSE",
             pricing=self._pricing.pricing,
-            price_scale=execution / self._raw_closes[signal],
         )

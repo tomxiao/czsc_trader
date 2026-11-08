@@ -89,7 +89,7 @@ def test_host_assembles_both_markets_and_shares_quote_lifetime(tmp_path, monkeyp
         assert ProviderKey(EquityProduct.BARS, MarketId.CN, SourceRef('cn-data', 'v2')) not in providers
         for market, name in ((MarketId.CN, 'cn-facts'), (MarketId.US, 'us-facts')):
             source = SourceRef(name, 'v2')
-            for product in (EquityProduct.ACTIONS, EquityProduct.TRADING_FACTS):
+            for product in (EquityProduct.TRADING_FACTS,):
                 assert ProviderKey(product, market, source) in providers
             assert ProviderKey(EquityProduct.BARS, market, source) not in providers
         for source in (SourceRef('us-data', 'v1'), SourceRef('us-aux', 'v2')):
@@ -98,7 +98,6 @@ def test_host_assembles_both_markets_and_shares_quote_lifetime(tmp_path, monkeyp
                                         EquityQuery(EquityProduct.SESSIONS, day, day))
             frame, _ = providers[request.parameters.provider_key].fetch(request)
             assert frame.SessionDate.tolist() == ['2026-11-05']
-            assert ProviderKey(EquityProduct.ACTIONS, MarketId.US, source) not in providers
         assert len(opened) == 1
     assert closed == opened
 

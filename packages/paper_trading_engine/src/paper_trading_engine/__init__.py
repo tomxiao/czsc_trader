@@ -16,11 +16,12 @@ __all__ = [
     "AdviceDecision", "OrderSpec", "AccountStrategyBinding", "AccountBindingUpdate",
     "AccountBindingUpdateResult", "AccountBindingUpdateStatus", "update_account_bindings",
     "V4AccountBindingUpdate", "V4StateContinuation", "V4StateMigration", "account_binding_facts_sha256",
-    "EquityAdviceClient", "prepare_equity_decision",
+    "EquityAdviceClient", "prepare_equity_decision", "ExecutionReferenceBinding", "PreparedExecutionReference",
     "EquityPteInspectionProtocol", "EquityPteScenario", "inspect_equity_release",
 ]
 
 _EXPORT_MODULES = {
+    'ExecutionReferenceBinding': 'execution_reference', 'PreparedExecutionReference': 'execution_reference',
     'EquityAdviceClient': 'equity_advice', 'prepare_equity_decision': 'equity_advice',
     'EquityPteInspectionProtocol': 'equity_inspection',
     'EquityPteScenario': 'equity_inspection', 'inspect_equity_release': 'equity_inspection',

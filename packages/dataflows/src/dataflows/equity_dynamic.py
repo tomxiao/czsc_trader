@@ -9,7 +9,7 @@ from urllib.request import urlopen
 import pandas as pd
 
 from .contract import EquityDataRequest, ProviderBinding
-from .equity_contracts import EquityProduct, MarketId, ProviderKey, SourceRef
+from .equity_contracts import EquityProduct, MarketId, PriceAdjustment, ProviderKey, SourceRef
 from .equity_data import equity_metadata, session_record, sessions_from_metadata, validate_equity_frame
 from .errors import DataContractError, IncompleteDataError, SourceRequestError
 
@@ -52,10 +52,13 @@ def dynamic_equity_bindings(*, source: SourceRef, market: MarketId, endpoint: st
         query = p.query
         if p.source != source or p.instrument.market is not market:
             raise DataContractError("dynamic equity facts source differs from request")
+        if query.product is not EquityProduct.TRADING_FACTS:
+            raise DataContractError("dynamic equity provider supplies trading facts only")
         selection = dict(market=market.value, symbol=p.instrument.symbol,
                          asset_class=p.instrument.asset_class.value, product=query.product.value,
                          start=query.start.isoformat(), end=query.end.isoformat(),
-                         frequency=query.frequency.value, session=query.session.value)
+                         frequency=query.frequency.value, session=query.session.value,
+                         adjustment=query.adjustment.value)
         raw = read_json(endpoint + "?" + urlencode(selection))
         if (type(raw) is not dict or set(raw) != {"source", "selection", "coverage", "rows"}
                 or raw["source"] != asdict(source) or raw["selection"] != selection):
@@ -72,9 +75,9 @@ def dynamic_equity_bindings(*, source: SourceRef, market: MarketId, endpoint: st
         if (coverage["complete"] is not True or type(coverage["receipt"]) is not str or not coverage["receipt"].strip()
                 or coverage_start > query.start or coverage_end < query.end):
             raise IncompleteDataError("dynamic equity facts lack verified coverage")
-        cal_end = query.end + timedelta(days=14) if query.product is EquityProduct.TRADING_FACTS else query.end
+        cal_end = query.end + timedelta(days=14)
         cal_request = EquityDataRequest(p.instrument, calendar_source,
-            replace(query, product=EquityProduct.SESSIONS, end=cal_end))
+            replace(query, product=EquityProduct.SESSIONS, end=cal_end, adjustment=PriceAdjustment.NONE))
         cal_frame, cal_meta = calendar_binding.fetch(cal_request)
         validate_equity_frame(cal_frame, cal_request, cal_meta)
         calendar = sessions_from_metadata(cal_meta)
@@ -87,24 +90,12 @@ def dynamic_equity_bindings(*, source: SourceRef, market: MarketId, endpoint: st
             following = next((s for s in calendar if s.session_date > query.end), None)
             if following is not None:
                 meta["following_session"] = session_record(following)
-        else:
-            meta["action_history_complete"] = True
-            if not rows:
-                stamp = sessions[0].segments[0].start.isoformat()
-                rows = [{"Date": stamp, "AvailableDate": stamp, "EventId": "verified-no-actions",
-                         "Kind": "NONE", "Ratio": 1., "CashPerShare": 0., "PayAt": None}]
-                meta["no_actions_verified"] = True
-            elif any(set(row) != {"Date", "AvailableDate", "EventId", "Kind", "Ratio", "CashPerShare", "PayAt"}
-                    or row["Kind"] != "SPLIT" or type(row["EventId"]) is not str or not row["EventId"].strip()
-                    or type(row["Ratio"]) not in (int, float) or type(row["CashPerShare"]) not in (int, float)
-                    or row["CashPerShare"] != 0 or row["PayAt"] is not None for row in rows):
-                raise DataContractError("dynamic action feed requires exact mechanical share adjustments")
         frame = pd.DataFrame(rows)
         for name in ("Date", "AvailableDate"):
             if name not in frame:
                 raise IncompleteDataError("dynamic equity facts contain no dated rows")
             frame[name] = pd.to_datetime([_aware(value) for value in frame[name]], utc=True)
-        frame = frame.sort_values(["Date", "EventId"] if query.product is EquityProduct.ACTIONS else ["Date"]).reset_index(drop=True)
+        frame = frame.sort_values(["Date"]).reset_index(drop=True)
         if not frame.Date.dt.tz_convert(p.instrument.timezone).dt.date.between(query.start, query.end).all():
             raise DataContractError("dynamic equity facts contain rows outside the request")
         if (frame.AvailableDate > frame.Date).any():
@@ -113,4 +104,4 @@ def dynamic_equity_bindings(*, source: SourceRef, market: MarketId, endpoint: st
         return frame, meta
 
     return {ProviderKey(product, market, source): ProviderBinding(source.provider, source.revision, fetch)
-            for product in (EquityProduct.ACTIONS, EquityProduct.TRADING_FACTS)}
+            for product in (EquityProduct.TRADING_FACTS,)}

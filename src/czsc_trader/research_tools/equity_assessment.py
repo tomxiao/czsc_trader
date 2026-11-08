@@ -76,7 +76,7 @@ def build_equity_assessment_payload(payload):
     if "income_policy" in request:
         comparison["income_policy"] = request["income_policy"]
     context = canonical_sha256(comparison)
-    behavior = canonical_sha256({name: run[name] for name in ("fills", "actions", "account_points", "trades")})
+    behavior = canonical_sha256({name: run[name] for name in ("fills", "account_entries", "account_points", "trades")})
     return (AssessmentEvidence(
         AssessmentCandidate(f"{key.strategy_id}-{key.candidate_id}", content),
         request["experiment"]["experiment_id"], source_sha256[:32], header["evaluation_id"],

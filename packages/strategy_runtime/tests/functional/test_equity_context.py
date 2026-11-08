@@ -17,7 +17,7 @@ from strategy_runtime import (EquityAuxiliaryInput, EquityAuxiliaryBinding, Equi
 
 def auxiliary_declaration():
     return EquityAuxiliaryInput('market', InstrumentId(MarketId.US, AssetClass.ETF, 'SPY'),
-        SourceRef('synthetic', 'v1'), BarFrequency.M30, 2, 3600)
+        SourceRef('synthetic', 'v1'), BarFrequency.M30, 2, 3600, analysis_price='RAW')
 
 
 def make_candidate(root, *, enabled=True, latency=0):
@@ -37,7 +37,7 @@ def make_candidate(root, *, enabled=True, latency=0):
     auxiliary = auxiliary_declaration()
     definition = EquityStrategyDefinition(InstrumentId(MarketId.US, AssetClass.STOCK, 'LITE'), spec,
         1, 'strategy:decide', ('strategy.py',), equity_source_hash(root, ('strategy.py',)),
-        auxiliary_inputs=(auxiliary,) if enabled else (), session_context=enabled)
+        auxiliary_inputs=(auxiliary,) if enabled else (), session_context=enabled,analysis_price="RAW")
     return EquityStrategyCandidate('S999', 'C0001', definition, root)
 
 
@@ -76,10 +76,12 @@ def test_auxiliary_definition_binding_roundtrip_and_legacy_identity(tmp_path):
     auxbinding = EquityAuxiliaryBinding(item, 'b' * 64, 'c' * 64)
     binding = EquityInputBinding(PreparedDataRef(uuid4(), uuid4(), 'a' * 64), definition.instrument,
         definition.execution_spec.fingerprint, tuple((p, 'd' * 64) for p in
-        ('bars', 'sessions', 'actions', 'trading_facts')), 1, (auxbinding,))
+        ('bars', 'sessions', 'trading_facts')), 1, (auxbinding,))
     assert EquityInputBinding.from_dict(json.loads(json.dumps(binding.to_dict()))) == binding
     requests = item.requests(date(2025, 1, 1), date(2025, 1, 2))
-    assert [binding.request_key(r) for r in requests] == ['auxiliary:market:bars', 'auxiliary:market:sessions']
+    with pytest.raises(ValueError, match='non-HFQ'):
+        binding.request_key(requests[0])
+    assert binding.request_key(requests[1]) == 'auxiliary:market:sessions'
     assert binding.expected_identities[item.data_key(EquityProduct.BARS)] == 'b' * 64
     with pytest.raises(TypeError):
         binding.expected_identities['bars'] = 'e' * 64

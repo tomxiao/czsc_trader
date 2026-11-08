@@ -131,6 +131,7 @@ def prepare_v4_adoption(plan: AccountExecutionPlan, snapshot: AccountSnapshot, d
     next_state = AccountStrategyState(state.revision + 1, proposal.account, cycle,
                                      proposal.state_binding, proposal.next_event_cursor)
     after = {**document, "state": next_state.to_dict(),
+        "locked_quantity": plan.evidence["locked_quantity"],
         "pending_cycle": None if proposal.cycle_values is None else proposal.cycle_values.to_dict(),
         "budget": budget_to_dict(plan.cycle_after if plan.cycle_after is not None else prior_budget), "last_interval": interval, "last_inputs": prepared.data_identity,
         "buy_locks": [lock for lock in document["buy_locks"] if datetime.fromisoformat(lock["at"]) > prepared.interval.start]}

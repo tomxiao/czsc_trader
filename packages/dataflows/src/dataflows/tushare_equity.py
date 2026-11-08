@@ -1,5 +1,5 @@
 """CN RAW/HFQ prices and independent sessions for the equity contract."""
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -10,6 +10,7 @@ from .equity_contracts import (AssetClass, BarFrequency, EquityProduct, MarketId
                                PriceAdjustment, ProviderKey, SourceRef, TimeInterval, TradingSession)
 from .equity_data import equity_metadata, validate_equity_frame
 from .errors import DataContractError, IncompleteDataError
+from .history_repair import frame_content_sha256
 from .ohlcv_quality import source_session_calendar
 from .tushare_common import get_tushare_pro
 from .tushare_etf import (fetch_etf_ohlcv, fetch_etf_unadjusted_daily,
@@ -34,8 +35,8 @@ def tushare_equity_observation_bindings(*, source: SourceRef,
                                         env_file: str | Path | None = None) -> dict[ProviderKey, ProviderBinding]:
     """Bind CN stock/ETF HFQ bars and independent sessions, without execution facts.
 
-    Existing Tushare adapters retain their factor, units, quality and publication
-    contracts. RAW execution requires a separate economic-event source binding.
+    Stock daily HFQ is supplied directly by stk_factor_pro. Other supported
+    frequencies use the existing DFLS adjustment computation explicitly.
     """
     return _bindings(source=source, env_file=env_file, raw=False)
 
@@ -45,7 +46,7 @@ def tushare_equity_bindings(*, source: SourceRef,
     """CN RAW/HFQ D1/M30 and calendar products; no inferred events or rules.
 
     Publication-time limitations of the upstream adapters remain explicit. The
-    host must separately bind trading facts and verified mechanical actions.
+    host must separately bind dynamic trading facts.
     """
     return _bindings(source=source, env_file=env_file, raw=True)
 
@@ -86,6 +87,8 @@ def _bindings(*, source, env_file, raw):
                 fetch_bars = fetch_stock_unadjusted_intraday if stock else fetch_etf_unadjusted_intraday
                 frame, source_metadata = fetch_bars(p.instrument.symbol, start, end,
                     period=p.query.frequency.value, env_file=env_file)
+        elif stock and p.query.frequency is BarFrequency.DAILY:
+            frame, source_metadata = _stock_daily_hfq(p.instrument.symbol, start, end, env_file)
         else:
             fetch_bars = fetch_stock_ohlcv if stock else fetch_etf_ohlcv
             frame, source_metadata = fetch_bars(p.instrument.symbol, start, end,
@@ -99,6 +102,8 @@ def _bindings(*, source, env_file, raw):
         metadata = {**source_metadata, **equity_metadata(
             request, sessions, availability_basis=availability)}
         metadata["calendar_source"] = "tushare.trade_cal"
+        if p.query.adjustment is PriceAdjustment.NONE:
+            metadata["acquisition_method"] = "PROVIDER_RAW"
         metadata.setdefault("publication_time_verified", False)
         times = pd.to_datetime(frame.Date, errors="raise")
         if p.query.frequency is BarFrequency.DAILY:
@@ -122,3 +127,52 @@ def _bindings(*, source, env_file, raw):
 
     return {ProviderKey(product, MarketId.CN, source): ProviderBinding(source.provider, source.revision, fetch)
             for product in (EquityProduct.BARS, EquityProduct.SESSIONS)}
+
+
+def _stock_daily_hfq(symbol, start, end, env_file):
+    """Select the documented adjusted endpoint by capability, never on error.
+
+    Annual requests stay below the provider's 10,000-row cap. A permission,
+    schema or missing-session failure propagates; it cannot change the method.
+    """
+    pro = get_tushare_pro(env_file)
+    first, last = date.fromisoformat(start), date.fromisoformat(end)
+    fields = "ts_code,trade_date,open_hfq,high_hfq,low_hfq,close_hfq,vol,amount"
+    frames = []
+    cursor = first
+    while cursor <= last:
+        stop = min(last, date(cursor.year, 12, 31))
+        rows = pro.stk_factor_pro(ts_code=symbol, start_date=cursor.strftime("%Y%m%d"),
+            end_date=stop.strftime("%Y%m%d"), fields=fields)
+        if not isinstance(rows, pd.DataFrame) or not set(fields.split(",")).issubset(rows):
+            raise DataContractError("stk_factor_pro did not return the required HFQ fields")
+        if not rows.ts_code.eq(symbol).all():
+            raise DataContractError("stk_factor_pro returned another instrument")
+        stamps = pd.to_datetime(rows.trade_date, format="%Y%m%d", errors="raise")
+        if not stamps.dt.date.between(cursor, stop).all():
+            raise DataContractError("stk_factor_pro returned dates outside the requested interval")
+        frames.append(rows)
+        cursor = stop + timedelta(days=1)
+    source_rows = pd.concat(frames, ignore_index=True)
+    if source_rows.empty:
+        raise IncompleteDataError("stk_factor_pro returned no adjusted daily bars")
+    if source_rows.trade_date.duplicated().any():
+        raise DataContractError("stk_factor_pro returned duplicate daily bars")
+    frame = source_rows.rename(columns={"trade_date": "Date", "open_hfq": "Open",
+        "high_hfq": "High", "low_hfq": "Low", "close_hfq": "Close",
+        "vol": "Volume", "amount": "Amount"}).loc[:,
+        ["Date", "Open", "High", "Low", "Close", "Volume", "Amount"]].copy()
+    frame["Date"] = pd.to_datetime(frame.Date, format="%Y%m%d")
+    frame = frame.sort_values("Date").reset_index(drop=True)
+    frame["Volume"] = pd.to_numeric(frame.Volume, errors="raise") * 100
+    frame["Amount"] = pd.to_numeric(frame.Amount, errors="raise") * 1000
+    # The upstream endpoint publishes between 19:00 and 20:00; historical
+    # publication timestamps are unavailable, so use its conservative schedule.
+    frame["AvailableDate"] = frame.Date + pd.Timedelta(hours=20)
+    coverage = source_session_calendar(pro, symbol, start=start, end=end, asset_type="stock")
+    return frame, {"adjustment": "hfq", "acquisition_method": "PROVIDER_ADJUSTED",
+        "price_source_api": "tushare.stk_factor_pro", "vendor": "tushare",
+        "source_response_sha256": frame_content_sha256(source_rows),
+        "volume_basis": "UNADJUSTED_SHARES", "amount_basis": "CNY",
+        "available_at": "scheduled stk_factor_pro daily 20:00 Asia/Shanghai; historical publication unverified",
+        "publication_time_verified": False, "daily_session_coverage": coverage}

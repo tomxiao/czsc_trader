@@ -255,10 +255,21 @@ class ExecutionPolicy:
     policy_type: str
     settings: Mapping[str, Any]
 
+    def __reduce__(self):
+        # Research workers reconstruct the owned immutable policy through its
+        # validated constructor; mappingproxy itself is not pickleable.
+        return type(self), (self.policy_type, _thaw_json(self.settings))
+
     def __post_init__(self) -> None:
         object.__setattr__(self, "policy_type", _text(self.policy_type, "execution policy_type"))
         object.__setattr__(self, "settings", _json_mapping(self.settings, "execution settings"))
         canonical_sha256(self.settings)
+        if self.policy_type == "TARGET_POSITION":
+            if set(self.settings) - {"capital_mode"}:
+                raise RuntimeContractError("target-position policy contains unsupported fields")
+            if self.settings.get("capital_mode", "target_equity_fraction") not in {
+                    "target_equity_fraction", "full_available_cash"}:
+                raise RuntimeContractError("target-position policy requires a supported capital mode")
         if self.policy_type == "FROZEN_RULE":
             capital = self.settings.get("capital", {})
             if capital.get("mode") == "signal_cash_fraction":

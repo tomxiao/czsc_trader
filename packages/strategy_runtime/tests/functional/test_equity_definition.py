@@ -6,6 +6,7 @@ import pickle
 
 import pandas as pd
 import pytest
+from strategy_runtime.models import ExecutionPolicy
 from dataflows import InstrumentId, MarketId, AssetClass, BarFrequency, TimeInterval
 from strategy_runtime import (EquityStrategyDefinition, EquityStrategyCandidate, equity_source_hash,
     ResearchExecutionSpec, UsEquitySpec, AccountPolicy, CashAvailabilityPolicy, EquityPortfolio, StrategyRuntime,
@@ -23,7 +24,7 @@ def candidate(root):
         AccountPolicy('USD', CashAvailabilityPolicy.IMMEDIATE_RESEARCH), 1, .01, .01, 0.)
     files = ('rules.py', 'strategy.py')
     definition = EquityStrategyDefinition(InstrumentId(MarketId.US, AssetClass.STOCK, 'LITE'), spec, 1,
-        'strategy:decide', files, equity_source_hash(root, files), '{"threshold":10}')
+        'strategy:decide', files, equity_source_hash(root, files), '{"threshold":10}', analysis_price='RAW')
     return EquityStrategyCandidate('S999', 'C0001', definition, root)
 
 
@@ -72,7 +73,7 @@ def test_initial_state_frozen_containers_preserve_identity_and_strict_values(tmp
     from strategy_runtime.equity_features import FeatureGraph
     from strategy_runtime.equity_replay import StrategyStateSchema, StateField, StateValueType
     base = candidate(tmp_path)
-    definition = replace(base.definition, contract_version=4,
+    definition = replace(base.definition, contract_version=4,analysis_price="HFQ",execution_policy=ExecutionPolicy("TARGET_POSITION", {}),
         computation=StrategyComputation.STATEFUL_STEP, feature_graph=FeatureGraph(),
         state_schema=StrategyStateSchema((StateField('counter', StateValueType.INT),
             StateField('at', StateValueType.DATETIME), StateField('optional', StateValueType.STR, True))),
@@ -92,7 +93,7 @@ def test_initial_state_frozen_containers_preserve_identity_and_strict_values(tmp
         EquityStrategyDefinition.from_dict(_freeze(invalid))
 
 
-def test_formal_decision_observes_split_before_planning(tmp_path):
+def test_retired_action_driven_account_cannot_silently_enter_hfq_replay(tmp_path):
     from execution_channels.historical.frozen_equity import _FrozenEquityExecutor
     value = candidate(tmp_path)
     value = replace(value, definition=replace(value.definition, parameters_json='{"threshold":1}'))
@@ -107,14 +108,9 @@ def test_formal_decision_observes_split_before_planning(tmp_path):
     actions = pd.DataFrame([{'Date': starts[2], 'AvailableDate': starts[2], 'EventId': 'split',
                              'Kind': 'SPLIT', 'Ratio': 2., 'CashPerShare': 0., 'PayAt': None}])
     from czsc_trader.application.ec_boundary import execution_spec
-    from czsc_trader.application.frozen_equity_replay import run_frozen_equity
-    executor = _FrozenEquityExecutor(specification=execution_spec(value.definition.execution_spec),
-                                         initial_cash=1000., fee_rate=.001, actions=actions)
-    result = run_frozen_equity(StrategyRuntime(execution_spec=value.definition.execution_spec).create(value),
-        bars, constraints, executor, start=starts[1], end=ends[-1], fee_rate=.001)
-    assert result.account_points.iloc[-1].quantity == 196
-    assert result.decisions.iloc[-1].reference_price == 5.
-    assert result.decisions.iloc[-1].side == 'HOLD'
+    with pytest.raises(TypeError,match='actions'):
+        _FrozenEquityExecutor(specification=execution_spec(value.definition.execution_spec),
+                              initial_cash=1000., fee_rate=.001, actions=actions)
 
 
 def closed_cycle():

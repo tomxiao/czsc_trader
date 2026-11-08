@@ -22,8 +22,7 @@ from strategy_runtime.equity_definition import EquityAuxiliaryBinding, EquityInp
 from strategy_evaluator.equity_metrics import summarize_equity_ledger
 
 from .equity_evaluation import (EquityArtifact, EquityEvaluationRequest, EquityEvaluationResult,
-    _audit_inputs, _data_quality, _fetch_products, _json_value, _records,
-    replay_actions, replay_action_facts)
+    _audit_inputs, _data_quality, _fetch_products, _json_value, _records)
 from .execution import ExecutionPhase, ResearchExecutionSession
 from .account_preparation import PreparedAccountEvaluation, BenchmarkRunIdentity
 
@@ -47,8 +46,8 @@ def _read(content):
 def primary_input_digest(value):
     """Canonical primary identity from already decoded V4 input content."""
     primary = {"schema": value["schema"],
-        "products": {key: value["products"][key] for key in ("bars", "sessions", "actions", "trading_facts", "constraints")},
-        "data": {key: value["data"][key] for key in ("bars", "sessions", "actions", "trading_facts", "constraints")}}
+        "products": {key: value["products"][key] for key in ("bars", "sessions", "trading_facts", "constraints")},
+        "data": {key: value["data"][key] for key in ("bars", "sessions", "trading_facts", "constraints")}}
     return sha256(_bytes(primary)).hexdigest()
 
 
@@ -107,6 +106,7 @@ def _benchmark_candidate(request):
     from strategy_runtime.equity_replay import StrategyStateSchema
     from strategy_runtime.replay_contracts import StrategyComputation
     from strategy_runtime.equity_buy_hold_v4 import step
+    from strategy_runtime.models import ExecutionPolicy
     root = Path(inspect.getsourcefile(step)).parent
     module = "equity_buy_hold_v4"
     files = (module + ".py",)
@@ -114,7 +114,8 @@ def _benchmark_candidate(request):
         request.candidate.definition.execution_spec, request.candidate.warmup_bars,
         module + ":step", files, equity_source_hash(root, files),
         contract_version=request.candidate.definition.contract_version, feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema(),
-        computation=StrategyComputation.STATEFUL_STEP)
+        computation=StrategyComputation.STATEFUL_STEP,
+        execution_policy=ExecutionPolicy("TARGET_POSITION", {"capital_mode": "full_available_cash"}))
     # Internal implementation adapter only; the external account owner is BENCHMARK.
     return EquityStrategyCandidate("S000", "C0000", definition, root)
 
@@ -303,19 +304,20 @@ class _AccountOutputContext:
     constraints: tuple
 
 
-def _compute_account(replay, candidate, request, actions, owner, execution_bars, output):
+def _compute_account(replay, candidate, request, owner, execution_bars, output):
     """Execute the authoritative account once; publication stays caller-owned."""
     from czsc_trader.application.account_replay import run_replay
     from czsc_trader.application.ec_boundary import execution_spec
     from execution_channels.historical.portfolio import PortfolioHistoricalExecutor
     executor = PortfolioHistoricalExecutor(specification=execution_spec(candidate.definition.execution_spec),
-        initial_cash=request.initial_cash, fee_rate=request.fee_rate, actions=replay_actions(actions),
-        price_basis="RAW", execution_bars=execution_bars)
+        initial_cash=request.initial_cash, fee_rate=request.fee_rate,
+        price_basis="HFQ", execution_bars=execution_bars)
     outcome = run_replay(replay, candidate, executor, start=request.window.start,
         end=request.window.end, fee_rate=request.fee_rate, owner=owner, constraints=output.constraints)
     account = outcome.execution_result
     run = {"decisions": _records(account.decisions), "orders": _records(account.orders),
-        "fills": _records(account.fills), "actions": _records(account.corporate_action_entries),
+        "fills": _records(account.fills), "account_entries": _records(account.account_entries),
+        "price_basis": account.price_basis, "quantity_basis": account.quantity_basis,
         "account_points": _records(account.account_points), "trades": _records(account.trades),
         "account_daily": _records(account.account_daily)}
     ledger = {**run, "specification": asdict(candidate.definition.execution_spec),
@@ -430,7 +432,7 @@ def evaluate_many_equity(access, requests, *, execution):
                                 ExecutionMarket(candidate.instrument.market.value))
                     quotes = state.execution_quotes[key_quote]
                 output = _account_output_context(state, prepared, benchmark=benchmark)
-                tasks.append((key, (replay, candidate, contract, state.products[prepared.snapshot.sha256]["actions"], owner, quotes, output)))
+                tasks.append((key, (replay, candidate, contract, owner, quotes, output)))
             except Exception as exc:
                 failures[key] = exc
     accounts = {}
@@ -507,6 +509,9 @@ def validate_certified_result(access, prepared, result, *, execution):
 
 
 def validate_result_structure(payload, artifacts=()):
+    if (payload["request"].get("price_basis") != "HFQ" or
+            payload["request"].get("quantity_basis") != "SIMULATED_INTEGER_UNITS"):
+        raise ValueError("historical evidence requires HFQ simulated units; old RAW evidence must remain separate")
     if payload.get("schema_version") != 4 or payload["request"].get("schema") != f"equity-research/v{payload["schema_version"]}":
         raise ValueError("equity result schema differs")
     if payload["request"].get("candidate_definition", {}).get("contract_version") != payload["schema_version"]:
@@ -586,7 +591,7 @@ class MaterializedEquity:
         request = payload["request"]
         products = inputs["products"]
         payload.update(runs=runs, audit_inputs={"bars": products["bars"],
-            "action_facts": replay_action_facts(products["actions"], request.get("income_policy")),
+            "price_basis": request["price_basis"], "quantity_basis": request["quantity_basis"],
             "constraints": products["constraints"], "specification": request["specification"],
             "initial_cash": request["initial_cash"], "fee_rate": request["fee_rate"]})
         definition = request["candidate_definition"]
