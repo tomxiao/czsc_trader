@@ -81,7 +81,23 @@ def _plan_identity(release, updates):
 
 def _validate_execution(facts, decisions):
     rows = facts["rows"]
-    if any(row["attention_required"] or row["status"] not in TERMINAL_INTENT_STATUSES for row in rows["intents"]):
+    # Only legacy plans have no adopted V4 strategy-state interval to rewind.
+    replaceable = set()
+    if not facts["account"]["equity_rules_json"]:
+        for decision in decisions:
+            identity = decision["decision_id"]
+            intents = [row for row in rows["intents"] if row["decision_id"] == identity]
+            if (decision["payload"].get("equity_execution_interval") is None
+                    and not any(row["decision_id"] == identity for row in rows["orders"] + rows["fills"])
+                    and (decision["status"] == DecisionState.PENDING or (
+                        decision["status"] == DecisionState.COMPLETED and decision["state_reason"] == "NO_ORDER"
+                        and not intents))
+                    and all(not row["attention_required"] and not row["channel_order_id"]
+                            and row["status"] in {"PENDING_SUBMIT", "WAITING_DEPENDENCY"} for row in intents)):
+                replaceable.add(identity)
+    local = [row for row in rows["intents"] if row["decision_id"] in replaceable]
+    if any(row["attention_required"] or (row["status"] not in TERMINAL_INTENT_STATUSES
+           and row["decision_id"] not in replaceable) for row in rows["intents"]):
         raise ValueError("unresolved intents block V4 binding update")
     fills = Counter()
     for row in rows["fills"]:
@@ -94,11 +110,16 @@ def _validate_execution(facts, decisions):
             raise ValueError("unfinished or unreconciled orders block V4 binding update")
     if fills or any(row["status"] == DecisionState.EXECUTING for row in decisions):
         raise ValueError("unreconciled execution blocks V4 binding update")
-    if Decimal(facts["account"]["frozen_cash"]) != 0:
+    from .account_engine import AccountEngine
+    account = facts["account"]
+    released_cash = AccountEngine._cash_after_replaceable_intents(account,
+        [{**row, "payload": json.loads(row["payload"])} for row in local])
+    if released_cash - Decimal(account["cash"]) != Decimal(account["frozen_cash"]):
         raise ValueError("unexplained frozen cash blocks V4 binding update")
+    return replaceable
 
 
-def _validate_cutover(facts, version, update, document):
+def _validate_cutover(facts, version, update, document, replaceable=()):
     start = update.effective_interval.start
     first_day = start.astimezone(update.rules.timezone).date()
     last_day = (update.effective_interval.end - timedelta(microseconds=1)).astimezone(update.rules.timezone).date()
@@ -115,6 +136,9 @@ def _validate_cutover(facts, version, update, document):
         if row["decision_id"] not in adopted:
             continue
         interval = json.loads(row["payload"]).get("equity_execution_interval")
+        if (row["decision_id"] in replaceable and interval is None
+                and date.fromisoformat(row["valid_session"]) == first_day):
+            continue
         if ((interval is None and date.fromisoformat(row["valid_session"]) >= first_day)
                 or (interval is not None and datetime.fromisoformat(interval["end"]) > start)):
             raise ValueError("V4 cutover must follow previously adopted decisions")
@@ -252,6 +276,24 @@ def _v4_document(store, facts, update, candidate, runtime_root, load_release, da
     return document
 
 
+def _retire_unused_legacy_budget(document, policy):
+    """End obsolete EC reservation semantics, never confirmed strategy history."""
+    budget = document["budget"]
+    if budget is None:
+        return None
+    if (policy.policy_type == "FROZEN_RULE"
+            and policy.settings["capital"]["mode"] == "signal_cash_fraction"):
+        return None
+    if policy.policy_type not in {"TARGET_POSITION", "FROZEN_RULE"}:
+        raise ValueError("legacy cycle budget requires an explicit compatible target execution policy")
+    pending = document["pending_cycle"]
+    if pending is not None and StateRecord.from_dict(pending).values:
+        raise ValueError("nonempty pending strategy state requires explicit mapping before retiring the legacy budget")
+    document.update(budget=None, pending_cycle=None)
+    return {"budget": budget, "pending_cycle": pending,
+            "reason": "TARGET_POLICY_DOES_NOT_USE_CYCLE_BUDGET", "target_policy": policy.policy_type}
+
+
 def _prepare(store, facts, update, release, runtime_root, load_release, data_dir):
     account = facts["account"]
     channel = facts["channel"]
@@ -267,7 +309,7 @@ def _prepare(store, facts, update, release, runtime_root, load_release, data_dir
     if canonical_sha256(facts) != update.expected_facts_sha256:
         raise ValueError("current account facts differ from the reviewed snapshot")
     decisions = store.account_decisions(update.account_id)
-    _validate_execution(facts, decisions)
+    replaceable = _validate_execution(facts, decisions)
     client = FormalV4AdviceClient(repo_root=release.release_root, store=store, dataflows=None, data_dir=data_dir)
     target, candidate, identity = client.load_release(account["strategy_id"], update.binding.target_version)
     if (target.release_hash != update.binding.target_release_hash or execution_rules(candidate.instrument, candidate.definition.execution_spec).instrument != update.rules.instrument
@@ -288,7 +330,9 @@ def _prepare(store, facts, update, release, runtime_root, load_release, data_dir
         raise ValueError("same-version binding cannot change its selection cutoff")
     document = (_v4_document(store, facts, update, candidate, runtime_root, load_release, data_dir)
                 if account["equity_rules_json"] else _legacy_document(facts, update.state, update))
-    _validate_cutover(facts, version, update, document)
+    retired_budget = (None if account["equity_rules_json"]
+                      else _retire_unused_legacy_budget(document, definition.execution_policy))
+    _validate_cutover(facts, version, update, document, replaceable)
     validate_document(document)
     state = AccountStrategyState.from_dict(document["state"])
     definition.state_schema.validate_record(state.account, scope="account")
@@ -299,15 +343,32 @@ def _prepare(store, facts, update, release, runtime_root, load_release, data_dir
     document["state"] = replace(state, revision=state.revision + 1,
         binding=_state_binding(update.account_id, binding.release_hash, candidate, update.inputs.fee_rate)).to_dict()
     pending = tuple(row["decision_id"] for row in decisions if row["status"] == DecisionState.PENDING)
-    return binding, version, document, pending
+    return binding, version, document, pending, retired_budget
 
 
 def _apply(store, update, prepared, plan_sha256):
-    binding, version, document, pending = prepared
+    binding, version, document, pending, retired_budget = prepared
     account_id = update.account_id
     old = store.virtual_account(account_id)
     for decision_id in pending:
         store._transition_decision(account_id, decision_id, DecisionState.CANCELLED, "V4_BINDING_CUTOVER")
+        store._insert_audit_event(store._new_audit_event(
+            "DECISION_CANCELLED", source="account_maintenance", actor_type="OPERATOR",
+            account_id=account_id, decision_id=decision_id, correlation_id=plan_sha256,
+            details={"reason": "V4_BINDING_CUTOVER"}))
+        for intent in store.account_intents(account_id, decision_id):
+            if intent["status"] in TERMINAL_INTENT_STATUSES:
+                continue
+            store.release_account_intent(intent["intent_id"], "CANCELLED", _in_transaction=True,
+                audit_event=store._new_audit_event("ORDER_INTENT_CANCELLED", source="account_maintenance",
+                    actor_type="OPERATOR", account_id=account_id, decision_id=decision_id,
+                    correlation_id=plan_sha256, details={"intent_id": intent["intent_id"],
+                        "reason": "V4_BINDING_CUTOVER"}))
+    if not old["equity_rules_json"]:
+        state = AccountStrategyState.from_dict(document["state"])
+        cursor = store._connection.execute("SELECT COALESCE(MAX(rowid),0) FROM account_ledger WHERE account_id=?",
+                                            (account_id,)).fetchone()[0]
+        document["state"] = replace(state, event_cursor=cursor).to_dict()
     changed = store._connection.execute(
         "UPDATE virtual_accounts SET strategy_version=?,release_hash=?,strategy_name_snapshot=?,qualification_snapshot=?,"
         "selection_data_cutoff=?,equity_rules_json=?,entry_cycle_json=NULL,last_decision_id=NULL,last_decision_payload=NULL,updated_at=? "
@@ -328,7 +389,7 @@ def _apply(store, update, prepared, plan_sha256):
         correlation_id=plan_sha256, details={"reason": "V4_BINDING_CUTOVER", "previous_version": old["strategy_version"],
         "previous_release_hash": old["release_hash"], "state_treatment": type(update.state).__name__,
         "state_evidence": update.state.evidence, "inputs_sha256": canonical_sha256(record["inputs"]),
-        "effective_interval": record["effective_interval"]},
+        "effective_interval": record["effective_interval"], "retired_legacy_budget": retired_budget},
     ))
     store._connection.executemany("DELETE FROM settings WHERE key=?", [
         (store._setting_key(f"{prefix}:{account_id}"),) for prefix in (

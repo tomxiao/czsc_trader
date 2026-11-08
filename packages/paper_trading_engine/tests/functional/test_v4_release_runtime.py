@@ -145,6 +145,92 @@ def test_history_account_preflight_is_readonly_and_never_admits_running_strategy
         assert _files(tmp_path) == before
 
 
+@pytest.mark.release_acceptance
+@pytest.mark.parametrize('case', ['valid', 'missing', 'snapshot', 'inventory', 'package', 'receipt', 'running'])
+def test_retained_source_preserves_exact_old_binding(tmp_path, monkeypatch, case):
+    from execution_channels.futu.store import PaperStore
+    from paper_trading_engine.runtime_release import tree_sha256, file_sha256
+    from strategy_runtime import canonical_sha256
+
+    target = tmp_path / 'releases/v0.7.4'
+    shutil.copytree(ROOT / 'strategies', target / 'strategies')
+    source = tmp_path / 'releases/v0.6.21'
+    shutil.copytree(ROOT / 'strategies/S003', source / 'strategies/S003')
+    version_path = source / 'strategies/S003/versions/v1.json'
+    frozen = json.loads(version_path.read_text(encoding='utf-8'))
+    frozen['change_summary'] += ' (prior installed fixture)'
+    frozen.pop('release_hash')
+    frozen['release_hash'] = canonical_sha256(frozen)
+    version_path.write_text(json.dumps(frozen), encoding='utf-8')
+    package_root = source / 'strategies/S003/releases/v1'
+    binding_path = package_root / 'runtime_binding.json'
+    binding = json.loads(binding_path.read_text(encoding='utf-8'))
+    binding['release_hash'] = frozen['release_hash']
+    binding_path.write_text(json.dumps(binding), encoding='utf-8')
+    package_path = package_root / 'release_manifest.json'
+    package = json.loads(package_path.read_text(encoding='utf-8'))
+    package['strategy_version_hash'] = frozen['release_hash']
+    package['files']['runtime_binding.json'] = file_sha256(binding_path)
+    package.pop('package_hash')
+    package['package_hash'] = canonical_sha256(package)
+    package_path.write_text(json.dumps(package), encoding='utf-8')
+    receipt = json.loads((ROOT / 'strategies/deployments/history/S003-v1.json').read_text(encoding='utf-8'))
+    receipt['strategy_version_hash'], receipt['package_hash'] = frozen['release_hash'], package['package_hash']
+    receipt.pop('receipt_hash')
+    receipt['receipt_hash'] = canonical_sha256(receipt)
+    receipts = source / 'strategies/deployments'
+    receipts.mkdir()
+    (receipts / 'S003-v1.json').write_text(json.dumps(receipt), encoding='utf-8')
+    manifest = {'schema_version': 1, 'release_id': source.name, 'git_commit': 'a' * 40,
+                'strategy_snapshot_sha256': tree_sha256(source / 'strategies'),
+                'strategy_releases': {'S003-v1': package['package_hash']}}
+    if case == 'missing':
+        frozen['release_hash'] = '0' * 64
+    elif case == 'snapshot':
+        manifest['strategy_snapshot_sha256'] = '0' * 64
+    elif case == 'inventory':
+        manifest['strategy_releases']['S003-v1'] = '0' * 64
+    elif case == 'package':
+        binding_path.write_text('{}', encoding='utf-8')
+        manifest['strategy_snapshot_sha256'] = tree_sha256(source / 'strategies')
+    elif case == 'receipt':
+        receipt['receipt_hash'] = '0' * 64
+        (receipts / 'S003-v1.json').write_text(json.dumps(receipt), encoding='utf-8')
+        manifest['strategy_snapshot_sha256'] = tree_sha256(source / 'strategies')
+    (source / 'release-manifest.json').write_text(json.dumps(manifest), encoding='utf-8')
+    data, config = tmp_path / 'shared/data', tmp_path / 'shared/config'
+    data.mkdir(parents=True)
+    PteRuntimeConfig().save(config / 'pte.json')
+    (config / '.env').write_text('TUSHARE_TOKEN=synthetic-offline-token\n', encoding='utf-8')
+    database = tmp_path / 'shared/runtime.db'
+    with closing(PaperStore(database)) as store:
+        store.create_virtual_account('old', 'old', 'v1', frozen['release_hash'], 1000,
+            strategy_id='S003', strategy_version='v1', release_hash=frozen['release_hash'],
+            strategy_name_snapshot='history', qualification_snapshot='PAPER_READY',
+            selection_data_cutoff=frozen['selection_data_cutoff'])
+        if case == 'running':
+            store.set_virtual_paused('old', False)
+
+    def forbidden(*args, **kwargs):
+        pytest.fail('retained source verification must not load old strategy contracts')
+    monkeypatch.setattr('paper_trading_engine.srt_advice_client.SrtAdviceClient.validate_account_binding', forbidden)
+    monkeypatch.setattr('paper_trading_engine.formal_v4_advice.FormalV4AdviceClient._account_release', forbidden)
+    with closing(PaperStore.open_readonly(database)) as store:
+        before = _files(tmp_path)
+        if case == 'valid':
+            assert _verify_runtime_configuration(target, data, database, config) == {
+                'accounts': 1, 'releases': ['S003-v1']}
+            assert store.virtual_account('old')['release_hash'] == frozen['release_hash']
+        else:
+            message = {'missing': 'exact retained account package is unavailable',
+                       'snapshot': 'source snapshot differs', 'inventory': 'installed inventory',
+                       'package': 'file differs', 'receipt': 'receipt hash mismatch',
+                       'running': 'paused or retiring'}[case]
+            with pytest.raises((RuntimeError, RuntimeCompatibilityError), match=message):
+                _verify_runtime_configuration(target, data, database, config)
+        assert _files(tmp_path) == before
+
+
 def test_native_release_preflight_uses_qualified_inputs_and_never_prepares(formal_v4, tmp_path, monkeypatch):
     client, _, root_store, _, _, _ = formal_v4
     client.register_recipe("formal", client.inputs("formal"))

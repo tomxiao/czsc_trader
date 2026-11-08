@@ -2,6 +2,7 @@
 
 from dataclasses import asdict, replace
 from datetime import datetime, timedelta
+from decimal import Decimal
 import json
 import shutil
 from types import SimpleNamespace
@@ -198,11 +199,17 @@ def test_legacy_migration_reconciles_positions_and_rolls_back_batch(formal_v4, t
     _fill_position(client, store, interval, candidate)
     target_hash = store.virtual_account('formal')['release_hash']
     old_hash = 'a' * 64
+    holding = store.virtual_account('formal')
+    old_budget = {'cycle_id': 'd' * 64, 'opening_signal_identity': 'e' * 64,
+        'target_quantity': holding['quantity'], 'allocation_fraction': '1',
+        'cash_budget': holding['initial_cash'], 'buy_cost_including_fees': '0', 'phase': 'ACTIVE'}
     with store._connection:
         # Retain the confirmed fills and ledger, then model a pre-V4 account snapshot.
         store._connection.execute("UPDATE virtual_accounts SET release_hash=?,selection_data_cutoff='2026-10-15',"
                                   "equity_rules_json=NULL WHERE account_id='formal'", (old_hash,))
         store._connection.execute("DELETE FROM equity_strategy_state WHERE account_id='formal'")
+        store._connection.execute("UPDATE virtual_accounts SET entry_cycle_json=?,cycle_target=? WHERE account_id='formal'",
+                                  (json.dumps(old_budget), holding['quantity']))
     store.create_virtual_account('flat', 'flat', 'v1', old_hash, 1000, symbol=candidate.instrument.symbol,
         asset_type='stock', strategy_id='S999', strategy_name_snapshot='old', strategy_version='v1',
         release_hash=old_hash, qualification_snapshot='PAPER_READY', selection_data_cutoff='2026-10-15')
@@ -238,6 +245,9 @@ def test_legacy_migration_reconciles_positions_and_rolls_back_batch(formal_v4, t
         assert document['active']['quantity'] == before['quantity'] == after['quantity']
         assert document['active']['cycle_id'] == fill['fill_id']
         assert document['active']['entry_interval']['start'] == fill['occurred_at']
+        assert document['budget'] is None and document['pending_cycle'] is None
+        event = scoped.query_audit_events(event_type='ACCOUNT_STRATEGY_BOUND', account_id='formal')[0]
+        assert event['details']['retired_legacy_budget']['budget']['target_quantity'] == holding['quantity']
         assert after['cash'] == before['cash']
         assert scoped.account_fills('formal') == [fill]
         record = scoped.v4_runtime_binding('formal')
@@ -249,3 +259,178 @@ def test_legacy_migration_reconciles_positions_and_rolls_back_batch(formal_v4, t
         assert update_account_bindings(runtime, 'target', updates).status is AccountBindingUpdateStatus.ALREADY_APPLIED
     finally:
         database.close()
+
+
+@pytest.mark.parametrize('with_order', [False, True])
+def test_legacy_same_session_cutover_cancels_locally_then_drives_new_release(
+        formal_v4, tmp_path, monkeypatch, with_order):
+    from paper_trading_engine import v4_account_maintenance as maintenance
+    client, store, root, _, candidate, evaluation = formal_v4
+    target_hash = store.virtual_account('formal')['release_hash']
+    old_hash = 'a' * 64
+    opens = datetime(2026, 10, 16, 9, 30, tzinfo=ZoneInfo(candidate.instrument.timezone))
+    effective = TimeInterval(opens, opens.replace(hour=15 if candidate.instrument.market is MarketId.CN else 16, minute=0))
+    with store._connection:
+        store._connection.execute("UPDATE virtual_accounts SET release_hash=?,selection_data_cutoff='2026-10-15',"
+                                  "equity_rules_json=NULL WHERE account_id='formal'", (old_hash,))
+        store._connection.execute("DELETE FROM equity_strategy_state WHERE account_id='formal'")
+    before_cash = store.virtual_account('formal')['cash']
+    with_budget = with_order and candidate.instrument.market is MarketId.CN
+    order = {'side': 'BUY', 'quantity': 100, 'order_type': 'LIMIT', 'limit_price': 10.}
+    payload = {'decision_id': 'legacy-plan', 'symbol': candidate.instrument.symbol,
+        'strategy': {'strategy_id': 'S999', 'version': 'v1', 'release_hash': old_hash},
+        'signal_date': '2026-10-15', 'valid_session': '2026-10-16', 'actual_quantity': 0,
+        'available_cash': before_cash, 'fee_rate': evaluation.fee_rate,
+        'orders': [order] if with_order else [], 'cycle_target_quantity': 100 if with_order else 0}
+    store.save_account_decision('formal', payload)
+    if with_order:
+        store.create_account_intent(account_id='formal', decision_id='legacy-plan', order_sequence=0,
+            symbol=candidate.instrument.symbol, side='BUY', quantity=100, limit_price=10,
+            valid_session='2026-10-16', fee_rate=evaluation.fee_rate)
+    if with_budget:
+        # A legacy unfilled ACTIVE budget must survive cancellation and migration.
+        budget = {'cycle_id': 'b' * 64, 'opening_signal_identity': 'c' * 64, 'target_quantity': 100,
+            'allocation_fraction': '1', 'cash_budget': before_cash, 'buy_cost_including_fees': '0', 'phase': 'ACTIVE'}
+        with store._connection:
+            store._connection.execute("UPDATE virtual_accounts SET entry_cycle_json=? WHERE account_id='formal'",
+                                      (json.dumps(budget),))
+    store.set_virtual_paused('formal', True)
+    runtime, database, data = _runtime(tmp_path, client, root, monkeypatch)
+    try:
+        scoped = database.scope('formal-channel')
+        request = V4AccountBindingUpdate(AccountBindingUpdate('formal', old_hash, target_hash, 'v1'),
+            'formal-channel', account_binding_facts_sha256(scoped, 'formal'), effective,
+            execution_rules(candidate.instrument, candidate.definition.execution_spec),
+            FormalV4Inputs(target_hash, evaluation.input_binding, evaluation.fee_rate, client.inputs('formal').execution_reference),
+            V4StateMigration(StateRecord(), 'legacy same-session migration',
+                pending_cycle_values=StateRecord() if with_budget else None))
+        original = maintenance._apply
+        def fail_after_apply(*args):
+            original(*args)
+            raise RuntimeError('injected post-cancellation failure')
+        untouched = list(database._connection.iterdump())
+        with monkeypatch.context() as patch:
+            patch.setattr(maintenance, '_apply', fail_after_apply)
+            with pytest.raises(RuntimeError, match='post-cancellation'):
+                update_account_bindings(runtime, 'target', (request,))
+        assert list(database._connection.iterdump()) == untouched
+        assert update_account_bindings(runtime, 'target', (request,)).status is AccountBindingUpdateStatus.COMMITTED
+        after = scoped.virtual_account('formal')
+        assert Decimal(after['cash']) == Decimal(before_cash) and Decimal(after['frozen_cash']) == 0
+        prior = scoped.account_decision('formal', 'legacy-plan')
+        assert prior['payload'] == payload
+        assert prior['status'] == ('CANCELLED' if with_order else 'COMPLETED')
+        assert database._connection.execute('SELECT decision_id FROM decision_adoptions WHERE account_id=?',
+                                           ('formal',)).fetchone()[0] == 'legacy-plan'
+        document = json.loads(after['account_v4_json'])
+        if with_order:
+            assert scoped.account_intents('formal')[0]['status'] == 'CANCELLED'
+            assert len(scoped.query_audit_events(event_type='ORDER_INTENT_CANCELLED')) == 1
+            if with_budget:
+                assert document['budget'] is None and document['pending_cycle'] is None
+                event = scoped.query_audit_events(event_type='ACCOUNT_STRATEGY_BOUND')[0]
+                assert event['details']['retired_legacy_budget']['budget']['target_quantity'] == 100
+            assert document['state']['event_cursor'] == database._connection.execute(
+                "SELECT MAX(rowid) FROM account_ledger WHERE account_id='formal'").fetchone()[0]
+        assert update_account_bindings(runtime, 'target', (request,)).status is AccountBindingUpdateStatus.ALREADY_APPLIED
+        # The same service used by the online decision API creates a new identity.
+        reopened = FormalV4AdviceClient(repo_root=client.repo_root, store=scoped, dataflows=client.dataflows, data_dir=data)
+        scoped.set_virtual_paused('formal', False)
+        from dataflows import EquityProduct, ProviderBinding, TradingSession
+        from dataflows.equity_data import session_record
+        # Extend this isolated supplier's explicit calendar beyond the
+        # fixture's final session so CN next-session sellability is known.
+        def extend_calendar(binding):
+            def fetch(request):
+                frame, metadata = binding.fetch(request)
+                if request.parameters.query.product is EquityProduct.SESSIONS:
+                    next_open = effective.start + timedelta(days=3)
+                    next_close = effective.end + timedelta(days=3)
+                    metadata = dict(metadata, following_session=session_record(TradingSession(
+                        next_open.date(), candidate.instrument.timezone, (TimeInterval(next_open, next_close),))))
+                return frame, metadata
+            return ProviderBinding(binding.name, binding.revision, fetch)
+        reopened.dataflows._equity_providers = {key: extend_calendar(value)
+            for key, value in reopened.dataflows._equity_providers.items()}
+        engine = AccountEngine(scoped, reopened, now=lambda: effective.start)
+        provider = FormalV4ScheduleProvider(reopened, engine)
+        result = provider.drive_decision('formal', effective.start)
+        assert result['status'] == 'DECISION_COMPLETED' and not result['reused_decision']
+        current = scoped.virtual_account('formal')['last_decision_id']
+        assert current != 'legacy-plan'
+        latest = scoped.account_decision('formal', current)
+        assert latest['payload']['strategy']['release_hash'] == target_hash
+        assert latest['valid_session'] == '2026-10-16'
+        assert latest['state_events'][0]['related_decision_id'] == 'legacy-plan'
+    finally:
+        database.close()
+
+
+@pytest.mark.parametrize('evidence', ['SUBMITTING', 'SUBMISSION_UNCERTAIN', 'channel_id', 'attention',
+                                     'executing', 'broker_order', 'filled', 'v4_interval', 'future'])
+def test_same_session_cutover_never_discards_execution_or_v4_state(evidence):
+    from paper_trading_engine import v4_account_maintenance as maintenance
+    from execution_channels.futu.lifecycle import DecisionState
+    zone = ZoneInfo('America/New_York')
+    interval = TimeInterval(datetime(2026, 10, 16, 9, 30, tzinfo=zone), datetime(2026, 10, 16, 16, tzinfo=zone))
+    account = {'equity_rules_json': None, 'cash': '1000', 'frozen_cash': '0'}
+    decision = {'decision_id': 'old', 'status': DecisionState.PENDING, 'payload': {}, 'state_reason': 'PLAN_GENERATED'}
+    intent = {'decision_id': 'old', 'status': 'PENDING_SUBMIT', 'attention_required': 0,
+              'channel_order_id': None, 'side': 'SELL', 'payload': '{}'}
+    rows = {'intents': [intent], 'orders': [], 'fills': [],
+        'decisions': [{'decision_id': 'old', 'valid_session': '2026-10-16', 'payload': '{}'}],
+        'decision_adoptions': [{'decision_id': 'old'}]}
+    document = {'last_interval': None}
+    if evidence in {'SUBMITTING', 'SUBMISSION_UNCERTAIN'}:
+        intent['status'] = evidence
+    elif evidence == 'channel_id':
+        intent['channel_order_id'] = 'broker'
+    elif evidence == 'attention':
+        intent['attention_required'] = 1
+    elif evidence == 'executing':
+        decision['status'] = DecisionState.EXECUTING
+    elif evidence in {'broker_order', 'filled'}:
+        rows['intents'] = []
+        amount = 100 if evidence == 'filled' else 0
+        rows['orders'] = [{'decision_id': 'old', 'channel_order_id': 'broker', 'cumulative_filled_quantity': amount,
+            'payload': json.dumps({'status': 'FILLED_ALL' if amount else 'CANCELLED_ALL', 'cumulative_filled_quantity': amount})}]
+        decision.update(status=DecisionState.COMPLETED, state_reason='PLAN_FILLED')
+        if amount:
+            rows['fills'] = [{'decision_id': 'old', 'order_id': 'broker', 'quantity': amount,
+                              'occurred_at': interval.start.isoformat()}]
+    elif evidence == 'v4_interval':
+        account['equity_rules_json'] = '{}'
+        rows['intents'] = []
+        decision.update(status=DecisionState.COMPLETED, state_reason='NO_ORDER')
+        document['last_interval'] = {'start': interval.start.isoformat(), 'end': interval.end.isoformat()}
+    elif evidence == 'future':
+        rows['decisions'][0]['valid_session'] = '2026-10-19'
+    facts = {'account': account, 'rows': rows, 'active_binding': None}
+    update = SimpleNamespace(effective_interval=interval, rules=SimpleNamespace(timezone=zone))
+    version = SimpleNamespace(forward_start='2026-10-16', selection_data_cutoff='2026-10-15')
+    with pytest.raises(ValueError, match='block|overlap|follow'):
+        replaceable = maintenance._validate_execution(facts, [decision])
+        maintenance._validate_cutover(facts, version, update, document, replaceable)
+
+
+@pytest.mark.parametrize('policy_type,mode', [('TARGET_POSITION', 'target_equity_fraction'),
+    ('FROZEN_RULE', 'target_equity_fraction'), ('FROZEN_RULE', 'signal_cash_fraction')])
+def test_legacy_budget_retirement_preserves_strategy_state_and_compatible_budget(policy_type, mode):
+    from copy import deepcopy
+    from paper_trading_engine.v4_account_maintenance import _retire_unused_legacy_budget
+    policy = SimpleNamespace(policy_type=policy_type, settings={'capital': {'mode': mode}})
+    document = {'budget': {'target_quantity': 100}, 'pending_cycle': StateRecord().to_dict(),
+                'active': {'quantity': 100}, 'state': {'cycle': {'values': [['held', True]]}}}
+    before = deepcopy(document)
+    retired = _retire_unused_legacy_budget(document, policy)
+    assert document['active'] == before['active'] and document['state'] == before['state']
+    if mode == 'signal_cash_fraction':
+        assert retired is None and document == before
+    else:
+        assert retired['budget'] == before['budget'] and retired['pending_cycle'] == before['pending_cycle']
+        assert document['budget'] is None and document['pending_cycle'] is None
+        nonempty = {**before, 'pending_cycle': StateRecord((('private', 1),)).to_dict()}
+        unchanged = deepcopy(nonempty)
+        with pytest.raises(ValueError, match='explicit mapping'):
+            _retire_unused_legacy_budget(nonempty, policy)
+        assert nonempty == unchanged

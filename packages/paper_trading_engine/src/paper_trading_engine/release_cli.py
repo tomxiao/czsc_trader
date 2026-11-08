@@ -1012,6 +1012,49 @@ def _verify_native_account(client, account_id: str) -> str:
     return release.release_id
 
 
+def _retained_account_frozen(root: Path, account: dict[str, object]) -> dict[str, object]:
+    """Authenticate an inactive account's exact bytes from an installed release.
+
+    Historical account bindings do not acquire a new strategy hash when a later
+    snapshot retains another implementation of the same strategy version. Only
+    the old strategy artifact is inspected here; its runtime is never loaded.
+    """
+    from strategy_runtime.deployment import (
+        validate_release_integrity, _deployment_receipt, _verify_receipt_package,
+    )
+
+    root = root.resolve()
+    release_id = f"{account['strategy_id']}-{account['strategy_version']}"
+    if root.parent.name != 'releases' or not RELEASE_ID_PATTERN.fullmatch(root.name):
+        raise RuntimeError(f"{account['account_id']}: exact retained account package is unavailable")
+    for source in sorted(root.parent.iterdir()):
+        if source == root or not source.is_dir() or not RELEASE_ID_PATTERN.fullmatch(source.name):
+            continue
+        if source.resolve().parent != root.parent:
+            raise RuntimeError('retained account source escapes installed releases')
+        identity = source / 'strategies' / str(account['strategy_id']) / 'versions' / f"{account['strategy_version']}.json"
+        if not identity.is_file():
+            continue
+        frozen = json.loads(identity.read_text(encoding='utf-8'))
+        if frozen.get('release_hash') != account['release_hash']:
+            continue
+        manifest = json.loads((source / MANIFEST_NAME).read_text(encoding='utf-8'))
+        if (manifest.get('schema_version') != 1 or manifest.get('release_id') != source.name
+                or not isinstance(manifest.get('git_commit'), str)
+                or len(manifest['git_commit']) != 40
+                or any(c not in '0123456789abcdef' for c in manifest['git_commit'])
+                or tree_sha256(source / 'strategies') != manifest.get('strategy_snapshot_sha256')):
+            raise RuntimeError(f"{account['account_id']}: retained account source snapshot differs from manifest")
+        package = validate_release_integrity(source / 'strategies', release_id)
+        receipt = _deployment_receipt(source / 'strategies/deployments' / f'{release_id}.json')
+        _verify_receipt_package(receipt, release_id, package)
+        if (package.release.release_hash != account['release_hash']
+                or manifest.get('strategy_releases', {}).get(release_id) != package.package_sha256):
+            raise RuntimeError(f"{account['account_id']}: retained account package differs from installed inventory")
+        return frozen
+    raise RuntimeError(f"{account['account_id']}: exact retained account package is unavailable")
+
+
 def _verify_runtime_configuration(root: Path, data: Path, database: Path, config: Path) -> dict[str, object]:
     """Selected-release implementation of the read-only maintenance preflight."""
     from dotenv import dotenv_values
@@ -1059,13 +1102,15 @@ def _verify_runtime_configuration(root: Path, data: Path, database: Path, config
             frozen = json.loads(identity_path.read_text(encoding="utf-8"))
             release = StrategyRelease.from_mapping(frozen)
             account_id = account["account_id"]
-            if release.release_hash != account["release_hash"]:
-                raise RuntimeError(f"{account_id}: account release hash differs from frozen strategy")
             if (history / f'{release.release_id}.json').exists():
                 if account[state_column] not in {'PAUSED', 'RETIRING'}:
                     raise RuntimeError(f'{account_id}: retained history requires a paused or retiring account')
+                if release.release_hash != account['release_hash']:
+                    frozen = _retained_account_frozen(root, account)
                 validated.append(release.release_id)
                 cutoff = frozen['selection_data_cutoff']
+            elif release.release_hash != account["release_hash"]:
+                raise RuntimeError(f"{account_id}: account release hash differs from frozen strategy")
             elif release.payload.get("runtime", {}).get("kind") == "ACCOUNT_REPLAY":
                 if store is None or account.get("equity_rules_json") is None:
                     raise RuntimeError(f"{account_id}: native V4 requires explicit account migration")

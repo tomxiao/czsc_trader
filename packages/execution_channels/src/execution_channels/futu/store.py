@@ -1924,7 +1924,7 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
                     "WHERE i.account_id=? AND i.side='SELL' AND i.status NOT IN "
                     "('REJECTED','SUBMISSION_FAILED','SUBMIT_FAILED','EXPIRED',"
                     "'CANCELLED_ALL','FAILED','DISABLED',"
-                    "'DELETED','FILL_CANCELLED','FILLED_ALL','SUPERSEDED','SKIPPED_DEPENDENCY')",
+                    "'DELETED','FILL_CANCELLED','FILLED_ALL','SUPERSEDED','SKIPPED_DEPENDENCY','CANCELLED')",
                     (account_id,),
                 ).fetchall()
                 reserved_quantity = sum(
@@ -2121,7 +2121,7 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
                 "WHERE i.account_id=? AND i.side='SELL' AND i.status NOT IN "
                 "('REJECTED','SUBMISSION_FAILED','SUBMIT_FAILED','EXPIRED',"
                 "'CANCELLED_ALL','FAILED','DISABLED','DELETED','FILL_CANCELLED','FILLED_ALL',"
-                "'SUPERSEDED','SKIPPED_DEPENDENCY')",
+                "'SUPERSEDED','SKIPPED_DEPENDENCY','CANCELLED')",
                 (account_id,),
             ).fetchall()
             reserved_sell = sum(
@@ -2316,7 +2316,7 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
                 "WHERE i.account_id=? AND i.side='SELL' AND i.status NOT IN "
                 "('REJECTED','SUBMISSION_FAILED','SUBMIT_FAILED','EXPIRED',"
                 "'CANCELLED_ALL','FAILED','DISABLED','DELETED','FILL_CANCELLED','FILLED_ALL',"
-                "'SUPERSEDED','SKIPPED_DEPENDENCY')",
+                "'SUPERSEDED','SKIPPED_DEPENDENCY','CANCELLED')",
                 (account_id,),
             ).fetchall()
             reserved_sell = sum(
@@ -3172,6 +3172,12 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
             order = self._connection.execute(
                 "SELECT * FROM orders WHERE intent_id=?", (intent_id,)
             ).fetchone()
+            if status == "CANCELLED":
+                decision = self.account_decision(intent["account_id"], intent["decision_id"])
+                if (intent["status"] not in {"PENDING_SUBMIT", "WAITING_DEPENDENCY"}
+                        or intent["channel_order_id"] or order is not None or intent["attention_required"]
+                        or decision["status"] != DecisionState.CANCELLED):
+                    raise ValueError("local cancellation requires a cancelled, never-submitted decision")
             if termination_reason is not None:
                 local_states = {
                     IntentTerminationReason.EXECUTION_CONSTRAINED: ('SUBMISSION_FAILED', {'PENDING_SUBMIT', 'SUBMITTING'}),
