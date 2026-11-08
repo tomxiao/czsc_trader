@@ -218,7 +218,7 @@ def _verify_strategy_runtime_wheel_boundary(artifacts: Path) -> None:
 
 
 def _verify_strategy_snapshot(strategy_root: Path) -> dict[str, str]:
-    from strategy_runtime.deployment import validate_release_package
+    from strategy_runtime.deployment import validate_release_integrity, validate_release_package
 
     # Deployment authentication already verifies the native definition, entry
     # point, frozen resources and source closure. It does not grant eligibility.
@@ -226,6 +226,10 @@ def _verify_strategy_snapshot(strategy_root: Path) -> dict[str, str]:
     runtime = StrategyRuntime(strategy_root)
     for path in sorted(strategy_root.glob("S*/versions/v*.json")):
         reference = f"{path.parent.parent.name}-{path.stem}"
+        # History receipts and their frozen closures were authenticated by the
+        # inventory. They remain in the snapshot without runtime admission.
+        if (strategy_root / "deployments/history" / f"{reference}.json").exists():
+            continue
         try:
             payload = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
@@ -238,6 +242,8 @@ def _verify_strategy_snapshot(strategy_root: Path) -> dict[str, str]:
                 validate_release_package(strategy_root, reference)
         elif reference in inventory:
             runtime.describe(release)
+        else:
+            validate_release_integrity(strategy_root, reference)
     return inventory
 
 
@@ -1043,6 +1049,10 @@ def _verify_runtime_configuration(root: Path, data: Path, database: Path, config
         legacy = SrtAdviceClient(repo_root=root, data_dir=data)
         formal = {}
         validated = []
+        history = root / 'strategies/deployments/history'
+        if history.is_dir():
+            # The retained receipt must still authenticate the exact frozen bytes.
+            deployment_inventory(root / 'strategies')
         for raw in rows:
             account = dict(raw)
             identity_path = root / "strategies" / account["strategy_id"] / "versions" / (account["strategy_version"] + ".json")
@@ -1051,7 +1061,12 @@ def _verify_runtime_configuration(root: Path, data: Path, database: Path, config
             account_id = account["account_id"]
             if release.release_hash != account["release_hash"]:
                 raise RuntimeError(f"{account_id}: account release hash differs from frozen strategy")
-            if release.payload.get("runtime", {}).get("kind") == "ACCOUNT_REPLAY":
+            if (history / f'{release.release_id}.json').exists():
+                if account[state_column] not in {'PAUSED', 'RETIRING'}:
+                    raise RuntimeError(f'{account_id}: retained history requires a paused or retiring account')
+                validated.append(release.release_id)
+                cutoff = frozen['selection_data_cutoff']
+            elif release.payload.get("runtime", {}).get("kind") == "ACCOUNT_REPLAY":
                 if store is None or account.get("equity_rules_json") is None:
                     raise RuntimeError(f"{account_id}: native V4 requires explicit account migration")
                 channel = account["channel_account_id"]

@@ -28,7 +28,7 @@ def original(context, reference):
 
 @pytest.mark.release_acceptance
 @pytest.mark.parametrize("reference", REFERENCES)
-def test_reviewed_six_frozen_conversions_revalidate_without_writing(preparations, reference):
+def test_retained_frozen_conversions_revalidate_without_writing(preparations, reference):
     context, results = preparations
     result = results[reference]
     before = {path: sha256(path.read_bytes()).hexdigest()
@@ -43,11 +43,11 @@ def test_reviewed_six_frozen_conversions_revalidate_without_writing(preparations
 @pytest.mark.parametrize("change", ["algorithm", "extra_module", "initializer", "parameters", "feedback", "missing_source"])
 def test_rehashed_arbitrary_changes_cannot_use_migration_governance(preparations, change):
     context, results = preparations
-    prepared = results["S002-v1"].candidate
+    prepared = results["S007-v1"].candidate
     target = context.root / ".tmp" / ("migration_guard_" + uuid4().hex)
     shutil.copytree(prepared.source_root, target)
     payload = json.loads(json.dumps(dict(prepared.payload), default=dict))
-    path = target / "strategies/s002_v1.py"
+    path = target / "strategies/s007_v1.py"
     if change == "algorithm":
         path.write_bytes(path.read_bytes() + b"\n# arbitrary new source, even if hash is updated\n")
     elif change == "extra_module":
@@ -65,18 +65,18 @@ def test_rehashed_arbitrary_changes_cannot_use_migration_governance(preparations
             tuple(payload["runtime"]["source_files"]), source_root=target)
     candidate = StrategyCandidate(prepared.strategy_family_id, prepared.candidate_id, payload, target)
     with pytest.raises(ValueError, match="reviewed conversion|reviewed contracts|required files"):
-        validate_frozen_runtime_migration(context, original(context, "S002-v1"), candidate)
+        validate_frozen_runtime_migration(context, original(context, "S007-v1"), candidate)
 
 
 @pytest.mark.release_acceptance
 def test_frozen_source_hash_and_family_cannot_be_substituted(preparations):
     context, results = preparations
-    source = original(context, "S002-v1")
+    source = original(context, "S007-v1")
     for changed in (replace(source, release_hash="a" * 64), replace(source, package_hash="b" * 64)):
         with pytest.raises(ValueError, match="release/package identity"):
-            validate_frozen_runtime_migration(context, changed, results["S002-v1"].candidate)
+            validate_frozen_runtime_migration(context, changed, results["S007-v1"].candidate)
     with pytest.raises(ValueError, match="another family"):
-        validate_frozen_runtime_migration(context, original(context, "S001-v1"), results["S002-v1"].candidate)
+        validate_frozen_runtime_migration(context, original(context, "S001-v1"), results["S007-v1"].candidate)
 
 
 def test_migration_selection_roundtrip_is_distinct_from_alpha_selection():

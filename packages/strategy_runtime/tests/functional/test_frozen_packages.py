@@ -29,7 +29,6 @@ ROOT = Path(__file__).resolve().parents[4] / "strategies"
 LEGACY_RELEASE_HASHES = {
     "S001-v1": "57d7f97f1fa8a7d5dafdf1562d83f772664aaedff95d12a4f95b391be4b0d4d6",
     "S001-v2": "fc0c16b6fe91dce796278bfccae3e828a79efd08e765205ccec8b71c945a86e7",
-    "S002-v1": "c1ac2df0f3bcef58dfa289a28201bfb2953c84fa00b12f133dba43cbf4daceb8",
     "S007-v1": "6d1d5dd533dd02a1117b4a703e37d690a7ed711fc78d229b452bd1f9bf2dbeaa",
 }
 pytestmark = pytest.mark.release_acceptance
@@ -72,7 +71,7 @@ def test_real_package_behavior_is_independent_of_candidate_or_release_identity(l
     assert release.observation.sha256 == deployment.binding.spec.observation_sha256
 
 
-@pytest.mark.parametrize("release_id", ("S001-v1", "S001-v2", "S002-v1"))
+@pytest.mark.parametrize("release_id", ("S001-v1", "S001-v2"))
 def test_real_rebindable_package_uses_parameter_factory(release_id):
     family, version = release_id.split("-")
     archived = archived_legacy_root(release_id)

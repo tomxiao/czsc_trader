@@ -1,4 +1,5 @@
 """Native frozen snapshots and read-only CN/US release admission."""
+from contextlib import closing
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -13,7 +14,8 @@ from paper_trading_engine.release_cli import (
     _verify_strategy_snapshot, _verify_runtime_configuration, verify_release_configuration,
 )
 from paper_trading_engine.runtime_config import PteRuntimeConfig
-from strategy_runtime.deployment import deployment_inventory
+from strategy_runtime.deployment import deployment_inventory, load_strategy_deployment
+from strategy_runtime import RuntimeCompatibilityError
 from test_formal_v4_runtime import formal_v4 as formal_v4
 from test_watchdog_service import create_release
 
@@ -31,6 +33,12 @@ def test_native_registered_snapshot_authenticates_without_changing_qualification
     before = {f"{p.parent.parent.name}-{p.stem}": registry.current_qualification(p.parent.parent.name, p.stem)
               for p in root.glob("S*/versions/v*.json")}
     assert _verify_strategy_snapshot(root) == deployment_inventory(root)
+    inventory = deployment_inventory(root)
+    for reference in ('S002-v1', 'S003-v1'):
+        assert reference not in inventory
+        assert (root / 'deployments/history' / f'{reference}.json').is_file()
+        with pytest.raises(RuntimeCompatibilityError, match='retained history'):
+            load_strategy_deployment(root, reference)
     assert {str(p.relative_to(root)): sha256(p.read_bytes()).hexdigest()
             for p in root.rglob("*") if p.is_file()} == files
     assert {key: registry.current_qualification(*key.rsplit("-", 1)) for key in before} == before
@@ -53,11 +61,88 @@ def test_native_snapshot_includes_undeployed_packages_and_rejects_tampering(tmp_
         _verify_strategy_snapshot(strategies)
 
 
+@pytest.mark.release_acceptance
+@pytest.mark.parametrize('reference', ['S002-v1', 'S003-v1'])
+@pytest.mark.parametrize('damage', ['source', 'receipt', 'package_binding', 'duplicate'])
+def test_retained_history_blocks_snapshot_corruption(tmp_path, reference, damage):
+    """History is retained and authenticated, never ignored to admit a snapshot."""
+    from strategy_runtime import canonical_sha256
+
+    strategies = tmp_path / 'snapshot'
+    shutil.copytree(ROOT / 'strategies', strategies)
+    path = strategies / 'deployments/history' / f'{reference}.json'
+    if damage == 'source':
+        family, version = reference.rsplit('-', 1)
+        source = next((strategies / family / 'releases' / version / 'src').rglob('*.py'))
+        source.write_bytes(source.read_bytes() + b'\n# corrupt retained source\n')
+        reason = 'file differs'
+    elif damage == 'duplicate':
+        shutil.copyfile(path, strategies / 'deployments' / path.name)
+        with pytest.raises(RuntimeCompatibilityError, match='retained history'):
+            load_strategy_deployment(strategies, reference)
+        reason = 'both current releases and history'
+    else:
+        receipt = json.loads(path.read_text(encoding='utf-8'))
+        receipt['package_hash'] = '0' * 64
+        reason = 'receipt hash mismatch'
+        if damage == 'package_binding':
+            receipt.pop('receipt_hash')
+            receipt['receipt_hash'] = canonical_sha256(receipt)
+            reason = 'differs from its release package'
+        path.write_text(json.dumps(receipt), encoding='utf-8')
+    with pytest.raises(RuntimeCompatibilityError, match=reason):
+        _verify_strategy_snapshot(strategies)
+
+
 def _files(root):
     # SQLite readers update WAL shared-memory lock slots even in query_only
     # mode. The durable database/WAL and every data/config file remain fixed.
     return {p.relative_to(root).as_posix(): sha256(p.read_bytes()).hexdigest()
             for p in root.rglob("*") if p.is_file() and not p.name.endswith("-shm")}
+
+
+@pytest.mark.release_acceptance
+@pytest.mark.parametrize('reference', ['S002-v1', 'S003-v1'])
+@pytest.mark.parametrize('state', ['PAUSED', 'RETIRING', 'RUNNING'])
+def test_history_account_preflight_is_readonly_and_never_admits_running_strategy(tmp_path, monkeypatch, reference, state):
+    from execution_channels.futu.store import PaperStore
+
+    shutil.copytree(ROOT / 'strategies', tmp_path / 'strategies')
+    data, config = tmp_path / 'data', tmp_path / 'config'
+    data.mkdir()
+    PteRuntimeConfig(data_space=Path('market')).save(config / 'pte.json')
+    (config / '.env').write_text('TUSHARE_TOKEN=synthetic-offline-token\n', encoding='utf-8')
+    family, version = reference.rsplit('-', 1)
+    frozen = json.loads((tmp_path / 'strategies' / family / 'versions' / f'{version}.json').read_text(encoding='utf-8'))
+    database = tmp_path / 'runtime.db'
+    store = PaperStore(database)
+    try:
+        store.create_virtual_account('old', 'old', reference, frozen['release_hash'], 1000,
+            strategy_id=family, strategy_version=version, release_hash=frozen['release_hash'],
+            strategy_name_snapshot='history', qualification_snapshot='PAPER_READY',
+            selection_data_cutoff=frozen['selection_data_cutoff'])
+        with store._connection:
+            store._connection.execute("UPDATE virtual_accounts SET run_state=? WHERE account_id='old'", (state,))
+    finally:
+        store.close()
+
+    def forbidden(*args, **kwargs):
+        pytest.fail('history preflight must not load a strategy, prepare data or connect to a broker')
+    monkeypatch.setattr('paper_trading_engine.srt_advice_client.SrtAdviceClient.validate_account_binding', forbidden)
+    monkeypatch.setattr('paper_trading_engine.formal_v4_advice.FormalV4AdviceClient._account_release', forbidden)
+    monkeypatch.setattr('dataflows.Dataflows.__init__', forbidden)
+    monkeypatch.setattr('execution_channels.futu.futu_gateway.FutuGateway.__init__', forbidden)
+    # Keep SQLite's read-side WAL files present before taking the baseline, as
+    # with a running host. The durable DB and WAL bytes must remain unchanged.
+    with closing(PaperStore.open_readonly(database)):
+        before = _files(tmp_path)
+        if state == 'RUNNING':
+            with pytest.raises(RuntimeError, match='retained history requires a paused or retiring account'):
+                _verify_runtime_configuration(tmp_path, data, database, config)
+        else:
+            assert _verify_runtime_configuration(tmp_path, data, database, config) == {
+                'accounts': 1, 'releases': [reference]}
+        assert _files(tmp_path) == before
 
 
 def test_native_release_preflight_uses_qualified_inputs_and_never_prepares(formal_v4, tmp_path, monkeypatch):

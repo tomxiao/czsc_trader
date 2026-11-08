@@ -1,6 +1,6 @@
 """Frozen migration preparation is local and explicitly separates equivalence.
 
-Release acceptance covers the six explicitly reviewed historical source adapters.
+Release acceptance covers the four retained historical source adapters.
 Synthetic feature boundaries exercise each unchanged decision kernel. They do
 not stand in for market-data, transaction-ledger or production acceptance.
 """
@@ -44,12 +44,10 @@ from execution_channels.historical import HistoricalExecutor
 pytestmark = pytest.mark.release_acceptance
 
 ROOT = Path(__file__).resolve().parents[2]
-REFERENCES = ("S001-v1", "S001-v2", "S002-v1", "S003-v1", "S007-v1", "S011-v1")
+REFERENCES = ("S001-v1", "S001-v2", "S007-v1", "S011-v1")
 BASELINE_IDENTITIES = {
     "S001-v1": ("3dccd608cf8ee762a8f359d197aca93463183b50a4da5771ca3ca694063ab692", "5d62e13496e033ba6991e6d56b5f8886bf67d408a25dbcdb31141bddf475d228"),
     "S001-v2": ("2c4a339ca5dec89c03491e5fd15fc8560d7aa0424f8af2be1fcdf9b93b51a2da", "65996ee0fcc3915a109c391129136d2a0dd9f5db81a85361263757a38fdf2f67"),
-    "S002-v1": ("707e3d3fb7feea4d5f04e71e3ca8fa026562c6a76e666fffd86e53e7e4f00715", "2ebb2179a78593083bf43a2132de26e8fe54c5dd202b8f8b1601c4821ba0b923"),
-    "S003-v1": ("eb0ebf6c80385f8c9d0d34fa466059ab9364055af79b7bf0fe2f9168f683d174", "cfcbf8165b9472c9d91356a43d43686116e728c32f900d491e346d862dcd0498"),
     "S007-v1": ("19c6bdb05c7fb1daae5bb71f0bd61cd09d7987f049e2dac6c95e3f2a063259b2", "c45f8a3792b49afcca152901a620e1b88df7f8a69112aa70a2edf6f972f5e95e"),
     "S011-v1": ("369b89c170906d74ac884cd1f9b08d22e5ba773998d8be1b58086784e4c12f2c", "a8945d9257d59e195b4f161cb4b572a0fab8e3ef6a20c45c2d048cf9e1ae2c04"),
 }
@@ -148,16 +146,6 @@ def _synthetic_features(reference, implementations, monkeypatch):
             scores = pd.DataFrame({"factor_score": np.tile([0.0, 1.0, 1.0, 0.0], 100)}, index=dates)
             monkeypatch.setitem(namespace, "_calculate_s001_scores", lambda *args, scores=scores: scores)
             inputs = {namespace[key]: pd.DataFrame() for key in ("_INTRADAY", "_DAILY", "_WEEKLY")}
-        elif reference == "S002-v1":
-            entry = implementation._signal["entry_state"]
-            states = pd.Series(np.tile([entry, entry, "NON_ENTRY", "NON_ENTRY"], 100), index=dates)
-            monkeypatch.setitem(namespace, "_calculate_signal_states", lambda *args, states=states, **kwargs: states)
-            inputs = {namespace["_INPUT_DAILY"]: pd.DataFrame()}
-        elif reference == "S003-v1":
-            panel = pd.DataFrame({"observed_weight_ratio": 1.0,
-                                  "moneyflow_breadth": np.sin(np.arange(400) / 7)}, index=dates)
-            monkeypatch.setitem(namespace, "_seed_history", lambda *args, panel=panel: panel)
-            inputs = {namespace["_SEED"]: pd.DataFrame()}
         elif reference == "S007-v1":
             desired = np.full(400, 0.07)
             desired[0] = 0.2
@@ -172,11 +160,6 @@ def _synthetic_features(reference, implementations, monkeypatch):
             monkeypatch.setitem(namespace, "features", lambda *args, panel=panel: panel)
     if reference == "S011-v1":
         calculation_dates = dates[dates >= "2025-02-05"]
-    elif reference == "S002-v1":
-        # Its real FULL_PUBLICATION_REPLAY scope requests decision dates after
-        # 300-session indicator warm-up; continuous intent starts in that input
-        # publication, not at the first requested output row.
-        calculation_dates = dates[-60:]
     else:
         calculation_dates = dates
     return inputs, calculation_dates

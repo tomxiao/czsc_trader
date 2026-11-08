@@ -9,6 +9,7 @@ import pytest
 from czsc_trader.application import RepositoryContext, validate_release_package
 from strategy_manager import StrategyRegistry
 from strategy_runtime import StrategyRelease, validate_release_package as authenticate_package
+from strategy_runtime.deployment import validate_release_integrity
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -17,7 +18,7 @@ pytestmark = pytest.mark.release_acceptance
 
 def test_frozen_relative_imports_resolve_inside_the_package():
     sources = [
-        authenticate_package(ROOT / "strategies", f"{path.parent.parent.name}-{path.stem}").source_root
+        validate_release_integrity(ROOT / "strategies", f"{path.parent.parent.name}-{path.stem}").source_root
         for path in sorted((ROOT / "strategies").glob("S*/versions/v*.json"))
     ]
     assert sources, "registered frozen packages must be present for release acceptance"

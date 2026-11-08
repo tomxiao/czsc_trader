@@ -206,12 +206,8 @@ def validate_release_package(strategy_root: Path, release_id: str) -> VerifiedRe
     return VerifiedReleasePackage(release, package.package_sha256, binding, source_root, runtime_candidate_id)
 
 
-def load_strategy_deployment(strategy_root: Path, release_id: str) -> StrategyDeployment:
-    """Authenticate a formal deployment receipt and its exact release package."""
-    root = _safe_path(strategy_root)
-    if type(release_id) is not str or re.fullmatch(r"S[0-9]{3}-v[1-9][0-9]*", release_id) is None:
-        raise RuntimeCompatibilityError("invalid release identity")
-    receipt = _read_object(_safe_path(root / "deployments" / f"{release_id}.json"))
+def _deployment_receipt(path: Path) -> dict[str, Any]:
+    receipt = _read_object(_safe_path(path))
     expected = {"schema_version", "strategy_version_id", "strategy_version_hash", "release_package", "package_hash", "receipt_hash"}
     if set(receipt) != expected or type(receipt["schema_version"]) is not int or receipt["schema_version"] != 1:
         raise RuntimeCompatibilityError("strategy deployment receipt fields are invalid")
@@ -219,16 +215,33 @@ def load_strategy_deployment(strategy_root: Path, release_id: str) -> StrategyDe
     receipt_hash = identity.pop("receipt_hash")
     if receipt_hash != canonical_sha256(identity):
         raise RuntimeCompatibilityError("strategy deployment receipt hash mismatch")
-    package = validate_release_package(root, release_id)
+    return receipt
+
+
+def _verify_receipt_package(receipt: dict[str, Any], release_id: str, package: ReleasePackageIntegrity) -> None:
     family, version = release_id.rsplit("-", 1)
-    package_root = root / family / "releases" / version
     if (receipt["strategy_version_id"] != release_id
             or receipt["strategy_version_hash"] != package.release.release_hash
             or receipt["package_hash"] != package.package_sha256
             or receipt["release_package"] != f"{family}/releases/{version}"):
         raise RuntimeCompatibilityError("strategy deployment differs from its release package")
+
+
+def load_strategy_deployment(strategy_root: Path, release_id: str) -> StrategyDeployment:
+    """Authenticate a current deployment; retained history never grants execution."""
+    root = _safe_path(strategy_root)
+    if type(release_id) is not str or re.fullmatch(r"S[0-9]{3}-v[1-9][0-9]*", release_id) is None:
+        raise RuntimeCompatibilityError("invalid release identity")
+    if (root / "deployments/history" / f"{release_id}.json").exists():
+        raise RuntimeCompatibilityError("strategy deployment is retained history, not a current release")
+    receipt = _deployment_receipt(root / "deployments" / f"{release_id}.json")
+    package = validate_release_package(root, release_id)
+    _verify_receipt_package(receipt, release_id, package)
+    family, version = release_id.rsplit("-", 1)
+    package_root = root / family / "releases" / version
     return StrategyDeployment(root, release_id, package.release.release_hash, package.package_sha256,
-                              package_root, package.source_root, package.runtime_binding, receipt_hash, package.runtime_candidate_id)
+                              package_root, package.source_root, package.runtime_binding,
+                              receipt["receipt_hash"], package.runtime_candidate_id)
 
 
 def load_inspection_deployment(strategy_root: Path, release_id: str, permit: InspectionRuntimePermit) -> StrategyDeployment:
@@ -250,12 +263,18 @@ def load_inspection_deployment(strategy_root: Path, release_id: str, permit: Ins
 
 
 def deployment_inventory(strategy_root: Path) -> dict[str, str]:
-    """Return release-to-package identities after validating every deployment."""
+    """Return current deployments; authenticate retained history without loading it."""
 
     root = Path(strategy_root).resolve()
     deployments = root / "deployments"
     if not deployments.is_dir():
         raise RuntimeCompatibilityError("strategy deployment directory is unavailable")
+    for path in sorted((deployments / "history").glob("*.json")):
+        if (deployments / path.name).exists():
+            raise RuntimeCompatibilityError("strategy deployment appears in both current releases and history")
+        receipt = _deployment_receipt(path)
+        package = validate_release_integrity(root, path.stem)
+        _verify_receipt_package(receipt, path.stem, package)
     inventory: dict[str, str] = {}
     for path in sorted(deployments.glob("S*-v*.json")):
         deployment = load_strategy_deployment(root, path.stem)

@@ -43,9 +43,11 @@ def pytest_collection_modifyitems(config, items):
     config.hook.pytest_deselected(items=deferred)
 
 
-@pytest.fixture(scope="session", params=sorted(
-    (_REPOSITORY_ROOT / "strategies").glob("S*/versions/v*.json")
-), ids=lambda path: f"{path.parent.parent.name}-{path.stem}")
+@pytest.fixture(scope="session", params=[
+    path for path in sorted((_REPOSITORY_ROOT / "strategies").glob("S*/versions/v*.json"))
+    if not (_REPOSITORY_ROOT / "strategies/deployments/history" /
+            f"{path.parent.parent.name}-{path.stem}.json").exists()
+], ids=lambda path: f"{path.parent.parent.name}-{path.stem}")
 def registered_release(request):
     from strategy_manager import StrategyRegistry
 
@@ -57,7 +59,7 @@ def registered_release(request):
 
 @pytest.fixture(scope="session")
 def loaded_release(registered_release, frozen_seed_root):
-    """Check every frozen package without manufacturing deployment approval."""
+    """Check current frozen packages without manufacturing deployment approval."""
     from strategy_runtime import (
         InspectionRuntimePermit, StrategyRelease, StrategyRuntime, canonical_sha256,
         load_inspection_deployment, load_strategy_deployment, validate_release_package,
