@@ -17,6 +17,11 @@ from execution_channels.futu.store import PaperStore
 from execution_channels.futu.lifecycle import AccountHealth
 
 
+_NORMAL_ATTEMPT_REASONS = frozenset(IntentTerminationReason) | {
+    "PLANNING_BLOCKED", "OBSERVATION_SUPPRESSED",
+}
+
+
 class AccountRefreshBatchError(RuntimeError):
     """One or more active virtual accounts failed to refresh."""
 
@@ -149,19 +154,23 @@ class AccountEngine:
         previous_record = None if previous is None else self.store.account_decision(
             account_id, str(previous["decision_id"]),
         )
-        # Adopting an entry cycle changes OPEN -> HOLD and the plan hash even
-        # after zero fills. The same signal/session and executable orders still
-        # represent the ended attempt, not permission to submit it again.
-        normal_repeat = bool(
-            previous_record and previous_record["state_reason"] == IntentTerminationReason.NORMAL_UNFILLED
-            and previous.get("valid_session") == decision.valid_session.isoformat()
-            and previous.get("signal_identity") == decision.signal_identity
+        # A legacy entry-cycle or partial fill can change the order plan while
+        # retaining the same signal/session. It must not rearm an ended attempt.
+        same_legacy_signal = bool(
+            previous and previous.get("signal_identity") == decision.signal_identity
             and previous.get("plan_mode", "NONE") == decision.plan_mode
-            and previous.get("orders", []) == [asdict(order) for order in decision.orders]
-            and previous.get("order") == (None if decision.order is None else asdict(decision.order))
-            and previous.get("plan_legs", []) == json.loads(json.dumps(
-                [asdict(leg) for leg in decision.plan_legs], default=str,
+            and (previous_record["state_reason"] == IntentTerminationReason.NORMAL_PARTIAL or (
+                previous.get("orders", []) == [asdict(order) for order in decision.orders]
+                and previous.get("order") == (None if decision.order is None else asdict(decision.order))
+                and previous.get("plan_legs", []) == json.loads(json.dumps(
+                    [asdict(leg) for leg in decision.plan_legs], default=str,
+                ))
             ))
+        )
+        normal_repeat = bool(
+            previous_record and previous_record["state_reason"] in _NORMAL_ATTEMPT_REASONS
+            and previous.get("valid_session") == decision.valid_session.isoformat()
+            and same_legacy_signal
         )
         same_plan = bool(
             previous
@@ -180,7 +189,7 @@ class AccountEngine:
         same_plan = same_plan or normal_repeat
         if same_plan:
             if (previous_record["status"] in {"CANCELLED", "INCOMPLETE", "SUPERSEDED"}
-                    and previous_record["state_reason"] != IntentTerminationReason.NORMAL_UNFILLED):
+                    and previous_record["state_reason"] not in _NORMAL_ATTEMPT_REASONS):
                 same_plan = False
         if same_plan:
             return replace(
@@ -246,6 +255,26 @@ class AccountEngine:
         window = prepared.tradable_window
         if window.start != window.end:
             raise AccountDecisionBlockedError("PTE单次决策要求单交易日策略窗口")
+        # Re-reading an ended V4 interval is a read, not a calculation using
+        # today's fills at the earlier decision point. Keep the observation
+        # integrity checks, but do not run strategy or planning again.
+        from .equity_advice import PreparedEquityDecision
+        previous = json.loads(previous_payload) if previous_payload else None
+        if previous and not active_intents and type(prepared) is PreparedEquityDecision:
+            prior = self.store.account_decision(account_id, previous['decision_id'])
+            interval = {'start': prepared.interval.start.isoformat(), 'end': prepared.interval.end.isoformat()}
+            if (prior['state_reason'] in _NORMAL_ATTEMPT_REASONS
+                    and previous.get('contract_version') == 'advice.equity.v4'
+                    and previous.get('prepared_data_identity') == prepared.data_identity
+                    and previous.get('equity_execution_interval') == interval
+                    and previous.get('equity_observed_through') == prepared.execution_reference.observed_through.isoformat()
+                    and previous['strategy']['release_hash'] == account['release_hash']
+                    and previous.get('runtime_sha256') == prepared.candidate.implementation_hash):
+                prepared.validate_unchanged()
+                status = self.status(account_id)
+                if operator_drive:
+                    return AccountDecisionDriveResult(account_status=status, outcome="DECISION_REUSED")
+                return status
         source_revision = self._planning_revision(account, active_intents)
         state_revision = self._state_revision(account)
         decision_cash = Decimal(str(account["cash"]))
@@ -376,7 +405,7 @@ class AccountEngine:
 
         previous = json.loads(previous_payload) if previous_payload else None
         if (previous is not None and decision.decision_id == previous.get("decision_id")
-                and self.store.account_decision(account_id, decision.decision_id)["state_reason"] == IntentTerminationReason.NORMAL_UNFILLED):
+                and self.store.account_decision(account_id, decision.decision_id)["state_reason"] in _NORMAL_ATTEMPT_REASONS):
             # Ended normally for this plan/session. Reading it again is not an
             # instruction to rearm the same order; keep the terminal Store gate.
             status = self.status(account_id)

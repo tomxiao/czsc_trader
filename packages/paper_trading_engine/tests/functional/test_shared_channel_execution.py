@@ -1,17 +1,17 @@
 """US broker facts traverse the same durable execution core as CN/inspection."""
 from dataclasses import replace
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 import pytest
 
 from execution_channels.instruments import AssetClass, BarFrequency, InstrumentId, MarketId
-from execution_channels.policy import AccountPolicy, CashAvailabilityPolicy, ResearchExecutionSpec, UsEquitySpec
+from execution_channels.policy import AccountPolicy, CashAvailabilityPolicy, CnEquitySpec, ResearchExecutionSpec, UsEquitySpec
 from execution_channels.futu.broker import (BrokerAccount, BrokerOrder, BrokerPosition,
-    BrokerSnapshot, BrokerSubmissionUncertainError)
-from execution_channels.futu.channel import ChannelAccountConfig, FUTU_US_SIM_CHANNEL_ID
+    BrokerSnapshot, BrokerSubmissionUncertainError, BrokerOrderRejectedError, PaperTradingSafetyError)
+from execution_channels.futu.channel import ChannelAccountConfig, FUTU_US_SIM_CHANNEL_ID, FUTU_SIMULATE_CN_CHANNEL_ID
 from execution_channels.futu.equity_contracts import EquityAccountRules
-from execution_channels.futu.futu_execution import ChannelExecution, ChannelReconciliationError, FeeReconciliationPolicy
+from execution_channels.futu.futu_execution import ChannelExecution, ChannelReconciliationError, FeeReconciliationPolicy, OrderSubmissionBatchError
 from execution_channels.futu.store import PaperStore
 from pte_support import decision
 
@@ -32,11 +32,15 @@ class Broker:
         self.cash = Decimal('1000')
         self.quantity = self.sellable = 0
         self.lose_response = False
+        self.reject = False
+        self.market, self.currency, self.symbol = 'US', 'USD', 'MU'
+        self.frozen_cash = 0
+        self.start, self.fill_time = START, FILL_TIME
 
     def account_snapshot(self):
-        positions = () if not self.quantity else (BrokerPosition('MU', self.quantity, self.sellable),)
-        return BrokerSnapshot(BrokerAccount('SIMULATE', 'US', float(self.cash), 1000, 0,
-            currency='USD', channel_account_id=self.channel_account_id), positions, ())
+        positions = () if not self.quantity else (BrokerPosition(self.symbol, self.quantity, self.sellable),)
+        return BrokerSnapshot(BrokerAccount('SIMULATE', self.market, float(self.cash), 1000, self.frozen_cash,
+            currency=self.currency, channel_account_id=self.channel_account_id), positions, ())
 
     def order_snapshot(self):
         return tuple(self.orders)
@@ -46,10 +50,12 @@ class Broker:
 
     def place_order(self, intent):
         self.submissions += 1
-        order = BrokerOrder('42', intent.symbol, intent.side, intent.quantity, intent.limit_price,
-            'SUBMITTED', 0, 0, intent.intent_id, updated_at=START.isoformat(),
+        if self.reject:
+            raise BrokerOrderRejectedError('confirmed broker price restriction')
+        order = BrokerOrder(str(41 + self.submissions), intent.symbol, intent.side, intent.quantity, intent.limit_price,
+            'SUBMITTED', 0, 0, intent.intent_id, updated_at=self.start.isoformat(),
             channel_account_id=self.channel_account_id, session=intent.session)
-        self.orders = [order]
+        self.orders.append(order)
         if self.lose_response:
             raise BrokerSubmissionUncertainError('response lost after acceptance')
         return order
@@ -60,7 +66,7 @@ class Broker:
         self.cash = Decimal('1000') - value - fee
         self.quantity = self.sellable = quantity
         self.orders = [replace(self.orders[0], status=status, cumulative_filled_quantity=quantity,
-            average_fill_price=float(average), cumulative_notional=value, updated_at=FILL_TIME)]
+            average_fill_price=float(average), cumulative_notional=value, updated_at=self.fill_time)]
 
     def cancel_order(self, identity):
         self.cancelled.append(identity)
@@ -236,3 +242,170 @@ def test_us_missing_interval_blocks_before_submission(live_us, monkeypatch):
     with pytest.raises(Exception, match='requires a prepared trading interval'):
         engine.submit_pending()
     assert broker.submissions == 0
+
+
+@pytest.fixture(params=['CN', 'US'])
+def live_market(request, tmp_path):
+    """Both production channel profiles use real stores, reservations and reconciliation."""
+    market = request.param
+    broker = Broker()
+    broker.market = market
+    broker.currency = 'CNY' if market == 'CN' else 'USD'
+    broker.symbol = '588080.SH' if market == 'CN' else 'MU'
+    broker.channel_id = FUTU_SIMULATE_CN_CHANNEL_ID if market == 'CN' else FUTU_US_SIM_CHANNEL_ID
+    broker.channel_account_id = f'{market.lower()}-test'
+    broker.start = datetime.fromisoformat('2026-11-05T09:30:00' + ('+08:00' if market == 'CN' else '-05:00'))
+    broker.fill_time = (broker.start + timedelta(minutes=1)).isoformat()
+    step, price = (100, 1) if market == 'CN' else (1, 100)
+    root = PaperStore(tmp_path / 'db')
+    config = ChannelAccountConfig(broker.channel_account_id, broker.channel_id, 77)
+    store = root.register_channel_account(config, capital=Decimal('1000'))
+    rules = EquityAccountRules(InstrumentId(MarketId(market), AssetClass.ETF if market == 'CN' else AssetClass.STOCK, broker.symbol),
+        ResearchExecutionSpec(CnEquitySpec() if market == 'CN' else UsEquitySpec(), BarFrequency.M30,
+            AccountPolicy(broker.currency, CashAvailabilityPolicy.IMMEDIATE_RESEARCH), step, .001 if market == 'CN' else .01, .01, 0.))
+    store.create_virtual_account('strategy', 'strategy', 'v1', 'a'*64, '1000', symbol=broker.symbol,
+        asset_type='etf' if market == 'CN' else 'stock', strategy_id='S999', strategy_name_snapshot='Fixture', strategy_version='v1',
+        release_hash='b'*64, qualification_snapshot='PAPER_READY', selection_data_cutoff='2026-09-30', equity_rules=rules)
+    store.create_channel_reconciliation_account()
+    clock = [broker.start]
+    engine = ChannelExecution(store, broker, config=config, fee_policy=POLICY, now=lambda: clock[0])
+    engine.refresh_orders()
+    store.set_paused(False)
+    store.set_virtual_paused('strategy', False)
+
+    def adopt(identity, side='BUY'):
+        account = store.virtual_account('strategy')
+        quantity = 2 * step
+        target = account['quantity'] + quantity if side == 'BUY' else 0
+        payload = decision().to_store_payload()
+        payload.update(contract_version='advice.equity.v1', decision_id=identity, symbol=broker.symbol,
+            strategy={'strategy_id':'S999','version':'v1','release_hash':'b'*64},
+            signal_date=clock[0].date().isoformat(), valid_session=clock[0].date().isoformat(),
+            actual_quantity=account['quantity'], available_cash=account['cash'],
+            target_quantity=target, delta_quantity=quantity if side == 'BUY' else -quantity,
+            cycle_target_quantity=target, action=side,
+            orders=[{'side':side,'quantity':quantity,'order_type':'LIMIT','limit_price':price}],
+            equity_execution_interval={'start':clock[0].isoformat(),'end':(clock[0] + timedelta(minutes=30)).isoformat()},
+            equity_observed_through=clock[0].isoformat(),
+            strategy_output={'execution_plan':{'target':.2 if side == 'BUY' else 0,
+                'planning_result':{'status':'READY','reasons':[],'desired_quantity':target,'planned_quantity':target}}})
+        store.save_account_decision('strategy', payload)
+        return store.create_account_intent(account_id='strategy', decision_id=identity, order_sequence=0,
+            symbol=broker.symbol, side=side, quantity=quantity, limit_price=price, order_type='LIMIT', valid_session=clock[0].date().isoformat())
+    try:
+        yield store, broker, engine, clock, adopt, step, price
+    finally:
+        root.close()
+
+
+@pytest.mark.parametrize('outcome', ['rejected', 'cash', 'expired', 'partial'])
+def test_known_business_outcome_preserves_target_and_next_cycle_progress(live_market, outcome):
+    store, broker, engine, clock, adopt, step, price = live_market
+    intent = adopt('first')
+    original = store.account_decision('strategy', 'first')['payload']
+    if outcome == 'rejected':
+        broker.reject = True
+    elif outcome == 'cash':
+        broker.frozen_cash = 1000
+    elif outcome == 'expired':
+        clock[0] += timedelta(minutes=31)
+    engine.submit_pending()
+    if outcome == 'partial':
+        broker.fill(step, price, status='FILLED_PART')
+        clock[0] += timedelta(minutes=31)
+        engine.refresh_orders()
+        assert len(broker.cancelled) == 1
+        broker.fill(step, price, status='CANCELLED_PART')
+        engine.refresh_orders()
+    expected = {'rejected':'ORDER_REJECTED','cash':'EXECUTION_CONSTRAINED','expired':'EXECUTION_EXPIRED','partial':'NORMAL_PARTIAL'}[outcome]
+    terminal = store.account_intent(intent['intent_id'])
+    assert terminal['payload']['termination_reason'] == expected
+    assert terminal['attention_required'] is False
+    account = store.virtual_account('strategy')
+    assert account['health'] == 'OK'
+    assert account['quantity'] == (step if outcome == 'partial' else 0)
+    assert Decimal(account['frozen_cash']) == 0
+    assert store.account_decision('strategy', 'first')['payload'] == original
+    assert store.account_decision('strategy', 'first')['status'] == 'INCOMPLETE'
+    assert store.account_decision('strategy', 'first')['state_reason'] == expected
+    assert len(store.account_fills('strategy')) == (1 if outcome == 'partial' else 0)
+    effect = store.decision_execution_effect('strategy', 'first', valuation_price=price, at=clock[0] + timedelta(minutes=1))
+    assert effect.status == ('PARTIAL' if outcome == 'partial' else 'NOT_EXECUTED')
+    assert effect.target_weight == .2 and effect.actual_quantity == account['quantity']
+    submitted = broker.submissions
+    broker.reject, broker.frozen_cash = False, 0
+    engine.submit_pending()
+    engine.refresh_orders()
+    assert broker.submissions == submitted
+    assert len(store.account_fills('strategy')) == (1 if outcome == 'partial' else 0)
+    clock[0] = broker.start + timedelta(days=1)
+    adopt('next-cycle')
+    engine.submit_pending()
+    assert broker.submissions == submitted + 1
+    assert store.account_decision('strategy', 'first')['status'] == 'INCOMPLETE'
+    assert store.virtual_account('strategy')['health'] == 'OK'
+    assert store.account_invariant_violations() == []
+
+
+def test_sellable_shortage_is_terminal_but_ledger_corruption_remains_blocking(live_market):
+    store, broker, engine, clock, adopt, step, price = live_market
+    adopt('buy')
+    engine.submit_pending()
+    broker.fill(2 * step, price)
+    clock[0] += timedelta(minutes=1)
+    engine.refresh_orders()
+    clock[0] = broker.start + timedelta(days=1)
+    intent = adopt('sell', 'SELL')
+    broker.sellable = 0
+    engine.submit_pending()
+    result = store.account_intent(intent['intent_id'])
+    assert result['payload']['termination_reason'] == 'EXECUTION_CONSTRAINED'
+    assert result['attention_required'] is False
+    assert store.virtual_account('strategy')['health'] == 'OK'
+    assert store.virtual_account('strategy')['quantity'] == 2 * step
+    broker.sellable = 2 * step
+    engine.submit_pending()
+    assert broker.submissions == 1
+    assert store.account_decision('strategy', 'sell')['payload']['target_quantity'] == 0
+    # Deliberately corrupt the materialized balance without a ledger event.
+    # A legitimate broker share adjustment is separately supported and is not corruption.
+    broker.quantity += step
+    store._connection.execute('UPDATE virtual_accounts SET quantity=quantity+? WHERE account_id=?', (step, 'strategy'))
+    store._connection.commit()
+    with pytest.raises(ChannelReconciliationError):
+        engine.refresh_orders()
+    assert store.get_setting('channel_reconciliation_status') == 'BLOCKED'
+
+
+def test_illegal_submission_and_unknown_outcome_still_block(live_market):
+    store, broker, engine, clock, adopt, step, price = live_market
+    intent = adopt('buy')
+    broker.lose_response = True
+    with pytest.raises(BrokerSubmissionUncertainError):
+        engine.submit_pending()
+    assert store.account_intent(intent['intent_id'])['status'] == 'SUBMISSION_UNCERTAIN'
+    assert store.virtual_account('strategy')['health'] == 'BLOCKED'
+    assert broker.submissions == 1
+    broker.channel_account_id = 'wrong-channel'
+    with pytest.raises(PaperTradingSafetyError):
+        engine.submit_pending()
+    assert broker.submissions == 1
+
+
+def test_real_submission_safety_error_keeps_batch_failure_and_account_block(live_market, monkeypatch):
+    store, broker, engine, clock, adopt, step, price = live_market
+    intent = adopt('unsafe')
+
+    def unsafe_order(_intent):
+        raise PaperTradingSafetyError('broker environment no longer SIMULATE')
+
+    monkeypatch.setattr(broker, 'place_order', unsafe_order)
+    with pytest.raises(OrderSubmissionBatchError, match='PaperTradingSafetyError'):
+        engine.submit_pending()
+    failed = store.account_intent(intent['intent_id'])
+    assert failed['status'] == 'SUBMISSION_FAILED'
+    assert failed['attention_required'] is True
+    assert not failed['payload'].get('termination_reason')
+    assert store.virtual_account('strategy')['health'] == 'BLOCKED'
+    assert store.account_fills('strategy') == []
+    assert broker.orders == []

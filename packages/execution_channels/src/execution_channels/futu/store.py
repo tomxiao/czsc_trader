@@ -27,7 +27,7 @@ from .audit import (
     redact_details,
 )
 from .lifecycle import (AccountHealth, RunState, DecisionState, IntentControlState, TERMINAL_DECISION_STATES,
-                        validate_transition, planned_orders, execution_state)
+                        validate_transition, planned_orders, no_order_state, execution_state)
 
 from .equity_events import EquityEventStore
 from .execution_effects import ExecutionEffectStore
@@ -739,9 +739,7 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
         review_required = 0
         superseded = 0
         for row in rows:
-            if (row["status"] == "CANCELLED_ALL" and json.loads(row["payload"]).get(
-                "termination_reason"
-            ) == IntentTerminationReason.NORMAL_UNFILLED):
+            if json.loads(row["payload"]).get("termination_reason") in set(IntentTerminationReason):
                 continue
             retry = self._connection.execute(
                 "SELECT intent_id,updated_at FROM intents WHERE account_id=? AND decision_id=? "
@@ -2659,7 +2657,14 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
                     runtime_fields.update({"signal_identity", "plan_identity"})
                 if {k:v for k,v in previous.items() if k not in runtime_fields} != {k:v for k,v in current.items() if k not in runtime_fields}:
                     raise ValueError("existing decision differs from the idempotent request")
-                if self.account_decision(account_id, decision_id)["status"] in {DecisionState.CANCELLED, DecisionState.INCOMPLETE, DecisionState.SUPERSEDED}:
+                existing_state = self.account_decision(account_id, decision_id)
+                retained_no_order = (
+                    not planned_orders(current)
+                    and no_order_state(current) == (DecisionState.INCOMPLETE, existing_state['state_reason'])
+                    and existing_state['state_reason'] in {'PLANNING_BLOCKED', 'OBSERVATION_SUPPRESSED'}
+                )
+                if (existing_state["status"] in {DecisionState.CANCELLED, DecisionState.INCOMPLETE, DecisionState.SUPERSEDED}
+                        and not retained_no_order):
                     raise ValueError("terminal decision cannot become active again")
             else:
                 entry_cycle_json = self._entry_cycle_adoption(account, json.loads(encoded))
@@ -2680,10 +2685,11 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
                     "INSERT INTO decisions(account_id,decision_id,payload,signal_date,valid_session,generated_at,legacy_status) VALUES(?,?,?,?,?,?,'NOT_APPLICABLE')",
                     (account_id, decision_id, encoded, signal_date, valid_session, _utc_now()),
                 )
+                initial_state, initial_reason = ((DecisionState.PENDING, 'PLAN_GENERATED')
+                    if planned_orders(payload) else no_order_state(payload))
                 self._append_decision_state(
                     account_id, decision_id,
-                    DecisionState.PENDING if planned_orders(json.loads(encoded)) else DecisionState.COMPLETED,
-                    "PLAN_GENERATED" if planned_orders(json.loads(encoded)) else "NO_ORDER",
+                    initial_state, initial_reason,
                     related_decision_id=prior_decision["decision_id"] if prior_decision else None,
                     evidence={"relation": "RECOMPUTED_FROM", "prior_state": prior_decision["status"]} if prior_decision else None,
                 )
@@ -2733,7 +2739,10 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
             if not events:
                 raise ValueError("decision has no lifecycle evidence")
             baseline = DecisionState(events[-1]["state"])
-            if baseline in TERMINAL_DECISION_STATES:
+            if (baseline == DecisionState.COMPLETED and events[-1]['reason'] == 'NO_ORDER'
+                    and not planned_orders(result['payload'])):
+                state, reason = no_order_state(result['payload'])
+            elif baseline in TERMINAL_DECISION_STATES:
                 state, reason = baseline, "TERMINAL"
             else:
                 intents = self.account_intents(account_id, decision_id)
@@ -3054,20 +3063,30 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
                 and dependency is not None
                 and dependency["account_id"] == intent["account_id"]
                 and dependency["decision_id"] == intent["decision_id"]
-                and dependency["status"] == "CANCELLED_ALL"
-                and dependency["payload"].get("termination_reason") == IntentTerminationReason.NORMAL_UNFILLED
+                and dependency["status"] in TERMINAL_INTENT_STATUSES - {'FILLED_ALL'}
+                and dependency["payload"].get("termination_reason") in set(IntentTerminationReason)
             ):
-                raise ValueError("dependency skip requires a confirmed normally unfilled entry")
+                raise ValueError("dependency skip requires a confirmed incomplete entry")
             return IntentTerminationReason.DEPENDENCY_NOT_TRIGGERED
-        if (status != "CANCELLED_ALL" or intent["side"] != "BUY"
-                or details.get("order_type", "LIMIT") != "LIMIT" or order is None):
+        if order is None:
             return None
         report = json.loads(order["payload"])
-        if (report.get("status") != status or type(report.get("cumulative_filled_quantity")) is not int
-                or report["cumulative_filled_quantity"] != 0
-                or int(order["cumulative_filled_quantity"]) != 0 or report.get("last_error")
-                or self._connection.execute("SELECT 1 FROM fills WHERE order_id=? LIMIT 1",
-                                            (order["channel_order_id"],)).fetchone()):
+        filled = int(order['cumulative_filled_quantity'])
+        if (report.get('status') != status or type(report.get('cumulative_filled_quantity')) is not int
+                or report['cumulative_filled_quantity'] != filled):
+            return None
+        confirmed = self._connection.execute(
+            'SELECT COALESCE(SUM(quantity),0) FROM fills WHERE order_id=?',
+            (order['channel_order_id'],)).fetchone()[0]
+        if int(confirmed) != filled:
+            return None
+        if status in {'SUBMIT_FAILED', 'FAILED'} and filled == 0:
+            return IntentTerminationReason.ORDER_REJECTED
+        if (status not in {'CANCELLED_ALL', 'CANCELLED_PART'}
+                or details.get('order_type', 'LIMIT') != 'LIMIT' or report.get('last_error')):
+            return None
+        if ((status == 'CANCELLED_ALL' and filled != 0)
+                or (status == 'CANCELLED_PART' and not 0 < filled < int(intent['quantity']))):
             return None
         requests = self.query_audit_events(
             event_type="CANCEL_REQUESTED", account_id=intent["account_id"],
@@ -3084,7 +3103,7 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
                     or requests[0]["details"].get("reason") != "planned_deadline"):
                 return None
         else:
-            # A confirmed zero-fill DAY limit order may expire at the broker
+            # A DAY limit order's remainder may expire at the broker
             # before the engine sends a cancel. Only an explicit aware execution
             # deadline and a later terminal report establish normal expiry.
             decision = self.account_decision(intent['account_id'], intent['decision_id'])['payload']
@@ -3095,10 +3114,11 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
             reported = datetime.fromisoformat(report['updated_at'])
             if deadline.utcoffset() is None or reported.utcoffset() is None or reported < deadline:
                 return None
-        return IntentTerminationReason.NORMAL_UNFILLED
+        return IntentTerminationReason.NORMAL_PARTIAL if filled else IntentTerminationReason.NORMAL_UNFILLED
 
     def release_account_intent(
         self, intent_id: str, status: str, *, attention_reason: str | None = None,
+        termination_reason: IntentTerminationReason | None = None,
         audit_event: AuditEvent | None = None, _in_transaction: bool = False,
     ) -> dict[str, Any]:
         """Release the unfilled BUY reservation once and terminate an intent."""
@@ -3107,6 +3127,8 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
 
         if status not in TERMINAL_INTENT_STATUSES:
             raise ValueError("intent release requires a terminal status")
+        if termination_reason is not None and type(termination_reason) is not IntentTerminationReason:
+            raise TypeError('local termination requires IntentTerminationReason')
         now = _utc_now()
         with self._lock, self._write_context(_in_transaction):
             intent = self._connection.execute(
@@ -3122,10 +3144,23 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore):
             order = self._connection.execute(
                 "SELECT * FROM orders WHERE intent_id=?", (intent_id,)
             ).fetchone()
-            termination_reason = self._intent_termination_reason(intent, status, order)
+            if termination_reason is not None:
+                local_states = {
+                    IntentTerminationReason.EXECUTION_CONSTRAINED: ('SUBMISSION_FAILED', {'PENDING_SUBMIT', 'SUBMITTING'}),
+                    IntentTerminationReason.EXECUTION_EXPIRED: ('EXPIRED', {'PENDING_SUBMIT', 'WAITING_DEPENDENCY'}),
+                    IntentTerminationReason.ORDER_REJECTED: ('REJECTED', {'SUBMITTING'}),
+                }
+                expected_status, allowed = local_states.get(termination_reason, (None, set()))
+                if (status != expected_status or intent['status'] not in allowed or order is not None
+                        or intent['channel_order_id'] or not attention_reason):
+                    raise ValueError('local termination differs from the unsubmitted intent evidence')
+            else:
+                termination_reason = self._intent_termination_reason(intent, status, order)
             details = json.loads(intent["payload"])
             if termination_reason is not None:
                 details["termination_reason"] = termination_reason
+                if attention_reason:
+                    details['execution_constraint_message'] = attention_reason
             filled = 0 if order is None else int(order["cumulative_filled_quantity"])
             release = Decimal("0")
             old_cash = Decimal(account["cash"])

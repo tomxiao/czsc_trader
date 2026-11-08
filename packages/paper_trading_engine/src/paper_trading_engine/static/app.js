@@ -90,9 +90,37 @@ export function accountOperatingStatus(account){
 }
 export function decisionExecutionLabel(decision){
   if(!decision?.decision_id)return '等待生成决策';
-  if(decision.status==='INCOMPLETE'&&decision.state_reason==='NORMAL_UNFILLED')return '正常未成交';
-  if(decision.status==='COMPLETED'&&['NO_ORDER','MIGRATION_NO_ORDER'].includes(decision.state_reason))return '本次决策无需下单';
-  return decision.status?statusLabel(decision.status):'决策状态未记录';
+  const effect=decision.execution_effect;
+  if(effect?.availability!=='AVAILABLE')return '执行效果不可用';
+  if(effect.status==='COMPLETED')return effect.planning_status==='NO_CHANGE'?'本次无需调整':'本次订单已完成';
+  if(effect.status==='NOT_EXECUTED'&&effect.planning_status==='BLOCKED')return '本次规划受阻';
+  if(effect.status==='NOT_EXECUTED'&&effect.planning_status==='SUPPRESSED')return '观察不足，未规划';
+  return {WAITING:'等待执行',PARTIAL:'部分执行',NOT_EXECUTED:'未执行',UNKNOWN:'执行结果待确认'}[effect.status]||'执行效果不可用';
+}
+const planningLabel=value=>({READY:'可执行',CONSTRAINED:'受约束执行',BLOCKED:'规划受阻',NO_CHANGE:'无需调整',SUPPRESSED:'观察不足，未规划'}[value]||value||'—');
+const executionReasonLabel=value=>({INSUFFICIENT_CASH:'可用资金不足',BELOW_MINIMUM_UNIT:'不足最小交易单位',BELOW_PRICE_TICK:'不足最小报价单位',INSUFFICIENT_SELLABLE_QUANTITY:'可卖数量不足',ORDER_QUANTITY_LIMIT:'订单数量限制',DEPENDENCY_UNAVAILABLE:'依赖条件不可执行',NORMAL_UNFILLED:'限价单正常结束，未成交',NORMAL_PARTIAL:'部分成交，剩余委托按计划结束',ORDER_REJECTED:'渠道明确拒单，本次未成交',EXECUTION_CONSTRAINED:'资金或可卖数量不足，本次未执行',EXECUTION_EXPIRED:'本地委托未提交，执行窗口已结束',DEPENDENCY_NOT_TRIGGERED:'前序条件未触发'}[value]||value);
+export function executionEffectMarkup(decision,currency='CNY'){
+  if(!decision?.decision_id)return '<p class="subtle">等待生成决策</p>';
+  const effect=decision.execution_effect;
+  if(effect?.availability!=='AVAILABLE')return `<h3>执行效果不可用</h3><p class="subtle">${esc(effect?.message||'缺少执行效果证据，不能从旧决策状态推断目标是否达成。')}</p>`;
+  const reasons=[...new Set([...(effect.constraint_reasons||[]),...(effect.orders||[]).map(order=>order.reason).filter(Boolean)])];
+  const deviation=effect.weight_deviation==null?'不可用':`${(effect.weight_deviation*100).toFixed(2)} 个百分点`;
+  return `<h3>当前执行效果</h3><p class="subtle">当前确认账户与本次决策目标对照，不是历史账户重建。按本次决策的不复权参考价估值，不代表实时行情。</p>${detailFacts([
+    ['执行结果',decisionExecutionLabel(decision)],['订单执行进度',effect.status==='UNKNOWN'?'结果待确认':effect.terminal?'本次执行已结束':'仍有订单待完成'],
+    ['目标仓位',pct(effect.target_weight)],['实际仓位',effect.actual_weight==null?'不可用（账户净值为零）':pct(effect.actual_weight)],['偏差（实际－目标）',deviation],
+    ['规划结果',planningLabel(effect.planning_status)],['约束／未完成原因',reasons.length?reasons.map(executionReasonLabel).join('；'):'未记录'],
+    ['期望持股',formatQuantity(effect.desired_quantity)],['可执行目标持股',formatQuantity(effect.planned_quantity)],['当前确认持股',formatQuantity(effect.actual_quantity)],
+    ['估值参考价（不复权）',`${formatPrice(effect.valuation_price)} ${currency}`],['参考价观测时点',formatBeijingTime(effect.valuation_at)],['账户效果查询时点',formatBeijingTime(effect.as_of)],
+    ['现金（含冻结）',`${money(effect.cash)} ${currency}`],['可用现金',`${money(effect.available_cash)} ${currency}`],['应收',`${money(effect.receivable)} ${currency}`],['本口径账户净值',`${money(effect.equity)} ${currency}`],
+  ])}<p class="subtle">本次订单完成仅表示可执行订单计划完成，不代表目标仓位完全达成。</p>`;
+}
+export function decisionDetailsMarkup(decision,currency='CNY'){
+  const d=decision||{},explanation=d.strategy_output?.explanation;
+  return detailFacts([
+    ['决策 ID',d.decision_id],['动作',d.decision_id?actionLabel(d.action):'暂无决策'],['决策流程状态',d.status==='COMPLETED'?'流程结束':d.status&&statusLabel(d.status)],
+    ['信号日期',d.signal_date],['有效交易日',d.valid_session],
+    ['判断',explanation?.judgment],['依据',explanation?.basis?.map(item=>item.text).join('；')],['后续观察',explanation?.next_watch],
+  ])+executionEffectMarkup(d,currency);
 }
 export function auditSummary(event){
   const detail=event?.details||event?.payload||{};
@@ -235,7 +263,8 @@ function accountRecords(kind,title,columns,rows,view){
 }
 export function accountMarkup(snapshot,accountList=state.accounts,view={}){
   const a=snapshot.account,m=snapshot.metrics||{},d=snapshot.decision||{},scope=snapshot.scope,intents=snapshot.intents||[],orders=snapshot.orders||[],fills=snapshot.fills||[];
-  const executionState=decisionExecutionLabel(d,intents);
+  const executionState=decisionExecutionLabel(d),effect=d.execution_effect;
+  const weightSummary=effect?.availability==='AVAILABLE'?`目标 ${pct(effect.target_weight)} · 实际 ${pct(effect.actual_weight)}`:'仓位对照不可用';
   const currency=scope.currency||'CNY';
   const cash=value=>value==null?'—':`${money(value)} ${currency}`;
   const accounts=sortVirtualAccounts(accountList.filter(item=>item.run_state!=='RETIRED'));
@@ -247,7 +276,7 @@ export function accountMarkup(snapshot,accountList=state.accounts,view={}){
       <section class="panel hero account-hero" data-account-section="hero"><div class="account-heading"><div class="subtle">${marketName(scope.market)} · ${esc(scope.release_id)} · ${esc(a.symbol)} · Futu</div><h1>${esc(a.name)} <span class="badge">${esc(accountOperatingStatus(a))}</span></h1></div><div class="account-actions"><a class="button" data-account-audit href="/audit-events?${auditQuery({account_id:scope.account_id})}">审计事件</a><button type="button" id="accountDetails" class="button" aria-haspopup="dialog">账户详情</button><button id="accountSwitch" ${a.run_state==='RETIRED'?'disabled':''} class="switch ${a.run_state==='PAUSED'?'paused':''}" role="switch" aria-checked="${a.run_state==='RUNNING'}">${a.run_state==='RETIRED'?'已退出':a.run_state==='PAUSED'?'恢复账户':'暂停账户'}</button></div></section>
       <div data-account-section="alerts">${alerts(snapshot.alerts)}${gapActions}</div>
       <div class="grid account-metrics primary-metrics" data-account-section="metrics">${metric(a.run_state==='RETIRED'?'已回收资金':'总资产',cash(a.run_state==='RETIRED'?a.released_cash:a.total_assets))}${metric('可用现金',cash(a.cash))}${metric('持仓',formatQuantity(a.quantity))}</div>
-      <section class="panel account-decision" data-account-section="decision"><div class="decision-summary"><div><span class="subtle">最近决策 · ${esc(d.valid_session||'—')}</span><div><strong>${esc(d.decision_id?actionLabel(d.action):'暂无决策')}</strong> <span>· 目标 ${formatQuantity(d.target_quantity)} · ${esc(executionState)}</span></div></div><button type="button" class="button secondary" id="decisionDetails" aria-haspopup="dialog">决策详情</button></div></section>
+      <section class="panel account-decision" data-account-section="decision"><div class="decision-summary"><div><span class="subtle">最近决策 · ${esc(d.valid_session||'—')}</span><div><strong>${esc(d.decision_id?actionLabel(d.action):'暂无决策')}</strong> <span>· ${esc(weightSummary)} · ${esc(executionState)}</span></div></div><button type="button" class="button secondary" id="decisionDetails" aria-haspopup="dialog">决策详情</button></div></section>
       <div class="account-tabs" role="tablist" aria-label="账户视图">${[['chart','前瞻观察'],['records','交易记录'],['performance','绩效']].map(([key,label])=>`<button type="button" role="tab" id="account-tab-${key}" aria-controls="account-panel-${key}" aria-selected="${tab===key}" tabindex="${tab===key?0:-1}" data-account-tab="${key}">${label}</button>`).join('')}</div>
       <section id="account-panel-chart" role="tabpanel" aria-labelledby="account-tab-chart" data-account-panel="chart" ${tab==='chart'?'':'hidden'} class="panel section account-chart" data-account-section="chart"><div class="section-head"><span class="subtle">选择截止 ${esc(a.selection_data_cutoff)} · 截止线左侧为行情背景</span><a id="expandAccountChart" class="button" target="_blank" rel="noopener" hidden>展开大图 ↗</a></div><div id="accountChartMessage" class="chart-message" hidden></div><div id="accountChartFrameHost" class="chart-frame-host"><div class="loading">正在加载前瞻观察图…</div></div></section>
       <div id="account-panel-records" role="tabpanel" aria-labelledby="account-tab-records" data-account-panel="records" ${tab==='records'?'':'hidden'}><div class="record-tabs" role="tablist" aria-label="交易记录类型">${[['intents','订单意图'],['orders','订单'],['fills','成交']].map(([key,label])=>`<button type="button" role="tab" id="record-tab-${key}" aria-controls="record-panel-${key}" aria-selected="${recordTab===key}" tabindex="${recordTab===key?0:-1}" data-record-tab="${key}">${label}</button>`).join('')}</div>
@@ -365,17 +394,11 @@ function bindAccountEvents(accountId,runState){
       ['资格',qualificationLabel(a.qualification_snapshot)],['选择截止',a.selection_data_cutoff],
       ['观察起点',a.observation_start],['账务更新',formatBeijingTime(a.updated_at)],['日终估值',a.last_settlement_session],
       ['冻结资金',`${money(a.frozen_cash)} ${scope.currency||'CNY'}`],['当前累计收益',pct(metrics?.current_total_return)],
-    ]),event.currentTarget);
+    ])+executionEffectMarkup(state.accountSnapshot.decision,scope.currency||'CNY'),event.currentTarget);
   };
   document.querySelector('#decisionDetails').onclick=event=>{
     const d=state.accountSnapshot.decision||{},currency=state.accountSnapshot.scope.currency||'CNY';
-    const explanation=d.strategy_output?.explanation;
-    openDetail('决策详情',detailFacts([
-      ['决策 ID',d.decision_id],['动作',d.decision_id?actionLabel(d.action):'暂无决策'],['状态',d.status&&statusLabel(d.status)],
-      ['目标仓位',formatQuantity(d.target_quantity)],['信号日期',d.signal_date],['有效交易日',d.valid_session],
-      ['执行参考价（不复权）',d.execution_reference_price==null?null:`${formatPrice(d.execution_reference_price)} ${currency}`],
-      ['判断',explanation?.judgment],['依据',explanation?.basis?.map(item=>item.text).join('；')],['后续观察',explanation?.next_watch],
-    ]),event.currentTarget);
+    openDetail('决策详情',decisionDetailsMarkup(d,currency),event.currentTarget);
   };
   for(const [selector,key,attribute] of [['[data-account-tab]','tab','accountTab'],['[data-record-tab]','records','recordTab']]){
     const buttons=[...document.querySelectorAll(selector)];

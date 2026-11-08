@@ -65,6 +65,22 @@ def planned_orders(payload: dict) -> list[dict]:
     return [payload["order"]] if payload.get("order") else []
 
 
+def no_order_state(payload: dict) -> tuple[DecisionState, str]:
+    """Distinguish a blocked attempt from a plan requiring no adjustment."""
+    from ..planning.result import PlanningResult, PlanningStatus
+    execution = (payload.get('strategy_output') or {}).get('execution_plan')
+    if execution is None or 'planning_result' not in execution:
+        return DecisionState.COMPLETED, 'NO_ORDER'
+    planning = PlanningResult.from_dict(execution['planning_result'])
+    if planning.status is PlanningStatus.BLOCKED:
+        return DecisionState.INCOMPLETE, 'PLANNING_BLOCKED'
+    if planning.status is PlanningStatus.SUPPRESSED:
+        return DecisionState.INCOMPLETE, 'OBSERVATION_SUPPRESSED'
+    if planning.status is not PlanningStatus.NO_CHANGE:
+        raise ValueError('no-order decision differs from its planning result')
+    return DecisionState.COMPLETED, 'NO_ORDER'
+
+
 def execution_state(payload: dict, baseline: DecisionState, intents: list[dict],
                     orders: list[dict], fills: list[dict]) -> tuple[DecisionState, str]:
     """Project execution from original legs and their actual channel evidence."""
@@ -72,7 +88,7 @@ def execution_state(payload: dict, baseline: DecisionState, intents: list[dict],
         return baseline, "TERMINAL"
     planned = planned_orders(payload)
     if not planned:
-        return DecisionState.COMPLETED, "NO_ORDER"
+        return no_order_state(payload)
     # A timeout or lost acknowledgement is unresolved, even when other legs ended.
     if any(row["status"] in UNRESOLVED_INTENT_STATUSES for row in intents):
         return DecisionState.EXECUTING, "CHANNEL_RESULT_UNCERTAIN"
@@ -106,11 +122,19 @@ def execution_state(payload: dict, baseline: DecisionState, intents: list[dict],
         return DecisionState.EXECUTING, "AWAITING_FILL_RECONCILIATION"
     if intents and all(row["status"] in TERMINAL_INTENT_STATUSES for row in intents):
         reasons = [row["payload"].get("termination_reason") for row in intents]
-        if (IntentTerminationReason.NORMAL_UNFILLED in reasons and all(
+        if all(
             row["status"] == "FILLED_ALL" or reason in set(IntentTerminationReason)
             for row, reason in zip(intents, reasons)
-        )):
-            return DecisionState.INCOMPLETE, IntentTerminationReason.NORMAL_UNFILLED
+        ):
+            if fills:
+                return DecisionState.INCOMPLETE, IntentTerminationReason.NORMAL_PARTIAL
+            for reason in (IntentTerminationReason.ORDER_REJECTED,
+                           IntentTerminationReason.EXECUTION_CONSTRAINED,
+                           IntentTerminationReason.EXECUTION_EXPIRED,
+                           IntentTerminationReason.NORMAL_UNFILLED,
+                           IntentTerminationReason.DEPENDENCY_NOT_TRIGGERED):
+                if reason in reasons:
+                    return DecisionState.INCOMPLETE, reason
         return DecisionState.INCOMPLETE, "PLAN_ENDED_WITHOUT_COMPLETION"
     if baseline == DecisionState.EXECUTING or any(
         row.get("channel_order_id") or row["status"] not in {"PENDING_SUBMIT", "WAITING_DEPENDENCY"}

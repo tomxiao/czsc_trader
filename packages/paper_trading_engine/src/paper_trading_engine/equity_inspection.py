@@ -9,12 +9,14 @@ import json
 from dataflows import TimeInterval
 from strategy_runtime.inspection import InspectionEnvironment
 from .inspection_contracts import Record, _case_id, _money, _time
-from execution_channels.futu.equity_contracts import EquityOrderReport, EQUITY_OFFLINE_CHANNEL_ID, equity_channel_id, EquityExecutionWindowError, EquityReconciliationError
-from .equity_advice import EquityAdviceClient, prepare_equity_decision
-from execution_channels.futu.equity_execution import EquityExecution
-from execution_channels.futu.broker import BrokerOrder, BrokerOrderRejectedError, BrokerSubmissionUncertainError
-from .account_engine import AccountEngine
+from execution_channels.futu.equity_contracts import EquityOrderReport, EquityReconciliationError
+from execution_channels.futu.broker import BrokerSubmissionUncertainError
+from .account_engine import AccountEngine, AccountDecisionBlockedError
 from execution_channels.futu.store import PaperStore
+from execution_channels.futu.channel import ChannelAccountConfig, FUTU_SIMULATE_CN_CHANNEL_ID, FUTU_US_SIM_CHANNEL_ID
+from execution_channels.futu.futu_execution import ChannelExecution, ChannelReconciliationError
+from .formal_v4_advice import FormalV4AdviceClient
+from .inspection_broker import RecordedInspectionBroker
 
 
 @dataclass(frozen=True)
@@ -108,22 +110,9 @@ class EquityPteInspectionProtocol(Record):
             raise ValueError("duplicate equity scenario")
 
 
-class _RecordedChannel:
-    channel_id = EQUITY_OFFLINE_CHANNEL_ID
-    outcome = "ACCEPTED"
-
-    def place_order(self, intent):
-        if self.outcome == "REJECTED":
-            raise BrokerOrderRejectedError("recorded channel rejection")
-        if self.outcome == "UNKNOWN":
-            raise BrokerSubmissionUncertainError("recorded missing channel acknowledgement")
-        return BrokerOrder("recorded-" + intent.intent_id, intent.symbol, intent.side, intent.quantity,
-                           intent.limit_price, "SUBMITTED", 0, 0., intent.intent_id, order_type=intent.order_type)
-
-
 def _facts(store):
     account = store.virtual_account("equity")
-    return {"initial_cash": account["initial_cash"], "v4_state": account.get("account_v4_json"), "account": {k: account[k] for k in ("cash", "frozen_cash", "quantity", "average_cost", "receivable", "realized_pnl", "total_assets")},
+    return {"initial_cash": account["initial_cash"], "v4_state": account.get("account_v4_json"), "account": {k: account[k] for k in ("cash", "frozen_cash", "quantity", "average_cost", "receivable", "realized_pnl", "total_assets", "health")},
             "decisions": store.account_decisions("equity"), "orders": store.account_orders("equity"),
             "intents": store.account_intents("equity"),
             "fills": [dict(r) for r in store._connection.execute("SELECT * FROM fills WHERE account_id='equity' ORDER BY rowid")],
@@ -135,12 +124,16 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, execution
     """Consume explicit channel facts; never infer fills from a historical price bar."""
     if type(protocol) is not EquityPteInspectionProtocol:
         raise TypeError("equity inspection requires explicit channel protocol")
+    if candidate.definition.contract_version != 4:
+        raise ValueError('legacy RAW inspection requires explicit migration to HFQ V4')
+    binding.bind_requests(requests)
     candidate.verify()
     from strategy_runtime.deployment import validate_release_package
     verified = validate_release_package(permit.isolated_repository / "strategies", permit.release_id)
     permit.validate_release(verified.release.release_id, verified.release.release_hash)
     from strategy_runtime import EquityStrategyDefinition
     if (verified.package_sha256 != permit.package_sha256 or candidate.source_root.resolve() != verified.source_root.resolve()
+            or candidate.strategy_id != verified.release.strategy_family_id or candidate.candidate_id != verified.runtime_candidate_id
             or candidate.definition != EquityStrategyDefinition.from_dict(dict(verified.release.payload["equity_definition"]))):
         raise ValueError("equity inspection candidate differs from authenticated frozen package")
     from time import monotonic
@@ -155,6 +148,9 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, execution
     if collect_inspection_environment(permit.isolated_repository) != protocol.environment:
         raise ValueError("equity inspection environment differs from executing installation")
     cases, coverage = [], set()
+    runtime = {}
+    channel_id = FUTU_SIMULATE_CN_CHANNEL_ID if candidate.instrument.market.value == 'CN' else FUTU_US_SIM_CHANNEL_ID
+    config = ChannelAccountConfig('inspection-channel', channel_id, 1)
     for scenario in protocol.scenarios:
         checkpoint()
         path = permit.validate_path(permit.workspace / "equity-pte" / scenario.case_id / "paper.db")
@@ -164,79 +160,108 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, execution
         observed = []
         local_coverage = set()
         try:
-            store.set_setting("futu_capital_pool", str(initial_cash))
+            store = store.register_channel_account(config, capital=Decimal(str(initial_cash)))
+            store.set_paused(False)
             release_record = json.loads((permit.isolated_repository / "strategies" / candidate.strategy_id /
                 "versions" / (verified.release.version + ".json")).read_text(encoding="utf-8"))
             store.create_virtual_account("equity", "Isolated equity inspection", "inspection", permit.release_sha256,
                 initial_cash, symbol=candidate.instrument.symbol, asset_type=candidate.instrument.asset_class.value.lower(), strategy_id=candidate.strategy_id,
                 strategy_name_snapshot="Isolated equity inspection", strategy_version=permit.release_id.split("-")[1],
                 release_hash=permit.release_sha256, qualification_snapshot="INSPECTION", selection_data_cutoff=release_record["selection_data_cutoff"],
-                channel_id=equity_channel_id(execution_rules(candidate.instrument, candidate.definition.execution_spec).instrument), equity_rules=execution_rules(candidate.instrument, candidate.definition.execution_spec))
+                channel_id=channel_id, equity_rules=execution_rules(candidate.instrument, candidate.definition.execution_spec))
             store.set_virtual_paused("equity", False)
-            channel = _RecordedChannel()
-            channel.channel_id = equity_channel_id(execution_rules(candidate.instrument, candidate.definition.execution_spec).instrument)
+            now = next((s.interval.start for s in scenario.steps if type(s) is EquityPteDecision), None)
+            channel = RecordedInspectionBroker(config, cash=initial_cash, symbol=candidate.instrument.symbol,
+                       fee_rate=fee_rate, now=lambda: now)
+            channel.channel_id = channel_id
             orders, reports = [], set()
-            now = None
+            def advice_client():
+                client = FormalV4AdviceClient(repo_root=permit.isolated_repository, store=store,
+                    dataflows=dataflows, data_dir=path.parent, inspection_permit=permit)
+                client.register_inputs('equity', binding, expected_release_hash=permit.release_sha256,
+                    fee_rate=fee_rate, execution_reference=execution_reference)
+                return client
+            advice = advice_client()
             for step in scenario.steps:
                 checkpoint()
                 if type(step) is EquityPteRestart:
                     before = _facts(store)
                     store.close()
                     store = PaperStore(path, inspection_permit=execution_permit(permit))
+                    store = store.scope(config.channel_account_id)
+                    advice = advice_client()
                     if _facts(store) != before:
                         raise ValueError("reopened equity account differs from durable state")
                     local_coverage.add("RESTART")
                     observed.append({"kind": "RESTART", "before": before, "after": _facts(store)})
                     continue
-                execution = EquityExecution(store, channel, now=lambda: now)
+                execution = ChannelExecution(store, channel, now=lambda: now, config=config)
+                runtime = {'advice': type(advice).__name__, 'execution': type(execution).__name__,
+                           'account_engine': AccountEngine.__name__, 'store': type(store).__name__,
+                           'admission': store.virtual_account('equity')['qualification_snapshot']}
                 if type(step) is EquityPteReconcile:
                     try:
-                        execution.reconcile(cash=step.cash, quantity=step.quantity, account_id="equity")
+                        channel.cash, channel.quantity = step.cash, step.quantity
+                        execution.refresh_orders()
                         observed.append({"kind": "RECONCILE", "status": "OK"})
-                    except EquityReconciliationError:
+                    except ChannelReconciliationError:
                         local_coverage.add("RECONCILIATION_BLOCKED")
                         observed.append({"kind": "RECONCILE", "status": "BLOCKED"})
                 elif type(step) is EquityPteDecision:
                     now, channel.outcome = step.at, step.outcome
                     expired_intents = []
-                    prepared = prepare_equity_decision(dataflows, candidate, binding, requests, step.interval, fee_rate=fee_rate,
-                        execution_reference=execution_reference.fetch(dataflows, step.interval,
-                            latency_seconds=candidate.definition.execution_spec.data_latency_seconds))
+                    prepared = advice.prepare_interval('equity', step.interval, observed_at=step.interval.start)
                     try:
-                        AccountEngine(store, EquityAdviceClient(store), now=lambda: now).refresh_account("equity", prepared=prepared)
+                        AccountEngine(store, advice, now=lambda: now).refresh_account("equity", prepared=prepared)
                         before_submission = {row['intent_id']: row['status'] for row in store.account_intents('equity')}
-                        ids = execution.submit_pending("equity")
+                        execution.submit_pending()
+                        ids = [o['channel_order_id'] for o in store.account_orders('equity')
+                               if o['channel_order_id'] not in orders]
                         orders.extend(ids)
                         actual = "SUBMITTED" if ids else "NO_ORDER"
-                        from execution_channels.futu.order_windows import planned_bounds
                         for row in store.account_intents('equity'):
-                            bounds = planned_bounds(row['payload'], row['valid_session'])
+                            bounds = execution._execution_interval(row)
                             if (before_submission.get(row['intent_id']) == 'PENDING_SUBMIT'
                                     and row['status'] == 'EXPIRED' and bounds is not None and now >= bounds[1]):
                                 expired_intents.append(row['intent_id'])
-                    except BrokerOrderRejectedError:
-                        actual = "REJECTED"
+                        changed = {r['status'] for r in store.account_intents('equity')
+                                   if r['status'] != before_submission.get(r['intent_id'])}
+                        if 'REJECTED' in changed:
+                            actual = 'REJECTED'
+                        elif expired_intents and now >= step.interval.end:
+                            actual = 'EXPIRED'
                     except BrokerSubmissionUncertainError:
                         actual = "UNKNOWN"
-                    except EquityExecutionWindowError:
-                        if now < step.interval.end:
+                    except (AccountDecisionBlockedError, EquityReconciliationError):
+                        if store.get_setting('channel_reconciliation_status') != 'BLOCKED':
                             raise
-                        actual = "EXPIRED"
-                    except EquityReconciliationError:
+                        actual = 'RECONCILIATION_BLOCKED'
+                    except ChannelReconciliationError:
                         actual = "RECONCILIATION_BLOCKED"
                     if actual != step.expected:
                         raise ValueError(f"expected {step.expected}, observed {actual}")
                     local_coverage.add(actual)
                     extra = {}
+                    health = store.virtual_account('equity')['health']
+                    reconciliation = store.get_setting('channel_reconciliation_status')
+                    if actual == 'UNKNOWN' and health != 'BLOCKED':
+                        raise ValueError('unknown channel submission must block the account')
+                    if actual in ('REJECTED', 'EXPIRED', 'NO_ORDER', 'SUBMITTED') and health != 'OK':
+                        raise ValueError('ordinary execution outcome must preserve a healthy account')
+                    if actual == 'RECONCILIATION_BLOCKED' and reconciliation != 'BLOCKED':
+                        raise ValueError('unreconciled channel facts must block channel execution')
+                    extra = {'account_health': health, 'channel_reconciliation': reconciliation}
                     if expired_intents:
                         local_coverage.add('EXPIRED')
-                        extra = {'expired_intents': expired_intents,
+                        extra = {**extra, 'expired_intents': expired_intents,
                                  'submission_intents_before': before_submission}
                     observed.append({"kind": "DECISION", "outcome": actual, "interval": step.interval.to_dict() if hasattr(step.interval, "to_dict") else {"start":step.interval.start.isoformat(),"end":step.interval.end.isoformat()}, **extra})
                 elif type(step) is EquityPteReport:
                     report = EquityOrderReport(orders[step.order_index], step.cumulative_quantity, step.average_price, step.at, step.status, step.settlement_at)
                     before = _facts(store)
-                    execution.apply_report(report)
+                    now = step.at
+                    channel.apply_recorded_report(execution.broker.raw_id(report.channel_order_id), report)
+                    execution.refresh_orders()
                     key = json.dumps(step.to_dict(), sort_keys=True)
                     if key in reports:
                         if _facts(store)["account"] != before["account"] or len(_facts(store)["fills"]) != len(before["fills"]):
@@ -272,12 +297,16 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, execution
     missing = sorted(required - coverage)
     status = "FAIL" if any(c["status"] == "FAIL" for c in cases) else "INCOMPLETE" if missing or any(c["status"] == "INCOMPLETE" for c in cases) else "PASS"
     return {"status": status, "scenarios": cases, "coverage": {"observed": sorted(coverage), "missing": missing},
+            "runtime": runtime,
             "environment": protocol.to_dict()["environment"]}
 
 
 def verify_equity_inspection_facts(outcome: dict, protocol: dict):
     """Recheck saved ledger arithmetic and declared expectations without running a simulator."""
     declared = EquityPteInspectionProtocol.from_dict(protocol)
+    if outcome.get('runtime') != {'advice': 'FormalV4AdviceClient', 'execution': 'ChannelExecution',
+            'account_engine': 'AccountEngine', 'store': 'PaperStore', 'admission': 'INSPECTION'}:
+        raise ValueError('inspection did not execute the formal V4 runtime')
     if outcome.get("environment") != protocol["environment"]:
         raise ValueError("equity inspection environment identity differs")
     scenarios = outcome.get("scenarios", [])
@@ -332,17 +361,30 @@ def verify_equity_inspection_facts(outcome: dict, protocol: dict):
                 if actual.get("kind") != "DECISION" or actual.get("outcome") != step.expected:
                     raise ValueError("saved equity submission outcome differs")
                 coverage.add(step.expected)
+                expected_health = 'BLOCKED' if step.expected == 'UNKNOWN' else 'OK'
+                if step.expected == 'RECONCILIATION_BLOCKED':
+                    if actual.get('channel_reconciliation') != 'BLOCKED':
+                        raise ValueError('saved unreconciled channel is not blocked')
+                elif actual.get('account_health') != expected_health:
+                    raise ValueError('saved execution health differs from the formal outcome')
                 if 'expired_intents' in actual or 'submission_intents_before' in actual:
                     from execution_channels.futu.order_windows import planned_bounds
                     expired = actual.get('expired_intents')
                     before = actual.get('submission_intents_before')
-                    if (step.expected not in ('NO_ORDER', 'SUBMITTED') or type(expired) is not list
+                    if (step.expected not in ('NO_ORDER', 'SUBMITTED', 'EXPIRED') or type(expired) is not list
                             or not expired or len(set(expired)) != len(expired) or type(before) is not dict):
                         raise ValueError('saved expiry transition is invalid')
                     intents = {row['intent_id']: row for row in facts['intents']}
+                    decisions = {row['decision_id']: row for row in facts['decisions']}
                     for intent_id in expired:
                         row = intents.get(intent_id)
-                        bounds = None if row is None else planned_bounds(row['payload'], row['valid_session'])
+                        interval = None if row is None else decisions.get(row['decision_id'], {}).get('payload', {}).get('equity_execution_interval')
+                        bounds = None if interval is None else tuple(datetime.fromisoformat(interval[key]) for key in ('start', 'end'))
+                        if row is not None:
+                            planned = planned_bounds(row['payload'], row['valid_session'],
+                                **({'zone': bounds[0].tzinfo} if bounds else {}))
+                            if planned is not None:
+                                bounds = planned if bounds is None else (max(bounds[0], planned[0]), min(bounds[1], planned[1]))
                         if (intent_id in expired_seen or before.get(intent_id) != 'PENDING_SUBMIT'
                                 or row is None or row['status'] != 'EXPIRED' or bounds is None or step.at < bounds[1]):
                             raise ValueError('saved expiry is not a new submit-time transition')

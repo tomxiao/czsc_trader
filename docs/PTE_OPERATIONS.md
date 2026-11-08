@@ -90,8 +90,11 @@ V4 双市场账户必须健康、暂停，且处于绑定允许的执行区间�
 同日再次驱动相同计划返回`DECISION_REUSED`，下一交易日按新的策略决策执行。核验时关联
 `CANCEL_REQUESTED`的`planned_deadline`原因、渠道`CANCELLED_ALL`零成交回报和意图
 `termination_reason=NORMAL_UNFILLED`。仅看到撤单请求或收盘时间不足以认定安全终结。
-无明确到期来源、拒单、部分成交、人工撤单等仍按原执行缺口处理，结果未知继续等待对账。
-升级不会自动解除历史阻塞；完整语义见[PTE正常限价未成交与执行异常](../packages/paper_trading_engine/README.md#正常限价未成交与执行异常)。
+明确拒单、已确认渠道现金／可卖量不足、本地未提交过期及有到期依据的部分成交撤余，
+均终结本次尝试并保存实际效果，不要求解除账户阻塞；下一周期仍由策略产生新决策。
+无明确终结依据的取消和人工撤单仍需核实，结果未知保留冻结资金并等待对账，账本异常继续阻断。
+账户详情的执行效果使用当前确认账户及该决策的RAW参考价，不是实时估值或历史账户重建。
+升级不会自动解除历史阻塞；完整语义见[PTE尽力执行与账户异常](../packages/paper_trading_engine/README.md#尽力执行与账户异常a-股美股渠道)。
 
 冻结策略不会自动进入SRT或PTE；新版本初始资格为`RESEARCH`。获准的DEV通过SM
 `approve_paper_trading(PaperTradingApproval)`绑定发布哈希授予`PAPER_READY`，通过

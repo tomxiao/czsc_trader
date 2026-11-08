@@ -28,6 +28,13 @@ V4决策在 `strategy_output.execution_plan` 留存原目标与EC规划结果。
 已提交、部分成交、订单完成和结果未知分别呈现；需要人工或券商核实的未知订单保持未决，不自动重发。
 查询只返回当前确认账户，不能用过去的at伪装历史快照；估值价格由调用方明确提供。
 
+现有账户快照 API 的 `decision.execution_effect` 返回 EC 执行效果；控制台在原决策摘要和
+详情中展示目标／实际仓位、偏差、约束和执行状态。`availability=UNAVAILABLE` 表示旧决策
+缺少规划证据，不推测补齐。可用结果的 `scope=CURRENT_ACCOUNT_VS_DECISION` 表示当前确认
+账户与所选决策比较，`price_basis=RAW`、`valuation_source=DECISION_EXECUTION_REFERENCE`
+及 `valuation_at` 标明该决策的执行参考价和观测时点；`as_of` 是查询时点，不能解释为实时行情
+或该决策发生时的历史账户。`COMPLETED` 只表示可执行订单完成或无需调整，不保证目标精确达成。
+
 ## 资金模式与代码兼容
 
 SRT 计算策略目标，EC 规划目标份额和订单，PTE 编排执行。原有`full_available_cash`、
@@ -63,7 +70,13 @@ SRT 产生策略提案，EC 在采纳决策的同一事务中保存`EntryCycleSt
 
 ## 双市场隔离技术检验
 
-A 股与美股隔离检验使用独立数据库和显式许可，复用正式账户决策、订单回报及账本核心。
+A 股与美股原生 V4 隔离检验使用独立数据库和显式许可，复用正式
+`FormalV4AdviceClient → AccountEngine → ChannelExecution → PaperStore` 链路。
+仅将外部券商、时钟和运行存储替换为受控环境；拒单、未知回报、资金释放及健康状态采用正式实现。
+`FormalV4AdviceClient` 的 `inspection_permit` 只允许加载指定隔离目录中身份匹配的待冻结包；
+普通入口仍要求正式安装记录和模拟交易资格，不为检验创建虚假的 `PAPER_READY` 资格。
+离线 `RecordedInspectionBroker` 按协议提供合成回报及撤单确认，仅验证平台处理能力，
+不代表连接真实富途完成交易验收。此入口只接受原生 V4，旧 RAW 合同在执行前拒绝。
 `prepare_equity_decision` 认证 SRT 的 HFQ 行情、辅助行情及观察表；独立的
 `ExecutionReferenceBinding` 指定 DFLS RAW 行情请求、准备引用和内容指纹，生成
 `PreparedExecutionReference`。该 RAW 价格只进入 EC，不能放进 SRT 输入绑定或上下文。
@@ -233,32 +246,40 @@ python -m paper_trading_engine.online_verify --port 8080 --plan .tmp/pte-verify-
 
 仅隔离 DEV 可以显式加 `--drive-dev`。此时 `release` 使用 `{"mode":"DEV","repo_root":"<隔离工作目录绝对路径>"}`，所有目标账户须暂停并提供预期决策。设 `decision.fresh=true` 要求本次实际生成，复用视为不达标。固定时点的双市场闭环使用聚焦测试中的受控时钟和模拟渠道。工具报告逐项 `PASS`、`FAIL`、`BLOCKED`，退出码分别为 0、1、2，输出路径须是新文件。生产恢复顺序见 [PTE 发布与运维](../../docs/PTE_OPERATIONS.md#web-api-在线验收)。
 
-## 正常限价未成交与执行异常（A 股渠道）
+## 尽力执行与账户异常（A 股、美股渠道）
 
-限价买单因计划时窗结束而撤单，且渠道明确回报`CANCELLED_ALL`、累计成交与账本均为零、
-无渠道错误时，可以正常结束本次尝试。PTE要求对应订单具有引擎产生的`CANCEL_REQUESTED`
+订单因计划时窗结束而撤单，且渠道明确回报`CANCELLED_ALL`或`CANCELLED_PART`、累计成交
+与账本一致且无渠道错误时，可以正常结束本次尝试。对应订单须具有引擎产生的`CANCEL_REQUESTED`
 审计，`details.reason=planned_deadline`，且不存在人工撤单记录。请求来源在调用渠道前持久化；
 请求成功、经过截止时间或单独一个取消状态都不代表已确认正常终结。
 
 带`submit_before`的计划单沿用原截止时间；普通`DAY`限价买单在有效交易日15:00之后，
 对仍有效的渠道订单请求撤单。恢复运行后也会处理已超过截止时间的活动单，不提前结束成交窗口。
-若渠道先自行取消且没有可核验的到期撤单来源，本版本仍保留人工确认；不按收盘时间猜测取消原因。
+若渠道先自行取消，只有明确执行区间及不早于区间终点的带时区回报才能确认到期；
+缺少这两类证据时保留人工确认，不按本地收盘时间猜测取消原因。US按明确执行区间处理。
 
 确认正常零成交后，订单保留渠道原始状态，意图`payload.termination_reason=NORMAL_UNFILLED`，
-`attention_required=false`；决策为`INCOMPLETE / NORMAL_UNFILLED`，控制台显示“正常未成交”。
+`attention_required=false`；决策为`INCOMPLETE / NORMAL_UNFILLED`，控制台展示未执行及正常结束原因。
 剩余冻结资金只释放一次，持仓、实际成交费用和入场周期预算保持真实事实。不新增账户阻塞，
 也不清除无关阻塞或暂停。重复回报和服务重启不重复释放资金，不重新产生人工确认事项。
 
-同交易日同计划不重新挂单。入场周期由`OPEN`变为`HOLD`导致计划哈希变化时，如果同一信号
-及可执行订单、计划腿均未改变，也复用已结束的尝试。下一交易日由SRT新决策决定是否再次买入，
+同一已终结尝试不重新挂单。V4同一份认证输入、观察时点和执行区间，即使部分成交改变账户
+并使重算的剩余订单或计划哈希变化，也复用已结束的尝试。旧入场周期由`OPEN`变为`HOLD`
+时，同信号、同有效交易日的已终结计划仍按既有身份规则复用。下一执行周期由SRT新决策决定是否再次买入，
 PTE不自动追价或强制补单。依赖该买单`FILLED_ALL`的未提交卖单记为`SKIPPED_DEPENDENCY`，
 原因为`DEPENDENCY_NOT_TRIGGERED`，追加`EXECUTION_PLAN_LEG_SKIPPED`审计，不卖出原有底仓。
 
-拒单、提交失败、部分成交撤单、人工撤单、卖单失败及本地漏提交维持原人工确认边界。
+明确拒单记为`ORDER_REJECTED`，提交前确认现金或可卖量不足记为`EXECUTION_CONSTRAINED`，
+本地尚未提交而错过窗口记为`EXECUTION_EXPIRED`，正常到期部分成交撤余记为`NORMAL_PARTIAL`。
+这些结果终结本次委托并保留原目标、实际成交和具体原因，不阻断账户或自动重发同单。
+部分成交只释放未成交部分的预占资金；依赖完整成交的后续腿不因部分成交而擅自调整数量执行。
+人工撤单、缺少终结依据的回报、非法输入及实际安全错误仍需处理。
 提交、订单或撤单结果未知时继续阻塞、保留未释放资金并对账；后续明确终态才能结束不确定性。
 订单、资金或持仓不一致时仍阻止新单。`release_account_intent`在存储事务内根据真实回报、账本和
-审计分类，不接受“忽略阻塞”的调用参数；`SKIPPED_DEPENDENCY`只接受有上述正常零成交依赖证据的
-未提交卖单。`update_channel_order_report`仍接收原始渠道事实，不接受调用方指定终结解释。
+审计分类。本地未向渠道提交或渠道已明确拒绝的意图，可传强类型`termination_reason`，
+仅允许与当前状态和无渠道订单事实一致的终结原因，不能作为通用“忽略阻塞”开关。
+`SKIPPED_DEPENDENCY`须有已确认终结且未满足完整成交条件的依赖证据。
+`update_channel_order_report`仍接收原始渠道事实，不接受调用方指定终结解释。
 
 上述信息复用现有意图JSON和审计表，不新增HTTP接口或数据库字段。启动回填只保留已明确记录的
 正常终结，不批量放行历史取消单、改写历史研究证据或自动解除生产账户阻塞。

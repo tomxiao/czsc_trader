@@ -61,6 +61,10 @@ class OrderSubmissionBatchError(RuntimeError):
     """One or more deterministic order submissions failed in this cycle."""
 
 
+class _ExecutionConstrainedError(RuntimeError):
+    """Confirmed channel capacity prevents this attempt before broker submission."""
+
+
 class ChannelExecution:
     def __init__(
         self, store, broker, *, symbol: str | None = None, today=None, now=None, audit=None,
@@ -142,12 +146,12 @@ class ChannelExecution:
             return
         if intent.side == 'SELL':
             if intent.quantity > self._sellable_remaining.get(intent.symbol, 0):
-                raise PaperTradingSafetyError('order exceeds confirmed channel sellable holdings')
+                raise _ExecutionConstrainedError('order exceeds confirmed channel sellable holdings')
         else:
             stored = self.store.account_intent(intent.intent_id)
             cost = Decimal(str(intent.limit_price)) * intent.quantity * (1 + Decimal(str(stored['payload']['fee_rate'])))
             if cost > self._cash_remaining:
-                raise PaperTradingSafetyError('order exceeds channel cash-only buying capacity')
+                raise _ExecutionConstrainedError('order exceeds channel cash-only buying capacity')
 
     def _consume_inventory(self, intent):
         if self.config is None:
@@ -275,10 +279,10 @@ class ChannelExecution:
     def _expire_planned_intent(self, intent, message: str) -> None:
         self.store.release_account_intent(
             intent["intent_id"], "EXPIRED", attention_reason=message,
+            termination_reason=IntentTerminationReason.EXECUTION_EXPIRED,
         )
-        self.store.set_virtual_health(intent["account_id"], AccountHealth.BLOCKED, message)
         self.audit.record(
-            "EXECUTION_PLAN_BLOCKED", source="futu_execution", outcome="FAILURE",
+            "EXECUTION_PLAN_BLOCKED", source="futu_execution", outcome="SKIPPED", severity="WARNING",
             account_id=intent["account_id"], channel=self.channel_id,
             decision_id=intent["decision_id"], correlation_id=intent["decision_id"],
             details={
@@ -302,8 +306,8 @@ class ChannelExecution:
                 message = "订单未在有效交易日内提交，已形成前瞻执行缺口"
                 self.store.release_account_intent(
                     intent["intent_id"], "EXPIRED", attention_reason=message,
+                    termination_reason=IntentTerminationReason.EXECUTION_EXPIRED,
                 )
-                self.store.set_virtual_health(intent["account_id"], AccountHealth.BLOCKED, message)
                 self.audit.record(
                     "DECISION_EXPIRED", source="futu_execution", outcome="SKIPPED",
                     account_id=intent["account_id"], channel=self.channel_id,
@@ -332,7 +336,9 @@ class ChannelExecution:
                     "plan_dependency_missing",
                     f"执行计划依赖意图不存在: {dependency_id}", intent=intent,
                 )
-            if dependency["payload"].get("termination_reason") == IntentTerminationReason.NORMAL_UNFILLED:
+            if (dependency["status"] in TERMINAL_INTENT_STATUSES
+                    and dependency["status"] != intent["payload"].get("dependency_required_status")
+                    and dependency["payload"].get("termination_reason") in set(IntentTerminationReason)):
                 self.store.release_account_intent(
                     intent["intent_id"], "SKIPPED_DEPENDENCY",
                     audit_event=self.audit.build(
@@ -970,9 +976,7 @@ class ChannelExecution:
             except BrokerOrderRejectedError as exc:
                 self.store.release_account_intent(
                     row["intent_id"], "REJECTED", attention_reason=f"Futu明确拒单：{exc}",
-                )
-                self.store.set_virtual_health(
-                    row["account_id"], AccountHealth.BLOCKED, f"Futu明确拒单：{exc}",
+                    termination_reason=IntentTerminationReason.ORDER_REJECTED,
                 )
                 self.audit.record(
                     "ORDER_REJECTED", source="futu_execution", outcome="REJECTED",
@@ -980,7 +984,19 @@ class ChannelExecution:
                     decision_id=row["decision_id"], correlation_id=row["decision_id"],
                     details={"side": row["side"], "quantity": row["quantity"], "error": str(exc)},
                 )
-                deterministic_failures.append((row["intent_id"], exc))
+                continue
+            except _ExecutionConstrainedError as exc:
+                self.store.release_account_intent(
+                    row["intent_id"], "SUBMISSION_FAILED", attention_reason=str(exc),
+                    termination_reason=IntentTerminationReason.EXECUTION_CONSTRAINED,
+                )
+                self.audit.record(
+                    "ORDER_SUBMISSION_FAILED", source="futu_execution", outcome="SKIPPED", severity="WARNING",
+                    account_id=row["account_id"], channel=self.channel_id,
+                    decision_id=row["decision_id"], correlation_id=row["decision_id"],
+                    details={"side": row["side"], "quantity": row["quantity"],
+                             "reason": IntentTerminationReason.EXECUTION_CONSTRAINED, "error": str(exc)},
+                )
                 continue
             except PaperTradingSafetyError as exc:
                 self.store.release_account_intent(

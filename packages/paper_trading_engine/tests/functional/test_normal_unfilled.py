@@ -150,7 +150,7 @@ def test_day_order_normal_unfilled_survives_restart_and_retries_only_next_sessio
     store.close()
 
 
-@pytest.mark.parametrize("failure", ["no_source", "manual", "channel_error", "partial"])
+@pytest.mark.parametrize("failure", ["no_source", "manual", "channel_error"])
 def test_zero_fill_exception_does_not_relax_other_terminal_safety(new_store, tmp_path, failure):
     store, broker, clock, execution, _, _, intent = _submitted(new_store, tmp_path / "unsafe.db")
     if failure != "no_source":
@@ -162,8 +162,6 @@ def test_zero_fill_exception_does_not_relax_other_terminal_safety(new_store, tmp
         execution.confirm_cancel(ACCOUNT, intent["channel_order_id"], token)
     _cancel_report(
         broker,
-        status="CANCELLED_PART" if failure == "partial" else "CANCELLED_ALL",
-        quantity=400 if failure == "partial" else 0,
         error="broker execution failure" if failure == "channel_error" else "",
     )
     execution.refresh_orders()

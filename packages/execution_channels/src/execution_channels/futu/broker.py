@@ -38,6 +38,10 @@ class IntentTerminationReason(StrEnum):
     """Local interpretation of confirmed execution facts; never a broker status."""
 
     NORMAL_UNFILLED = "NORMAL_UNFILLED"
+    NORMAL_PARTIAL = "NORMAL_PARTIAL"
+    ORDER_REJECTED = "ORDER_REJECTED"
+    EXECUTION_CONSTRAINED = "EXECUTION_CONSTRAINED"
+    EXECUTION_EXPIRED = "EXECUTION_EXPIRED"
     DEPENDENCY_NOT_TRIGGERED = "DEPENDENCY_NOT_TRIGGERED"
 
 

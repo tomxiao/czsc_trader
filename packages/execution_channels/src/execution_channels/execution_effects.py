@@ -3,7 +3,7 @@
 COMPLETED describes this decision's executable orders, not exact attainment of
 its target weight. Valuation is explicit and never fetches a market price.
 """
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from decimal import Decimal
 from enum import StrEnum
@@ -64,6 +64,18 @@ class DecisionExecutionEffect:
     planning_status: PlanningStatus
     constraint_reasons: tuple[PlanningConstraint, ...]
     orders: tuple[OrderExecutionEffect, ...]
+
+    def to_dict(self) -> dict:
+        """Serialize the confirmed effect without recalculating account values."""
+        value = asdict(self)
+        value['as_of'] = self.as_of.isoformat()
+        value['status'] = self.status.value
+        value['planning_status'] = self.planning_status.value
+        value['constraint_reasons'] = [item.value for item in self.constraint_reasons]
+        value['orders'] = [asdict(item) for item in self.orders]
+        for name in ('cash', 'available_cash', 'receivable', 'valuation_price', 'equity'):
+            value[name] = str(getattr(self, name))
+        return value
 
     def __post_init__(self):
         if (type(self.decision_id) is not str or not self.decision_id

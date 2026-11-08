@@ -94,10 +94,23 @@ class _CalendarPreparationError(ValueError):
 
 
 class FormalV4AdviceClient:
-    def __init__(self, *, repo_root: Path | str, store, dataflows: Dataflows | None, data_dir: Path | str):
+    def __init__(self, *, repo_root: Path | str, store, dataflows: Dataflows | None, data_dir: Path | str,
+                 inspection_permit=None):
         self.repo_root = Path(repo_root).resolve()
         self.store, self.dataflows = store, dataflows
         self.data_dir = Path(data_dir).resolve()
+        if inspection_permit is not None:
+            from strategy_runtime.inspection import InspectionRuntimePermit
+            if type(inspection_permit) is not InspectionRuntimePermit:
+                raise TypeError('V4 inspection requires a typed isolated permit')
+            if self.repo_root != inspection_permit.isolated_repository:
+                raise ValueError('V4 inspection repository differs from permit')
+            inspection_permit.validate_path(self.data_dir)
+            inspection_permit.validate_path(store.path)
+            from .ec_boundary import execution_permit
+            if getattr(store, '_inspection_permit', None) != execution_permit(inspection_permit):
+                raise ValueError('V4 inspection store differs from permit')
+        self.inspection_permit = inspection_permit
         self._lock = RLock()
         self._calendars = {}
         self._decision_cycles = {}
@@ -113,12 +126,16 @@ class FormalV4AdviceClient:
 
     def load_release(self, strategy_id, strategy_version):
         release_id = f'{strategy_id}-{strategy_version}'
-        deployment = load_strategy_deployment(self.repo_root / 'strategies', release_id)
+        if self.inspection_permit is None:
+            deployment = load_strategy_deployment(self.repo_root / 'strategies', release_id)
+        else:
+            from strategy_runtime.deployment import load_inspection_deployment
+            deployment = load_inspection_deployment(self.repo_root / 'strategies', release_id, self.inspection_permit)
         raw = json.loads((self.repo_root / 'strategies' / strategy_id / 'versions' / f'{strategy_version}.json').read_text(encoding='utf-8'))
         release = StrategyRelease.from_mapping(raw)
         if release.release_hash != deployment.release_hash or release.payload['runtime']['kind'] != 'ACCOUNT_REPLAY':
             raise ValueError('formal V4 deployment differs from native release')
-        identity = _strategy_identity(self.repo_root, release)
+        identity = _strategy_identity(self.repo_root, release, self.inspection_permit)
         definition = EquityStrategyDefinition.from_dict(dict(release.payload['equity_definition']))
         candidate = EquityStrategyCandidate(strategy_id, deployment.runtime_candidate_id, definition, deployment.source_root)
         if definition.contract_version != 4:

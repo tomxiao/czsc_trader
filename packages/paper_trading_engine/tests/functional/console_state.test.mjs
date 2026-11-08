@@ -162,15 +162,15 @@ test('FT-PTEJS01 console state preserves scope, stable polling and Chinese prese
   assert.equal(accountOperatingStatus({run_state:'PAUSED',health:'OK'}), '已暂停');
   assert.equal(formatPrice('1.5899999999999999'), '1.590');
   assert.equal(formatQuantity(60500), '60,500 股');
-  assert.equal(decisionExecutionLabel({decision_id:'D1',action:'HOLD',status:'COMPLETED',state_reason:'NO_ORDER'}), '本次决策无需下单');
-  assert.equal(decisionExecutionLabel({decision_id:'D2',action:'SELL',status:'COMPLETED'}), '已完成');
-  assert.equal(decisionExecutionLabel({decision_id:'N1',status:'INCOMPLETE',state_reason:'NORMAL_UNFILLED'}),'正常未成交');
+  assert.equal(decisionExecutionLabel({decision_id:'D1',action:'HOLD',status:'COMPLETED',state_reason:'NO_ORDER'}), '执行效果不可用');
+  assert.equal(decisionExecutionLabel({decision_id:'D2',action:'SELL',status:'COMPLETED'}), '执行效果不可用');
+  assert.equal(decisionExecutionLabel({decision_id:'N1',status:'INCOMPLETE',state_reason:'NORMAL_UNFILLED'}),'执行效果不可用');
   assert.equal(statusLabel('SKIPPED_DEPENDENCY'),'依赖条件未触发');
   assert.equal(decisionExecutionLabel(
     {decision_id:'D2',action:'SELL',status:'INCOMPLETE'},
     [{decision_id:'D2',status:'REJECTED'}, {decision_id:'D2',status:'FILLED_ALL'}],
-  ), '未完成');
-  assert.equal(decisionExecutionLabel({decision_id:'D3',action:'HOLD',status:'CANCELLED'}),'已取消');
+  ), '执行效果不可用');
+  assert.equal(decisionExecutionLabel({decision_id:'D3',action:'HOLD',status:'CANCELLED'}),'执行效果不可用');
   assert.equal(accountOperatingStatus({run_state:'PAUSED',health:'BLOCKED'}),'已暂停 · 阻塞');
   assert.equal(auditSummary({
     event_type:'ORDER_FILLED',details:{side:'SELL',quantity:60500,average_fill_price:1.589999999999},
@@ -346,4 +346,68 @@ test('account view separates history and preserves explicit reading state', () =
   assert.match(html,/href="\/audit-events\?account_id=demo"/);
   assert.ok(html.indexOf('REVIEW_REQUIRED')<html.indexOf('role="tablist"'));
   assert.match(accountMarkup(snapshot,[]),/data-account-panel="records" hidden/);
+});
+
+test('account execution drawer displays authoritative effects across both markets without inferring achievement', () => {
+  const source=readFileSync(new URL('../../src/paper_trading_engine/static/app.js',import.meta.url),'utf8')
+    .replace(/^import .*;\r?\n/gm,'').replace(/\bexport /g,'').replace("if(typeof document!=='undefined')boot();",'');
+  const nodes=new Map();
+  const document={querySelector(selector){
+    if(!nodes.has(selector))nodes.set(selector,{innerHTML:'',textContent:'',scrollTop:100,open:false,showModal(){this.open=true;},focus(){}});
+    return nodes.get(selector);
+  },querySelectorAll(){return [];}};
+  const context={document,window:{scrollY:300},AbortController};
+  runInNewContext(source+'\nglobalThis.subject={state,bindAccountEvents};',context);
+  const {state,bindAccountEvents}=context.subject;
+  const effect={availability:'AVAILABLE',scope:'CURRENT_ACCOUNT_VS_DECISION',status:'NOT_EXECUTED',terminal:true,
+    price_basis:'RAW',valuation_source:'DECISION_EXECUTION_REFERENCE',target_weight:1,actual_weight:.37,weight_deviation:-.63,
+    desired_quantity:100,planned_quantity:37,actual_quantity:37,cash:'63',available_cash:'0',receivable:'0',valuation_price:'1',equity:'100',
+    valuation_at:'2026-11-06T20:00:00Z',as_of:'2026-11-08T01:00:00Z',planning_status:'BLOCKED',constraint_reasons:['INSUFFICIENT_CASH'],orders:[]};
+  for(const [market,currency] of [['CN','CNY'],['US','USD']]){
+    state.accountSnapshot={scope:{account_id:'demo',market,currency},account:{name:'账户'},decision:{decision_id:'D',status:'INCOMPLETE',state_reason:'PLANNING_BLOCKED',target_quantity:9999,execution_effect:{...effect}}};
+    bindAccountEvents('demo','RUNNING');
+    const summary=accountMarkup(state.accountSnapshot,[]);
+    assert.match(summary,/目标 100.00% · 实际 37.00% · 本次规划受阻/);
+    assert.doesNotMatch(summary,/无需下单|9,999 股/);
+    for(const selector of ['#decisionDetails','#accountDetails']){
+      const trigger=document.querySelector(selector);trigger.onclick({currentTarget:trigger});
+      const content=document.querySelector('#systemEventsContent');
+      assert.equal(document.querySelector('#systemEventsDialog').open,true);
+      assert.equal(content.scrollTop,0);
+      for(const text of ['本次规划受阻','可用资金不足','-63.00 个百分点','2026-11-07 04:00:00','2026-11-08 09:00:00',`1.000 ${currency}`,'不是历史账户重建','不代表实时行情'])assert.ok(content.innerHTML.includes(text),text);
+      assert.doesNotMatch(content.innerHTML,/无需下单|9,999 股/);
+    }
+    const decision=state.accountSnapshot.decision;
+    for(const [status,planning_status,terminal,label] of [
+      ['WAITING','READY',false,'等待执行'],['PARTIAL','CONSTRAINED',false,'部分执行'],
+      ['PARTIAL','CONSTRAINED',true,'部分执行'],['COMPLETED','CONSTRAINED',true,'本次订单已完成'],
+      ['COMPLETED','NO_CHANGE',true,'本次无需调整'],['UNKNOWN','READY',false,'执行结果待确认'],
+      ['NOT_EXECUTED','SUPPRESSED',true,'观察不足，未规划'],['NOT_EXECUTED','READY',true,'未执行'],
+    ]){
+      decision.execution_effect={...effect,status,planning_status,terminal};
+      document.querySelector('#decisionDetails').onclick({currentTarget:document.querySelector('#decisionDetails')});
+      const content=document.querySelector('#systemEventsContent').innerHTML;
+      assert.match(content,new RegExp(label));
+      assert.match(content,/-63.00 个百分点/);
+      assert.match(content,/不代表目标仓位完全达成/);
+      assert.match(content,new RegExp(status==='UNKNOWN'?'结果待确认':terminal?'本次执行已结束':'仍有订单待完成'));
+    }
+    decision.execution_effect={...effect,actual_weight:null,weight_deviation:null,equity:'0',orders:[{reason:'<script>reason</script>'}]};
+    document.querySelector('#decisionDetails').onclick({currentTarget:document.querySelector('#decisionDetails')});
+    let content=document.querySelector('#systemEventsContent').innerHTML;
+    assert.match(content,/账户净值为零/);assert.match(content,/&lt;script&gt;reason&lt;\/script&gt;/);assert.doesNotMatch(content,/<script>/);
+    decision.execution_effect={...effect,orders:['NORMAL_PARTIAL','ORDER_REJECTED','EXECUTION_CONSTRAINED','EXECUTION_EXPIRED'].map(reason=>({reason}))};
+    document.querySelector('#decisionDetails').onclick({currentTarget:document.querySelector('#decisionDetails')});
+    content=document.querySelector('#systemEventsContent').innerHTML;
+    for(const text of ['部分成交，剩余委托按计划结束','渠道明确拒单，本次未成交','资金或可卖数量不足，本次未执行','本地委托未提交，执行窗口已结束'])assert.ok(content.includes(text),text);
+    assert.doesNotMatch(content,/账户异常|账户阻塞/);
+    for(const unavailable of [undefined,{availability:'UNAVAILABLE',reason:'MISSING_PLANNING_EVIDENCE',message:'旧记录缺少规划证据 <raw>'}]){
+      decision.status='COMPLETED';decision.state_reason='NO_ORDER';decision.execution_effect=unavailable;
+      document.querySelector('#decisionDetails').onclick({currentTarget:document.querySelector('#decisionDetails')});
+      content=document.querySelector('#systemEventsContent').innerHTML;
+      assert.match(content,/流程结束/);assert.match(content,/执行效果不可用/);
+      assert.doesNotMatch(content,/本次无需调整|本次订单已完成|100.00%|37.00%|9,999 股|<raw>/);
+      if(unavailable)assert.match(content,/旧记录缺少规划证据 &lt;raw&gt;/);
+    }
+  }
 });

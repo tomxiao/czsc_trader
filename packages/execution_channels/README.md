@@ -19,8 +19,16 @@ EC 拥有交易规则、订单规划与渠道账户。输入为宿主已经准�
 日期价格限制和周期剩余预算，构造待提交账户状态与费用估计；这些规则不在 PTE 重算。
 `decision_snapshot` 从已确认账本和卖出锁定时点生成权威账户快照。
 
-`futu.equity_execution` 为阶段五受控成交提供相同账本的隔离执行适配。
+原生 V4 阶段五受控成交通过同一个 `ChannelExecution` 驱动，外部券商替换为离线记录渠道。
 `InspectionAccountPermit` 只认可指定的隔离目录和发布身份，不能用于正式账户。
+
+明确拒单、提交前确认的现金／可卖量不足、本地未提交过期及有证据的到期部分成交撤余，
+分别记录 `ORDER_REJECTED`、`EXECUTION_CONSTRAINED`、`EXECUTION_EXPIRED`、`NORMAL_PARTIAL`。
+它们终结本次尝试并返回实际效果，不因目标未完全实现而阻断账户，不重复提交已终结意图。
+资金预占仅释放未成交部分，依赖完整成交的后续腿在条件未满足时跳过，保留已有持仓与策略目标。
+结果未知、账本不一致和非法输入仍阻断。没有足够依据的取消不能解释为正常到期。
+`release_account_intent` 的可选强类型 `termination_reason` 只用于无渠道订单的已知本地终结，
+校验对应状态及具体说明；渠道回报仍由存储根据回报、成交及撤单审计分类。
 
 执行域合同由 `instruments`、`policy`、`contracts`、`state`、`entry_cycle` 等业务模块拥有。
 应用应显式投影到这些类型，不能将 SRT 或 DFLS 的同名类直接传入。

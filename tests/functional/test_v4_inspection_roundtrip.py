@@ -76,7 +76,7 @@ def native_protocol(context, request, products):
                               ('UNKNOWN', 'UNKNOWN', interval.start), ('EXPIRED', 'ACCEPTED', interval.end)]:
         scenarios.append(EquityPteScenario(code,
             (reconcile, EquityPteDecision(interval, at, outcome, code)),
-            cash if code == 'REJECTED' else cash - reserved, 0, Decimal(0)))
+            cash if code in ('REJECTED', 'EXPIRED') else cash - reserved, 0, Decimal(0)))
     scenarios.append(EquityPteScenario('reconciliation-blocked',
         (EquityPteReconcile(cash-1, 0), EquityPteDecision(interval, interval.start, expected='RECONCILIATION_BLOCKED')),
         cash, 0, Decimal(0)))
@@ -137,14 +137,32 @@ def native_inspection_request(tmp_path, context, request, products, replay):
 
 def freeze_native_inspection(repository, inspection, source, *, version='v1'):
     """Run the real inspection and commit once; callers own lifecycle assertions."""
+    version_path = repository.strategy_root / inspection.candidate.strategy_id / 'versions' / (version + '.json')
+    assert not version_path.exists()
     report = inspect_candidate(repository, inspection, control=InspectionControl(max_workers=1, timeout_seconds=90))
     assert report.status is f.InspectionStatus.PASS, '\n'.join(x.case_id + ': ' + x.summary for g in (report.behavior_equivalence, report.pte_runtime) for x in g.cases if x.status is not f.InspectionStatus.PASS)
+    assert not version_path.exists(), 'technical inspection must precede the freeze approval'
+    inspected_bytes = report.release.version_record.resolve(repository.root).read_bytes()
+    facts = json.loads(report.pte_runtime.cases[0].evidence[0].resolve(repository.root).read_text(encoding='utf-8'))
+    assert facts['runtime'] == {'advice': 'FormalV4AdviceClient', 'execution': 'ChannelExecution',
+        'account_engine': 'AccountEngine', 'store': 'PaperStore', 'admission': 'INSPECTION'}
+    for case in facts['scenarios']:
+        for step in case['facts']['observed']:
+            if step['kind'] == 'DECISION' and step['outcome'] in ('REJECTED', 'EXPIRED'):
+                assert step['account_health'] == 'OK'
+            if step['kind'] == 'DECISION' and step['outcome'] == 'UNKNOWN':
+                assert step['account_health'] == 'BLOCKED'
     suffix = '' if version == 'v1' else '-' + version
     approval = record_research_decision(repository, f.ResearchDecision('native-freeze' + suffix, 'S999', f.DecisionAction.APPROVE,
         f.FreezeSubject(report.origin.candidate, report.origin.content_sha256, report.reference, report.plan.sha256, version), source, 'approve exact synthetic package'))
     operation = f.FreezeCandidateRequest(f.FreezeRequestId('S999','native-fixture' + suffix), report.reference, approval)
     receipt = freeze_candidate(repository, operation)
     assert receipt.status is f.FreezeStatus.COMMITTED
+    assert version_path.read_bytes() == inspected_bytes
+    package_root = repository.strategy_root / inspection.candidate.strategy_id / 'releases' / version
+    assert (package_root / 'release_manifest.json').read_bytes() == report.release.manifest.resolve(repository.root).read_bytes()
+    for item in report.release.files:
+        assert (package_root / item.path).read_bytes() == item.source.resolve(repository.root).read_bytes()
     return report, operation, receipt
 
 
@@ -177,3 +195,32 @@ def test_strategy_cannot_supply_execution_orders_or_legs():
     for name in ('orders', 'legs', 'capital_mode', 'cycle_before', 'cycle_after'):
         with pytest.raises(TypeError):
             AccountDecision.from_facts(1., 'target', facts={}, next_watch='next', **{name: ()})
+
+
+def test_formal_inspection_permit_cannot_reach_normal_store_or_paths(tmp_path):
+    from paper_trading_engine.formal_v4_advice import FormalV4AdviceClient
+    from paper_trading_engine.ec_boundary import execution_permit
+    from execution_channels.futu.store import PaperStore
+    from strategy_runtime.inspection import InspectionRuntimePermit
+    from strategy_runtime.errors import RuntimeCompatibilityError
+    workspace = tmp_path / '.tmp' / 'strategy-inspection' / 'permit-test'
+    repository = workspace / 'repository'
+    permit = InspectionRuntimePermit('permit-test', 'S999-v1', 'a'*64, 'b'*64, 'c'*64,
+                                     repository, workspace)
+    ordinary = PaperStore(workspace / 'ordinary.db')
+    isolated = PaperStore(workspace / 'isolated.db', inspection_permit=execution_permit(permit))
+    try:
+        kwargs = dict(repo_root=repository, dataflows=None, data_dir=workspace / 'data', inspection_permit=permit)
+        with pytest.raises(ValueError, match='store differs'):
+            FormalV4AdviceClient(store=ordinary, **kwargs)
+        with pytest.raises(ValueError, match='repository differs'):
+            FormalV4AdviceClient(store=isolated, **{**kwargs, 'repo_root': tmp_path})
+        with pytest.raises(RuntimeCompatibilityError, match='escapes'):
+            FormalV4AdviceClient(store=isolated, **{**kwargs, 'data_dir': tmp_path / 'outside'})
+        client = FormalV4AdviceClient(store=isolated, **kwargs)
+        assert client.inspection_permit == permit
+        with pytest.raises(RuntimeCompatibilityError):
+            client.load_release('S999', 'v1')  # Permission does not replace package authentication.
+    finally:
+        isolated.close()
+        ordinary.close()

@@ -684,6 +684,12 @@ StrategyVersion和运行发布合同不变，不更改已冻结策略、SM状态
 
 目标A通过正常SRT/EC路径运行候选及发布实现，比较信号、决策、订单、成交、账户、交易与观察事实。只归一化纯运行身份；离散数量、状态、时点严格一致，明确金融浮点字段才适用容差。目标B使用正常PTE业务组件和独立的离线成交渠道；检查进入／持有／退出、无成交或部分成交、重复决定／回报、重启后与连续运行一致，以及适用故障。多档持仓调整按能力声明验证。测试许可、数据库及部署回执受隔离路径和包身份约束，普通PTE入口拒绝技术检验数据库。
 
+原生V4目标B复用正式`FormalV4AdviceClient → AccountEngine → ChannelExecution → PaperStore`，
+只替换外部券商、时钟和隔离存储。待冻结包通过严格的`InspectionRuntimePermit`加载，
+不伪造正式安装或`PAPER_READY`资格。验收记录正式执行组件的拒单、未知回报、资金及账户健康行为；
+明确的业务未成交不能伪装为技术异常，真实不确定性和账户不一致仍须阻断。
+流程保持“构造待冻结包 → 技术验收 → 用户批准 → 提交已验收的相同字节”，无需提前冻结。
+
 检验提供PREPARE、EQUIVALENCE、PTE、PERSIST、FINALIZE进度；长回放和PTE场景使用可终止子进程。取消或总超时先停止并等待worker退出，再保存已完成事实和未完成原因。回调错误明确失败。发布失败抛`InspectionPublicationError(phase, partial_evidence, report_reference, message)`，不得把未发布结果当作已交付。
 EQUIVALENCE按独立回放并行，PTE按普通场景及故障场景并行，两阶段顺序执行并使用同一`max_workers`上限。
 单个PTE恢复场景内的重启与连续对照顺序执行；每个子进程原生线程为1。结果按协议顺序返回，

@@ -8,12 +8,12 @@ from dataflows import MarketId
 from execution_channels.execution_effects import ExecutionEffectStatus
 from execution_channels.futu.equity_execution import EquityExecution
 from execution_channels.futu.equity_contracts import EquityOrderReport
-from execution_channels.futu.broker import BrokerSubmissionUncertainError
+from execution_channels.futu.broker import BrokerSubmissionUncertainError, IntentTerminationReason
 from execution_channels.futu.store import PaperStore
 from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine.equity_advice import EquityAdviceClient
 from paper_trading_engine.ec_boundary import execution_permit
-from test_v4_pte import native_account, prepared_at
+from test_v4_pte import native_account, prepared_at, replace_strategy
 
 
 @pytest.mark.parametrize('market',[MarketId.CN,MarketId.US])
@@ -22,11 +22,15 @@ def test_confirmed_effect_pending_partial_complete_and_restart(tmp_path,market):
     try:
         prepared=prepared_at(context,request,products)
         at=prepared.interval.start
-        AccountEngine(store,EquityAdviceClient(store),now=lambda:at).refresh_account('native',prepared=prepared)
+        AccountEngine(store,EquityAdviceClient(store),now=lambda:at-timedelta(minutes=1)).refresh_account(
+            'native',prepared=prepared)
         decision_id=store.virtual_account('native')['last_decision_id']
         def effect(when=at):
             return store.decision_execution_effect('native',decision_id,valuation_price=Decimal('10'),at=when)
         pending=effect()
+        # Explicitly prepared plans may be adopted before their execution window.
+        # Querying their pending state does not claim the formal scheduler prepares early.
+        assert effect(at-timedelta(minutes=1)).status is ExecutionEffectStatus.WAITING
         assert pending.status is ExecutionEffectStatus.WAITING
         assert pending.actual_quantity==0 and pending.actual_weight==0
         assert pending.cash==Decimal(str(request.initial_cash))
@@ -101,5 +105,55 @@ def test_submission_unknown_remains_visible_in_effect(tmp_path,market):
         effect=store.decision_execution_effect('native',decision_id,valuation_price=10.,at=at)
         assert effect.status is ExecutionEffectStatus.UNKNOWN and not effect.terminal
         assert effect.actual_quantity==0 and effect.orders[0].outcome_unknown
+    finally:
+        store.close()
+
+
+@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
+def test_no_change_remains_completed_without_orders(tmp_path, market):
+    context, request, products, store, _, _ = native_account(tmp_path, market)
+    try:
+        request = replace_strategy(request,
+            "from strategy_runtime import AccountStepResult,AccountDecision,StateRecord\n"
+            "def step(ctx,state):\n"
+            "    return AccountStepResult(AccountDecision.from_facts(0,'remain flat',"
+            "facts={'fixture':True},next_watch='next'),cycle_values=StateRecord())\n")
+        prepared = prepared_at(context, request, products)
+        AccountEngine(store, EquityAdviceClient(store), now=lambda: prepared.interval.start).refresh_account(
+            'native', prepared=prepared)
+        decision_id = store.virtual_account('native')['last_decision_id']
+        decision = store.account_decision('native', decision_id)
+        assert decision['status'] == 'COMPLETED' and decision['state_reason'] == 'NO_ORDER'
+        effect = store.decision_execution_effect('native', decision_id,
+            valuation_price=10., at=prepared.interval.start).to_dict()
+        assert effect['status'] == 'COMPLETED' and effect['planning_status'] == 'NO_CHANGE'
+        assert effect['orders'] == [] and effect['actual_weight'] == effect['target_weight'] == 0
+    finally:
+        store.close()
+
+
+@pytest.mark.parametrize('bound,status,reason,error', [
+    (False, 'SUBMISSION_FAILED', 'EXECUTION_CONSTRAINED', TypeError),
+    (False, 'SUBMISSION_FAILED', IntentTerminationReason.EXECUTION_EXPIRED, ValueError),
+    (True, 'SUBMISSION_FAILED', IntentTerminationReason.EXECUTION_CONSTRAINED, ValueError),
+    (True, 'REJECTED', IntentTerminationReason.ORDER_REJECTED, ValueError),
+])
+def test_local_termination_requires_typed_unsubmitted_evidence(tmp_path, bound, status, reason, error):
+    context, request, products, store, _, channel = native_account(tmp_path, MarketId.CN)
+    try:
+        prepared = prepared_at(context, request, products)
+        at = prepared.interval.start
+        AccountEngine(store, EquityAdviceClient(store), now=lambda: at).refresh_account('native', prepared=prepared)
+        if bound:
+            execution = EquityExecution(store, channel, now=lambda: at)
+            execution.reconcile(cash=Decimal(str(request.initial_cash)), quantity=0, account_id='native')
+            execution.submit_pending('native')
+        intent, = store.account_intents('native')
+        before = store.virtual_account('native')
+        with pytest.raises(error):
+            store.release_account_intent(intent['intent_id'], status,
+                termination_reason=reason, attention_reason='synthetic local rejection')
+        assert store.virtual_account('native') == before
+        assert store.account_intent(intent['intent_id']) == intent
     finally:
         store.close()

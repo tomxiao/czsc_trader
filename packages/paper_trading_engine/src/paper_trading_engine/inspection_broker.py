@@ -152,3 +152,62 @@ class RecordedFillBroker:
 
     def close(self):
         pass
+
+
+class RecordedInspectionBroker:
+    def __init__(self, config, *, cash, symbol, fee_rate, now):
+        self.config = config
+        self.channel_id, self.channel_account_id = config.channel_id, config.channel_account_id
+        self.cash, self.quantity = Decimal(str(cash)), 0
+        self.price = Decimal('0')
+        self.symbol, self.fee_rate, self.now = symbol, Decimal(str(fee_rate)), now
+        self.outcome, self.orders = 'ACCEPTED', {}
+
+    def account_snapshot(self):
+        market_value = self.price * self.quantity
+        account = BrokerAccount('SIMULATE', self.config.market, float(self.cash), float(self.cash + market_value),
+            0., market_value=float(market_value), currency=self.config.currency, channel_account_id=self.channel_account_id)
+        positions = (BrokerPosition(self.symbol, self.quantity, self.quantity),) if self.quantity else ()
+        return BrokerSnapshot(account, positions, self.order_snapshot())
+
+    def order_snapshot(self):
+        return tuple(self.orders.values())
+
+    def historical_order_snapshot(self, start, end):
+        return self.order_snapshot()
+
+    def place_order(self, intent):
+        if self.outcome == 'REJECTED':
+            raise BrokerOrderRejectedError('recorded channel rejection')
+        if self.outcome == 'UNKNOWN':
+            raise BrokerSubmissionUncertainError('recorded missing channel acknowledgement')
+        order = BrokerOrder('recorded-' + intent.intent_id, intent.symbol, intent.side,
+            intent.quantity, intent.limit_price, 'SUBMITTED', 0, 0., intent.intent_id,
+            created_at=self.now().isoformat(), updated_at=self.now().isoformat(),
+            order_type=intent.order_type, session=intent.session, channel_account_id=self.channel_account_id)
+        self.orders[order.channel_order_id] = order
+        return order
+
+    def apply_recorded_report(self, raw_id, report):
+        previous = self.orders[raw_id]
+        old_value = Decimal(str(previous.average_fill_price)) * previous.cumulative_filled_quantity
+        value = report.average_price * report.cumulative_quantity
+        delta = report.cumulative_quantity - previous.cumulative_filled_quantity
+        if delta < 0:
+            raise ValueError('recorded cumulative quantity cannot decrease')
+        sign = 1 if previous.side == 'BUY' else -1
+        self.cash -= (value - old_value) * (sign + self.fee_rate)
+        self.quantity += sign * delta
+        if report.cumulative_quantity:
+            self.price = report.average_price
+        self.orders[raw_id] = replace(previous, status=report.status,
+            cumulative_filled_quantity=report.cumulative_quantity,
+            average_fill_price=float(report.average_price), cumulative_notional=value,
+            updated_at=report.occurred_at.isoformat())
+
+    def cancel_order(self, raw_id):
+        # Cancellation is an explicit gateway acknowledgement, never an invented fill.
+        previous = self.orders[raw_id]
+        self.orders[raw_id] = replace(previous,
+            status='CANCELLED_PART' if previous.cumulative_filled_quantity else 'CANCELLED_ALL',
+            updated_at=self.now().isoformat())

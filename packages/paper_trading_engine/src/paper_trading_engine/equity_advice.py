@@ -199,6 +199,14 @@ class PreparedEquityDecision:
     def data_reference(self):
         return {'strategy': self.binding.to_dict(), 'execution_reference': self.execution_reference.to_dict()}
 
+    def validate_unchanged(self):
+        """Reject mutation of the already authenticated observation and execution inputs."""
+        from hashlib import sha256
+        if sha256(self.history.to_json(date_format="iso").encode()).hexdigest() != self.history_sha256:
+            raise ValueError("prepared equity history changed after authentication")
+        if self._decision_inputs_hash() != self.decision_inputs_sha256:
+            raise ValueError('prepared equity decision inputs changed after authentication')
+
 
 class EquityAdviceClient:
     def __init__(self, store):
@@ -209,11 +217,7 @@ class EquityAdviceClient:
                      strategy_id, strategy_version, account_id, symbol, asset, prepared):
         if type(prepared) is not PreparedEquityDecision:
             raise TypeError("equity advice requires PreparedEquityDecision")
-        from hashlib import sha256
-        if sha256(prepared.history.to_json(date_format="iso").encode()).hexdigest() != prepared.history_sha256:
-            raise ValueError("prepared equity history changed after authentication")
-        if prepared._decision_inputs_hash() != prepared.decision_inputs_sha256:
-            raise ValueError('prepared equity decision inputs changed after authentication')
+        prepared.validate_unchanged()
         candidate = prepared.candidate
         rules = self.store.equity_account_rules(account_id)
         account = self.store.virtual_account(account_id)

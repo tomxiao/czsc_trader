@@ -9,7 +9,7 @@ import pytest
 
 from execution_channels.futu.lifecycle import AccountHealth
 from execution_channels.futu.audit import AuditRecorder
-from paper_trading_engine.account_engine import AccountDecisionBlockedError, AccountEngine
+from paper_trading_engine.account_engine import AccountEngine
 from execution_channels.futu.broker import (
     BrokerAccount,
     BrokerOrder,
@@ -22,7 +22,6 @@ from execution_channels.futu.broker import (
 from execution_channels.futu.futu_execution import (
     ChannelReconciliationError,
     ChannelExecution,
-    OrderSubmissionBatchError,
 )
 from execution_channels.futu.futu_gateway import FutuGateway, FutuGatewayError
 from paper_trading_engine.coordinator import PteCoordinator, ReconnectableExecution
@@ -129,7 +128,10 @@ def test_blocked_pending_intent_expires_and_releases_reserved_cash(new_store, tm
     expired = store.account_intent(intent["intent_id"])
     account = store.virtual_account("s001-v1")
     assert expired["status"] == "EXPIRED"
-    assert expired["attention_required"] is True
+    assert expired["attention_required"] is False
+    assert expired["payload"]["termination_reason"] == "EXECUTION_EXPIRED"
+    assert account["health"] == "BLOCKED"
+    assert account["last_error"] == "等待对账"
     assert float(account["frozen_cash"]) == 0
     assert len(store.query_audit_events(event_type="DECISION_EXPIRED")) == 1
     store.close()
@@ -690,16 +692,16 @@ def test_ft_pte03_explicit_rejection_releases_cash_and_duplicate_submit_is_atomi
     execution = ChannelExecution(
         store, broker, now=lambda: datetime.fromisoformat("2026-09-04T10:00:00+08:00")
     )
-    with pytest.raises(OrderSubmissionBatchError, match="BrokerOrderRejectedError"):
-        execution.submit_pending()
+    execution.submit_pending()
+    execution.submit_pending()
+    assert len(broker.placed) == 1
     assert store.account_intent(rejected["intent_id"])["status"] == "REJECTED"
+    assert store.account_intent(rejected["intent_id"])["payload"]["termination_reason"] == "ORDER_REJECTED"
+    assert store.virtual_account("s001-v1")["health"] == "OK"
     assert float(store.virtual_account("s001-v1")["frozen_cash"]) == 0
     assert store.account_invariant_violations() == []
     assert len(store.query_audit_events(event_type="ORDER_REJECTED")) == 1
 
-    execution.acknowledge_execution_gap(
-        "s001-v1", rejected["intent_id"], "已确认拒单无成交，创建独立替代计划",
-    )
     assert store.account_decision("s001-v1", "DEC-REJECT")["status"] == "INCOMPLETE"
     adopt_test_decision(store, account_id="s001-v1", decision_id="DEC-RETRY",
                         valid_session="2026-09-04", orders=[{"side": "BUY", "quantity": 1000,
@@ -753,7 +755,7 @@ def test_ft_pte03_explicit_rejection_releases_cash_and_duplicate_submit_is_atomi
     migrated = PaperStore(tmp_path / "reject.db")
     migrated_rejection = migrated.account_intent(rejected["intent_id"])
     assert migrated_rejection["attention_required"] is False
-    assert migrated_rejection["resolution_note"] == "已确认拒单无成交，创建独立替代计划"
+    assert not migrated_rejection["resolution_note"]
     assert migrated.account_decision("s001-v1", "DEC-REJECT")["status"] == "INCOMPLETE"
     assert migrated.account_decision("s001-v1", "DEC-RETRY")["status"] == "COMPLETED"
     assert migrated.attention_account_intents("s001-v1") == []
@@ -768,10 +770,11 @@ def test_ft_pte03_explicit_rejection_releases_cash_and_duplicate_submit_is_atomi
     reopened.close()
 
 
-def test_acknowledging_execution_gap_preserves_unrelated_health_block(new_store, tmp_path):
+def test_confirmed_rejection_preserves_unrelated_health_block(new_store, tmp_path):
     class RejectingBroker(FakeBroker):
         def place_order(self, intent):
             self.placed.append(intent)
+            store.set_virtual_health("s001-v1", AccountHealth.BLOCKED, "人工资金复核未完成")
             raise BrokerOrderRejectedError("报单价格不在涨跌停区间")
 
     store = new_store(tmp_path / "unrelated-health-block.db")
@@ -798,18 +801,14 @@ def test_acknowledging_execution_gap_preserves_unrelated_health_block(new_store,
     execution = ChannelExecution(
         store, broker, now=lambda: datetime.fromisoformat("2026-09-04T10:00:00+08:00"),
     )
-    with pytest.raises(OrderSubmissionBatchError):
-        execution.submit_pending()
-    store.set_virtual_health("s001-v1", AccountHealth.BLOCKED, "人工资金复核未完成")
-    resolved = execution.acknowledge_execution_gap(
-        "s001-v1", intent["intent_id"], "已确认拒单无成交",
-    )
+    execution.submit_pending()
+    resolved = store.account_intent(intent["intent_id"])
     assert resolved["attention_required"] is False
     account = store.virtual_account("s001-v1")
     assert account["health"] is AccountHealth.BLOCKED
     assert account["last_error"] == "人工资金复核未完成"
     assert store.attention_account_intents("s001-v1") == []
-    assert len(store.query_audit_events(event_type="EXECUTION_GAP_ACKNOWLEDGED")) == 1
+    assert store.query_audit_events(event_type="EXECUTION_GAP_ACKNOWLEDGED") == []
     assert store.query_audit_events(event_type="ACCOUNT_RECONCILIATION_RECOVERED") == []
     assert store.account_orders("s001-v1") == []
     assert store.account_fills("s001-v1") == []
@@ -926,7 +925,7 @@ def test_ft_pte03_incomplete_and_unknown_orders_never_silently_recover(new_store
     timeout_store.close()
 
 
-def test_ft_pte03_rejected_decision_remains_blocked_until_operator_review(new_store, tmp_path):
+def test_ft_pte03_rejected_decision_is_reused_without_automatic_resubmission(new_store, tmp_path):
     class RejectingBroker(FakeBroker):
         def place_order(self, intent):
             self.placed.append(intent)
@@ -951,13 +950,13 @@ def test_ft_pte03_rejected_decision_remains_blocked_until_operator_review(new_st
     execution = ChannelExecution(
         store, RejectingBroker(), now=lambda: datetime.fromisoformat("2026-09-02T10:00:00+08:00"),
     )
-    with pytest.raises(OrderSubmissionBatchError, match="BrokerOrderRejectedError"):
-        execution.submit_pending()
-    with pytest.raises(AccountDecisionBlockedError, match="已阻塞"):
-        accounts.refresh_account("s001-v1", prepared=prepared)
-    assert store.virtual_account("s001-v1")["health"] == "BLOCKED"
+    execution.submit_pending()
+    accounts.refresh_account("s001-v1", prepared=prepared)
+    execution.submit_pending()
+    assert len(execution.broker.placed) == 1
+    assert store.virtual_account("s001-v1")["health"] == "OK"
     assert len(store.account_intents("s001-v1")) == 1
-    assert len(store.attention_account_intents("s001-v1")) == 1
+    assert store.attention_account_intents("s001-v1") == []
     store.close()
 
 

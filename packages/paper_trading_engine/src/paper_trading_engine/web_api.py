@@ -21,6 +21,32 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def _decision_execution_effect(store, account_id: str, decision: dict, at: datetime) -> dict:
+    """Expose EC's current ledger comparison using this decision's RAW reference."""
+    unavailable = {'availability': 'UNAVAILABLE', 'scope': 'CURRENT_ACCOUNT_VS_DECISION',
+                   'as_of': at.isoformat()}
+    execution = (decision.get('strategy_output') or {}).get('execution_plan')
+    if not execution or 'planning_result' not in execution:
+        return {**unavailable, 'reason': 'MISSING_PLANNING_EVIDENCE',
+                'message': '该决策缺少执行规划证据，无法提供执行效果。'}
+    if decision.get('execution_reference_price') is None or not decision.get('equity_observed_through'):
+        return {**unavailable, 'reason': 'MISSING_EXECUTION_REFERENCE',
+                'message': '该决策缺少未复权执行参考价或观测时点，无法估值。'}
+    try:
+        price = Decimal(str(decision['execution_reference_price']))
+        observed = datetime.fromisoformat(decision['equity_observed_through'])
+        if observed.utcoffset() is None or observed > at:
+            raise ValueError('execution reference observation must not follow query time')
+        effect = store.decision_execution_effect(account_id, decision['decision_id'],
+                                                 valuation_price=price, at=at)
+    except (ValueError, TypeError, KeyError, ArithmeticError) as exc:
+        return {**unavailable, 'reason': 'EFFECT_QUERY_FAILED',
+                'message': f'执行效果查询失败：{exc}'}
+    return {**effect.to_dict(), 'availability': 'AVAILABLE',
+            'scope': 'CURRENT_ACCOUNT_VS_DECISION', 'price_basis': 'RAW',
+            'valuation_source': 'DECISION_EXECUTION_REFERENCE', 'valuation_at': observed.isoformat()}
+
+
 def _descending_transaction_rows(
     rows: list[dict[str, object]], *, time_field: str, id_field: str,
 ) -> list[dict[str, object]]:
@@ -294,6 +320,7 @@ class PteWebApi:
         }
 
     def virtual_account_snapshot(self, account_id: str) -> dict[str, object]:
+        as_of = _now()
         try:
             store, accounts = self.store, self.virtual
             if self.runtime is None:
@@ -350,11 +377,13 @@ class PteWebApi:
                     "status", "state_reason", "state_changed_at", "state_events",
                 )},
             }
+            decision['execution_effect'] = _decision_execution_effect(
+                store, account_id, row['payload'], datetime.fromisoformat(as_of))
         return {
             "scope": {"account_id": account_id, "strategy_id": strategy_id,
                       "release_id": release_id, "release_hash": status.get("release_hash"),
                       **channel_scope},
-            "as_of": _now(),
+            "as_of": as_of,
             "account": {key: status.get(key) for key in account_keys},
             "decision": decision,
             "orders": _descending_transaction_rows(

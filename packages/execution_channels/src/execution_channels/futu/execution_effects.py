@@ -26,9 +26,7 @@ class ExecutionEffectStore:
             decision = self.account_decision(account_id, decision_id)
             payload = decision['payload']
             evidence = payload['strategy_output']['execution_plan']
-            interval = payload['equity_execution_interval']
-            if at < datetime.fromisoformat(interval['start']):
-                raise ValueError('execution effect cannot precede its decision')
+            # An adopted next-session decision is observable before trading starts.
             fills = self.account_fills(account_id)
             if any(datetime.fromisoformat(x['occurred_at']) > at for x in fills):
                 raise ValueError('current account contains fills later than requested observation')
