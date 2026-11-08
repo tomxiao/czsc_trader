@@ -279,7 +279,7 @@ def test_native_upgrade_preserves_history_and_resets_qualification(upgrade, mark
     from paper_trading_engine.formal_v4_advice import FormalV4AdviceClient
     from paper_trading_engine.ec_boundary import execution_rules
     store = SimpleNamespace(virtual_account=lambda _: {'strategy_id': 'S900', 'strategy_version': 'v1',
-        'release_hash': current.release_hash}, equity_account_rules=lambda _: execution_rules(
+        'release_hash': current.release_hash, 'run_state': 'PAUSED'}, equity_account_rules=lambda _: execution_rules(
         candidate.instrument, candidate.definition.execution_spec))
     client = FormalV4AdviceClient(repo_root=context.root, store=store, dataflows=None, data_dir=context.root / '.tmp/pte')
     _, loaded_release, loaded = client._account_release('native')

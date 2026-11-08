@@ -51,7 +51,6 @@ def test_explicit_records_preserve_planning_and_confirmed_ledger(market):
         execution_policy=ExecutionPolicy("TARGET_POSITION", {}), sell_remainder_policy=SellRemainderPolicy.FULL_LIQUIDATION)
     assert plan.orders[0].quantity == (900 if market is MarketId.CN else 989)
     assert plan.orders[0].limit_price == 10.1
-    actions = pd.DataFrame(columns=['Date', 'AvailableDate', 'EventId', 'Kind'])
     executor = PortfolioHistoricalExecutor(specification=spec, initial_cash=10000., fee_rate=.001,
                                           price_basis='HFQ')
     assert executor.account_snapshot(point, instrument).quantity == 0
@@ -115,7 +114,6 @@ def test_frozen_binary_intent_uses_channel_sizing_and_suppression(market):
 def test_channel_rejects_incomplete_execution_clocks_at_binding(field, invalid, bound_executor):
     instrument, spec, _, row, rule = fixture(MarketId.US)
     rule = {**rule, field:invalid}
-    actions = pd.DataFrame(columns=['Date','AvailableDate','EventId','Kind'])
     with pytest.raises(ValueError, match=field + ' requires'):
         if bound_executor:
             executor = PortfolioHistoricalExecutor(specification=spec,initial_cash=10000.,

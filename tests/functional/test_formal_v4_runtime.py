@@ -5,6 +5,7 @@ from decimal import Decimal
 from zoneinfo import ZoneInfo
 from unittest.mock import patch
 import json
+import shutil
 from threading import Thread
 from types import SimpleNamespace
 from urllib.error import HTTPError
@@ -35,13 +36,29 @@ def raw_binding(dataflows, binding):
 
 
 @pytest.fixture(params=[MarketId.CN, MarketId.US])
-def formal_v4(tmp_path, request):
+def formal_v4(tmp_path, request, frozen_seed_root):
     market, successor = request.param if isinstance(request.param, tuple) else (request.param, False)
     context, evaluation, products, replay = native_fixture(tmp_path, market)
-    inspection, source = native_inspection_request(tmp_path, context, evaluation, products, replay)
-    freeze_native_inspection(context.repository, inspection, source)
     repository = context.repository
-    assert deploy_strategy(repository, 'S999-v1').status == 'PASS'
+    # Freeze once per immutable market/version shape, never once per forward case.
+    # Each consumer still prepares real DFLS inputs and gets a private package,
+    # registry, approval and WAL account database. Frozen bytes are not re-signed.
+    seed = frozen_seed_root / 'formal-releases' / f'{market.value}-{int(successor)}'
+    if not seed.exists():
+        inspection, source = native_inspection_request(tmp_path, context, evaluation, products, replay)
+        freeze_native_inspection(repository, inspection, source)
+        assert deploy_strategy(repository, 'S999-v1').status == 'PASS'
+        if successor:
+            next_inspection = replace(inspection, target=replace(inspection.target,
+                version='v2', parent_version='v1', change_summary='native V4 successor fixture'))
+            freeze_native_inspection(repository, next_inspection, source, version='v2')
+            assert deploy_strategy(repository, 'S999-v2').status == 'PASS'
+            target = StrategyRegistry(repository.strategy_root).get_version('S999', 'v2')
+            StrategyRegistry(repository.strategy_root).approve_paper_trading(PaperTradingApproval(
+                'S999', 'v2', target.release_hash, 'DEV', 'synthetic successor approval'))
+        shutil.copytree(repository.strategy_root, seed)
+    else:
+        shutil.copytree(seed, repository.strategy_root, dirs_exist_ok=True)
     registry = StrategyRegistry(repository.strategy_root)
     version = registry.get_version('S999', 'v1')
     root = PaperStore(tmp_path / 'formal.db')
@@ -52,14 +69,6 @@ def formal_v4(tmp_path, request):
         client.load_release('S999', 'v1')
     registry.approve_paper_trading(PaperTradingApproval('S999', 'v1', version.release_hash,
         'DEV', 'synthetic isolated fixture approval'))
-    if successor:
-        next_inspection = replace(inspection, target=replace(inspection.target,
-            version='v2', parent_version='v1', change_summary='native V4 successor fixture'))
-        freeze_native_inspection(context.repository, next_inspection, source, version='v2')
-        assert deploy_strategy(repository, 'S999-v2').status == 'PASS'
-        target = registry.get_version('S999', 'v2')
-        registry.approve_paper_trading(PaperTradingApproval('S999', 'v2', target.release_hash,
-            'DEV', 'synthetic successor approval'))
     release, candidate, _ = client.load_release('S999', 'v1')
     binding = client.validate_account_binding(strategy_id='S999', strategy_version='v1',
         symbol=candidate.instrument.symbol, asset='stock', fee_rate=evaluation.fee_rate)
@@ -115,7 +124,11 @@ def formal_v4(tmp_path, request):
 def test_formal_v4_forward_decision_uses_historical_prices_and_exact_deployment(formal_v4):
     client, store, _, interval, candidate, evaluation = formal_v4
     client.register_recipe('formal', client.inputs('formal'))
+    before = store.virtual_account('formal')
     prepared = client.prepare_interval('formal', interval, observed_at=interval.start)
+    assert prepared.execution_reference.price == Decimal('10')
+    assert store.virtual_account('formal') == before
+    assert not store.account_intents('formal')
     assert prepared.live_interval
     assert max(prepared.v4_replay._data.ends) <= interval.start
     assert interval.start not in prepared.v4_replay._data.starts
@@ -374,14 +387,4 @@ def test_formal_v4_maintenance_prepares_data_without_adopting_interval(formal_v4
         ZoneInfo(request.parameters.instrument.timezone)).date() for request in prices)
     assert not archive.exists()
     assert store.virtual_account('formal') == account
-    assert not store.account_intents('formal')
-
-
-def test_forward_preparation_never_changes_confirmed_account(formal_v4):
-    client, store, _, interval, _, _ = formal_v4
-    client.register_recipe('formal', client.inputs('formal'))
-    before = store.virtual_account('formal')
-    prepared = client.prepare_interval('formal', interval, observed_at=interval.start)
-    assert prepared.execution_reference.price == Decimal('10')
-    assert store.virtual_account('formal') == before
     assert not store.account_intents('formal')

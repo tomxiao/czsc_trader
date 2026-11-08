@@ -3,6 +3,7 @@ from dataclasses import replace
 from datetime import datetime, timedelta
 from decimal import Decimal
 import json
+import shutil
 import sqlite3
 from types import SimpleNamespace
 
@@ -83,25 +84,24 @@ class RetirementBroker:
         pass
 
 
-@pytest.fixture
-def make_holding(tmp_path):
-    roots = []
+@pytest.fixture(scope='module')
+def holding_seeds(frozen_seed_root):
+    """Checkpoint real account baselines once; cases never open these seeds."""
+    directory = frozen_seed_root / 'retirement-holdings'
+    directory.mkdir()
+    seeds = {}
+    yield directory, seeds
+    for path, original in seeds.values():
+        assert path.read_bytes() == original, 'retirement test changed its shared seed'
 
-    def create(market, *, legacy=False, v4=False, settled_only=False):
-        cn = market == 'CN'
-        quantity, price = (200, Decimal('1')) if cn else (2, Decimal('100'))
-        symbol = '510500.SH' if cn else 'MU'
-        at = datetime.fromisoformat('2026-11-05T09:30:00' + ('+08:00' if cn else '-05:00'))
-        clock = [at]
-        interval = TimeInterval(at, at + timedelta(minutes=30))
-        config = ChannelAccountConfig('retirement-' + market.lower(),
-            FUTU_SIMULATE_CN_CHANNEL_ID if cn else FUTU_US_SIM_CHANNEL_ID, 77)
-        database = tmp_path / f'{market}-{len(roots)}.db'
-        root = PaperStore(database)
-        roots.append(root)
+
+def _build_holding_seed(path, config, symbol, quantity, price, at, interval, *, legacy, v4, settled_only):
+    cn = config.market == 'CN'
+    root = PaperStore(path)
+    try:
         store = root.register_channel_account(config, capital=Decimal('1000'))
         rules = None if legacy else EquityAccountRules(
-            InstrumentId(MarketId(market), AssetClass.ETF if cn else AssetClass.STOCK, symbol),
+            InstrumentId(MarketId(config.market), AssetClass.ETF if cn else AssetClass.STOCK, symbol),
             ResearchExecutionSpec(CnEquitySpec() if cn else UsEquitySpec(), BarFrequency.M30,
                 AccountPolicy(config.currency, CashAvailabilityPolicy.SETTLED_ONLY if settled_only
                               else CashAvailabilityPolicy.IMMEDIATE_RESEARCH),
@@ -123,11 +123,43 @@ def make_holding(tmp_path):
                     'pending_cycle': None, 'active': position_to_dict(cycle), 'latest_closed': None,
                     'budget': None, 'locked_quantity': quantity, 'buy_locks': [],
                     'last_interval': None, 'last_inputs': None})
+        broker = RetirementBroker(config, symbol, quantity, price, [at])
+        ChannelExecution(store, broker, config=config, fee_policy=POLICY, now=lambda: at).refresh_orders()
+        store.set_paused(False)
+        store.set_virtual_paused('strategy', False)
+        assert store.account_invariant_violations() == []
+    finally:
+        root.close()  # Checkpoint WAL before any private copy is made.
+
+
+@pytest.fixture
+def make_holding(tmp_path, holding_seeds):
+    roots = []
+
+    def create(market, *, legacy=False, v4=False, settled_only=False):
+        cn = market == 'CN'
+        quantity, price = (200, Decimal('1')) if cn else (2, Decimal('100'))
+        symbol = '510500.SH' if cn else 'MU'
+        at = datetime.fromisoformat('2026-11-05T09:30:00' + ('+08:00' if cn else '-05:00'))
+        clock = [at]
+        interval = TimeInterval(at, at + timedelta(minutes=30))
+        config = ChannelAccountConfig('retirement-' + market.lower(),
+            FUTU_SIMULATE_CN_CHANNEL_ID if cn else FUTU_US_SIM_CHANNEL_ID, 77)
+        directory, seeds = holding_seeds
+        key = (market, legacy, v4, settled_only)
+        if key not in seeds:
+            path = directory / f'holding-{len(seeds)}.db'
+            _build_holding_seed(path, config, symbol, quantity, price, at, interval,
+                                legacy=legacy, v4=v4, settled_only=settled_only)
+            seeds[key] = path, path.read_bytes()
+        database = tmp_path / f'{market}-{len(roots)}.db'
+        shutil.copyfile(seeds[key][0], database)
+        root = PaperStore(database)
+        roots.append(root)
+        store = root.scope(config.channel_account_id)
         broker = RetirementBroker(config, symbol, quantity, price, clock)
         engine = ChannelExecution(store, broker, config=config, fee_policy=POLICY, now=lambda: clock[0])
         engine.refresh_orders()
-        store.set_paused(False)
-        store.set_virtual_paused('strategy', False)
         assert store.account_invariant_violations() == []
         case = SimpleNamespace(root=root, database=database, store=store, broker=broker, engine=engine, clock=clock,
             config=config, quantity=quantity, price=price, interval=interval,
@@ -156,14 +188,12 @@ def start_liquidation(case):
     assert result.released_cash == 0
     case.store.set_retirement_session('strategy', RetirementSession(case.interval, FEE))
     case.engine.refresh_orders()
-    case.engine.submit_pending()
     assert len(case.broker.placed) == 1, case.store.retirement_status('strategy')
     intent = case.broker.placed[0]
     assert (intent.side, intent.order_type, intent.quantity) == ('SELL', 'MARKET', case.quantity)
 
 
 def test_scoped_retirement_does_not_expire_or_submit_another_accounts_order(make_holding):
-    from pte_support import adopt_test_decision
     case = make_holding('CN')
     case.store.set_setting('futu_capital_pool', '2000')
     case.broker.cash += Decimal('1000')
@@ -172,8 +202,14 @@ def test_scoped_retirement_does_not_expire_or_submit_another_accounts_order(make
         strategy_name_snapshot='other', qualification_snapshot='PAPER_READY', selection_data_cutoff='2026-01-01')
     case.engine.refresh_orders()
     case.store.set_virtual_paused('other', False)
-    adopt_test_decision(case.store, account_id='other', decision_id='old-buy', valid_session='2026-11-04',
-        orders=[{'side': 'BUY', 'quantity': 100, 'order_type': 'LIMIT', 'limit_price': 1.}])
+    case.store.save_account_decision('other', {
+        'contract_version': 'advice.v4', 'decision_id': 'old-buy', 'symbol': '588080.SH',
+        'strategy': {'strategy_id': 'S001', 'version': 'v1', 'release_hash': 'a' * 64},
+        'signal_date': '2026-11-03', 'valid_session': '2026-11-04',
+        'actual_quantity': 0, 'available_cash': 1000., 'action': 'BUY',
+        'target_quantity': 100, 'delta_quantity': 100, 'cycle_target_quantity': 100,
+        'orders': [{'side': 'BUY', 'quantity': 100, 'order_type': 'LIMIT', 'limit_price': 1.}],
+    })
     other = case.store.create_account_intent(account_id='other', decision_id='old-buy', order_sequence=0,
         symbol='588080.SH', side='BUY', quantity=100, limit_price=1., valid_session='2026-11-04')
     case.engine.retire_account(case.request)
@@ -228,14 +264,12 @@ def test_unsellable_position_waits_without_false_success_or_order(make_holding, 
     case.engine.retire_account(case.request)
     case.store.set_retirement_session('strategy', RetirementSession(case.interval, FEE))
     case.engine.refresh_orders()
-    case.engine.submit_pending()
     result = case.store.retirement_status('strategy')
     assert result.status is AccountRetirementStatus.WAITING_SELLABLE
     assert result.remaining_quantity == case.quantity and result.released_cash == 0
     assert not case.broker.placed
     case.broker.sellable = case.quantity
     case.engine.refresh_orders()
-    case.engine.submit_pending()
     assert len(case.broker.placed) == 1
 
 
@@ -293,21 +327,6 @@ def test_legacy_account_entry_cycle_can_retire_without_v4_migration(make_holding
 
 
 @pytest.mark.parametrize('market', ['CN', 'US'])
-def test_rejected_retirement_order_is_blocked_without_automatic_resubmit(make_holding, market):
-    case = make_holding(market)
-    case.engine.retire_account(case.request)
-    case.store.set_retirement_session('strategy', RetirementSession(case.interval, FEE))
-    case.broker.reject = True
-    case.engine.refresh_orders()
-    for _ in range(2):
-        case.engine.refresh_orders()
-        result = case.engine.retire_account(case.request)
-    assert result.status is AccountRetirementStatus.BLOCKED
-    assert result.remaining_quantity == case.quantity and result.released_cash == 0
-    assert len(case.broker.placed) == 1 and not case.broker.orders
-
-
-@pytest.mark.parametrize('market', ['CN', 'US'])
 def test_reviewed_rejection_can_resume_retirement_with_channel_audit(make_holding, market):
     case = make_holding(market)
     case.engine.retire_account(case.request)
@@ -316,6 +335,13 @@ def test_reviewed_rejection_can_resume_retirement_with_channel_audit(make_holdin
     case.engine.refresh_orders()
     rejected = case.store.account_intents('strategy')[0]
     assert rejected['attention_required']
+    # Repeated polling/requests must leave the rejection blocked until reviewed.
+    for _ in range(2):
+        case.engine.refresh_orders()
+        result = case.engine.retire_account(case.request)
+    assert result.status is AccountRetirementStatus.BLOCKED
+    assert result.remaining_quantity == case.quantity and result.released_cash == 0
+    assert len(case.broker.placed) == 1 and not case.broker.orders
     case.broker.reject = False
     case.engine.acknowledge_execution_gap('strategy', rejected['intent_id'], 'checked broker restriction cleared')
     case.engine.refresh_orders()

@@ -436,3 +436,16 @@ CSV作为行情来源。生产配置更新、准备记录切换和服务部署�
 未定义，以`None`保存。
 
 研究权限见[RSCH Agent](../../research/RSCH_AGENT.md)，生产操作按DEV独立授权。
+
+## 测试与回归
+
+退役测试分工：EC 验证清仓、成交和资金账本；本模块验证策略停调度、真实交易日历、
+Web 202／200、CLI 状态和账户快照。资金回笼、事务回滚及控制令牌保留真实存储／HTTP链路。
+原生 V4 前瞻集成复用按市场及版本形态生成的不可变冻结包；每例仍独立准备 DFLS 输入、
+复制发布包并创建账户，不共享审批、运行状态或可变行情。准备不改账断言由前瞻主场景承接。
+
+聚焦入口见[宿主退役](tests/functional/test_retirement_host.py)、
+[回笼与控制接口](tests/functional/test_account_retirement.py)和
+[原生 V4 前瞻](../../tests/functional/test_formal_v4_runtime.py)。
+全仓验收统一使用[回归脚本](../../scripts/test-all.ps1)，保留发布包验收、前端用例与 Ruff；
+失败修复后只补测受影响用例，并分别记录首次全仓结果与补测证据。

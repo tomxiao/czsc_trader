@@ -12,13 +12,14 @@ from strategy_runtime.equity_definition import (equity_source_hash)
 def test_auxiliary_preparation_evaluation_and_publication(tmp_path):
     from czsc_trader.research_tools import EvaluationEvidenceWrite
     context, request, _, calls = setup_auxiliary(tmp_path)
-    assert len(current_account_request(context,request).request_items(context.execution_spec)) == 6
+    expected_inputs = {'bars', 'sessions', 'trading_facts', 'auxiliary:market:bars', 'auxiliary:market:sessions'}
+    assert {name for name, _ in current_account_request(context,request).request_items(context.execution_spec)} == expected_inputs
     with account_research(context, request) as (prepared, result, payload, execution):
-        assert len(prepared.request.input_binding.expected_identities) == 6
+        assert set(prepared.request.input_binding.expected_identities) == expected_inputs
         from czsc_trader.application import publish_evidence_many
         published, = publish_evidence_many(context, (EvaluationEvidenceWrite(request.experiment, "auxiliary", prepared, result),), execution=execution)
         assert published.reference.schema_version == 4
-    assert len(calls) == 6
+    assert len(calls) == 5
     assert "czsc_trader.application.account_replay" in payload["request"]["engine_sources"]
     from czsc_trader.research_tools.equity_replay import build_equity_assessment
     assert build_equity_assessment(result)
@@ -82,7 +83,7 @@ def test_auxiliary_workers_and_checkpoint_use_all_pinned_inputs(tmp_path):
         restored = context.evaluation.evaluate_many(prepared, execution=execution)
         assert [item.result.content for item in restored] == expected
         assert execution.stats.reused_results == 2
-    assert len(calls) == 6
+    assert len(calls) == 5
 
 
 def test_archived_primary_history_applies_declared_latency(tmp_path):

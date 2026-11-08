@@ -16,13 +16,13 @@ from czsc_trader.research_tools.equity_replay import (
 
 
 def _fixture(root, candidate="C0001", experiment="EX001_20261105", mutate=None):
-    inputs = {"schema": "equity-input/v2", "data": {k: [] for k in ("bars", "sessions", "actions", "trading_facts", "constraints")},
-        "products": {k: [] for k in ("bars", "sessions", "actions", "trading_facts", "constraints")}}
+    inputs = {"schema": "equity-input/v2", "data": {k: [] for k in ("bars", "sessions", "trading_facts", "constraints")},
+        "products": {k: [] for k in ("bars", "sessions", "trading_facts", "constraints")}}
     inputs_art = EquityArtifact("equity_input", _bytes(inputs))
     request = dict(schema="equity-research/v4", candidate_definition={"contract_version": 4},
         content_sha256="a" * 64, instrument="US.TEST", window="window", history_start="start", initial_cash=100.,
         fee_rate=.001, engine_sources={}, python_version="3.12", pandas_version="2", warmup_bars=0,
-        specification={})
+        specification={}, price_basis="HFQ", quantity_basis="SIMULATED_INTEGER_UNITS")
     identity = {k: request[k] for k in ("instrument", "window", "history_start", "initial_cash", "fee_rate",
         "engine_sources", "python_version", "pandas_version")}
     identity.update(kind="BUY_HOLD", input_snapshot_sha256=primary_input_digest(inputs),

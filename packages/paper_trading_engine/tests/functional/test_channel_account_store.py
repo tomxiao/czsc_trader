@@ -248,7 +248,8 @@ def test_schema7_migration_preserves_legacy_balances_and_events(tmp_path):
     root.save_snapshot({"cash": "1000.0000"})
     event_ids = [row["event_id"] for row in root.query_audit_events()]
     root.close()
-    # Remove precisely schema 8's additions to exercise actual ALTER migration.
+    # Reconstruct schema 7, including the pre-retirement lifecycle constraint,
+    # so opening it exercises both the channel-scope and retirement migrations.
     with sqlite3.connect(path) as connection:
         connection.execute("DROP INDEX virtual_accounts_channel_scope")
         connection.execute("DROP INDEX events_channel_scope")
@@ -256,6 +257,17 @@ def test_schema7_migration_preserves_legacy_balances_and_events(tmp_path):
             connection.execute(f"ALTER TABLE {table} DROP COLUMN channel_account_id")
         connection.execute("DROP TABLE channel_accounts")
         connection.execute("DROP TABLE equity_strategy_state")
+        connection.execute("DROP TABLE account_retirement_requests")
+        ddl = connection.execute("SELECT sql FROM sqlite_master WHERE name='virtual_accounts'").fetchone()[0]
+        objects = connection.execute("SELECT sql FROM sqlite_master WHERE tbl_name='virtual_accounts' "
+                                     "AND type IN ('index','trigger') AND sql IS NOT NULL").fetchall()
+        assert "'RETIRING'," in ddl
+        connection.execute(ddl.replace('virtual_accounts', 'schema7_accounts', 1).replace("'RETIRING',", ''))
+        connection.execute('INSERT INTO schema7_accounts SELECT * FROM virtual_accounts')
+        connection.execute('DROP TABLE virtual_accounts')
+        connection.execute('ALTER TABLE schema7_accounts RENAME TO virtual_accounts')
+        for row in objects:
+            connection.execute(row[0])
         connection.execute("UPDATE settings SET value='7' WHERE key='runtime_database_schema_version'")
     migrated = PaperStore(path)
     try:
@@ -263,7 +275,10 @@ def test_schema7_migration_preserves_legacy_balances_and_events(tmp_path):
         assert scope.virtual_account("legacy") == original
         assert [row["event_id"] for row in scope.query_audit_events()] == event_ids
         assert scope.latest_snapshot() == {"cash": "1000.0000"}
-        assert migrated.get_setting("runtime_database_schema_version") == "8"
+        assert migrated.get_setting("runtime_database_schema_version") == "9"
+        assert "'RETIRING'" in migrated._connection.execute(
+            "SELECT sql FROM sqlite_master WHERE name='virtual_accounts'").fetchone()[0]
+        assert migrated._connection.execute('SELECT * FROM account_retirement_requests').fetchall() == []
         assert scope.get_setting("channel_reconciliation_status") == "OK"
         migrated.register_channel_account(_config(), capital=Decimal("20000"))
         assert scope.virtual_account("legacy") == original

@@ -21,7 +21,7 @@ def independent_fixture(tmp_path, market):
         'def step(ctx, state):\n'
         '    table = ctx.observations["signal"]\n'
         '    assert len(table) >= 300\n'
-        '    assert float(ctx.history.last()["Close"]) == 10\n'
+        '    assert float(ctx.history.last()["Close"]) == 20\n'
         '    return AccountStepResult(AccountDecision.from_facts(0, "independent warmup", '
         'facts={"rows": len(table)}, next_watch="next session"), cycle_values=StateRecord())\n',
         encoding='utf-8')

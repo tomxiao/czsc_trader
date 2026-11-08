@@ -72,11 +72,6 @@ def replay_limit_buyhold(signals, data, initial_cash, benchmark, fee_rate):
     ]
     adjusted_close = dict(zip(adjusted.index, adjusted["close"].to_numpy(), strict=True))
     execution_close = dict(zip(prices.index, prices["close"].to_numpy(), strict=True))
-    if pricing.basis is ExecutionPriceBasis.HFQ_RESEARCH:
-        raw_prices = data.raw_execution_daily.set_index("dt")
-        scales = (prices["close"] / raw_prices["close"]).to_dict()
-    else:
-        scales = dict.fromkeys(prices.index, 1.0)
     trading_locations = sessions.get_indexer(trading)
     identities = {"execution_data": data.fingerprint}
     for day, location in zip(trading, trading_locations, strict=True):

@@ -654,14 +654,14 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
             continue
         if order["side"] == "BUY":
             expected_order_type = str(spec.get("entry_order_type", "LIMIT"))
-            signal_close = float(signal["unadjusted_close"])
+            signal_close = float(signal["close"])
             expected_limit = min(
                 _floor(signal_close * (1 + float(spec["entry_limit_parameter"])), tick),
                 _nearest(_floor(signal_close * (1 + price_limit_ratio), tick) - tick, tick),
             )
         else:
             expected_order_type = str(spec.get("exit_order_type", "MARKET"))
-            signal_close = float(signal["unadjusted_close"])
+            signal_close = float(signal["close"])
             if expected_order_type == "MARKET":
                 expected_limit = _nearest(signal_close, tick)
             else:
@@ -672,7 +672,8 @@ def audit_replay(evidence: ReplayEvidence, tolerance: float = 1e-7) -> ReplayAud
                     + tick,
                     tick,
                 )
-        expected_limit *= float(signal["price_scale"])
+        # EC rounds quotes in the execution price basis. HFQ replay therefore
+        # rounds the adjusted close directly, without scaling a rounded RAW quote.
         if str(order.get("order_type", "LIMIT")) != expected_order_type:
             reasons.append("ORDER_TYPE_MISMATCH")
         if abs(float(order["limit_price"]) - expected_limit) > tolerance:

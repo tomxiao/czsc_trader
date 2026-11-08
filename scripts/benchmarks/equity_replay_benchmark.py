@@ -18,7 +18,7 @@ import pandas as pd
 from dataflows import AssetClass, BarFrequency, InstrumentId, MarketId, TimeInterval, TradingSession
 from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy, CnEquitySpec, UsEquitySpec,
     EquityStrategyCandidate, EquityStrategyDefinition, FeatureGraph, PreparedObservations,
-    ResearchExecutionSpec, StrategyComputation, StrategyStateSchema, equity_source_hash)
+    ExecutionPolicy, ResearchExecutionSpec, StrategyComputation, StrategyStateSchema, equity_source_hash)
 from execution_channels.historical import PortfolioHistoricalExecutor
 from czsc_trader.application.account_replay import run_replay
 from czsc_trader.application.ec_boundary import execution_spec
@@ -27,7 +27,7 @@ SOURCE='''from strategy_runtime import AccountDecision, AccountStepResult, State
 def step(ctx,state):
     target=0. if ctx.account.quantity else 1.
     return AccountStepResult(AccountDecision.from_facts(target,'timing',facts={'target':target},
-        next_watch='next bar',capital_mode='full_available_cash'),cycle_values=StateRecord())
+        next_watch='next bar'),cycle_values=StateRecord())
 '''
 
 
@@ -63,13 +63,12 @@ def run_benchmark(*,rows,repeats,market,output):
         'BuySellableAt':bars.BarStart+pd.Timedelta(days=1) if market is MarketId.CN else bars.BarStart})
     calendar=pd.DataFrame({'Date':[s.segments[0].start for s in sessions],
         'AvailableDate':[s.segments[0].start for s in sessions],'SessionDate':[s.session_date.isoformat() for s in sessions]})
-    actions=pd.DataFrame([dict(Date=grid[0].start,AvailableDate=grid[0].start,EventId='verified-none',
-        Kind='NONE',Ratio=1.,CashPerShare=0.,PayAt=None)])
     spec=ResearchExecutionSpec(CnEquitySpec() if market is MarketId.CN else UsEquitySpec(),BarFrequency.M30,
         AccountPolicy(instrument.currency,CashAvailabilityPolicy.IMMEDIATE_RESEARCH),step,.01,.01,0.)
     definition=EquityStrategyDefinition(instrument,spec,1,'strategy:step',('strategy.py',),
         equity_source_hash(source,('strategy.py',)),contract_version=4,computation=StrategyComputation.STATEFUL_STEP,
-        feature_graph=FeatureGraph((),()),state_schema=StrategyStateSchema())
+        feature_graph=FeatureGraph((),()),state_schema=StrategyStateSchema(), analysis_price='HFQ',
+        execution_policy=ExecutionPolicy('TARGET_POSITION', {'capital_mode':'full_available_cash'}))
     candidate=EquityStrategyCandidate('S999','C0001',definition,source)
     started=perf_counter()
     prepared=PreparedObservations.from_frames(bars,definition.feature_graph,frequency=BarFrequency.M30,
@@ -78,11 +77,11 @@ def run_benchmark(*,rows,repeats,market,output):
     runs,expected=[],None
     for repeat in range(repeats):
         started=perf_counter()
-        executor=PortfolioHistoricalExecutor(specification=execution_spec(spec),initial_cash=100000.,fee_rate=.001,actions=actions,price_basis='RAW')
+        executor=PortfolioHistoricalExecutor(specification=execution_spec(spec),initial_cash=100000.,fee_rate=.001,price_basis='HFQ')
         outcome=run_replay(prepared,candidate,executor,constraints=rules, start=grid[1].start,end=grid[rows].end,fee_rate=.001)
         elapsed=perf_counter()-started
         hashes={name:sha256(getattr(outcome.execution_result,name).to_json(orient='records',date_format='iso',date_unit='us').encode()).hexdigest()
-            for name in ('decisions','orders','fills','corporate_action_entries','account_points','account_daily','trades')}
+            for name in ('decisions','orders','fills','account_entries','account_points','account_daily','trades')}
         if expected is not None and hashes!=expected:
             raise ValueError('repeated account facts differ')
         expected=hashes
@@ -92,6 +91,7 @@ def run_benchmark(*,rows,repeats,market,output):
         runs.append({'repeat':repeat+1,'seconds':elapsed,'runtime':stats,'table_hashes':hashes})
     result={'status':'PASS','market':market.value,'rows':rows,'repeats':repeats,'prepare_seconds':prepare_seconds,
         'calendar':'synthetic weekdays, not exchange-history evidence',
+        'price_basis':'HFQ','quantity_basis':'SIMULATED_INTEGER_UNITS',
         'timing':'executor + strategy/module + replay + result tables; excludes data fetch, SE audit, publication',
         'median_seconds':median(r['seconds'] for r in runs),'runs':runs}
     (output/'result.json').write_text(json.dumps(result,indent=2),encoding='utf-8')

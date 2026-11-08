@@ -315,6 +315,7 @@ def test_startup_reads_existing_bindings_without_default_account_writes(
         repo_root = context.strategy_root.parent
         binding = installed_binding(context)
         create_bound_account(store, "one", replace(binding, release_hash="e" * 64))
+        store.set_virtual_paused("one", False)
     before = store.virtual_accounts()
     broker = FakeBroker()
     connections = []
@@ -438,6 +439,7 @@ def test_startup_validates_each_account_binding_before_broker_connection(
     binding = installed_binding(context)
     for name in ("one", "two"):
         create_bound_account(store, name, binding)
+        store.set_virtual_paused(name, False)
     calls = []
     validate_binding = pte_cli.SrtAdviceClient.validate_account_binding
 
@@ -481,6 +483,7 @@ def test_startup_validates_each_account_binding_before_broker_connection(
         # A different coordinate must be validated independently. This installed
         # synthetic author has not opted into symbol rebinding.
         create_bound_account(store, "three", replace(binding, symbol="510500.SH"))
+        store.set_virtual_paused("three", False)
         calls.clear()
         before = store.virtual_accounts()
         with pytest.raises(RuntimeCompatibilityError, match="symbol rebinding"):

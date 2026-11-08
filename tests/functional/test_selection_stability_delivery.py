@@ -33,7 +33,7 @@ from test_research_delivery import content, published
 
 def _accounts(root, market, frequency, *, drawdown_basis="BAR_CLOSE"):
     """Two actual accounts share inputs/benchmark but retain independent identities."""
-    context, request = setup_account(root, market, frequency, events=True)
+    context, request = setup_account(root, market, frequency)
     request = replace(request, drawdown_basis=drawdown_basis)
     source = request.candidate.source_root
     (source / "strategy.py").write_text(

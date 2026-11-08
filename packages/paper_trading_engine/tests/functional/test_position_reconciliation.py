@@ -4,7 +4,7 @@ from decimal import Decimal
 import json
 
 import pytest
-from test_shared_channel_execution import live_us
+from test_shared_channel_execution import live_us as live_us
 
 from execution_channels.contracts import CycleBudget, PositionCycle
 from execution_channels.entry_cycle import EntryCyclePhase

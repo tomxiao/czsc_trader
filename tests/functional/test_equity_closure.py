@@ -88,7 +88,6 @@ def test_formal_equity_diagnosis_retains_intraday_cycles_and_continuous_slice(tm
 
 
 def test_equity_diagnosis_reconciles_split_when_source_also_has_dividend(tmp_path):
-    from dataflows import EquityProduct
     from datetime import date
     from czsc_trader.application import diagnose_accounts
     from czsc_trader.research_tools.account_diagnosis import AccountRunRef, AccountDiagnosisRequest
@@ -100,7 +99,6 @@ def test_equity_diagnosis_reconciles_split_when_source_also_has_dividend(tmp_pat
         '0 if ctx.portfolio.quantity else ctx.parameters["enter"]', 'ctx.parameters["enter"]'), encoding="utf-8")
     definition = replace(request.candidate.definition, source_sha256=equity_source_hash(source.parent, ("strategy.py",)))
     request = replace(request, candidate=replace(request.candidate, definition=definition))
-    bars = products[EquityProduct.BARS]
     with account_research(context, request) as (prepared, result, payload, execution):
         ref = publish_account(context, prepared, result, execution, "events")
         identity = dict(payload["evaluation_identity"])

@@ -111,19 +111,16 @@ def test_retirement_rejects_unsafe_state_without_releasing_capital(setup, failur
     elif failure == "frozen":
         with store._connection:
             store._connection.execute("UPDATE virtual_accounts SET frozen_cash='10' WHERE account_id='one'")
-    elif failure == "not_paused":
-        store.set_virtual_paused("one", False)
     elif failure == "wrong_hash":
         request = replace(request, expected_release_hash="b" * 64)
-    elif failure in {"pending", "attention"}:
+    elif failure == "attention":
         store.set_virtual_paused("one", False)
         adopt_test_decision(store, account_id="one", decision_id="d", valid_session="2099-01-01",
                             orders=[{"side": "BUY", "quantity": 100, "order_type": "LIMIT", "limit_price": 1.0}])
         intent = store.create_account_intent(account_id="one", decision_id="d", order_sequence=0,
             symbol="588080.SH", side="BUY", quantity=100, limit_price="1", valid_session="2099-01-01")
-        if failure == "attention":
-            store.release_account_intent(intent["intent_id"], "REJECTED",
-                                         attention_reason="synthetic rejection requires review")
+        store.release_account_intent(intent["intent_id"], "REJECTED",
+                                     attention_reason="synthetic rejection requires review")
         store.set_virtual_paused("one", True)
     elif failure == "cash":
         broker.value = replace(broker.value, account=replace(broker.value.account, cash=999000))

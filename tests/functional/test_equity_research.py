@@ -46,10 +46,32 @@ def test_equity_cross_market_and_source_revision_fail_before_calculation(tmp_pat
 
 def test_settled_only_sale_cannot_fund_same_day_reentry(tmp_path):
     context, request, _, _ = setup_equity(tmp_path, cash_policy=CashAvailabilityPolicy.SETTLED_ONLY)
-    # Once residual cash is exhausted, unsettled proceeds cannot be spent.
-    # The approved model blocks rather than silently altering the intent.
-    with pytest.raises(ValueError, match='INSUFFICIENT_LOT'):
-        replay_payload(context, request)
+    run = replay_payload(context, request)["runs"]["candidate"]
+    first_day = [row for row in run["fills"] if row["interval_start"][:10] == "2026-10-01"]
+    # Only the original cash can fund reentry until the previous sales settle.
+    assert [(row["side"], row["quantity"]) for row in first_day] == [
+        ("BUY", 98), ("SELL", 98), ("BUY", 1), ("SELL", 1)]
+    blocked = [row for row in run["decisions"]
+               if row["plan"]["evidence"]["planning_result"]["status"] == "BLOCKED"]
+    assert blocked
+    assert all(row["target"] == 1 and row["quantity"] == 0 for row in blocked)
+    assert all(row["plan"]["evidence"]["planning_result"]["reasons"] == ["INSUFFICIENT_CASH"]
+               for row in blocked)
+    first_close = next(row for row in reversed(run["account_points"])
+                       if row["time"][:10] == "2026-10-01")
+    assert first_close["quantity"] == 0
+    assert first_close["cash"] == pytest.approx(9.01)
+    assert first_close["receivable"] == pytest.approx(989.01)
+    settlements = run["account_entries"]
+    assert settlements and {row["kind"] for row in settlements} == {"SALE_SETTLEMENT"}
+    assert all(row["time"][:10] == "2026-10-02" for row in settlements)
+    # US settled-only proceeds arrive at the following session close, after
+    # that session's decisions; they must not fund its earlier orders either.
+    assert not [row for row in run["fills"] if row["interval_start"][:10] == "2026-10-02"]
+    closing = run["account_points"][-1]
+    assert all(row["time"] == closing["time"] for row in settlements)
+    assert closing["cash"] == pytest.approx(998.02)
+    assert closing["receivable"] == 0 and closing["quantity"] == 0
 
 
 def test_audit_rejects_tampered_account(tmp_path):

@@ -119,7 +119,7 @@ def test_startup_snapshot_survives_source_changes_and_late_import_without_source
     monkeypatch.setattr(executor, 'execute_account_plan', change_after_first)
     outcome = replay(value, bars, constraints, executor)
     assert_counts(outcome, expected_bytes, len(bars) - 1)
-    for name in ('decisions', 'orders', 'fills', 'corporate_action_entries', 'account_points', 'account_daily', 'trades'):
+    for name in ('decisions', 'orders', 'fills', 'account_entries', 'account_points', 'account_daily', 'trades'):
         pd.testing.assert_frame_equal(getattr(original.execution_result, name),
                                       getattr(outcome.execution_result, name), check_exact=True)
     assert namespace_state() == existing

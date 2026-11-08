@@ -28,7 +28,7 @@ from account_parity_support import setup_account
 def test_v4_registered_candidate_and_stage_snapshot_have_independent_source_closure(
     tmp_path, monkeypatch, market
 ):
-    context, request = setup_account(tmp_path, market, BarFrequency.DAILY, events=True)
+    context, request = setup_account(tmp_path, market, BarFrequency.DAILY)
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         prepared = context.evaluation.prepare(request, execution=execution)
         (outcome,) = context.evaluation.evaluate_many((prepared,), execution=execution)

@@ -2,7 +2,7 @@
 
 SE按显式协议提供指标、协议校验、比较、帕累托分层、PBO、DSR、Bootstrap、参数邻域、压力及账本审计计算。先阅读[公共导出](src/strategy_evaluator/__init__.py)，再沿导入核对契约与测试。
 
-`strategy_evaluator.equity.audit_equity_account` 独立审计区间成交、整数股持仓、分红应收款和交收，
+`strategy_evaluator.equity.audit_equity_account` 独立审计区间成交、整数模拟单位持仓和卖出交收，
 输出交易日指标及区间采样回撤；不导入 SRT/EC。其研究证据与正式阶段交付的边界见
 [TDR美股研究接口](../../src/czsc_trader/README.md#us-equity-research)。
 
@@ -14,6 +14,10 @@ SE按显式协议提供指标、协议校验、比较、帕累托分层、PBO、
 开仓现金预算、整手目标、周期内不变性、后续补买数量与剩余预算、成交含费累计和退出后的状态释放。
 检查消费正式决策/账户账本中的周期事实，不调用SRT规划器或EC执行器；外层哈希重新计算也不能使不一致周期事实通过。
 动态周期的历史回放限定LIMIT买入，按照配置费用核对成交不超过剩余预算；这与PTE保存渠道实际异常费用事实的通路分别处理。
+
+报价审计直接按执行行情的 `close` 及最小价位独立取整。后复权回放使用后复权价格取整，
+不得先把未复权价格取整再乘复权比例，两种顺序可能产生不同报价。精确价位测试同时覆盖
+复权比例为 1 和非 1 的正确报价及正负一档篡改；不通过放宽容差接纳错误报价。
 当前`diagnose_account_replays`的全仓/现金分解不支持动态周期分配，明确返回`UNSUPPORTED`，不将其解释成固定100%资金策略。
 
 阶段四使用`assess_candidates`和`compare_candidates`，输入与输出均为强类型不可变记录。

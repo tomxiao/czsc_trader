@@ -93,7 +93,7 @@ def test_authenticated_hfq_account_decomposes_daily_years_and_inherited_window(
     diagnosis = diagnose_accounts(
         context.repository, AccountDiagnosisRequest(reference, None, request.windows[0])
     )
-    assert diagnosis.status is AccountDiagnosisStatus.COMPUTED
+    assert diagnosis.status is AccountDiagnosisStatus.COMPUTED, diagnosis.issues
     raw = run.execution.account_daily
     expected = raw.iloc[-1].equity - request.initial_cash
     assert diagnosis.reconciliation[0].equity_change == pytest.approx(expected)
@@ -149,7 +149,7 @@ def test_population_membership_is_explicit_and_unknown_remains_unknown(retained_
             (DecisionPopulationRef(population, "declared"),),
         ),
     )
-    assert diagnosis.status is AccountDiagnosisStatus.COMPUTED
+    assert diagnosis.status is AccountDiagnosisStatus.COMPUTED, diagnosis.issues
     assert [d.member for d in diagnosis.decision_coverage[:3]] == [True, False, None]
     assert sum(d.buy_fill for d in diagnosis.decision_coverage) == len(
         run.execution.fills.query("side == 'BUY'")
@@ -186,7 +186,7 @@ def test_pair_comparison_preserves_ids_and_rejects_different_costs(retained_acco
     identical = diagnose_accounts(
         context.repository, AccountDiagnosisRequest(reference, reference, request.windows[0])
     )
-    assert identical.status is AccountDiagnosisStatus.COMPUTED
+    assert identical.status is AccountDiagnosisStatus.COMPUTED, identical.issues
     assert all(p.equity_difference == 0 for p in identical.daily_paths)
     assert all(p.baseline_cycle_id == p.alternative_cycle_id for p in identical.path_comparison)
     other_request = replace(request, costs=(replace(request.costs[0], one_way_cost=0.002),))

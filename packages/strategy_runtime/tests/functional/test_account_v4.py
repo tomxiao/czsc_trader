@@ -49,7 +49,6 @@ def setup(root, market, frequency, computation):
     bars=pd.DataFrame({'BarStart':starts,'Date':ends,'AvailableDate':ends,'Open':10.,'High':15.,'Low':9.,'Close':[10.+i%4 for i in range(len(periods))],'Volume':1000000.,'Amount':10000000.})
     constraints=pd.DataFrame({'Date':starts,'AvailableDate':starts,'QuantityStep':100,'PriceTick':.01,'Tradable':True,
         'SellRemainderPolicy':'STRICT_STEP','PriceLimitPolicy':'EXPLICIT_UNBOUNDED','PriceLimitLower':None,'PriceLimitUpper':None,'BuySellableAt':starts})
-    actions=pd.DataFrame([{'Date':starts[0],'AvailableDate':starts[0],'EventId':'none','Kind':'NONE','Ratio':1.,'CashPerShare':0.,'PayAt':None}])
     session_frame=pd.DataFrame({'Date':[s.segments[0].start for s in sessions], 'AvailableDate':[s.segments[0].start for s in sessions], 'SessionDate':[s.session_date.isoformat() for s in sessions]})
     prepared=PreparedObservations.from_frames(bars,definition.feature_graph,frequency=frequency,timezone=instrument.timezone,sessions=session_frame,trading_sessions=sessions)
     executor=PortfolioHistoricalExecutor(specification=execution_spec(spec),initial_cash=100000.,fee_rate=.001,price_basis='HFQ')

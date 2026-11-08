@@ -99,12 +99,6 @@ def test_retired_action_driven_account_cannot_silently_enter_hfq_replay(tmp_path
     value = replace(value, definition=replace(value.definition, parameters_json='{"threshold":1}'))
     start = datetime(2026, 10, 1, 14, tzinfo=timezone.utc)
     starts = [start + timedelta(minutes=30 * i) for i in range(3)]
-    ends = [x + timedelta(minutes=30) for x in starts]
-    bars = pd.DataFrame({'BarStart': starts, 'Date': ends, 'AvailableDate': ends,
-                         'Open': [10., 10., 5.], 'High': [10., 10., 5.],
-                         'Low': [10., 10., 5.], 'Close': [10., 10., 5.], 'Volume': 10000.})
-    constraints = pd.DataFrame({'Date': starts, 'AvailableDate': starts, 'QuantityStep': 1,
-                                'PriceTick': .01, 'Tradable': True})
     actions = pd.DataFrame([{'Date': starts[2], 'AvailableDate': starts[2], 'EventId': 'split',
                              'Kind': 'SPLIT', 'Ratio': 2., 'CashPerShare': 0., 'PayAt': None}])
     from czsc_trader.application.ec_boundary import execution_spec

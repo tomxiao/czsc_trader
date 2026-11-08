@@ -7,7 +7,7 @@ import pytest
 from strategy_evaluator import AuditStatus, ReplayEvidence, audit_replay
 
 
-def _unfilled_upper_guard_account():
+def _unfilled_upper_guard_account(price_scale=1.):
     dates = ("2026-08-03", "2026-08-04")
     return ReplayEvidence(
         strategy_hash="a" * 64, data_hash="b" * 64, initial_cash=100000.,
@@ -38,14 +38,16 @@ def _unfilled_upper_guard_account():
                  "closed_trades": 0, "win_rate": None, "win_loss_ratio": None,
                  "win_loss_ratio_status": "NO_CLOSED_TRADES"},
         execution_daily=tuple({"date": day, "open": price, "high": price, "low": price,
-                               "close": price, "unadjusted_close": price, "price_scale": 1.}
+                               "close": price, "unadjusted_close": price / price_scale,
+                               "price_scale": price_scale}
                               for day, price in (("2026-07-31", 1.676), (dates[0], 2.011), (dates[1], 2.011))),
         execution_intraday=(),
     )
 
 
-def test_valid_201_limit_passes_full_public_audit_with_zero_tolerance():
-    evidence = _unfilled_upper_guard_account()
+@pytest.mark.parametrize("price_scale", [1., 4.])
+def test_valid_201_limit_passes_full_public_audit_with_zero_tolerance(price_scale):
+    evidence = _unfilled_upper_guard_account(price_scale)
     # Reproduce the binary subtraction that must be canonicalized to .001.
     assert 2.011 - .001 != 2.01
     checked = audit_replay(evidence, tolerance=0.)
@@ -53,8 +55,9 @@ def test_valid_201_limit_passes_full_public_audit_with_zero_tolerance():
 
 
 @pytest.mark.parametrize("wrong_limit", [2.009, 2.011])
-def test_one_tick_wrong_limit_remains_rejected_with_zero_tolerance(wrong_limit):
-    evidence = _unfilled_upper_guard_account()
+@pytest.mark.parametrize("price_scale", [1., 4.])
+def test_one_tick_wrong_limit_remains_rejected_with_zero_tolerance(wrong_limit, price_scale):
+    evidence = _unfilled_upper_guard_account(price_scale)
     changed = replace(evidence, orders=({**evidence.orders[0], "limit_price": wrong_limit},))
     checked = audit_replay(changed, tolerance=0.)
     assert checked.status is AuditStatus.FAIL

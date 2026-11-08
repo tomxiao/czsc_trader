@@ -261,7 +261,7 @@ def audit_account_v4(
         by_decision[row["decision_id"]].append(row)
     if set(by_decision) - {row["decision_id"] for row in decisions}:
         raise ValueError("v4 order lacks its decision")
-    first_start, last_end = _time(decisions[0]["decision_at"]), _time(account_points[-1]["time"])
+    last_end = _time(account_points[-1]["time"])
     actual_actions = list(account_entries)
     if any(row['kind'] != 'SALE_SETTLEMENT' for row in actual_actions):
         raise ValueError('HFQ replay journal only permits trade settlement entries')

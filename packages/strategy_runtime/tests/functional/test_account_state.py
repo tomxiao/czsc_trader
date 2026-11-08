@@ -59,8 +59,6 @@ def inputs(value, count=7):
                                 'QuantityStep': 1, 'PriceTick': .01, 'Tradable': True,
         'SellRemainderPolicy':'STRICT_STEP','PriceLimitPolicy':'EXPLICIT_UNBOUNDED',
         'PriceLimitLower':None,'PriceLimitUpper':None,'BuySellableAt':starts})
-    actions = pd.DataFrame([{'Date': starts[0], 'AvailableDate': starts[0],
-        'EventId': 'none', 'Kind': 'NONE', 'Ratio': 1., 'CashPerShare': 0., 'PayAt': None}])
     executor = PortfolioHistoricalExecutor(specification=execution_spec(value.definition.execution_spec),
         initial_cash=1000., fee_rate=.001,  price_basis='HFQ')
     return bars, constraints, executor

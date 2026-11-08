@@ -17,6 +17,7 @@ def declared_support(context, request, **changes):
     document = {
         "schema_version": 4,
         "request": {"schema": "equity-research/v4", "candidate_definition": {"contract_version": 4},
+                    "price_basis": "HFQ", "quantity_basis": "SIMULATED_INTEGER_UNITS",
                     "candidate_id": request.candidate.candidate_id,
                     "implementation_hash": request.candidate.implementation_hash,
                     "experiment": request.experiment.to_dict()},
@@ -32,7 +33,7 @@ def declared_support(context, request, **changes):
 
 @pytest.mark.parametrize("market", [MarketId.CN, MarketId.US])
 def test_registration_retains_declarations_without_loading_account_dependencies(tmp_path, monkeypatch, market):
-    context, request = setup_account(tmp_path, market, BarFrequency.DAILY, events=True)
+    context, request = setup_account(tmp_path, market, BarFrequency.DAILY)
     evidence = declared_support(context, request)
     from czsc_trader.application import equity_evidence_io
     def forbidden(*args, **kwargs):
@@ -50,7 +51,7 @@ def test_registration_retains_declarations_without_loading_account_dependencies(
 
 @pytest.mark.parametrize("damage", ["digest", "candidate", "experiment", "schema", "duplicate"])
 def test_registration_rejects_direct_declaration_errors_before_publishing(tmp_path, damage):
-    context, request = setup_account(tmp_path, MarketId.US, BarFrequency.DAILY, events=True)
+    context, request = setup_account(tmp_path, MarketId.US, BarFrequency.DAILY)
     changes = {"candidate_id": "C0002"} if damage == "candidate" else {}
     if damage == "experiment":
         changes["experiment"] = {**request.experiment.to_dict(), "experiment_id": "EX002_20261028"}
@@ -87,7 +88,7 @@ def test_historical_candidate_loading_is_private_to_explicit_inspection(tmp_path
 
 
 def test_registration_does_not_admit_runtime_but_loading_does_once(tmp_path, monkeypatch):
-    context, request = setup_account(tmp_path, MarketId.US, BarFrequency.DAILY, events=True)
+    context, request = setup_account(tmp_path, MarketId.US, BarFrequency.DAILY)
     original = EquityStrategyCandidate.verify
     calls = []
     def verify(candidate):
@@ -107,7 +108,7 @@ def test_registration_does_not_admit_runtime_but_loading_does_once(tmp_path, mon
 
 
 def test_snapshot_source_mutation_is_rejected(tmp_path):
-    context, request = setup_account(tmp_path, MarketId.US, BarFrequency.DAILY, events=True)
+    context, request = setup_account(tmp_path, MarketId.US, BarFrequency.DAILY)
     source = request.candidate.source_root / request.candidate.definition.source_files[0]
     source.write_bytes(b"changed")
     with pytest.raises(ValueError, match="source closure changed"):
