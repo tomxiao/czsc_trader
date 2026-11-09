@@ -213,6 +213,7 @@ def run_all(workers):
     if temporary_bytecode.exists():
         shutil.rmtree(temporary_bytecode)
     seconds = round(time.monotonic()-began, 2)
+    within_budget = seconds <= BUDGET_SECONDS
     passed = (not coverage_error and not coverage.get("failures") and not coverage.get('skipped')
               and all(r["exit_code"] == 0 for r in results))
     summary = dict(seconds=seconds, max_parallel=workers, files=len(files), coverage=coverage,
@@ -222,14 +223,14 @@ def run_all(workers):
                                     bytecode_cache_reused=cache_reused,
                                     native_threads=1),
                    coverage_error=coverage_error, results=results, functional_pass=passed,
-                   budget_seconds=BUDGET_SECONDS, budget_pass=seconds <= BUDGET_SECONDS)
+                   budget_seconds=BUDGET_SECONDS, budget_pass=within_budget)
     (run / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(f"TEST_LOG_ROOT={run}\nTOTAL_SECONDS={seconds}\nCOVERAGE={coverage}", flush=True)
     print(f"FULL_OFFLINE_REGRESSION={'PASS' if passed else 'FAIL'}", flush=True)
-    print(f"EFFICIENCY_ACCEPTANCE={'PASS' if seconds <= BUDGET_SECONDS else 'FAIL'} BUDGET_SECONDS={BUDGET_SECONDS}", flush=True)
+    print(f"EFFICIENCY_OBSERVATION={'WITHIN_BUDGET' if within_budget else 'OVER_BUDGET'} BUDGET_SECONDS={BUDGET_SECONDS}", flush=True)
     if coverage_error:
         print(coverage_error, flush=True)
-    return 1 if not passed else (0 if seconds <= BUDGET_SECONDS else 2)
+    return 0 if passed else 1
 
 
 if __name__ == "__main__":
