@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 
 from dataflows import (
     BarFrequency, DataError, DataRequest, Dataflows, Dataset, EquityDataRequest,
-    EquityProduct, EquityQuery, PreparePolicy, PriceAdjustment, canonical_frame_sha256,
+    EquityProduct, EquityQuery, MarketId, PreparePolicy, PriceAdjustment, canonical_frame_sha256,
 )
 from dataflows.equity_data import sessions_from_metadata
 import pandas as pd
@@ -88,7 +88,11 @@ class AccountChartMarketData:
         now = self.now()
         if now.utcoffset() is None:
             raise ValueError("account chart clock must be timezone-aware")
-        day = now.astimezone(zone).date()
+        local_now = now.astimezone(zone)
+        day = local_now.date()
+        # A completed CN session can precede publication of its adjusted daily bar.
+        if inputs.binding.instrument.market is MarketId.CN and local_now.time() < CHART_UPDATE_TIME:
+            day -= timedelta(days=1)
         start = cutoff - timedelta(days=max(180, context_sessions * 3))
         completed = [session.session_date for session, available in self._formal_calendar(inputs, start, day)
                      if session.segments[-1].end <= now and available <= now]

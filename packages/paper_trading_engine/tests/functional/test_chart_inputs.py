@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, time, timedelta
 from types import SimpleNamespace
 from zoneinfo import ZoneInfo
 
@@ -70,3 +70,34 @@ def test_v4_us_chart_uses_bound_source_and_actual_new_york_close(monkeypatch, da
     assert AccountChartService._fact_date(
         {"occurred_at": "2026-11-07T03:30:00+08:00"}, ("occurred_at",), zone,
     ) == "2026-11-06"
+
+
+def test_v4_cn_chart_waits_for_daily_refresh_before_requesting_today(monkeypatch):
+    zone = ZoneInfo("Asia/Shanghai")
+    prior, day = date(2026, 11, 6), date(2026, 11, 9)
+    sessions = tuple(TradingSession(session, zone.key, (TimeInterval(
+        datetime.combine(session, time(9, 30), zone), datetime.combine(session, time(15), zone),
+    ),)) for session in (prior, day))
+    instrument = InstrumentId(MarketId.CN, AssetClass.ETF, "159326.SZ")
+    parameters = EquityDataRequest(instrument, SourceRef("tushare", "v1"),
+                                   EquityQuery(EquityProduct.BARS, prior, day)).parameters
+    binding = SimpleNamespace(instrument=instrument, request_bindings=(("bars", parameters),))
+    moment = [datetime.combine(day, time(20, 29), zone)]
+    adapter = AccountChartMarketData(dataflows=None, now=lambda: moment[0],
+                                     formal_inputs=lambda _: SimpleNamespace(binding=binding))
+    monkeypatch.setattr(adapter, "_formal_calendar", lambda _inputs, _start, end: tuple(
+        (session, session.segments[0].start) for session in sessions if session.session_date <= end
+    ))
+
+    def read(request, _policy):
+        ends = [session.segments[-1].end for session in sessions
+                if session.session_date <= request.parameters.query.end]
+        assert len(ends) == (1 if moment[0].minute == 29 else 2)
+        return pd.DataFrame({"Date": ends, "AvailableDate": ends, "Close": 10.0})
+
+    monkeypatch.setattr(adapter, "_read", read)
+    args = dict(symbol=instrument.symbol, asset="etf", account_id="cn-v4",
+                selection_data_cutoff=prior.isoformat(), context_sessions=20)
+    assert adapter.history(**args)[1].Date.max() == prior
+    moment[0] = datetime.combine(day, time(20, 30), zone)
+    assert adapter.history(**args)[1].Date.max() == day
