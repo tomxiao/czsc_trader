@@ -369,7 +369,9 @@ test('scheduler alerts and audit events explain missing market data and preserve
   assert.match(content.innerHTML,/<summary>原始事件字段<\/summary><pre>.*?DataError/s);
   assert.equal(auditSummary(event),summary);
   assert.equal(auditSummary({details:{error:prefix+missing+'; '+calendar}}),
-    '本周期决策未生成。588080.SH 缺少 2026-11-09 的行情；159326.SZ 的行情与交易日历不一致。');
+    '本周期决策未生成。588080.SH 缺少 2026-11-09 的行情；159326.SZ 行情与交易日历不一致。');
+  const unrelated=prefix+missing.replace('OHLCV observations omit expected trading sessions','financial disclosure expected periods are missing');
+  assert.equal(auditSummary({details:{error:unrelated}}),unrelated);
   assert.equal(auditSummary({details:{error:'接口连接超时'}}),'接口连接超时');
   showAuditDetail(event);
   assert.ok(content.innerHTML.includes(`<dt>原因</dt><dd>${summary}</dd>`));

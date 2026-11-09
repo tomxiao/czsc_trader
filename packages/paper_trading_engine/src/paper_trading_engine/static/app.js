@@ -122,22 +122,28 @@ export function decisionDetailsMarkup(decision,currency='CNY'){
     ['判断',explanation?.judgment],['依据',explanation?.basis?.map(item=>item.text).join('；')],['后续观察',explanation?.next_watch],
   ])+executionEffectMarkup(d,currency);
 }
+const DECISION_INPUT_REASON_TEMPLATES=new Map([
+  ['INCOMPLETE_DATA:OHLCV observations omit expected trading sessions','{instrument}缺少 {period} 的行情'],
+  ['INCOMPLETE_DATA:equity bars differ from the independent session grid','{instrument}行情与交易日历不一致'],
+]);
 function eventReason(detail){
   const reason=detail.message||detail.error||detail.reason;
   const prefix='forward V4 input preparation is incomplete: ';
   if(typeof reason!=='string'||!reason.startsWith(prefix))return reason;
   const errors=reason.slice(prefix.length).split(/; (?=DataError\()/);
   const causes=errors.map(error=>{
-    if(!error.startsWith("DataError(code='INCOMPLETE_DATA', "))return error;
+    // Persisted scheduler events carry the data error as text.
+    const [,code,message]=error.match(/^DataError\(code='([^']+)', message='([^']+)'/)||[];
+    const template=DECISION_INPUT_REASON_TEMPLATES.get(`${code}:${message}`);
+    if(!template)return error;
     const symbol=error.match(/'symbol': '([^']+)'/)?.[1];
-    if(error.includes("message='OHLCV observations omit expected trading sessions'")){
-      const dates=error.match(/'missing_dates': \[([^\]]*)\]/)?.[1].match(/\b\d{4}-\d{2}-\d{2}\b/g)||[];
-      const firstDates=dates.slice(0,3).join('、');
-      const period=dates.length>3?`${firstDates} 等 ${dates.length} 个交易日`:firstDates||'部分交易日';
-      return `${symbol?`${symbol} `:''}缺少 ${period} 的行情`;
-    }
-    if(error.includes("message='equity bars differ from the independent session grid'"))return `${symbol?`${symbol} 的`:''}行情与交易日历不一致`;
-    return error;
+    const dates=error.match(/'missing_dates': \[([^\]]*)\]/)?.[1].match(/\b\d{4}-\d{2}-\d{2}\b/g)||[];
+    const firstDates=dates.slice(0,3).join('、');
+    const fields={
+      instrument:symbol?`${symbol} `:'',
+      period:dates.length>3?`${firstDates} 等 ${dates.length} 个交易日`:firstDates||'部分交易日',
+    };
+    return template.replace(/\{(instrument|period)\}/g,(_,field)=>fields[field]);
   });
   return causes.some((cause,index)=>cause!==errors[index])?`本周期决策未生成。${causes.join('；')}。`:reason;
 }
