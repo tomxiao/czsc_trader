@@ -235,6 +235,6 @@ def run_all(workers):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--max-parallel", type=int, choices=range(1, 13), default=2)
+    parser.add_argument("--max-parallel", type=int, choices=range(1, 13), default=8)
     args = parser.parse_args()
     raise SystemExit(run_all(args.max_parallel))
