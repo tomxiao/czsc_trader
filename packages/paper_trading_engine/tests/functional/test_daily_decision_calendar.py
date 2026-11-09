@@ -43,7 +43,12 @@ def _calendar_provider(zone, signal_day, execution_day, signal_close, execution_
             }
         ),
     )
-    account = {"account_id": "test", "release_hash": "a" * 64, "run_state": "RUNNING"}
+    account = {
+        "account_id": "test",
+        "release_hash": "a" * 64,
+        "run_state": "RUNNING",
+        "selection_data_cutoff": signal_day,
+    }
     client = object.__new__(FormalV4AdviceClient)
     client.recipe = lambda _: SimpleNamespace(release_hash=account["release_hash"])
     client._calendar_products = lambda *_: {"sessions": fetched}
@@ -52,7 +57,6 @@ def _calendar_provider(zone, signal_day, execution_day, signal_close, execution_
             execution=SimpleNamespace(decision_clock=BarFrequency.DAILY)
         )
     )
-    client._interval_allowed = lambda *_: True
     return FormalV4ScheduleProvider(client, None), account, tz
 
 
@@ -85,7 +89,12 @@ def test_daily_decision_uses_actual_previous_close_and_next_trading_session(
     assert task.interval == expected_interval
     assert task.submit_after > task.decision_at
     assert provider.due_decision(account, task.submit_after).task_id == task.task_id
-    assert provider.due_decision(account, task.submit_before) is None
+    assert task.submit_before == expected_interval.end
+    assert provider.due_decision(account, task.submit_before).task_id == task.task_id
+    next_gate = expected_interval.end + timedelta(hours=5)
+    assert task.validity.end == next_gate
+    assert provider.due_decision(account, next_gate - timedelta(microseconds=1)).task_id == task.task_id
+    assert provider.due_decision(account, next_gate) is None
 
 
 def test_PTE05_C02_manual_drive_obeys_close_plus_five_hours():
