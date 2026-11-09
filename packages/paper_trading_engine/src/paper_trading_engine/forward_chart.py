@@ -7,7 +7,7 @@ from datetime import date
 from html import escape
 import json
 from typing import Mapping
-from strategy_chart import chart_body
+from strategy_chart import chart_body, get_chart_assets
 from strategy_runtime import (
     ConstantGuide, ObservedFact, ObservedSeries, ObservationFormat, ObservationValueType,
     SignalPanelSnapshot,
@@ -110,7 +110,7 @@ class ChartObservation:
         return result
 
 
-def render_forward_chart_html(value: object) -> str:
+def render_forward_chart_html(value: object, *, inline_assets: bool = False) -> str:
     if not isinstance(value, Mapping):
         raise ValueError("PTE forward chart input must be an object")
     context = dict(value)
@@ -152,6 +152,12 @@ def render_forward_chart_html(value: object) -> str:
         default=str,
     ).replace("</", "<\\/")
     title = escape(f"{release_id} · {strategy_name}")
+    stylesheet = '<link rel="stylesheet" href="/static/strategy-chart.css">'
+    script = '<script src="/static/strategy-chart.js"></script>'
+    if inline_assets:
+        assets = get_chart_assets()
+        stylesheet = f"<style>{assets.css}</style>"
+        script = f"<script>{assets.javascript}</script>"
     return f"""<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -159,7 +165,7 @@ def render_forward_chart_html(value: object) -> str:
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>{title} · 前瞻观察</title>
   <style>html{{scrollbar-gutter:stable}}</style>
-  <link rel="stylesheet" href="/static/strategy-chart.css">
+  {stylesheet}
 </head>
 <body style="margin:0;background:#0d1117">
   <main id="pte-forward-chart" class="strategy-chart" aria-label="{title}前瞻观察图">
@@ -171,7 +177,7 @@ def render_forward_chart_html(value: object) -> str:
 
   </main>
   <script id="forward-context" type="application/json">{encoded}</script>
-  <script src="/static/strategy-chart.js"></script>
+  {script}
   <script>mountStrategyChart(document.querySelector('#pte-forward-chart'), JSON.parse(document.querySelector('#forward-context').textContent));</script>
 </body>
 </html>"""

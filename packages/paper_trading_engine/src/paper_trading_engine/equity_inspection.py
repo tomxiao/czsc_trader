@@ -5,13 +5,17 @@ from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 import json
+from functools import cached_property
 
-from dataflows import TimeInterval
+from dataflows import Dataflows, EquityDataRequest, TimeInterval
+from strategy_runtime import EquityInputBinding
 from strategy_runtime.inspection import InspectionEnvironment
 from .inspection_contracts import Record, _case_id, _money, _time
 from execution_channels.futu.equity_contracts import EquityOrderReport, EquityReconciliationError
 from execution_channels.futu.broker import BrokerSubmissionUncertainError
 from .account_engine import AccountEngine, AccountDecisionBlockedError
+from .account_chart import AccountChartService, OUTPUT_LIMIT
+from .forward_chart import render_forward_chart_html
 from execution_channels.futu.store import PaperStore
 from execution_channels.futu.channel import ChannelAccountConfig, FUTU_SIMULATE_CN_CHANNEL_ID, FUTU_US_SIM_CHANNEL_ID
 from execution_channels.futu.futu_execution import ChannelExecution, ChannelReconciliationError
@@ -120,13 +124,64 @@ def _facts(store):
             "events": [dict(r) for r in store._connection.execute("SELECT * FROM equity_account_events WHERE account_id='equity' ORDER BY event_id")]}
 
 
+@dataclass
+class _InspectionChartMarketData:
+    dataflows: Dataflows
+    binding: EquityInputBinding
+    request: EquityDataRequest
+
+    @cached_property
+    def daily(self):
+        result = self.dataflows.fetch(self.request, prepared=self.binding.prepared)
+        if not result.ready or result.identity.content_sha256 != self.binding.expected_identities["bars"]:
+            raise ValueError("forward chart HFQ input differs from the inspected product")
+        frame = result.dataframe.sort_values("Date").dropna(subset=["Open", "High", "Low", "Close"])
+        sessions = frame["Date"].dt.tz_convert(self.binding.instrument.timezone).dt.date
+        daily = frame.groupby(sessions).agg(Open=("Open", "first"), High=("High", "max"),
+                                            Low=("Low", "min"), Close=("Close", "last"))
+        return result.identity.content_sha256, daily.rename_axis("Date").reset_index()
+
+    def history(self, **_):
+        return self.daily
+
+
+def _inspect_forward_chart(store, facts, market_data, cache_dir):
+    rows = facts["decisions"]
+    # Use the same projection and renderer as the account console, with the
+    # isolated HFQ product and saved account facts. There is no strategy call.
+    chart = AccountChartService(store, market_data=market_data, cache_dir=cache_dir)
+    try:
+        context = chart._request(store.virtual_account("equity"))
+    finally:
+        chart.close()
+    events = context["execution"]["decisions"]
+    if len(events) != len(rows):
+        raise ValueError("forward chart omitted saved decisions")
+    for row, event in zip(rows, events, strict=True):
+        for field in ("decision_id", "signal_date", "valid_session", "generated_at", "status", "state_reason"):
+            if row[field] != event[field]:
+                raise ValueError(f"forward chart decision {field} differs from the stored fact")
+        payload = row["payload"]
+        for field in ("action", "target_quantity"):
+            if payload.get(field) != event[field]:
+                raise ValueError(f"forward chart decision {field} differs from the stored fact")
+        explanation = (payload.get("strategy_output") or {}).get("explanation")
+        if explanation is None or event["explanation"] != explanation:
+            raise ValueError("forward chart is missing the saved V4 explanation")
+    html = render_forward_chart_html(context, inline_assets=True)
+    if len(html.encode("utf-8")) > OUTPUT_LIMIT:
+        raise ValueError("isolated forward chart exceeds the publication size limit")
+    return {"status": "PASS", "first_signal_date": context["window"]["forward_observation_start"],
+            "decision_count": len(rows), "html": html}
+
+
 def inspect_equity_release(*, candidate, dataflows, binding, requests, execution_reference, initial_cash, fee_rate, permit, protocol, control=None):
     """Consume explicit channel facts; never infer fills from a historical price bar."""
     if type(protocol) is not EquityPteInspectionProtocol:
         raise TypeError("equity inspection requires explicit channel protocol")
     if candidate.definition.contract_version != 4:
         raise ValueError('legacy RAW inspection requires explicit migration to HFQ V4')
-    binding.bind_requests(requests)
+    market_data = _InspectionChartMarketData(dataflows, binding, dict(binding.bind_requests(requests))["bars"])
     candidate.verify()
     from strategy_runtime.deployment import validate_release_package
     verified = validate_release_package(permit.isolated_repository / "strategies", permit.release_id)
@@ -147,7 +202,7 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, execution
     from strategy_runtime.inspection import collect_inspection_environment
     if collect_inspection_environment(permit.isolated_repository) != protocol.environment:
         raise ValueError("equity inspection environment differs from executing installation")
-    cases, coverage = [], set()
+    cases, charts, coverage = [], {}, set()
     runtime = {}
     channel_id = FUTU_SIMULATE_CN_CHANNEL_ID if candidate.instrument.market.value == 'CN' else FUTU_US_SIM_CHANNEL_ID
     config = ChannelAccountConfig('inspection-channel', channel_id, 1)
@@ -288,6 +343,11 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, execution
             cases.append({"case_id": scenario.case_id, "status": "PASS", "code": "OK", "summary": "Normal equity account path verified",
                           "facts": {**facts, "observed": observed, "coverage": sorted(local_coverage)}})
             coverage.update(local_coverage)
+            if facts["decisions"]:
+                try:
+                    charts[scenario.case_id] = _inspect_forward_chart(store, facts, market_data, path.parent)
+                except Exception as exc:
+                    charts[scenario.case_id] = {"status": "FAIL", "error": f"{type(exc).__name__}: {exc}"}
         except Exception as exc:
             cases.append({"case_id": scenario.case_id, "status": "INCOMPLETE" if isinstance(exc, (InterruptedError, TimeoutError)) else "FAIL", "code": type(exc).__name__, "summary": str(exc),
                           "facts": {**_facts(store), "observed": observed, "coverage": sorted(local_coverage)}})
@@ -296,7 +356,10 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, execution
     required = {"COMPLETED", "PARTIAL", "DUPLICATE", "RESTART", "REJECTED", "UNKNOWN", "EXPIRED", "RECONCILIATION_BLOCKED"}
     missing = sorted(required - coverage)
     status = "FAIL" if any(c["status"] == "FAIL" for c in cases) else "INCOMPLETE" if missing or any(c["status"] == "INCOMPLETE" for c in cases) else "PASS"
+    chart_status = ("FAIL" if any(c["status"] == "FAIL" for c in charts.values())
+                    else "PASS" if charts else "INCOMPLETE")
     return {"status": status, "scenarios": cases, "coverage": {"observed": sorted(coverage), "missing": missing},
+            "forward_chart": {"status": chart_status, "scenarios": charts},
             "runtime": runtime,
             "environment": protocol.to_dict()["environment"]}
 

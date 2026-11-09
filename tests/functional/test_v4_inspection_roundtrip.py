@@ -190,6 +190,13 @@ def test_native_dual_market_inspection_freezes_exact_v4_package(tmp_path, market
         assert_cancelled_inspection_cannot_freeze(repository, inspection)
     report, operation, receipt = freeze_native_inspection(repository, inspection, source)
     assert validate_inspection(tmp_path, report.reference) == report
+    chart, = [case for case in report.pte_runtime.cases if case.case_id == 'pte-forward-chart']
+    assert chart.status is f.InspectionStatus.PASS
+    manifest, *html_files = [ref.resolve(tmp_path) for ref in chart.evidence]
+    metadata = json.loads(manifest.read_text(encoding='utf-8'))['forward_chart']
+    assert metadata['scenarios']['partial-duplicate-restart']['decision_count'] == 1
+    assert 'reconciliation-blocked' not in metadata['scenarios']
+    assert html_files and all('id="forward-context"' in path.read_text(encoding='utf-8') for path in html_files)
     assert get_freeze_result(repository, operation.request_id) == receipt == freeze_candidate(repository, operation)
     package = validate_release_package(repository.strategy_root, 'S999-v1')
     assert package.package_sha256 == report.release.package_sha256

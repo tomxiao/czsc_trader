@@ -10,6 +10,7 @@ from paper_trading_engine.forward_chart import render_forward_chart_html
 
 def test_mu_no_order_decision_drives_chart_start_and_saved_explanation(tmp_path):
     from paper_trading_engine.account_chart import AccountChartService
+    from paper_trading_engine.equity_inspection import _inspect_forward_chart
 
     explanation = {"state_key": "decision", "case_key": "wait", "judgment": "no opportunity",
                    "basis": [{"key": "target", "text": "target_weight: 0"}],
@@ -23,11 +24,12 @@ def test_mu_no_order_decision_drives_chart_start_and_saved_explanation(tmp_path)
                "strategy_version": "v1", "strategy_name_snapshot": "MU", "release_hash": "a" * 64,
                "selection_data_cutoff": "2026-10-30"}
     store = SimpleNamespace(account_decisions=lambda _: [row], account_intents=lambda _: [],
-                            account_fills=lambda _: [], account_snapshots=lambda _: [])
+                            account_fills=lambda _: [], account_snapshots=lambda _: [],
+                            virtual_account=lambda _: account)
     bars = pd.DataFrame([{"Date": day, "Open": 1, "High": 2, "Low": 1, "Close": 2}
                          for day in ("2026-11-05", "2026-11-06")])
-    service = AccountChartService(store, market_data=SimpleNamespace(history=lambda **_: ("data", bars)),
-                                  cache_dir=tmp_path)
+    market_data = SimpleNamespace(history=lambda **_: ("data", bars))
+    service = AccountChartService(store, market_data=market_data, cache_dir=tmp_path)
     try:
         result = service._request(account)
         assert result["window"]["forward_observation_start"] == "2026-11-06"
@@ -39,6 +41,15 @@ def test_mu_no_order_decision_drives_chart_start_and_saved_explanation(tmp_path)
         assert 'no opportunity' in render_forward_chart_html(result)
     finally:
         service.close()
+    artifact = _inspect_forward_chart(store, {"decisions": [row]}, market_data, tmp_path)
+    assert artifact["status"] == "PASS"
+    assert artifact["first_signal_date"] == "2026-11-06"
+    assert artifact["decision_count"] == 1
+    assert "no opportunity" in artifact["html"]
+    assert "/static/strategy-chart.js" not in artifact["html"]
+    row["payload"]["strategy_output"].clear()
+    with pytest.raises(ValueError, match="missing the saved V4 explanation"):
+        _inspect_forward_chart(store, {"decisions": [row]}, market_data, tmp_path)
 
 
 def _context() -> dict[str, object]:

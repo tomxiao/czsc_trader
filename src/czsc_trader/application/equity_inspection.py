@@ -285,6 +285,13 @@ def inspect_equity_candidate(context, request, control, registration, selection)
         permit = InspectionRuntimePermit(run_id, verified.release.release_id, release.release_sha256,
             release.package_sha256, canonical_sha256(request.protocol.pte.to_dict()), workspace / 'repository', workspace)
         outcome = _pte_job(frozen, flows, replay, permit, request.protocol.pte, controller)
+        chart = outcome['forward_chart']
+        chart_evidence = []
+        for item in chart['scenarios'].values():
+            if item['status'] == 'PASS':
+                artifact = store.put(item.pop('html').encode('utf-8'))
+                item['artifact_sha256'] = artifact.sha256
+                chart_evidence.append(artifact)
         coverage = store.put_json(_json(outcome))
         for case in outcome['scenarios']:
             status = f.InspectionStatus(case['status'])
@@ -295,6 +302,11 @@ def inspect_equity_candidate(context, request, control, registration, selection)
         pte.append(f.InspectionCaseResult('pte-coverage', status,
             f.InspectionReason.OK if status is f.InspectionStatus.PASS else f.InspectionReason.COVERAGE_MISSING,
             'normal PTE business path capability coverage', (coverage,)))
+        chart_status = f.InspectionStatus(chart['status'])
+        pte.append(f.InspectionCaseResult('pte-forward-chart', chart_status,
+            f.InspectionReason.OK if chart_status is f.InspectionStatus.PASS else f.InspectionReason.PTE_FAILURE,
+            'saved V4 decision explanations projected into isolated forward charts',
+            (coverage, *chart_evidence)))
         controller.stage = InspectionStage.FINALIZE
         controller.tick(force=True)
         if _load_inspection_candidate(context, request.candidate).content_identity != candidate.content_identity:
@@ -381,3 +393,22 @@ def validate_pass_facts(root, report, normalized, protocol):
         raise ValueError('equity PTE coverage absent')
     outcome = _read(coverage[0].evidence[0].resolve(root))
     verify_equity_inspection_facts(outcome, protocol['pte'])
+    chart_cases = [x for x in report.pte_runtime.cases if x.case_id == 'pte-forward-chart']
+    chart = outcome.get('forward_chart')
+    if chart is None and not chart_cases:
+        return  # Historical inspection reports retain their original scope.
+    if (len(chart_cases) != 1 or chart is None or chart['status'] != 'PASS'
+            or chart_cases[0].evidence[0] != coverage[0].evidence[0]):
+        raise ValueError('forward chart inspection evidence differs')
+    rows = {case['case_id']: case['facts']['decisions'] for case in outcome['scenarios']
+            if case['facts']['decisions']}
+    artifacts = chart_cases[0].evidence[1:]
+    if (not rows or set(rows) != set(chart['scenarios']) or
+            {ref.sha256 for ref in artifacts} != {item['artifact_sha256'] for item in chart['scenarios'].values()}):
+        raise ValueError('forward chart inspection coverage differs')
+    for case_id, item in chart['scenarios'].items():
+        if (item['status'] != 'PASS' or item['decision_count'] != len(rows[case_id])
+                or item['first_signal_date'] != min(row['signal_date'] for row in rows[case_id])):
+            raise ValueError('forward chart inspection decision coordinates differ')
+    for ref in artifacts:
+        ref.resolve(root)
