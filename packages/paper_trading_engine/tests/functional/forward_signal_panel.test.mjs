@@ -37,7 +37,7 @@ function render({width=1000,observations}={}){
     null,snapshot(6,{segment:'second'}),snapshot(7,{segment:'second',release:'c'}),snapshot(8,{segment:'second',release:'c'}),
     snapshot(9,{definition:'d'}),
   ];
-  const context={mode:'PAPER',strategy:{release_id:'S900-v1',name:'独立合成策略',symbol:'588080.SH',account_id:'test'},
+  const context={mode:'PAPER',strategy:{release_id:'S900-v1',name:'独立合成策略',symbol:'588080.SH',account_id:'test',currency:'CNY'},
     window:{selection_data_cutoff:dates[0],observation_start:dates[0]},
     market_data:{as_of:dates.at(-1),bars:dates.map(date=>({date,open:1,high:1.1,low:.9,close:1}))},
     observations:samples.flatMap((observation,i)=>observation?[{decision_id:`d${i}`,signal_date:dates[i],valid_session:'2026-09-11',generated_at:`${dates[i]}T12:30:00Z`,observation}]:[]),
