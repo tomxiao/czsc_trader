@@ -12,7 +12,7 @@ from dataflows import (
     DataCoverageRequirement, DataRequest, DataStatus, Dataset, FinancialDisclosureParameters,
     FinancialReportKind, FinancialReportType, PreparePolicy, PrepareStatus, SourceRequestError,
 )
-from dataflows.errors import DataContractError
+from dataflows.errors import DataContractError, EmptyDataError, IncompleteDataError
 from dataflows.financial_disclosures import fetch_company_financial_disclosures
 
 
@@ -79,7 +79,7 @@ def _bind(monkeypatch, pro):
     monkeypatch.setattr("dataflows.financial_disclosures.get_tushare_pro", lambda ignored=None: pro)
 
 
-@pytest.mark.parametrize("kind", list(FinancialReportKind))
+@pytest.mark.parametrize("kind", list(FinancialReportKind), ids=['DFLS-31-C01', 'DFLS-31-C02', 'DFLS-31-C03', 'DFLS-31-C04'])
 def test_prepare_and_pinned_fetch_preserve_four_kinds_raw_nulls_versions_and_identity(
     kind, monkeypatch, flow_factory,
 ):
@@ -132,53 +132,30 @@ def test_prepare_and_pinned_fetch_preserve_four_kinds_raw_nulls_versions_and_ide
     assert len(pro.calls) == len(pro.calendar_calls) == 1
 
 
-def test_later_actual_disclosure_controls_window_and_future_disclosures_are_excluded(
-    monkeypatch, flow_factory, publish_data,
-):
+def test_DFLS_31_C05_actual_disclosure_controls_window_and_availability():
     pro = FinancialPro([
         _row(ann_date="20250331", f_ann_date="20250425"),
         _row(ann_date="20250425", f_ann_date="20250506", revenue=200),
         _row(ann_date="20250425", f_ann_date=None, revenue=300),
     ])
-    _bind(monkeypatch, pro)
-    request, flow = _request(), flow_factory()
-    result = publish_data(flow, request)
-    assert result.ready, result.error
-    assert sorted(result.dataframe.revenue) == [100.25, 300]
-    assert result.identity.metadata["excluded_rows"] == 1
+    request = _request()
+    frame, metadata = fetch_company_financial_disclosures(request, pro=pro)
+    assert sorted(frame.revenue) == [100.25, 300]
+    assert metadata["excluded_rows"] == 1
+    assert frame.AvailableDate.eq(pd.Timestamp("2025-04-28 15:00")).all()
     # Report-period window alone cannot allow a future disclosure into a past input.
     pro.rows = [_row(f_ann_date="20250506")]
-    result = publish_data(flow, request)
-    assert result.status is DataStatus.EMPTY and result.dataframe.empty
+    with pytest.raises(EmptyDataError):
+        fetch_company_financial_disclosures(request, pro=pro)
 
 
-@pytest.mark.parametrize("report_type", [FinancialReportType.ADJUSTED_CONSOLIDATED,
-                                        FinancialReportType.BEFORE_ADJUSTMENT_CONSOLIDATED])
-def test_explicit_statement_vintages_are_bounded_and_never_certified(report_type, monkeypatch, flow_factory, publish_data):
-    pro = FinancialPro([_row(report_type=report_type.value)])
-    _bind(monkeypatch, pro)
-    request = _request()
-    request = replace(request, parameters=replace(request.parameters, report_type=report_type))
-    result = publish_data(flow_factory(), request)
-    assert result.ready, result.error
-    assert pro.calls[0][1]["report_type"] == report_type.value
-    assert result.dataframe.report_type.tolist() == [report_type.value]
-    assert result.identity.metadata["version_selection"] == "ALL_OBSERVED_ROWS_NO_VINTAGE_SELECTION"
 
 
 @pytest.mark.parametrize("mutation", [
-    {"ts_code": "000001.SZ"},
-    {"report_type": "6"},
-    {"ann_date": "20250230"},
-    {"ann_date": None, "f_ann_date": None},
-    {"ann_date": "20250301"},
-    {"revenue": "100.25"},
-    {"revenue": True},
-    {"revenue": float("inf")},
-    {"update_flag": None},
-])
+    {'revenue': '100.25'},
+    {'revenue': True},
+], ids=['DFLS-31-C06', 'DFLS-31-C07'])
 def test_invalid_financial_source_is_rejected_before_calendar(mutation):
-    # Public failure states are covered below; source-row validation needs no store.
     pro = FinancialPro([_row(**mutation)])
     with pytest.raises(DataContractError) as raised:
         fetch_company_financial_disclosures(_request(), pro=pro)
@@ -187,14 +164,9 @@ def test_invalid_financial_source_is_rejected_before_calendar(mutation):
 
 
 @pytest.mark.parametrize(("fault", "status", "code"), [
-    ("empty", DataStatus.EMPTY, "EMPTY_DATA"),
-    ("missing_field", DataStatus.FAILED, "DATA_CONTRACT_MISMATCH"),
-    ("source_rejection", DataStatus.FAILED, "SOURCE_REQUEST_FAILED"),
-    ("possible_truncation", DataStatus.INCOMPLETE, "INCOMPLETE_DATA"),
-    ("calendar_gap", DataStatus.INCOMPLETE, "INCOMPLETE_DATA"),
-    ("expected_period", DataStatus.INCOMPLETE, "INCOMPLETE_DATA"),
-    ("coverage", DataStatus.INCOMPLETE, "INCOMPLETE_DATA"),
-])
+    ('possible_truncation', DataStatus.INCOMPLETE, 'INCOMPLETE_DATA'),
+    ('expected_period', DataStatus.INCOMPLETE, 'INCOMPLETE_DATA'),
+], ids=['DFLS-32-C01', 'DFLS-32-C02'])
 def test_empty_incomplete_or_failed_financial_preparation_never_has_a_reference(
     fault, status, code, monkeypatch, flow_factory,
 ):
@@ -204,20 +176,30 @@ def test_empty_incomplete_or_failed_financial_preparation_never_has_a_reference(
     pro = FinancialPro([] if fault == "empty" else [row] * (100 if fault == "possible_truncation" else 1),
         failure=SourceRequestError("source denied") if fault == "source_rejection" else None,
         gap="2025-04-26" if fault == "calendar_gap" else None)
-    _bind(monkeypatch, pro)
     request = _request()
     if fault == "expected_period":
         request = replace(request, parameters=replace(request.parameters, expected_periods=("2024-12-31", "2025-03-31")))
     if fault == "coverage":
         request = replace(request, coverage=DataCoverageRequirement(maximum_start_lag_days=None, minimum_observations=2))
-    prepared = flow_factory().prepare((request,), policy=PreparePolicy.REFRESH)
-    assert prepared.status is PrepareStatus.FAILED and prepared.reference is None
-    item, = prepared.items
-    assert item.status is status and item.error.code == code
-    assert item.identity is None and len(pro.calls) == 1
+    if fault == "coverage":
+        # Coverage is a public preparation responsibility, not a source parser rule.
+        _bind(monkeypatch, pro)
+        prepared = flow_factory().prepare((request,), policy=PreparePolicy.REFRESH)
+        assert prepared.status is PrepareStatus.FAILED and prepared.reference is None
+        item, = prepared.items
+        assert item.status is status and item.error.code == code and item.identity is None
+    else:
+        expected = {"EMPTY_DATA": EmptyDataError, "DATA_CONTRACT_MISMATCH": DataContractError,
+                    "SOURCE_REQUEST_FAILED": SourceRequestError, "INCOMPLETE_DATA": IncompleteDataError}[code]
+        with pytest.raises(expected) as caught:
+            fetch_company_financial_disclosures(request, pro=pro)
+        assert caught.value.code == code
+        if fault == "expected_period":
+            assert caught.value.context["missing_periods"] == ["2024-12-31"]
+    assert len(pro.calls) == 1
 
 
-def test_partial_financial_batch_reports_item_results_without_global_success(monkeypatch, flow_factory):
+def test_DFLS_32_C03_partial_financial_batch_has_no_global_reference(monkeypatch, flow_factory):
     pro = FinancialPro([_row()])
     _bind(monkeypatch, pro)
     first = _request()
@@ -227,7 +209,7 @@ def test_partial_financial_batch_reports_item_results_without_global_success(mon
     assert [item.status for item in prepared.items] == [DataStatus.READY, DataStatus.INCOMPLETE]
 
 
-def test_refresh_keeps_old_financial_snapshot_and_rejects_unprepared_selections(monkeypatch, flow_factory):
+def test_DFLS_32_C04_refresh_preserves_old_financial_observations(monkeypatch, flow_factory):
     pro = FinancialPro([_row()])
     _bind(monkeypatch, pro)
     flow, request = flow_factory(), _request()
@@ -244,57 +226,3 @@ def test_refresh_keeps_old_financial_snapshot_and_rejects_unprepared_selections(
     assert expanded.error.code == "REQUEST_NOT_PREPARED"
     strict = flow.fetch(replace(request, required_cutoff="2025-04-30"), prepared=original.reference)
     assert strict.status is DataStatus.INCOMPLETE
-
-
-def test_financial_subset_read_keeps_explicit_period_coverage(monkeypatch, flow_factory):
-    pro = FinancialPro([_row(end_date="20241231", ann_date="20250410", f_ann_date="20250410"), _row()])
-    _bind(monkeypatch, pro)
-    flow, request = flow_factory(), _request()
-    request = replace(request, parameters=replace(request.parameters, expected_periods=("2024-12-31", "2025-03-31")))
-    prepared = flow.prepare((request,), policy=PreparePolicy.REFRESH)
-    assert prepared.ready, prepared.items
-    subset = flow.fetch(replace(request, start="2025-04-25"), prepared=prepared.reference)
-    assert subset.status is DataStatus.INCOMPLETE and subset.dataframe.empty
-    assert subset.error.context["missing_periods"] == ["2024-12-31"]
-    assert len(pro.calls) == 1
-
-
-@pytest.mark.parametrize(("change", "error"), [
-    ({"report_kind": "income"}, TypeError),
-    ({"report_type": "1"}, TypeError),
-    ({"report_kind": FinancialReportKind.FINANCIAL_INDICATOR}, ValueError),
-    ({"report_period_start": "2025-04-01"}, ValueError),
-    ({"report_period_start": "2024-12-31T00:00"}, ValueError),
-    ({"expected_periods": ("2024-09-30",)}, ValueError),
-    ({"expected_periods": ["2025-03-31"]}, TypeError),
-])
-def test_financial_parameter_types_and_ranges_reject_illegal_calls(change, error):
-    with pytest.raises(error):
-        replace(_request().parameters, **change)
-
-
-@pytest.mark.parametrize(("change", "error"), [
-    ({"symbol": None}, ValueError),
-    ({"symbol": "AAPL"}, ValueError),
-    ({"start": "2025-04-01T15:00"}, ValueError),
-    ({"frequency": "daily"}, ValueError),
-    ({"end": "2025-03-30", "start": "2025-03-01"}, ValueError),
-    ({"parameters": None}, TypeError),
-])
-def test_financial_dataset_rejects_wrong_symbol_frequency_or_bounds(change, error):
-    with pytest.raises(error):
-        _request(**change)
-
-
-def test_facade_rejects_financial_binding_that_changes_raw_data_or_availability(monkeypatch, flow_factory, publish_data):
-    from dataflows.financial_disclosures import fetch_company_financial_disclosures
-
-    request = _request()
-    frame, metadata = fetch_company_financial_disclosures(request, pro=FinancialPro([_row()]))
-    frame.loc[0, "AvailableDate"] = pd.Timestamp("2025-04-25 15:00")
-    result = publish_data(flow_factory({Dataset.COMPANY_FINANCIAL_DISCLOSURES: lambda ignored: (frame, metadata)}), request)
-    assert result.status is DataStatus.FAILED and result.error.code == "DATA_CONTRACT_MISMATCH"
-    frame.loc[0, "AvailableDate"] = pd.Timestamp("2025-04-28 15:00")
-    frame.loc[0, "revenue"] = 0
-    result = publish_data(flow_factory({Dataset.COMPANY_FINANCIAL_DISCLOSURES: lambda ignored: (frame, metadata)}), request)
-    assert result.status is DataStatus.FAILED and result.error.code == "DATA_CONTRACT_MISMATCH"

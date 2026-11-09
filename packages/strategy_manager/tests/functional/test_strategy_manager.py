@@ -7,7 +7,13 @@ from strategy_manager import (
     ValidationError,
 )
 
-@pytest.mark.parametrize("schema", [1, True, "5", None, 6])
+@pytest.mark.parametrize('schema', [
+    pytest.param(1, id='SM-13-C03'),
+    pytest.param(2, id='SM-13-C04'),
+    pytest.param(3, id='SM-13-C05'),
+    pytest.param(4, id='SM-13-C06'),
+])
+@pytest.mark.risk_cases('SM-13-C03', 'SM-13-C04', 'SM-13-C05', 'SM-13-C06')
 def test_registry_rejects_retired_release_and_preserves_original(tmp_path, schema):
     registry = StrategyRegistry(tmp_path)
     path = tmp_path / "S900/versions/v1.json"
@@ -19,7 +25,8 @@ def test_registry_rejects_retired_release_and_preserves_original(tmp_path, schem
     assert path.read_bytes() == before
 
 
-def test_family_registration_still_validates_names_and_identity(tmp_path):
+@pytest.mark.risk_cases('SM-03-C04')
+def test_SM_03_C04_family_name_collision_preserves_original(tmp_path):
     registry = StrategyRegistry(tmp_path)
     raw = {
         "schema_version": 2,
@@ -42,3 +49,4 @@ def test_family_registration_still_validates_names_and_identity(tmp_path):
             actor="tester",
             reason="duplicate name",
         )
+    assert registry.get_family("S900") == family

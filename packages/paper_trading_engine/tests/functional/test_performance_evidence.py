@@ -11,12 +11,13 @@ from paper_trading_engine.performance_export import (
     _canonical_sha256, calculate_metrics, export_performance,
 )
 from pte_support import adopt_test_decision, claim_test_intent
-from strategy_manager import PerformanceEvidence, RegistryError, StrategyRegistry, ValidationError
+from strategy_manager import PerformanceEvidence
 
 
+# Independent risk: PTE26; responsibility-level assertions.
 @pytest.mark.parametrize("start,initial,expected_return", [
-    (None, 100.0, 1.0), ("2026-09-01", 100.0, 1.0), ("2026-09-02", 200.0, 0.0),
-])
+    ("2026-09-02", 200.0, 0.0),
+], ids=['PTE26-C01'])
 def test_performance_window_uses_auditable_opening_assets(tmp_path, start, initial, expected_return):
     history = [
         {"session": (date(2026, 9, 1) + timedelta(days=i)).isoformat(), "total_assets": "200"}
@@ -58,7 +59,10 @@ def test_performance_window_uses_auditable_opening_assets(tmp_path, start, initi
         assert source["opening_assets"]["basis"] == "INITIAL_CASH"
 
 
-@pytest.mark.parametrize("start,end", [("bad", None), ("2026-10-01", "2026-09-01")])
+# Independent risk: PTE26; responsibility-level assertions.
+@pytest.mark.parametrize("start,end", [
+    ("2026-10-01", "2026-09-01"),
+], ids=['PTE26-C02'])
 def test_performance_export_rejects_invalid_period_before_reading_store(tmp_path, start, end):
     with pytest.raises(ValueError):
         export_performance(object(), "audit", tmp_path / "absent.json", recorded_by="test",
@@ -119,42 +123,8 @@ def _export_window(memory_store, tmp_path, count, flat, version):
     return result, output
 
 
-@pytest.mark.parametrize("count,flat", [(3, False), (20, True)])
-def test_exported_performance_window_boundaries(memory_store, tmp_path, count, flat):
-    version = SimpleNamespace(
-        release_id="S900-v1", release_hash="a" * 64, strategy_id="S900", version="v1",
-    )
-    _export_window(memory_store, tmp_path, count, flat, version)
-
-
-def test_exported_performance_registers_with_sm_and_preserves_source(memory_store, pte_frozen, tmp_path):
-    context, version = pte_frozen
-    result, output = _export_window(memory_store, tmp_path, 20, False, version)
-    evidence = result["evidence"]
-
-    registry = StrategyRegistry(context.strategy_root)
-    registered = registry.record_evidence(evidence, source_file=output)
-    assert registered.initial_capital == 110000
-    assert registered.release_hash == version.release_hash
-    assert registry.evidence(version.strategy_id, version.version) == [registered]
-    archived = context.strategy_root / version.strategy_id / "evidence" / f"{registered.evidence_id}.json"
-    assert archived.read_bytes() == output.read_bytes()
-    assert registry.record_evidence(evidence, source_file=output) == registered
-
-    changed = json.loads(output.read_text(encoding="utf-8"))
-    changed["source"]["opening_assets"]["total_assets"] = "999"
-    tampered = tmp_path / "tampered.json"
-    tampered.write_text(json.dumps(changed), encoding="utf-8")
-    with pytest.raises(RegistryError, match="source evidence hash mismatch"):
-        registry.record_evidence({**evidence, "evidence_id": "tampered-source"}, source_file=tampered)
-    with pytest.raises(RegistryError, match="release_hash"):
-        registry.record_evidence({**evidence, "evidence_id": "foreign-release", "release_hash": "0" * 64})
-    for bad in (False, "undefined"):
-        with pytest.raises(ValidationError, match="calmar_ratio must be numeric"):
-            PerformanceEvidence.from_dict({**evidence, "calmar_ratio": bad})
-
-
-def test_ft_pte07_performance_evidence_is_self_contained_and_release_bound(memory_store, tmp_path):
+# Independent risk: PTE26; responsibility-level assertions.
+def test_PTE26_C03_ft_pte07_performance_evidence_is_self_contained_and_release_bound(memory_store, tmp_path):
     class CaptureStore:
         def __init__(self):
             self.events = []

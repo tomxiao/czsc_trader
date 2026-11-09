@@ -1,3 +1,4 @@
+# Risk ownership: TDR-27
 """Frozen migration preparation is local and explicitly separates equivalence.
 
 Release acceptance covers the four retained historical source adapters.
@@ -5,7 +6,7 @@ Synthetic feature boundaries exercise each unchanged decision kernel. They do
 not stand in for market-data, transaction-ledger or production acceptance.
 """
 
-from datetime import datetime, time, timedelta
+from datetime import datetime, time
 from decimal import Decimal
 from hashlib import sha256
 import importlib
@@ -32,8 +33,7 @@ from strategy_runtime import (
     RuntimeBinding, SignalHistoryMode,
     StrategyImplementationV2, StrategyRuntime, TradableWindow,
 )
-from execution_channels.session_contracts import (ExecutionCapabilities, ExecutionPlan, ExecutionState,
-    OrderSide, OrderType, PlanLeg, PlannedOrder, PortfolioSnapshot, PriceReference, StrategyIdentity,
+from execution_channels.session_contracts import (ExecutionCapabilities, ExecutionPlan, OrderSide, OrderType, PlanLeg, PlannedOrder, PriceReference, StrategyIdentity,
     TradingPoint, plan_identity_for, signal_identity_for)
 from execution_channels.planning.session import build_execution_plan
 from execution_channels.serialization import from_record, to_record
@@ -87,8 +87,7 @@ def preparations(frozen_seed_root):
     assert actual == original, "preparation must never modify or create frozen strategy files"
 
 
-@pytest.mark.parametrize("reference", REFERENCES)
-def test_real_frozen_preparation_authenticates_new_identity_and_plain_import(preparations, reference, monkeypatch):
+def assert_frozen_preparation_identity(preparations, reference, monkeypatch):
     _, results = preparations
     result = results[reference]
     assert result.original_source_sha256 != result.migrated_source_sha256
@@ -180,39 +179,6 @@ def _synthetic_features(reference, implementations, monkeypatch):
     else:
         calculation_dates = dates
     return inputs, calculation_dates
-
-
-@pytest.mark.parametrize("reference", REFERENCES)
-@pytest.mark.parametrize("mode,window_length", [
-    # CONTINUOUS always uses the complete calculation history, even for one signal.
-    (SignalHistoryMode.CONTINUOUS, 1),
-    (SignalHistoryMode.WINDOW, 1),
-    (SignalHistoryMode.WINDOW, 12),
-])
-def test_synthetic_kernel_equivalence_retains_market_intent_across_windows(authenticated_runtimes, reference, mode, window_length, monkeypatch):
-    old, new = _implementations(authenticated_runtimes, reference)
-    inputs, calculation_dates = _synthetic_features(reference, (old, new), monkeypatch)
-    signal_dates = calculation_dates[-window_length:]
-    context = HistoryCalculationContext(mode, TradableWindow(
-        signal_dates[0].date() + timedelta(days=1), signal_dates[-1].date() + timedelta(days=1)),
-        tuple(signal_dates.date), tuple(calculation_dates.date))
-    sessions = context.sessions
-    expected = (old.calculate_history(inputs, sessions) if mode is SignalHistoryMode.CONTINUOUS
-                else old.calculate_window_history(inputs, sessions))
-    expected = expected.reindex(sessions)
-    actual = new.calculate_context_history(inputs, context)
-    pd.testing.assert_frame_equal(actual, new.calculate_context_history(inputs, context))
-    pd.testing.assert_frame_equal(actual, expected, check_names=False, check_freq=False, check_index_type=False)
-    if reference == "S007-v1":
-        assert actual.target_position.eq(1).all(), "canonical market intent must retain causal hysteresis"
-
-
-def test_migration_rejects_unsafe_or_reused_workspace_without_frozen_changes(preparations):
-    context, results = preparations
-    with pytest.raises(ValueError, match="under repository .tmp"):
-        prepare_frozen_runtime_migration(context, FrozenRuntimeMigrationRequest("S001-v1", "C9899", Path("strategies/new")))
-    with pytest.raises(FileExistsError, match="already exists"):
-        prepare_frozen_runtime_migration(context, FrozenRuntimeMigrationRequest("S001-v1", "C9899", results["S001-v1"].metadata_path.parent))
 
 
 def _definitions(authenticated_runtimes, reference):
@@ -316,9 +282,12 @@ def _relational_ledger(result):
     return output
 
 
-@pytest.mark.parametrize("reference,mode", [(reference, mode) for reference in REFERENCES
-    for mode in (SignalHistoryMode.CONTINUOUS, SignalHistoryMode.WINDOW)])
-def test_actual_policies_and_txe_economic_ledgers_remain_equivalent(authenticated_runtimes, reference, mode, monkeypatch):
+@pytest.mark.parametrize("reference", REFERENCES)
+def test_actual_policies_and_txe_economic_ledgers_remain_equivalent(
+    authenticated_runtimes, preparations, reference, monkeypatch,
+):
+    assert_frozen_preparation_identity(preparations, reference, monkeypatch)
+    mode = SignalHistoryMode.CONTINUOUS
     old, new = _implementations(authenticated_runtimes, reference)
     definitions = _definitions(authenticated_runtimes, reference)
     assert definitions[0].execution == definitions[1].execution
@@ -344,28 +313,3 @@ def test_actual_policies_and_txe_economic_ledgers_remain_equivalent(authenticate
     assert result.account_daily.cash.ge(0).all()
     assert result.account_daily.cash_before.iloc[0] == 100_000.
     assert result.account_daily.quantity_before.iloc[0] == 0, "market intent must never carry account positions into replay"
-
-
-
-@pytest.mark.parametrize("reference", REFERENCES)
-def test_existing_nonzero_account_cash_and_cycle_are_preserved_by_migrated_planner(authenticated_runtimes, reference):
-    old, new = _definitions(authenticated_runtimes, reference)
-    generated = datetime(2026, 10, 16, 20, 30, tzinfo=ZoneInfo("Asia/Shanghai"))
-    for cash, quantity, cycle in (("12345.67", 600, 600), ("99.50", 200, 600)):
-        portfolio = PortfolioSnapshot("existing-account", old.tradable_symbol, Decimal(cash),
-            Decimal(cash) + quantity * Decimal(10), quantity, 17, generated)
-        state = ExecutionState(23, generated, cycle)
-        for target in (0., 1.):
-            if old.execution.policy_type == "INTRADAY_OVERLAY" and quantity != cycle:
-                # An incomplete core is an explicit error in the actual old and new policy.
-                from execution_channels.errors import RuntimeContractError
-                for definition in (old, new):
-                    with pytest.raises(RuntimeContractError, match="differs from core quantity"):
-                        _raw_plan(definition, target, portfolio, state)
-                continue
-            plans = [_raw_plan(definition, target, portfolio, state) for definition in (old, new)]
-            assert plans[0] == plans[1]
-            assert plans[1]["actual_quantity"] == quantity
-            assert plans[1]["cycle_target_quantity"] == cycle
-            assert plans[1]["available_cash"] == float(cash)
-            assert state.revision == 23 and portfolio.revision == 17

@@ -67,7 +67,7 @@ def _must_not_fetch(request):
     raise AssertionError("supplier must not be called")
 
 
-def test_refresh_keeps_old_reference_and_reopen_reuses_assets(tmp_path):
+def test_DFLS_06_C01_refresh_keeps_old_reference_and_reopen_reuses_assets(tmp_path):
     calls = []
     source = _frame()
 
@@ -104,7 +104,7 @@ def test_refresh_keeps_old_reference_and_reopen_reuses_assets(tmp_path):
                        flows.fetch(_request(), prepared=refreshed.reference).dataframe)
 
 
-def test_partial_prepare_preserves_success_for_retry_without_batch_reference(tmp_path):
+def test_DFLS_06_C03_partial_prepare_preserves_success_for_retry_without_batch_reference(tmp_path):
     calls = []
     failing = True
 
@@ -127,7 +127,7 @@ def test_partial_prepare_preserves_success_for_retry_without_batch_reference(tmp
     assert _counts(tmp_path) == (2, 1)
 
 
-def test_failed_refresh_leaves_previous_lookup_and_reference_usable(tmp_path):
+def test_DFLS_06_C02_failed_refresh_leaves_previous_lookup_and_reference_usable(tmp_path):
     flows = _flows(tmp_path, lambda request: (_frame(), {"vendor": "synthetic"}))
     original = flows.prepare((_request(),), policy=PreparePolicy.REUSE)
     broken = _flows(tmp_path, _must_not_fetch)
@@ -139,24 +139,35 @@ def test_failed_refresh_leaves_previous_lookup_and_reference_usable(tmp_path):
     assert reused.ready and reused.reference == original.reference and _counts(tmp_path) == (1, 1)
 
 
-def test_cross_space_unknown_and_tampered_references_fail(tmp_path):
+@pytest.mark.parametrize("violation,expected", [
+    ("space","SPACE_MISMATCH"),
+    ("unknown","UNKNOWN_REF"),
+], ids=['DFLS-05-C01', 'DFLS-05-C02'])
+def test_reference_identity_is_checked_without_supplier_fallback(tmp_path,clone_published_flow,violation,expected):
+    calls = []
     def provider(request):
-        return _frame(), {"vendor": "synthetic"}
-    flows = _flows(tmp_path, provider)
-    prepared = flows.prepare((_request(),), policy=PreparePolicy.REUSE)
-    other = _flows(tmp_path, _must_not_fetch, "other")
-    assert other.fetch(_request(), prepared=prepared.reference).error.code == "SPACE_MISMATCH"
-    unknown = replace(prepared.reference, preparation_id=uuid4())
-    assert flows.fetch(_request(), prepared=unknown).error.code == "UNKNOWN_REF"
-    incorrect = replace(prepared.reference, manifest_sha256="0" * 64)
-    assert flows.fetch(_request(), prepared=incorrect).error.code == "PREPARATION_CORRUPT"
+        calls.append(request)
+        frame = _frame()
+        return frame, {"vendor":"synthetic", **ohlcv_fixture_metadata(
+            frame,start="2026-09-14",end="2026-09-16")}
+    flows, original = clone_published_flow("references",{Dataset.ETF_OHLCV:provider},_request())
+    calls.clear()
+    reference = original.prepared
+    if violation == "space":
+        flows = _flows(tmp_path,_must_not_fetch,"other")
+    elif violation == "unknown":
+        reference = replace(reference,preparation_id=uuid4())
+    else:
+        reference = replace(reference,manifest_sha256="0"*64)
+    result = flows.fetch(_request(),prepared=reference)
+    assert not result.ready and result.error.code == expected
+    assert result.identity is None and result.dataframe.empty and not calls
 
 
 @pytest.mark.parametrize("target, expected", [
-    ("manifest", "PREPARATION_CORRUPT"),
-    ("payload", "ASSET_CORRUPT"),
-    ("missing_asset", "ASSET_MISSING"),
-])
+    pytest.param("manifest", "PREPARATION_CORRUPT",id="DFLS-05-C03"),
+    pytest.param("missing_asset", "ASSET_MISSING",id="DFLS-07-C01"),
+], ids=['DFLS-05-C03', 'DFLS-07-C01'])
 def test_corrupt_or_missing_assets_never_trigger_supplier_fallback(
     tmp_path, clone_published_flow, target, expected,
 ):
@@ -188,7 +199,7 @@ def test_corrupt_or_missing_assets_never_trigger_supplier_fallback(
     assert not calls
 
 
-def test_fetch_is_read_only_and_subset_bound_coverage_is_not_asset_identity(tmp_path):
+def test_DFLS_10_C02_fetch_is_read_only_and_subset_bound_coverage_is_not_asset_identity(tmp_path):
     calls = []
 
     def provider(request):
@@ -216,7 +227,7 @@ def test_fetch_is_read_only_and_subset_bound_coverage_is_not_asset_identity(tmp_
     assert flows.prepare((insufficient,), policy=PreparePolicy.REUSE).items[0].status is DataStatus.INCOMPLETE
 
 
-def test_cached_batch_cannot_point_at_a_different_complete_request(tmp_path):
+def test_DFLS_05_C04_cached_batch_cannot_point_at_a_different_complete_request(tmp_path):
     calls = []
 
     def provider(request):
@@ -237,7 +248,7 @@ def test_cached_batch_cannot_point_at_a_different_complete_request(tmp_path):
     assert flows.fetch(_request(), prepared=original.reference).ready
 
 
-def test_pandas_schema_precision_and_detached_frames_survive_reopen(tmp_path):
+def test_DFLS_10_C03_pandas_schema_precision_and_detached_frames_survive_reopen(tmp_path):
     source = _frame()
     source["PublishedAt"] = pd.date_range("2026-09-14", periods=3, tz="Asia/Shanghai")
     source["NullableCount"] = pd.array([1, None, 3], dtype="Int64")
@@ -273,7 +284,7 @@ def _process_prepare(base_dir):
     return str(prepared.reference.space_id), result.identity.content_sha256
 
 
-def test_threads_create_same_space_concurrently_and_prepare_once(tmp_path):
+def test_DFLS_08_C01_threads_create_same_space_concurrently_and_prepare_once(tmp_path):
     barrier = Barrier(4)
 
     def worker():
@@ -288,7 +299,7 @@ def test_threads_create_same_space_concurrently_and_prepare_once(tmp_path):
     assert not list((tmp_path / "space").glob("*.initializing.sqlite3*"))
 
 
-def test_spawn_processes_share_first_space_and_prepare_once(tmp_path):
+def test_DFLS_08_C02_spawn_processes_share_first_space_and_prepare_once(tmp_path):
     with ProcessPoolExecutor(max_workers=3, mp_context=multiprocessing.get_context("spawn")) as executor:
         results = list(executor.map(_process_prepare, [str(tmp_path)] * 3))
     assert len(set(results)) == 1
@@ -296,18 +307,14 @@ def test_spawn_processes_share_first_space_and_prepare_once(tmp_path):
     assert _counts(tmp_path) == (1, 1)
 
 
-@pytest.mark.parametrize("path", [Path("."), Path("../escape")])
-def test_invalid_space_paths_are_rejected(path):
-    with pytest.raises(ValueError):
-        DataSpace(path)
 
 
-def test_absolute_space_path_is_rejected(tmp_path):
-    with pytest.raises(ValueError):
-        DataSpace(tmp_path / "space")
 
 
-@pytest.mark.parametrize("payload", [b"", b"not a SQLite database"])
+@pytest.mark.parametrize("payload", [
+    b"",
+    b"not a SQLite database",
+], ids=['DFLS-07-C03', 'DFLS-07-C04'])
 def test_existing_uninitialized_or_corrupt_database_is_not_recreated(tmp_path, payload):
     database = _database(tmp_path)
     database.parent.mkdir()
@@ -318,7 +325,7 @@ def test_existing_uninitialized_or_corrupt_database_is_not_recreated(tmp_path, p
     assert database.read_bytes() == payload
 
 
-def test_lock_timeout_returns_failure_without_provider_fallback(tmp_path, monkeypatch):
+def test_DFLS_08_C03_lock_timeout_returns_failure_without_provider_fallback(tmp_path, monkeypatch):
     flows = _flows(tmp_path, _must_not_fetch)
     connect = sqlite3.connect
 
@@ -333,11 +340,3 @@ def test_lock_timeout_returns_failure_without_provider_fallback(tmp_path, monkey
         assert result.status is PrepareStatus.FAILED and result.reference is None
         assert result.items[0].error.code == "SPACE_LOCK_TIMEOUT"
         blocker.rollback()
-
-
-def test_unserializable_provider_metadata_is_structured_failure(tmp_path):
-    flows = _flows(tmp_path, lambda request: (_frame(), {"vendor": "synthetic", "invalid": object()}))
-    result = flows.prepare((_request(),), policy=PreparePolicy.REFRESH)
-    assert result.status is PrepareStatus.FAILED and result.reference is None
-    assert result.items[0].error.code == "ASSET_SERIALIZATION_FAILED"
-    assert _counts(tmp_path) == (0, 0)

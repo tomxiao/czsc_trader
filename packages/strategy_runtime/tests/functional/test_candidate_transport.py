@@ -12,7 +12,9 @@ def _worker(candidate):
     return candidate.reference_id, candidate.runtime_identity_sha256
 
 
-def test_candidate_roundtrip_revalidates_and_preserves_immutable_identity(tmp_path, monkeypatch):
+def test_SRT_29_C01_candidate_roundtrip_revalidates_and_preserves_immutable_identity(
+    tmp_path, monkeypatch
+):
     # A real spawn proves serialization and child-process immutability. Avoid
     # recompiling every imported dependency into a new cache for this one child.
     monkeypatch.setenv("PYTHONDONTWRITEBYTECODE", "1")

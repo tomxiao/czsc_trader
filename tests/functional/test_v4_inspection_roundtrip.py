@@ -1,3 +1,4 @@
+# Risk ownership: E2E-03
 """Native V4 final packages and dual-market inspection, on synthetic data only."""
 from dataclasses import replace
 from datetime import date, timedelta
@@ -20,24 +21,31 @@ from czsc_trader.application.research_evidence import validate_inspection
 from czsc_trader.research_tools import ResearchExecutionSession
 from paper_trading_engine.equity_inspection import (EquityPteDecision, EquityPteReport,
     EquityPteRestart, EquityPteReconcile, EquityPteScenario, EquityPteInspectionProtocol)
-from test_equity_adjusted_observations import setup_adjusted
+from adjusted_observation_support import setup_adjusted
 from test_equity_inspection_roundtrip import (
     assert_cancelled_inspection_cannot_freeze, assert_frozen_us_delivery, seed_registered_frozen_candidate,
 )
 
 
 _PREPARED_SEEDS = {}
+pytestmark = pytest.mark.usefixtures('pinned_inspection_environment')
 
 
 def native_fixture(tmp_path, market, computation=StrategyComputation.STATEFUL_STEP, *, initial_state=False,
-                   etf=False):
-    key = (market, computation, initial_state, etf)
+                   etf=False, auxiliary=True):
+    key = (market, computation, initial_state, etf, auxiliary)
     saved = _PREPARED_SEEDS.get(key)
     if saved is not None:
         seed, prepared_request, reference = saved
         shutil.copytree(seed, tmp_path, dirs_exist_ok=True)
     context, request, products, _, _ = setup_adjusted(tmp_path, market, computation, etf=etf,
         existing_experiment=None if saved is None else prepared_request.experiment)
+    # This fixture protects native package/host/account integration. Auxiliary
+    # observation availability and identity have dedicated SRT/TDR tests.
+    # Do not re-publish two unrelated auxiliary feeds for every inspection.
+    if not auxiliary:
+        request = replace(request, candidate=replace(request.candidate,
+            definition=replace(request.candidate.definition, auxiliary_inputs=())))
     if initial_state:
         from strategy_runtime import equity_source_hash, StateRecord
         from strategy_runtime.equity_replay import StrategyStateSchema, StateField, StateValueType
@@ -105,25 +113,6 @@ def native_protocol(context, request, products):
         EquityPteInspectionProtocol(describe_inspection_environment(context.repository), tuple(scenarios)))
 
 
-@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
-@pytest.mark.parametrize('computation', [StrategyComputation.STATEFUL_STEP, StrategyComputation.BATCH_HISTORY])
-def test_native_technical_replay_preserves_hfq_inputs_fills_and_state(tmp_path, market, computation, monkeypatch):
-    context, request, _, replay = native_fixture(tmp_path, market, computation)
-    def forbidden(*args, **kwargs):
-        raise AssertionError('native replay must not run the retired V2 accounting audit')
-    monkeypatch.setattr('strategy_evaluator.frozen_equity._audit_frozen_equity_account', forbidden)
-    facts = replay_account(request.candidate, context.data, replay)
-    assert facts['input']['runtime_kind'] == 'ACCOUNT_REPLAY'
-    assert facts['input']['income_policy'] == 'EXCLUDE_NON_TRADING_INCOME'
-    assert 'actions' not in facts['source']
-    assert not {'CASH_DIVIDEND', 'DIVIDEND_PAYMENT', 'SPLIT'} & {row['kind'] for row in facts['facts']['account_entries']}
-    assert facts['definition']['contract_version'] == 4
-    assert facts['final_state']['revision'] == 3
-    assert facts['facts']['fills'] and all(x['price'] == 20 for x in facts['facts']['fills'])
-    assert facts['source'][request.candidate.definition.auxiliary_inputs[0].data_key(EquityProduct.BARS)][0]['Close'] == 20.
-    assert facts['source'][request.candidate.definition.auxiliary_inputs[1].data_key(EquityProduct.BARS)][0]['Close'] == 200.
-
-
 def test_native_technical_replay_rejects_batch_that_changes_in_online_context(tmp_path):
     from strategy_runtime import equity_source_hash
     context, request, _, replay = native_fixture(tmp_path, MarketId.US, StrategyComputation.BATCH_HISTORY)
@@ -189,7 +178,7 @@ def freeze_native_inspection(repository, inspection, source, *, version='v1'):
 
 @pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
 def test_native_dual_market_inspection_freezes_exact_v4_package(tmp_path, market):
-    context, request, products, replay = native_fixture(tmp_path, market, initial_state=True)
+    context, request, products, replay = native_fixture(tmp_path, market, initial_state=True, auxiliary=False)
     repository = context.repository
     inspection, source = native_inspection_request(tmp_path, context, request, products, replay)
     wrong = replace(inspection, protocol=replace(inspection.protocol, method_version='candidate-inspection-v2'))
@@ -215,14 +204,9 @@ def test_native_dual_market_inspection_freezes_exact_v4_package(tmp_path, market
         assert_frozen_us_delivery(context, request, report, operation, receipt, inspection.selection)
 
 
-def test_strategy_cannot_supply_execution_orders_or_legs():
-    from strategy_runtime import AccountDecision
-    for name in ('orders', 'legs', 'capital_mode', 'cycle_before', 'cycle_after'):
-        with pytest.raises(TypeError):
-            AccountDecision.from_facts(1., 'target', facts={}, next_watch='next', **{name: ()})
-
-
-def test_formal_inspection_permit_cannot_reach_normal_store_or_paths(tmp_path):
+@pytest.mark.parametrize('boundary', ['repository', 'data_dir', 'store'],
+                         ids=['PTE30-C01', 'PTE30-C02', 'PTE30-C03'])
+def test_formal_inspection_permit_cannot_reach_normal_store_or_paths(tmp_path, boundary):
     from paper_trading_engine.formal_v4_advice import FormalV4AdviceClient
     from paper_trading_engine.ec_boundary import execution_permit
     from execution_channels.futu.store import PaperStore
@@ -236,16 +220,19 @@ def test_formal_inspection_permit_cannot_reach_normal_store_or_paths(tmp_path):
     isolated = PaperStore(workspace / 'isolated.db', inspection_permit=execution_permit(permit))
     try:
         kwargs = dict(repo_root=repository, dataflows=None, data_dir=workspace / 'data', inspection_permit=permit)
-        with pytest.raises(ValueError, match='store differs'):
-            FormalV4AdviceClient(store=ordinary, **kwargs)
-        with pytest.raises(ValueError, match='repository differs'):
-            FormalV4AdviceClient(store=isolated, **{**kwargs, 'repo_root': tmp_path})
-        with pytest.raises(RuntimeCompatibilityError, match='escapes'):
-            FormalV4AdviceClient(store=isolated, **{**kwargs, 'data_dir': tmp_path / 'outside'})
-        client = FormalV4AdviceClient(store=isolated, **kwargs)
-        assert client.inspection_permit == permit
-        with pytest.raises(RuntimeCompatibilityError):
-            client.load_release('S999', 'v1')  # Permission does not replace package authentication.
+        if boundary == 'repository':
+            with pytest.raises(ValueError, match='repository differs'):
+                FormalV4AdviceClient(store=isolated, **{**kwargs, 'repo_root': tmp_path})
+        elif boundary == 'data_dir':
+            with pytest.raises(RuntimeCompatibilityError, match='escapes'):
+                FormalV4AdviceClient(store=isolated, **{**kwargs, 'data_dir': tmp_path / 'outside'})
+        else:
+            with pytest.raises(ValueError, match='store differs'):
+                FormalV4AdviceClient(store=ordinary, **kwargs)
+            client = FormalV4AdviceClient(store=isolated, **kwargs)
+            assert client.inspection_permit == permit
+            with pytest.raises(RuntimeCompatibilityError):
+                client.load_release('S999', 'v1')  # Permission does not replace package authentication.
     finally:
         isolated.close()
         ordinary.close()

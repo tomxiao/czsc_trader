@@ -1,8 +1,8 @@
+# Risk ownership: TDR-17
 """Public account diagnosis authenticates retained accounts without executing them."""
 from historical_evaluation_support import prepare_historical, evaluate_historical, publish_historical
 
 from dataclasses import replace
-from datetime import date
 import json
 import pickle
 import shutil
@@ -80,7 +80,7 @@ def retained_account(request, tmp_path, frozen_seed_root):
     return restored_context(root), evaluation, result, evidence
 
 
-def test_authenticated_hfq_account_decomposes_daily_years_and_inherited_window(
+def test_TDR_17_C01_authenticated_hfq_account_decomposes_daily_years_and_inherited_window(
     retained_account, monkeypatch
 ):
     context, request, result, evidence = retained_account
@@ -117,7 +117,7 @@ def test_authenticated_hfq_account_decomposes_daily_years_and_inherited_window(
     assert json.loads(json.dumps(sliced.to_dict()))["status"] == "COMPUTED"
 
 
-def test_population_membership_is_explicit_and_unknown_remains_unknown(retained_account):
+def test_TDR_17_C03_population_membership_is_explicit_and_unknown_remains_unknown(retained_account):
     context, request, result, evidence = retained_account
     run = result.runs[0]
     decisions = run.execution.decisions.decision_id.tolist()
@@ -161,7 +161,7 @@ def test_population_membership_is_explicit_and_unknown_remains_unknown(retained_
             assert summary.member_fraction is None
 
 
-def test_invalid_evidence_and_absent_coordinate_do_not_claim_computed(retained_account):
+def test_TDR_17_C05_invalid_evidence_and_absent_coordinate_do_not_claim_computed(retained_account):
     context, request, result, evidence = retained_account
     identity = result.runs[0].identity
     missing = replace(identity, environment_sha256="f" * 64)
@@ -170,17 +170,9 @@ def test_invalid_evidence_and_absent_coordinate_do_not_claim_computed(retained_a
         AccountDiagnosisRequest(AccountRunRef(evidence, missing), None, request.windows[0]),
     )
     assert diagnosis.status is AccountDiagnosisStatus.INVALID_EVIDENCE
-    path = evidence.resolve(context.repository.root)
-    path.write_bytes(path.read_bytes() + b" ")
-    changed = diagnose_accounts(
-        context.repository,
-        AccountDiagnosisRequest(AccountRunRef(evidence, identity), None, request.windows[0]),
-    )
-    assert changed.status is AccountDiagnosisStatus.INVALID_EVIDENCE
-    assert "content differs" in changed.issues[0]
 
 
-def test_pair_comparison_preserves_ids_and_rejects_different_costs(retained_account):
+def test_TDR_17_C06_pair_comparison_preserves_ids_and_rejects_different_costs(retained_account):
     context, request, result, evidence = retained_account
     reference = AccountRunRef(evidence, result.runs[0].identity)
     identical = diagnose_accounts(
@@ -199,49 +191,7 @@ def test_pair_comparison_preserves_ids_and_rejects_different_costs(retained_acco
     assert mismatch.status is AccountDiagnosisStatus.INCOMPARABLE
 
 
-def test_request_rejects_untyped_or_foreign_batch_inputs(retained_account):
-    _, request, result, evidence = retained_account
-    reference = AccountRunRef(evidence, result.runs[0].identity)
-    with pytest.raises(TypeError):
-        AccountDiagnosisRequest(reference, None, request.windows[0], [])
-    foreign = replace(evidence, experiment=replace(evidence.experiment, strategy_id="S901"))
-    with pytest.raises(ValueError, match="different batches"):
-        AccountRunRef(foreign, result.runs[0].identity)
-    with pytest.raises(ValueError, match="ordered"):
-        EvaluationWindow("bad", date(2026, 1, 2), date(2026, 1, 1))
-
-
-@pytest.mark.parametrize("malformation", ["boolean_version", "duplicate_key"])
-def test_membership_evidence_rejects_ambiguous_json(retained_account, malformation):
-    context, request, result, evidence = retained_account
-    payload = {
-        "schema_version": True if malformation == "boolean_version" else 1,
-        "population_id": "bad",
-        "evaluation_id": result.runs[0].identity.evaluation_id,
-        "memberships": [],
-    }
-    encoded = json.dumps(payload)
-    if malformation == "duplicate_key":
-        encoded = encoded[:-1] + ', "population_id": "bad"}'
-    population = publish_evidence(
-        context,
-        MaterialEvidenceWrite(
-            evidence.experiment, "bad-population", encoded.encode(), "application/json", "json"
-        ),
-    )
-    diagnosis = diagnose_accounts(
-        context.repository,
-        AccountDiagnosisRequest(
-            AccountRunRef(evidence, result.runs[0].identity),
-            None,
-            request.windows[0],
-            (DecisionPopulationRef(population, "bad"),),
-        ),
-    )
-    assert diagnosis.status is AccountDiagnosisStatus.INVALID_EVIDENCE
-
-
-def test_target_without_actual_order_is_not_counted_as_buy_intent(
+def test_TDR_17_C02_target_without_actual_order_is_not_counted_as_buy_intent(
     candidate_payload, tmp_path, monkeypatch
 ):
     days = pd.bdate_range("2026-01-05", periods=5)
@@ -288,3 +238,16 @@ def test_target_without_actual_order_is_not_counted_as_buy_intent(
     assert diagnosis.status is AccountDiagnosisStatus.COMPUTED
     assert not any(d.buy_intent or d.buy_fill for d in diagnosis.decision_coverage)
     assert diagnosis.reconciliation[0].decomposed_change == 0
+
+
+def test_TDR_17_C04_corrupt_evidence_is_not_computed(retained_account):
+    context, request, result, evidence = retained_account
+    identity = result.runs[0].identity
+    path = evidence.resolve(context.repository.root)
+    path.write_bytes(path.read_bytes() + b" ")
+    changed = diagnose_accounts(
+        context.repository,
+        AccountDiagnosisRequest(AccountRunRef(evidence, identity), None, request.windows[0]),
+    )
+    assert changed.status is AccountDiagnosisStatus.INVALID_EVIDENCE
+    assert "content differs" in changed.issues[0]

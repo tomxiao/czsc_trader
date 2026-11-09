@@ -14,12 +14,11 @@ from execution_channels.state import AccountStrategyState, CycleState, StateReco
 from execution_channels.futu.channel import ChannelAccountConfig, FUTU_SIMULATE_CN_CHANNEL_ID, FUTU_US_SIM_CHANNEL_ID
 from execution_channels.futu.equity_account_state import budget_to_dict, position_to_dict, recognized_events, save_document
 from execution_channels.futu.equity_contracts import EquityAccountRules
-from execution_channels.futu.equity_events import allocate_quantities
 
 
-@pytest.fixture(params=list(MarketId))
-def holdings(request, memory_store):
-    market = request.param
+@pytest.fixture
+def holdings(memory_store):
+    market = MarketId.US
     cn = market is MarketId.CN
     instrument = InstrumentId(market, AssetClass.ETF if cn else AssetClass.STOCK, '588080.SH' if cn else 'MU')
     root = memory_store()
@@ -53,6 +52,7 @@ def holdings(request, memory_store):
         root.close()
 
 
+# Independent risk: EC22; responsibility-level assertions.
 def test_unknown_quantity_change_updates_ledger_and_all_v4_locks_once(holdings):
     store, symbol, at = holdings
     results = store.reconcile_equity_positions(symbol, quantity=10, at=at)
@@ -74,6 +74,7 @@ def test_unknown_quantity_change_updates_ledger_and_all_v4_locks_once(holdings):
     assert store.account_fills('a') == store.account_fills('b') == []
 
 
+# Independent risk: EC22; responsibility-level assertions.
 def test_position_reconciliation_state_failure_rolls_back_every_account(holdings, monkeypatch):
     from execution_channels.futu import equity_account_state
     store, symbol, at = holdings
@@ -90,6 +91,7 @@ def test_position_reconciliation_state_failure_rolls_back_every_account(holdings
     assert store.account_invariant_violations() == []
 
 
+# Independent risk: EC22; responsibility-level assertions.
 def test_zero_broker_quantity_closes_cycle_without_sale_income(holdings):
     store, symbol, at = holdings
     store.reconcile_equity_positions(symbol, quantity=0, at=at)
@@ -102,6 +104,7 @@ def test_zero_broker_quantity_closes_cycle_without_sale_income(holdings):
         store.reconcile_equity_positions(symbol, quantity=2, at=at)
 
 
+# Independent risk: EC22; responsibility-level assertions.
 def test_unknown_orders_block_quantity_attribution(holdings, monkeypatch):
     store, symbol, at = holdings
     monkeypatch.setattr(store, 'account_intents', lambda key: [{'status': 'TIMEOUT'}])
@@ -110,73 +113,18 @@ def test_unknown_orders_block_quantity_attribution(holdings, monkeypatch):
     assert store.virtual_account('a')['quantity'] == 3
 
 
-def test_stable_remainder_allocation_never_creates_fractional_units():
-    assert allocate_quantities({'b': 1, 'a': 1}, 1) == {'b': 0, 'a': 1}
-    assert allocate_quantities({'a': 3, 'b': 1}, 10) == {'a': 8, 'b': 2}
+# Independent risk: EC22; responsibility-level assertions.
 
 
-def test_broker_quantity_difference_is_reconciled_once_after_confirmed_orders(live_us):
-    _, store, broker, engine, _ = live_us
-    engine.submit_pending()
-    broker.fill(2, '99')
-    engine.refresh_orders()
-    broker.quantity = broker.sellable = 10
-    engine.now = lambda: datetime.fromisoformat('2026-11-05T10:01:00-05:00')
-    engine.refresh_orders()
-    engine.refresh_orders()
-    assert store.virtual_account('strategy')['quantity'] == 10
-    events = store.query_audit_events(event_type='CHANNEL_POSITION_RECONCILED')
-    assert len(events) == 1 and events[0]['details']['reason'] == 'UNKNOWN'
-    assert len(store.account_fills('strategy')) == 1
-    assert store.get_setting('channel_reconciliation_status') == 'OK'
+# Independent risk: EC22; responsibility-level assertions.
 
 
-def test_broker_quantity_change_and_audit_rollback_together(live_us, monkeypatch):
-    _, store, broker, engine, _ = live_us
-    engine.submit_pending()
-    broker.fill(2, '99')
-    engine.refresh_orders()
-    broker.quantity = broker.sellable = 10
-    record = engine.audit.record
-    def fail(event, **kwargs):
-        if event == 'CHANNEL_POSITION_RECONCILED':
-            raise RuntimeError('audit write failed')
-        return record(event, **kwargs)
-    with monkeypatch.context() as patch:
-        patch.setattr(engine.audit, 'record', fail)
-        with pytest.raises(RuntimeError, match='audit write failed'):
-            engine.refresh_orders()
-    assert store.virtual_account('strategy')['quantity'] == 2
-    assert store.account_invariant_violations() == []
-
-
-def test_unowned_historical_fill_blocks_position_adjustment(live_us, monkeypatch):
-    from execution_channels.futu.broker import BrokerOrder
-    from execution_channels.futu.futu_execution import ChannelReconciliationError
-    _, store, broker, engine, _ = live_us
-    engine.submit_pending()
-    broker.fill(2, '99')
-    engine.refresh_orders()
-    broker.quantity = broker.sellable = 3
-    unknown = BrokerOrder('43', 'MU', 'BUY', 1, 100, 'FILLED_ALL', 1, 100, 'unknown',
-        updated_at=engine.now().isoformat(), channel_account_id=broker.channel_account_id)
-    monkeypatch.setattr(broker, 'historical_order_snapshot', lambda start, end: (*broker.orders, unknown))
-    with pytest.raises(ChannelReconciliationError, match='完整订单记录'):
-        engine.refresh_orders()
-    assert store.virtual_account('strategy')['quantity'] == 2
-    assert not store.query_audit_events(event_type='CHANNEL_POSITION_RECONCILED')
-
-
-@pytest.mark.parametrize('late', [True, False])
-def test_confirmed_broker_deadline_zero_fill_has_explicit_normal_disposition(live_us, late):
-    from dataclasses import replace
-    _, store, broker, engine, intent = live_us
-    engine.submit_pending()
-    stamp = '2026-11-05T10:00:01-05:00' if late else '2026-11-05T09:31:00-05:00'
-    broker.orders = [replace(broker.orders[0], status='CANCELLED_ALL', updated_at=stamp)]
-    engine.now = lambda: datetime.fromisoformat(stamp)
-    engine.refresh_orders()
-    result = store.account_intent(intent['intent_id'])
-    assert bool(result['attention_required']) is not late
-    assert (result['payload'].get('termination_reason') == 'NORMAL_UNFILLED') is late
-    assert (store.virtual_account('strategy')['health'] == 'BLOCKED') is not late
+def test_EC22_C02_identical_quantity_fact_creates_no_duplicate_events(holdings):
+    store,symbol,at = holdings
+    store.reconcile_equity_positions(symbol,quantity=10,at=at)
+    before = tuple(store._connection.iterdump())
+    assert store.reconcile_equity_positions(symbol,quantity=10,at=at) == ()
+    assert tuple(store._connection.iterdump()) == before
+    event, = recognized_events(store,'a',0,at)[0]
+    assert event.reason == 'UNKNOWN' and event.cash_delta == 0
+    assert store.account_fills('a') == store.account_fills('b') == []

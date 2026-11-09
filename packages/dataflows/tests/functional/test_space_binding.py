@@ -7,7 +7,7 @@ import pytest
 from dataflows import Dataflows, DataSpace, DataSpaceBinding, ProviderConfig
 
 
-def test_space_binding_is_typed_immutable_and_stable_when_reopened(tmp_path):
+def test_DFLS_05_C05_space_binding_is_typed_immutable_and_stable_when_reopened(tmp_path):
     space = DataSpace(Path("research/S900/data"))
     flows = Dataflows(base_dir=tmp_path, space=space, providers=ProviderConfig(bindings={}))
     binding = flows.binding

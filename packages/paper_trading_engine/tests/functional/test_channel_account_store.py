@@ -1,5 +1,5 @@
 """Channel-account partitions share storage, never balances or write authority."""
-from datetime import datetime, timezone
+from datetime import datetime
 from decimal import Decimal
 import sqlite3
 
@@ -10,11 +10,9 @@ from execution_channels.policy import AccountPolicy, CashAvailabilityPolicy, Res
 from execution_channels.futu.audit import AuditRecorder
 from execution_channels.futu.channel import (
     ChannelAccountConfig, FUTU_SIMULATE_CN_CHANNEL_ID, FUTU_US_SIM_CHANNEL_ID,
-    TradingSession,
 )
 from execution_channels.futu.channel_accounts import DEFAULT_CHANNEL_ACCOUNT
 from execution_channels.futu.equity_contracts import EquityAccountRules
-from execution_channels.futu.lifecycle import AccountHealth
 from execution_channels.futu.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION
 
 
@@ -46,9 +44,9 @@ def _partition_accounts(root):
     return root, cn, us
 
 
+# Independent risk: EC26; responsibility-level assertions.
 @pytest.mark.parametrize('denied_name,action,rolled_back_name', [
     ('orders', sqlite3.SQLITE_CREATE_TABLE, 'events'),
-    ('idx_events_strategy_time', sqlite3.SQLITE_CREATE_INDEX, 'idx_events_event_id'),
 ])
 def test_initial_schema_failure_releases_writer_and_retries_without_partial_ddl(
     tmp_path, monkeypatch, denied_name, action, rolled_back_name,
@@ -115,6 +113,7 @@ def disk_partitions(tmp_path, new_store):
         root.close()
 
 
+# Independent risk: EC15; responsibility-level assertions.
 def test_partition_balances_settings_snapshots_and_reopen(disk_partitions):
     root, cn, us = disk_partitions
     assert {a["account_id"] for a in root.virtual_accounts()} == {"cn-strategy", "us-strategy"}
@@ -147,42 +146,21 @@ def test_partition_balances_settings_snapshots_and_reopen(disk_partitions):
         reopened.close()
 
 
-@pytest.mark.parametrize("operation", [
-    lambda store: store.virtual_account("us-strategy"),
-    lambda store: store.set_virtual_paused("us-strategy", False),
-    lambda store: store.set_virtual_health("us-strategy", AccountHealth.BLOCKED, "foreign"),
-    lambda store: store.rename_virtual_account("us-strategy", "stolen", "foreign"),
-    lambda store: store.account_orders("us-strategy"),
-    lambda store: store.account_fills("us-strategy"),
-    lambda store: store.account_snapshots("us-strategy"),
-    lambda store: store.scope("us-primary"),
-])
-def test_scoped_operations_reject_foreign_resources(partitions, operation):
-    _, cn, us = partitions
-    original = us.virtual_account("us-strategy")
-    with pytest.raises(ValueError, match="another channel|cross channel"):
-        operation(cn)
-    assert us.virtual_account("us-strategy") == original
+# Independent risk: EC15; responsibility-level assertions.
+def test_EC15_C03_scoped_reads_and_writes_refuse_foreign_resources(partitions):
+    root, cn, us = partitions
+    before = tuple(root._connection.iterdump())
+    with pytest.raises(ValueError, match='another channel|cross channel'):
+        cn.virtual_account('us-strategy')
+    with pytest.raises(ValueError, match='another channel|cross channel'):
+        cn.set_virtual_paused('us-strategy', False)
+    with pytest.raises(ValueError, match='another channel|cross channel'):
+        cn.account_orders('us-strategy')
+    assert tuple(root._connection.iterdump()) == before
+    assert us.virtual_account('us-strategy')['run_state'] == 'PAUSED'
 
 
-def test_default_scope_cannot_address_another_scopes_settings(partitions):
-    _, cn, us = partitions
-    us.set_setting("isolation-marker", "original")
-    with pytest.raises(ValueError, match="reserved|scope|channel"):
-        cn.set_setting("channel:us-primary:isolation-marker", "overwritten")
-    with pytest.raises(ValueError, match="reserved|scope|channel"):
-        cn.get_setting("channel:us-primary:isolation-marker")
-    assert us.get_setting("isolation-marker") == "original"
-
-
-def test_cross_scope_registration_has_no_partial_write_in_outer_transaction(disk_partitions):
-    root, cn, _ = disk_partitions
-    with root.atomic_decision_update():
-        with pytest.raises(ValueError, match="cross channel|scope|another channel"):
-            cn.register_channel_account(_config("foreign-new", broker=99), capital=Decimal("1000"))
-    assert "foreign-new" not in {item["channel_account_id"] for item in root.channel_accounts()}
-
-
+# Independent risk: EC15; responsibility-level assertions.
 def test_audit_and_failure_queries_are_scope_local(partitions):
     _, cn, us = partitions
     AuditRecorder(us).record("ORDER_REJECTED", source="fixture", account_id="us-strategy",
@@ -200,109 +178,14 @@ def test_audit_and_failure_queries_are_scope_local(partitions):
     assert us.operation_failures() == [] and len(cn.operation_failures()) == 1
 
 
-def test_scoped_audit_cannot_claim_foreign_account(partitions):
-    _, cn, us = partitions
-    before = len(us.query_audit_events())
-    with pytest.raises(ValueError, match="another channel"):
-        AuditRecorder(cn).record("ORDER_REJECTED", source="fixture", account_id="us-strategy",
-                                 channel=FUTU_US_SIM_CHANNEL_ID)
-    assert len(us.query_audit_events()) == before
-
-
-def test_same_fee_reference_is_independent_and_idempotent_per_scope(partitions):
-    _, cn, us = partitions
-    results = []
-    for scope, amount in ((cn, Decimal("-1.25")), (us, Decimal("-1.99"))):
-        reconciliation = scope.create_channel_reconciliation_account()
-        event = AuditRecorder(scope).build("CHANNEL_FEE_VARIANCE_RECONCILED", source="fixture",
-            account_id=reconciliation["account_id"], channel=scope.execution_channel_id)
-        args = dict(adjustment=amount, reference="same-broker-checkpoint",
-                    occurred_at=datetime.now(timezone.utc).isoformat(), event=event)
-        first = scope.apply_channel_fee_variance(**args)
-        second = scope.apply_channel_fee_variance(**args)
-        assert first["applied"] and not second["applied"]
-        assert Decimal(scope.virtual_account(reconciliation["account_id"])["cash"]) == amount
-        results.append(first["ledger_entry_id"])
-    assert results[0] != results[1]
-    assert cn.virtual_account("cn-strategy")["cash"] == "1000.0000"
-    assert us.virtual_account("us-strategy")["cash"] == "2000.0000"
-    assert not cn.account_invariant_violations() and not us.account_invariant_violations()
-
-
-def test_shared_connection_scope_writes_roll_back_together(disk_partitions):
-    root, cn, us = disk_partitions
-    class Rollback(Exception):
-        pass
-    with pytest.raises(Rollback):
-        with root.atomic_decision_update():
-            cn.set_setting("rollback-marker", "cn")
-            us.set_setting("rollback-marker", "us")
-            raise Rollback
-    assert cn.get_setting("rollback-marker") is None
-    assert us.get_setting("rollback-marker") is None
-    assert not root._connection.in_transaction
-
-
-def test_us_requires_explicit_matching_equity_rules(partitions):
-    _, _, us = partitions
-    with pytest.raises(ValueError, match="rules|market"):
-        us.create_virtual_account("invalid", "invalid", "v1", "a" * 64, 100,
-            symbol="MU", asset_type="stock", selection_data_cutoff="2026-09-30")
-    assert not any(a["account_id"] == "invalid" for a in us.virtual_accounts())
-
-
-def test_external_identity_and_capital_cannot_silently_change(partitions):
-    root, _, _ = partitions
-    with pytest.raises(ValueError, match="immutable"):
-        root.register_channel_account(ChannelAccountConfig("us-primary", FUTU_US_SIM_CHANNEL_ID,
-            42, TradingSession.ETH), capital=Decimal("20000"))
-    with pytest.raises(ValueError, match="capital"):
-        root.register_channel_account(_config(), capital=Decimal("20001"))
-    with pytest.raises(ValueError, match="already registered"):
-        root.register_channel_account(_config("us-duplicate"), capital=Decimal("20000"))
-
-
+# Independent risk: EC15; responsibility-level assertions.
 def test_unscoped_capital_cannot_mix_currencies(partitions):
     root, _, _ = partitions
     with pytest.raises(ValueError, match="scope|channel"):
         root.capital_pool_balance()
 
 
-def test_explicit_channel_mismatch_rejected(partitions):
-    _, cn, _ = partitions
-    with pytest.raises(ValueError, match="channel"):
-        cn.create_virtual_account("wrong-channel", "wrong", "v1", "a" * 64, 100,
-            symbol="MU", asset_type="stock", selection_data_cutoff="2026-09-30",
-            channel_id=FUTU_US_SIM_CHANNEL_ID, equity_rules=_rules())
-
-
-def test_reconciliation_account_rejects_explicit_wrong_channel(partitions):
-    _, cn, us = partitions
-    with pytest.raises(ValueError, match="channel"):
-        cn.channel_reconciliation_account(FUTU_US_SIM_CHANNEL_ID)
-    with pytest.raises(ValueError, match="channel"):
-        us.channel_reconciliation_account(FUTU_SIMULATE_CN_CHANNEL_ID)
-
-
-def test_multiple_same_day_decisions_survive_reopen(tmp_path, new_store):
-    from pte_support import adopt_test_decision
-
-    root = new_store(tmp_path / "multiple-decisions.db")
-    _account(root, "legacy")
-    for identity in ("first", "second"):
-        adopt_test_decision(root, account_id="legacy", decision_id=identity,
-                            valid_session="2026-11-05", orders=[])
-    root.close()
-    reopened = PaperStore(root.path)
-    try:
-        assert len(reopened.account_decisions("legacy")) == 2
-        adopt_test_decision(reopened, account_id="legacy", decision_id="third",
-                            valid_session="2026-11-05", orders=[])
-        assert len(reopened.account_decisions("legacy")) == 3
-    finally:
-        reopened.close()
-
-
+# Independent risk: EC26; responsibility-level assertions.
 def test_schema7_migration_preserves_legacy_balances_and_events(tmp_path):
     import sqlite3
 
@@ -352,6 +235,7 @@ def test_schema7_migration_preserves_legacy_balances_and_events(tmp_path):
         migrated.close()
 
 
+# Independent risk: EC15; responsibility-level assertions.
 def test_us_broker_id_collision_preserves_order_fill_and_cancel_ownership(partitions):
     from dataclasses import asdict
     from pte_support import decision

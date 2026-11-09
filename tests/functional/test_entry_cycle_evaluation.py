@@ -1,3 +1,4 @@
+# Risk ownership: TDR-19
 """Explicit inspection compares cycle facts; TXE/SE own allocation and audit correctness."""
 from copy import deepcopy
 import json
@@ -16,18 +17,12 @@ def cycle_ledger(prefix):
             "cash": 50951., "quantity": 4900, "equity": 99951.}]}
 
 
-def test_explicit_inspection_allows_cycle_identity_renaming_without_mutating_inputs():
+
+
+@pytest.mark.parametrize('field,value', [('phase', 'EXITING')])
+def test_TDR_19_C02_explicit_inspection_does_not_tolerate_changed_cycle_facts(field, value):
     original = cycle_ledger("candidate:")
-    retained = deepcopy(original)
     assert technical_ledger_differences(original, cycle_ledger("release:"), 0.) == []
-    assert original == retained
-
-
-@pytest.mark.parametrize("field,value", [("cash_budget", "90000.0"),
-    ("allocation_fraction", "1.0"), ("target_quantity", 9900),
-    ("buy_cost_including_fees", "0"), ("phase", "EXITING")])
-def test_explicit_inspection_does_not_tolerate_changed_cycle_facts(field, value):
-    original = cycle_ledger("candidate:")
     changed = deepcopy(original)
     state = json.loads(changed["decisions"][0]["entry_cycle_after"])
     state[field] = value

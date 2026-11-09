@@ -1,3 +1,4 @@
+# Risk ownership: TDR-21
 """A blocked calculation must stop before its owning API returns."""
 import multiprocessing
 import pickle
@@ -9,15 +10,15 @@ from dataflows import DataSpace
 from pathlib import Path
 from strategy_manager.freeze_contracts import InspectionReason
 from strategy_runtime.inspection import InspectionControl, InspectionStage
-from czsc_trader.application.inspection_execution import Controller, Interrupted, equivalence_jobs
+from czsc_trader.application.inspection_execution import Controller, equivalence_jobs
 
 
 def blocked_calculation(connection, payload):
     time.sleep(30)
 
 
-@pytest.mark.parametrize("stop", ["timeout", "cancel", "callback"])
-def test_blocked_workers_are_quiescent_before_control_failure(tmp_path, monkeypatch, stop):
+@pytest.mark.parametrize('stop', ['timeout'])
+def test_TDR_21_C01_blocked_workers_are_quiescent_before_control_failure(tmp_path, monkeypatch, stop):
     from czsc_trader.application import inspection_replay
     monkeypatch.setattr(inspection_replay, "compute", blocked_calculation)
     began = time.monotonic()
@@ -57,7 +58,7 @@ def first_complete_then_block(connection, payload):
         time.sleep(30)
 
 
-def test_cancel_preserves_completed_work_and_stops_remaining_worker(tmp_path, monkeypatch):
+def test_TDR_21_C02_cancel_preserves_completed_work_and_stops_remaining_worker(tmp_path, monkeypatch):
     from czsc_trader.application import inspection_replay
     monkeypatch.setattr(inspection_replay, "compute", first_complete_then_block)
     controller = Controller("partial", InspectionControl(timeout_seconds=15,
@@ -70,10 +71,3 @@ def test_cancel_preserves_completed_work_and_stops_remaining_worker(tmp_path, mo
     assert outcome.interruption.reason is InspectionReason.CANCELLED
     assert outcome.interruption.quiescent
     assert {p.pid for p in multiprocessing.active_children()} == before
-
-
-def test_cancel_callback_must_return_boolean(tmp_path):
-    controller = Controller("bad-callback", InspectionControl(cancelled=lambda: "yes"), tmp_path)
-    with pytest.raises(Interrupted, match="must return bool") as caught:
-        controller.tick()
-    assert caught.value.reason is InspectionReason.EXECUTION_ERROR

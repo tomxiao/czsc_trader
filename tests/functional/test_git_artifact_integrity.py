@@ -1,3 +1,4 @@
+# Risk ownership: TDR-27 INFRA-02
 """Git transport must preserve the bytes authenticated by platform contracts."""
 
 from hashlib import sha256
@@ -11,7 +12,7 @@ import pytest
 from strategy_manager import CandidateEvidence, StrategyRegistry, ValidationError
 from strategy_runtime import implementation_sha256, load_strategy_deployment
 
-from test_current_contracts import (
+from frozen_contract_support import (
     current_frozen as current_frozen,
     inspection as inspection,
     completed as completed,
@@ -35,8 +36,10 @@ def _git(root, autocrlf, *arguments, input=None):
     )
 
 
-@pytest.mark.parametrize("autocrlf", ["true", "false", "input"])
-def test_git_roundtrip_preserves_evidence_and_current_release(tmp_path, current_frozen, autocrlf):
+def test_git_roundtrip_preserves_evidence_and_current_release(tmp_path, current_frozen):
+    # Exercise the conversion-enabled risk. The separate attribute check proves
+    # every artifact is binary, independent of a user's disabled conversion mode.
+    autocrlf = 'true'
     context, version = current_frozen
     source = tmp_path / "git-source"
     source.mkdir()

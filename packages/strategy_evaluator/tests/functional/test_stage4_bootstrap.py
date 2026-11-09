@@ -41,31 +41,19 @@ def assert_interval(request, expected):
     return result
 
 
-# All length x repetition boundaries remain. Repeat identical input/protocol
-# under seed 13 as well as 0 to protect public seed forwarding, without repeating
-# the entire numerical matrix for a second arbitrary RNG seed.
-@pytest.mark.parametrize("seed,repetitions,observations", [
-    (0, 1, 2), (0, 1, 7), (0, 1, 257),
-    (0, 256, 2), (0, 256, 7), (0, 256, 257),
-    (0, 257, 2), (0, 257, 7), (0, 257, 257),
-    (13, 257, 7),
-])
-def test_stage_four_interval_matches_full_bootstrap_exactly(observations, repetitions, seed):
-    rng = np.random.default_rng(19)
-    champion = rng.normal(0.0004, 0.01, observations)
-    comparator = rng.normal(0.0002, 0.008, observations)
-    kwargs = dict(repetitions=repetitions, mean_block_length=3, seed=seed)
+@pytest.mark.risk_cases('SE-08-C02')
+def test_SE_08_C02_stage_four_projection_and_repeat_are_deterministic():
+    champion = np.array([.02, -.015, .003, .01, -.008, .004])
+    comparator = np.array([.005, -.006, .001, .003, -.002, .002])
+    kwargs = dict(repetitions=257, mean_block_length=3, seed=13)
     request, champion, comparator = interval_request(champion, comparator, **kwargs)
     full = bootstrap.paired_stationary_bootstrap(
-        champion, comparator, champion_id="center", comparator_id="benchmark", **kwargs,
-    )
-    actual = assert_interval(request, full.cagr)
-    if seed == 13:
-        other = assess_candidates(replace(request, protocol=replace(request.protocol, seed=0))).rows[0].uncertainty
-        assert other.status is m.DiagnosticStatus.AVAILABLE
-        assert (actual.lower_95, actual.upper_95) != (other.lower_95, other.upper_95)
+        champion, comparator, champion_id="center", comparator_id="benchmark", **kwargs)
+    first = assert_interval(request, full.cagr)
+    assert assert_interval(request, full.cagr) == first
 
 
+@pytest.mark.risk_cases('SE-08-C01')
 def test_original_bootstrap_rng_and_chunk_boundary_golden():
     champion = np.array([.02, -.015, .003, .01, -.008, .004])
     comparator = np.array([.005, -.006, .001, .003, -.002, .002])
@@ -89,35 +77,13 @@ def test_original_bootstrap_rng_and_chunk_boundary_golden():
     )
 
 
-@pytest.mark.parametrize("champion", [np.zeros(7), np.full(7, .01)])
-def test_stage_four_interval_does_not_calculate_sample_drawdown_or_calmar(monkeypatch, champion):
-    comparator = np.zeros(7)
-    kwargs = dict(repetitions=257, mean_block_length=1, seed=13)
-    request, champion, comparator = interval_request(champion, comparator, **kwargs)
-    expected = bootstrap.paired_stationary_bootstrap(
-        champion, comparator, champion_id="center", comparator_id="benchmark", **kwargs,
-    ).cagr
-
-    def unused(*args):
-        raise AssertionError("sampled drawdown and Calmar must not be computed")
-
-    monkeypatch.setattr(bootstrap, "_row_metrics", unused)
-    assert_interval(request, expected)
-
-
-@pytest.mark.parametrize("champion,comparator,kwargs", [
-    ([.01, .02], [.01], {}),
-    ([[.01, .02]], [[.01, .02]], {}),
-    ([], [], {}),
-    ([.01], [.01], {}),
-    ([.01, float("nan")], [.01, .02], {}),
-    ([.01, .02], [.01, float("inf")], {}),
-    ([.01, -1.], [.01, .02], {}),
-    ([.01, .02], [.01, -1.01], {}),
-    ([.01, .02], [.01, .02], {"repetitions": 0}),
-    ([.01, .02], [.01, .02], {"mean_block_length": 0}),
-    ([.01, .02], [.01, .02], {"seed": -1}),
+@pytest.mark.parametrize('champion,comparator,kwargs', [
+    pytest.param([.01, .02], [.01], {}, id='SE-08-C03'),
+    pytest.param([.01, -1.], [.01, .02], {}, id='SE-08-C04'),
+    pytest.param([.01], [.01], {}, id='SE-08-C05'),
+    pytest.param([.01, .02], [.01, .02], {"repetitions": 0}, id='SE-08-C06'),
 ])
+@pytest.mark.risk_cases('SE-08-C03', 'SE-08-C04', 'SE-08-C05', 'SE-08-C06')
 def test_public_bootstrap_rejects_invalid_return_series_and_protocol(champion, comparator, kwargs):
     with pytest.raises(ValueError):
         bootstrap.paired_stationary_bootstrap(

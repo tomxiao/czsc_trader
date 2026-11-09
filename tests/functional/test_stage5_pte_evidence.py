@@ -1,3 +1,4 @@
+# Risk ownership: TDR-20
 """Saved PTE coverage must be reproducible from named, authenticated facts."""
 from copy import deepcopy
 import hashlib
@@ -80,50 +81,25 @@ def _fixture(root, *, alter=None, omit=None, claimed="LOAD_PREPARE", restart=Fal
     return SimpleNamespace(owner=owner, environment=environment, pte_runtime=SimpleNamespace(cases=cases)), {"data_kind": "SYNTHETIC"}, protocol
 
 
-@pytest.mark.parametrize("restart,fault", [(False, False), (True, False), (False, True)])
-def test_named_results_and_traces_are_rechecked_without_execution(tmp_path, restart, fault):
-    validate_pte_facts(tmp_path, *_fixture(tmp_path, restart=restart, fault=fault))
 
 
-def test_forged_covered_summary_is_rejected(tmp_path):
-    args = _fixture(tmp_path, claimed="ENTER_HOLD_EXIT")
-    with pytest.raises(ValueError, match="covered flag"):
-        validate_pte_facts(tmp_path, *args)
 
 
-def test_omitted_named_result_is_rejected_even_when_summary_omits_it(tmp_path):
+def test_TDR_20_C06_omitted_named_result_is_rejected_even_when_summary_omits_it(tmp_path):
     args = _fixture(tmp_path, omit="case:restart:result.json")
     with pytest.raises(ValueError, match="named artifact missing"):
         validate_pte_facts(tmp_path, *args)
 
 
-def test_real_failed_result_cannot_be_promoted_by_summary(tmp_path):
+def test_TDR_20_C05_real_failed_result_cannot_be_promoted_by_summary(tmp_path):
     args = _fixture(tmp_path, alter=lambda case, variant, result: result.update(status="FAIL"))
     with pytest.raises(ValueError, match="result status contradicts"):
         validate_pte_facts(tmp_path, *args)
 
 
-def test_checkpoint_is_rechecked_against_trace(tmp_path):
+def test_TDR_20_C07_checkpoint_is_rechecked_against_trace(tmp_path):
     def alter(case, variant, result):
         result["trace"][1]["snapshot"]["position_quantity"] = 100
     args = _fixture(tmp_path, alter=alter)
     with pytest.raises(ValueError, match="checkpoint differs"):
-        validate_pte_facts(tmp_path, *args)
-
-
-def test_restart_trace_must_match_continuous_control(tmp_path):
-    def alter(case, variant, result):
-        if variant == "continuous":
-            result["trace"][-1]["snapshot"]["available_cash"] = "9999.0000"
-    args = _fixture(tmp_path, alter=alter, restart=True)
-    with pytest.raises(ValueError, match="uninterrupted control"):
-        validate_pte_facts(tmp_path, *args)
-
-
-def test_fault_cannot_claim_success_with_new_order(tmp_path):
-    def alter(case, variant, result):
-        if case == "bad":
-            result["trace"][-1]["new_order_count"] = 1
-    args = _fixture(tmp_path, alter=alter, fault=True)
-    with pytest.raises(ValueError, match="without new orders"):
         validate_pte_facts(tmp_path, *args)

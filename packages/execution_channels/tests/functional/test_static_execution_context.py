@@ -1,61 +1,54 @@
-"""Static timing is identical across channel contexts and historical facts."""
+"""EC02: six explicit static-market timing contracts."""
 from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
-
-import pandas as pd
 import pytest
-
 from execution_channels.instruments import InstrumentId, MarketId, AssetClass, BarFrequency
 from execution_channels.policy import (ResearchExecutionSpec, CnEquitySpec, UsEquitySpec,
     AccountPolicy, CashAvailabilityPolicy)
-from execution_channels.market_rules.constraints import (
-    RuleInterval, resolve_execution_context, assemble_constraints,
-)
+from execution_channels.market_rules.constraints import RuleInterval, resolve_execution_context
 
 
-def fixture(market, settled):
-    cn = market is MarketId.CN
-    instrument = InstrumentId(market, AssetClass.STOCK, '600000.SH' if cn else 'MU')
-    specification = ResearchExecutionSpec(CnEquitySpec() if cn else UsEquitySpec(),
-        BarFrequency.DAILY, AccountPolicy('CNY' if cn else 'USD',
-        CashAvailabilityPolicy.SETTLED_ONLY if settled else CashAvailabilityPolicy.IMMEDIATE_RESEARCH),
-        100 if cn else 1, .01, .01, 0.)
-    start = datetime(2026, 11, 6, 1, 30, tzinfo=timezone.utc)
-    period = RuleInterval(date(2026, 11, 6), start, start + timedelta(hours=6),
-        start + timedelta(days=3), start + timedelta(days=3, hours=6))
-    return instrument, specification, period
+def fixture(market, settled=False):
+    cn=market is MarketId.CN
+    instrument=InstrumentId(market,AssetClass.STOCK,'600000.SH' if cn else 'MU')
+    spec=ResearchExecutionSpec(CnEquitySpec() if cn else UsEquitySpec(),BarFrequency.DAILY,
+        AccountPolicy('CNY' if cn else 'USD',CashAvailabilityPolicy.SETTLED_ONLY if settled
+                      else CashAvailabilityPolicy.IMMEDIATE_RESEARCH),100 if cn else 1,.01,.01,0.)
+    start=datetime(2026,11,6,1,30,tzinfo=timezone.utc)
+    period=RuleInterval(date(2026,11,6),start,start+timedelta(hours=6),
+        start+timedelta(days=3),start+timedelta(days=3,hours=6))
+    return instrument,spec,period
 
 
-@pytest.mark.parametrize('market', (MarketId.CN, MarketId.US))
-@pytest.mark.parametrize('settled', (False, True))
-def test_shared_context_preserves_timing_without_inventing_dynamic_facts(market, settled):
-    instrument, specification, period = fixture(market, settled)
-    context = resolve_execution_context(instrument, specification, period)
-    assert context.buy_sellable_at == (period.following_open if market is MarketId.CN else period.start)
-    assert context.settlement_at == (period.following_close if settled else period.end)
-    static = context.to_record()
-    assert not {'Tradable', 'AvailableDate', 'PriceLimitLower', 'PriceLimitUpper', 'PriceLimitPolicy'} & static.keys()
-    facts = pd.DataFrame([dict(Date=period.start, AvailableDate=period.start, Tradable=True,
-        PriceLimitLower=9. if market is MarketId.CN else None,
-        PriceLimitUpper=11. if market is MarketId.CN else None)])
-    historical = assemble_constraints(instrument, specification, (period,), facts).iloc[0]
-    assert all(historical[key] == value for key, value in static.items())
-    assert historical.PriceLimitPolicy == ('DATED_LIMITS' if market is MarketId.CN else 'EXPLICIT_UNBOUNDED')
-    no_next = replace(period, following_open=None, following_close=None)
-    if market is MarketId.CN or settled:
-        with pytest.raises(ValueError, match='no verified following session'):
-            resolve_execution_context(instrument, specification, no_next)
-    else:
-        assert resolve_execution_context(instrument, specification, no_next).buy_sellable_at == period.start
+@pytest.mark.parametrize('market',[MarketId.CN,MarketId.US],ids=['EC02-C01','EC02-C02'])
+def test_market_quantity_step_and_confirmed_buy_sellability(market):
+    instrument,spec,period=fixture(market)
+    context=resolve_execution_context(instrument,spec,period)
+    assert spec.quantity_step==(100 if market is MarketId.CN else 1)
+    assert context.buy_sellable_at==(period.following_open if market is MarketId.CN else period.start)
 
 
-def test_invalid_following_calendar_and_market_units_are_rejected():
-    instrument, specification, period = fixture(MarketId.CN, True)
-    with pytest.raises(ValueError, match='later than the execution interval'):
-        replace(period, following_open=period.end)
-    with pytest.raises(ValueError, match='ordered'):
-        replace(period, following_close=period.following_open)
-    with pytest.raises(ValueError, match='trading units differ'):
-        resolve_execution_context(instrument, replace(specification, quantity_step=1), period)
-    with pytest.raises(TypeError, match='EC instrument'):
-        resolve_execution_context('600000.SH', specification, period)
+def test_EC02_C03_settled_cash_uses_verified_monday_close():
+    instrument,spec,period=fixture(MarketId.US,True)
+    context=resolve_execution_context(instrument,spec,period)
+    assert period.session.weekday()==4
+    assert context.settlement_at==period.following_close
+    assert context.settlement_at.date().weekday()==0
+
+
+def test_EC02_C04_immediate_research_cash_uses_interval_end():
+    instrument,spec,period=fixture(MarketId.US)
+    assert resolve_execution_context(instrument,spec,period).settlement_at==period.end
+
+
+def test_EC02_C05_cn_without_verified_following_session_rejects():
+    instrument,spec,period=fixture(MarketId.CN)
+    with pytest.raises(ValueError,match='no verified following session'):
+        resolve_execution_context(instrument,spec,replace(period,following_open=None,following_close=None))
+
+
+def test_EC02_C06_us_immediate_contract_needs_no_following_session_or_dynamic_facts():
+    instrument,spec,period=fixture(MarketId.US)
+    context=resolve_execution_context(instrument,spec,replace(period,following_open=None,following_close=None))
+    assert context.buy_sellable_at==period.start and context.settlement_at==period.end
+    assert not {'Tradable','AvailableDate','PriceLimitLower','PriceLimitUpper','PriceLimitPolicy'} & context.to_record().keys()

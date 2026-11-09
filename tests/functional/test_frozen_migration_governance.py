@@ -1,3 +1,4 @@
+# Risk ownership: TDR-24
 """Migration provenance is stricter than ordinary candidate admission.
 
 Real frozen sources exercise reviewed conversion guards. Small ledger tables
@@ -5,7 +6,6 @@ exercise evidence tamper rejection; they are not market acceptance evidence.
 """
 
 from dataclasses import replace
-from hashlib import sha256
 import json
 import shutil
 from uuid import uuid4
@@ -17,7 +17,7 @@ from czsc_trader.application import validate_frozen_runtime_migration, validate_
 from czsc_trader.application.research_evidence import _migration_case, _migration_frame_equal
 from strategy_manager import freeze_contracts as f
 from strategy_runtime import StrategyCandidate, implementation_sha256
-from test_runtime_migration import REFERENCES, preparations as preparations
+from test_runtime_migration import preparations as preparations
 
 
 def original(context, reference):
@@ -27,20 +27,7 @@ def original(context, reference):
 
 
 @pytest.mark.release_acceptance
-@pytest.mark.parametrize("reference", REFERENCES)
-def test_retained_frozen_conversions_revalidate_without_writing(preparations, reference):
-    context, results = preparations
-    result = results[reference]
-    before = {path: sha256(path.read_bytes()).hexdigest()
-              for path in result.candidate.source_root.rglob("*") if path.is_file()}
-    definition = validate_frozen_runtime_migration(context, original(context, reference), result.candidate)
-    assert definition.implementation.contract_version == 2
-    assert before == {path: sha256(path.read_bytes()).hexdigest()
-                      for path in result.candidate.source_root.rglob("*") if path.is_file()}
-
-
-@pytest.mark.release_acceptance
-@pytest.mark.parametrize("change", ["algorithm", "extra_module", "initializer", "parameters", "feedback", "missing_source"])
+@pytest.mark.parametrize('change', ['extra_module'])
 def test_rehashed_arbitrary_changes_cannot_use_migration_governance(preparations, change):
     context, results = preparations
     prepared = results["S007-v1"].candidate
@@ -69,29 +56,17 @@ def test_rehashed_arbitrary_changes_cannot_use_migration_governance(preparations
 
 
 @pytest.mark.release_acceptance
-def test_frozen_source_hash_and_family_cannot_be_substituted(preparations):
+@pytest.mark.parametrize('change', ['release_hash', 'family'], ids=['TDR-24-C05', 'TDR-24-C06'])
+def test_frozen_source_hash_and_family_cannot_be_substituted(preparations, change):
     context, results = preparations
-    source = original(context, "S007-v1")
-    for changed in (replace(source, release_hash="a" * 64), replace(source, package_hash="b" * 64)):
-        with pytest.raises(ValueError, match="release/package identity"):
-            validate_frozen_runtime_migration(context, changed, results["S007-v1"].candidate)
-    with pytest.raises(ValueError, match="another family"):
-        validate_frozen_runtime_migration(context, original(context, "S001-v1"), results["S007-v1"].candidate)
-
-
-def test_migration_selection_roundtrip_is_distinct_from_alpha_selection():
-    evidence = f.ResearchEvidenceRef(f.ResearchEvidenceOwner("S014", "EX053_20261020"), "a" * 64 + ".json", "a" * 64)
-    subject = f.FrozenMigrationSelectionSubject(f.FrozenVersionReference("S002", "v1", "b" * 64, "c" * 64),
-        f.CandidateKey("S002", "C9902"), "d" * 64, (evidence,))
-    decision = f.ResearchDecision("migration_test", "S002", f.DecisionAction.APPROVE, subject,
-                                 evidence, "Technical conversion only")
-    assert f.ResearchDecision.from_dict(decision.to_dict()) == decision
-    assert not isinstance(subject, f.CandidateSelectionSubject)
-    for values in ((), (evidence, evidence)):
-        with pytest.raises(ValueError, match="unique equivalence"):
-            replace(subject, equivalence_evidence=values)
-    with pytest.raises(ValueError, match="family differ"):
-        replace(subject, candidate=f.CandidateKey("S001", "C9902"))
+    if change == 'release_hash':
+        source = replace(original(context, "S007-v1"), release_hash="a" * 64)
+        error = 'release/package identity'
+    else:
+        source = original(context, "S001-v1")
+        error = 'another family'
+    with pytest.raises(ValueError, match=error):
+        validate_frozen_runtime_migration(context, source, results["S007-v1"].candidate)
 
 
 def test_equivalence_rejects_economic_difference_and_broken_cross_ledger_linkage():

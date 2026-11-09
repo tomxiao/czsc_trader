@@ -1,7 +1,5 @@
 """Frozen V2 feedback follows confirmed fills without changing journal facts."""
-from dataclasses import replace
 from datetime import datetime, timedelta, timezone
-import pickle
 
 import pandas as pd
 import pytest
@@ -46,62 +44,35 @@ def execute(account, side, quantity, **kwargs):
     return account.execute(plan, bar, constraint=constraint)
 
 
-@pytest.mark.parametrize('failed_quantity, failed_limit, reason', [
-    (10, 9., 'LIMIT_NOT_CROSSED'), (1000, 10.1, 'INSUFFICIENT_CASH')])
-def test_closed_cycle_only_after_confirmed_exit_and_survives_reentry_and_restore(
-        failed_quantity, failed_limit, reason):
-    account = executor()
-    assert account.snapshot().closed_cycle_feedback.latest is None
-    failed = execute(account, 'BUY', failed_quantity, limit=failed_limit)
-    assert failed.quantity == 0 and failed.closed_cycle_feedback.latest is None
-    assert account.rows['orders'][-1]['reason'] == reason
-    entry_plan, bar, constraint = transition(account, 'BUY', 10)
-    opened = account.execute(entry_plan, bar, constraint=constraint)
-    assert opened.quantity == 10 and opened.closed_cycle_feedback.latest is None
-    blocked = execute(account, 'SELL', 10, blocked=True)
-    assert blocked.quantity == 10 and blocked.closed_cycle_feedback.latest is None
-    exit_plan, bar, constraint = transition(account, 'SELL', 10, price=12.)
-    closed = account.execute(exit_plan, bar, constraint=constraint)
-    cycle = closed.closed_cycle_feedback.latest
-    assert closed.quantity == 0
-    assert cycle.cycle_id == entry_plan.plan_id
-    assert cycle.entry_interval == entry_plan.point.execution_interval
-    assert cycle.exit_interval == exit_plan.point.execution_interval
-    assert cycle.exit_observed_through == exit_plan.point.observed_through
-    assert cycle.entry_quantity == 10 and cycle.entry_cost == pytest.approx(100.1)
-    assert closed.cash == pytest.approx(1019.78)
-    lengths = {key: len(rows) for key, rows in account.rows.items()}
-    assert account.execute(exit_plan, bar, constraint=constraint) == closed
-    assert {key: len(rows) for key, rows in account.rows.items()} == lengths
+def test_EC29_C02_closed_cycle_requires_final_confirmed_exit():
+    from execution_channels.instruments import MarketId
+    from execution_channels.session_contracts import OrderSide
+    from test_portfolio_parity import setup,facts,plan,order
+    account,stamp,_ = setup(MarketId.US)
+    bar,rule = facts(stamp)
+    account.execute_account_plan(plan(account,stamp,(order(OrderSide.BUY,200),)),bar,constraint=rule)
+    assert account.position_feedback.latest_closed is None
+    partial_at = stamp+timedelta(minutes=30)
+    bar,rule = facts(partial_at)
+    account.execute_account_plan(plan(account,partial_at,(order(OrderSide.SELL,100),)),bar,constraint=rule)
+    assert account.quantity == 100 and account.position_feedback.latest_closed is None
+    final_at = stamp+timedelta(minutes=60)
+    bar,rule = facts(final_at)
+    account.execute_account_plan(plan(account,final_at,(order(OrderSide.SELL,100),)),bar,constraint=rule)
+    closed = account.position_feedback.latest_closed
+    assert account.quantity == 0 and closed.quantity == 0
+    assert closed.buy_cost == pytest.approx(2002.)
+    assert closed.sell_income == pytest.approx(1998.)
+    assert closed.buy_fills == 1 and closed.sell_fills == 2
+    assert account.cash == pytest.approx(9996.)
 
-    account = pickle.loads(pickle.dumps(account))
-    assert account.snapshot() == closed
-    assert execute(account, 'BUY', 5).closed_cycle_feedback.latest == cycle
-    assert execute(account, 'SELL', 5, blocked=True).closed_cycle_feedback.latest == cycle
-    second = execute(account, 'SELL', 5).closed_cycle_feedback.latest
+
+def test_EC29_C03_reentry_preserves_last_closed_cycle_and_starts_new_cost():
+    account = executor()
+    execute(account,'BUY',10)
+    cycle = execute(account,'SELL',10).closed_cycle_feedback.latest
+    reopened = execute(account,'BUY',5)
+    assert reopened.quantity == 5 and reopened.closed_cycle_feedback.latest == cycle
+    second = execute(account,'SELL',5).closed_cycle_feedback.latest
     assert second.cycle_id != cycle.cycle_id and second.entry_quantity == 5
     assert second.entry_cost == pytest.approx(50.05)
-    # Existing evidence remains a trade journal, not a new feedback serialization.
-    assert set(account.finish().trades.columns) == {
-        'cycle_id', 'entry_at', 'exit_at', 'cost', 'income', 'net_pnl', 'net_return', 'status'}
-
-
-
-
-
-
-def test_rejected_transition_rolls_back_feedback_and_journal():
-    account = executor()
-    execute(account, 'BUY', 10)
-    before = account.snapshot()
-    lengths = {key: len(rows) for key, rows in account.rows.items()}
-    plan, bar, constraint = transition(account, 'SELL', 11)
-    with pytest.raises(ValueError, match='sell quantity exceeds'):
-        account.execute(plan, bar, constraint=constraint)
-    assert account.snapshot() == before
-    assert {key: len(rows) for key, rows in account.rows.items()} == lengths
-    # The old plan API permits an earlier observation boundary; execution remains
-    # valid, but it cannot supply the stronger closed-cycle observation contract.
-    plan = replace(plan, quantity=10, point=replace(plan.point, observed_through=START))
-    assert account.execute(plan, bar, constraint=constraint).closed_cycle_feedback is None
-    assert account.quantity == 0 and len(account.finish().trades) == 1

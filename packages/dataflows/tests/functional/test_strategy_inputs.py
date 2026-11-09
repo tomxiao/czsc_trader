@@ -6,7 +6,6 @@ import pytest
 from dataflows.errors import DataContractError
 from dataflows.tushare_strategy_data import (
     fetch_etf_share_size,
-    fetch_global_index_daily,
     fetch_vix_daily,
     fetch_index_daily_basic,
     fetch_shibor_daily,
@@ -73,8 +72,8 @@ class ChunkedGlobalPro:
 
     def index_global(self, **kwargs):
         self.index_calls.append(kwargs)
-        dates = pd.bdate_range(kwargs['start_date'], kwargs['end_date'])
-        return pd.DataFrame({"trade_date": dates.strftime('%Y%m%d'), "pct_chg": 1.5})
+        dates = pd.bdate_range(kwargs["start_date"], kwargs["end_date"])
+        return pd.DataFrame({"trade_date": dates.strftime("%Y%m%d"), "pct_chg": 1.5})
 
     def vix_index(self, **kwargs):
         self.vix_calls.append(kwargs)
@@ -90,21 +89,7 @@ class ChunkedGlobalPro:
         )
 
 
-def test_s007_non_ohlcv_inputs_are_canonical() -> None:
-    pro = FakePro()
-    shibor, _ = fetch_shibor_daily("2026-09-15", "2026-09-15", pro=pro)
-    chinext, _ = fetch_index_daily_basic("399006.SZ", "2026-09-15", "2026-09-15", pro=pro)
-    shares, share_meta = fetch_etf_share_size("588080.SH", "2026-09-15", "2026-09-15", pro=pro)
-    spx, _ = fetch_global_index_daily("SPX", "2026-09-15", "2026-09-15", pro=pro)
-
-    assert shibor.loc[0, "OvernightRate"] == pytest.approx(1.25)
-    assert chinext.loc[0, "TurnoverRateFreeFloat"] == pytest.approx(2.5)
-    assert shares.loc[0, "TotalShare"] == pytest.approx(123.0)
-    assert share_meta["availability_rule"] == "T+1 08:30 Asia/Shanghai"
-    assert spx.loc[0, "PercentChange"] == pytest.approx(0.015)
-
-
-def test_shibor_long_history_is_split_by_calendar_year() -> None:
+def test_DFLS_34_C01_shibor_long_history_is_split_by_calendar_year() -> None:
     pro = ChunkedShiborPro()
 
     frame, metadata = fetch_shibor_daily("2024-12-31", "2026-01-01", pro=pro)
@@ -122,42 +107,48 @@ def test_shibor_long_history_is_split_by_calendar_year() -> None:
     assert metadata["maximum_start_lag_days"] == 10
 
 
-def test_global_inputs_are_yearly_paged_and_causally_declared() -> None:
-    pro = ChunkedGlobalPro()
-
-    index, index_meta = fetch_global_index_daily("SPX", "2024-12-31", "2026-01-01", pro=pro)
-    vix, vix_meta = fetch_vix_daily("VIX", "2024-12-31", "2026-01-01", pro=pro)
-
-    assert len(index) > 250 and len(vix) == 3
-    assert [call["start_date"] for call in pro.index_calls] == [
-        "20241231",
-        "20250101",
-        "20260101",
-    ]
-    assert [call["start_date"] for call in pro.vix_calls] == [
-        "20241231",
-        "20250101",
-        "20260101",
-    ]
-    assert index_meta["maximum_start_lag_days"] == 10
-    assert vix_meta["maximum_start_lag_days"] == 10
-    assert index_meta["availability_rule"].startswith("US close date")
-    assert vix_meta["availability_rule"].startswith("US close date")
-
-
-def test_vix_dataset_rejects_other_symbols() -> None:
+def test_DFLS_34_C11_vix_dataset_rejects_other_symbols() -> None:
     with pytest.raises(DataContractError, match="only supports symbol VIX"):
         fetch_vix_daily("VXN", "2026-09-15", "2026-09-15", pro=ChunkedGlobalPro())
 
 
-def test_all_market_moneyflow_rejects_unsafe_multi_day_request() -> None:
+def test_DFLS_34_C04_all_market_moneyflow_rejects_unsafe_multi_day_request() -> None:
     with pytest.raises(DataContractError, match="exactly one day"):
         fetch_stock_moneyflow("2026-09-14", "2026-09-15", pro=FakePro())
 
 
-def test_trading_calendar_is_canonical() -> None:
+def test_DFLS_34_C12_trading_calendar_is_canonical() -> None:
     calendar, metadata = fetch_trading_calendar("SSE", "2026-09-15", "2026-09-16", pro=FakePro())
 
     assert list(calendar.columns) == ["Date", "IsOpen", "PreviousTradingDate"]
     assert calendar["IsOpen"].tolist() == [1, 1]
     assert metadata["exchange"] == "SSE"
+
+
+def test_DFLS_34_C03_moneyflow_panel_preserves_two_symbols():
+    frame, meta = fetch_stock_moneyflow("2026-09-15", "2026-09-15", pro=FakePro())
+    assert frame.Symbol.tolist() == ["000001.SZ", "600000.SH"]
+    assert meta["primary_key"] == ["Date", "Symbol"]
+    assert frame.NetMoneyflowAmount.tolist() == [10.0, -5.0]
+
+
+def test_DFLS_34_C05_share_size_is_not_ohlcv():
+    frame, meta = fetch_etf_share_size("588080.SH", "2026-09-15", "2026-09-15", pro=FakePro())
+    assert frame.TotalShare.tolist() == [123.0]
+    assert "Open" not in frame and "Close" not in frame
+    assert meta["availability_rule"] == "T+1 08:30 Asia/Shanghai"
+
+
+def test_DFLS_34_C06_index_indicator_is_not_ohlcv():
+    frame, _ = fetch_index_daily_basic("399006.SZ", "2026-09-15", "2026-09-15", pro=FakePro())
+    assert frame.TurnoverRateFreeFloat.tolist() == [2.5]
+    assert "Open" not in frame and "Close" not in frame
+
+
+def test_DFLS_34_C10_vix_yearly_units_and_availability():
+    pro = ChunkedGlobalPro()
+    frame, meta = fetch_vix_daily("VIX", "2024-12-31", "2026-01-01", pro=pro)
+    assert [c["start_date"] for c in pro.vix_calls] == ["20241231", "20250101", "20260101"]
+    assert frame.Close.tolist() == [21.0] * 3
+    assert frame.PercentChange.tolist() == [0.05] * 3
+    assert meta["availability_rule"].startswith("US close date")

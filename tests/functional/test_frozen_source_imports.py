@@ -1,41 +1,23 @@
+# Risk ownership: TDR-27
 """Frozen source dependencies must resolve without loader-injected aliases."""
 
-import ast
 import importlib
 from pathlib import Path
 
 import pytest
+from frozen_contract_support import current_frozen as current_frozen
 
-from czsc_trader.application import RepositoryContext, validate_release_package
-from strategy_manager import StrategyRegistry
-from strategy_runtime import StrategyRelease, validate_release_package as authenticate_package
-from strategy_runtime.deployment import validate_release_integrity
+from strategy_runtime import validate_release_package as authenticate_package
 
 
 ROOT = Path(__file__).resolve().parents[2]
 pytestmark = pytest.mark.release_acceptance
 
 
-def test_frozen_relative_imports_resolve_inside_the_package():
-    sources = [
-        validate_release_integrity(ROOT / "strategies", f"{path.parent.parent.name}-{path.stem}").source_root
-        for path in sorted((ROOT / "strategies").glob("S*/versions/v*.json"))
-    ]
-    assert sources, "registered frozen packages must be present for release acceptance"
-    for path in (path for source in sources for path in source.rglob("*.py")):
-        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
-            if not isinstance(node, ast.ImportFrom) or not node.level:
-                continue
-            target = path.parent
-            for _ in range(node.level - 1):
-                target = target.parent
-            target = target.joinpath(*(node.module or "").split("."))
-            assert target.with_suffix(".py").is_file() or (target / "__init__.py").is_file(), (
-                path, node.lineno, node.module
-            )
-
-
-def test_frozen_source_imports_without_closure_aliases(registered_release, monkeypatch):
+def test_frozen_source_imports_without_closure_aliases(loaded_release, monkeypatch):
+    registered_release, _, _, _ = loaded_release
+    from frozen_contract_support import assert_installed_release_identity
+    assert_installed_release_identity(loaded_release)
     monkeypatch.syspath_prepend(str(ROOT))
     monkeypatch.setattr("sys.dont_write_bytecode", True)
     source = authenticate_package(ROOT / "strategies", registered_release.release_id).source_root
@@ -48,28 +30,31 @@ def test_frozen_source_imports_without_closure_aliases(registered_release, monke
         assert Path(module.__file__).resolve() == path.resolve()
 
 
-def test_frozen_source_keeps_authenticated_runtime_loading(loaded_release):
-    registered_release, deployment, actual, runtime = loaded_release
-    context = RepositoryContext.discover(ROOT)
-    stored = StrategyRegistry(context.strategy_root).get_version(
-        registered_release.strategy_id, registered_release.version,
-    )
-    manifest, binding, source = validate_release_package(context, stored.release_id)
-    from strategy_runtime.equity_definition import EquityStrategyCandidate
-    if isinstance(actual, EquityStrategyCandidate):
-        # The native V4 entrypoint must load through its authenticated closure,
-        # without manufacturing a legacy SRT package or deployment permission.
-        with actual.bind_replay() as invocation:
-            assert callable(invocation.function)
-        assert actual.definition.source_sha256 == binding['implementation_sha256']
-        assert stored.release_hash == deployment.release_hash
-    else:
-        definition = runtime.describe(
-            StrategyRelease.from_mapping(stored.to_dict()),
-            source_root=deployment.source_root,
-            runtime_binding=deployment.binding,
-        )
-        assert definition.release_hash == stored.release_hash == deployment.release_hash
-        assert definition.implementation.source_sha256 == binding["implementation_sha256"]
-    assert manifest["package_hash"] == deployment.package_hash
-    assert source.relative_to(context.strategy_root) == deployment.source_root.relative_to(deployment.strategy_root)
+def test_TDR_27_C07_undeployed_frozen_package_loads_only_from_isolated_copy(current_frozen):
+    import shutil
+    from strategy_runtime import (InspectionRuntimePermit, StrategyRelease, StrategyRuntime,
+        canonical_sha256, load_inspection_deployment)
+    context, version = current_frozen
+    (context.strategy_root / 'deployments/S900-v1.json').unlink()
+    before = {path.relative_to(context.strategy_root): path.read_bytes()
+              for path in context.strategy_root.rglob('*') if path.is_file()}
+    verified = authenticate_package(context.strategy_root, version.release_id)
+    workspace = context.root / '.tmp/strategy-inspection/undeployed'
+    repository = workspace / 'repository'
+    isolated = repository / 'strategies'
+    package = Path('S900/releases/v1')
+    shutil.copytree(context.strategy_root / package, isolated / package)
+    versions = isolated / 'S900/versions'
+    versions.mkdir(parents=True)
+    shutil.copyfile(context.strategy_root / 'S900/versions/v1.json', versions / 'v1.json')
+    permit = InspectionRuntimePermit(workspace.name, version.release_id,
+        version.release_hash, verified.package_sha256, canonical_sha256({'case':'TDR-27-C07'}),
+        repository, workspace)
+    deployment = load_inspection_deployment(isolated, version.release_id, permit)
+    runtime = StrategyRuntime(strategy_root=isolated, inspection_permit=permit)
+    definition = runtime.describe(StrategyRelease.from_mapping(version.to_dict()))
+    assert definition.release_id == version.release_id
+    assert deployment.source_root.is_relative_to(isolated)
+    assert not (isolated / 'deployments').exists()
+    assert {path.relative_to(context.strategy_root): path.read_bytes()
+            for path in context.strategy_root.rglob('*') if path.is_file()} == before

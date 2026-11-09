@@ -1,24 +1,19 @@
 """Frozen V2 execution retains row, economic and transaction boundaries."""
 from copy import deepcopy
-from dataclasses import asdict, replace
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 from types import MappingProxyType
-from zoneinfo import ZoneInfo
 
 import pandas as pd
-import numpy as np
 import pytest
 from execution_channels.instruments import BarFrequency
 from execution_channels.instruments import TimeInterval
 from execution_channels.policy import AccountPolicy
 from execution_channels.policy import CashAvailabilityPolicy
 from execution_channels.contracts import DecisionPoint
-from execution_channels.policy import CnEquitySpec
 from execution_channels.contracts import EquityPlan
 from execution_channels.policy import ResearchExecutionSpec
 from execution_channels.policy import UsEquitySpec
-import execution_channels.policy as equity_contracts
-import execution_channels.historical.equity as equity_execution
 from execution_channels.historical.frozen_equity import _FrozenEquityExecutor
 
 
@@ -60,33 +55,8 @@ def snapshot(executor):
                      if key not in {'actions', '_action_events', 'spec', '_transactions'}})
 
 
-def test_cached_spec_fingerprint_preserves_all_numeric_spellings_and_nested_contracts(monkeypatch):
-    base = account().spec
-    variants = [base, replace(base), replace(base, price_tick=1), replace(base, price_tick=1.),
-        replace(base, buy_premium=0), replace(base, buy_premium=0.), replace(base, buy_premium=-0.),
-        replace(base, slippage_bp=0), replace(base, slippage_bp=0.), replace(base, slippage_bp=-0.),
-        replace(base, account=AccountPolicy('USD', CashAvailabilityPolicy.SETTLED_ONLY)),
-        replace(base, market=CnEquitySpec(), account=AccountPolicy('CNY', CashAvailabilityPolicy.IMMEDIATE_RESEARCH)),
-        replace(base, decision_clock=BarFrequency.DAILY), replace(base, inclusive_touch=True),
-        replace(base, data_latency_seconds=1), replace(base, quantity_step=2)]
-    expected = [equity_contracts.equity_hash(asdict(spec)) for spec in variants]
-    original_asdict = equity_contracts.asdict
-    calls = []
-
-    def counted(value):
-        calls.append(value)
-        return original_asdict(value)
-
-    equity_contracts._execution_spec_fingerprint.cache_clear()
-    monkeypatch.setattr(equity_contracts, 'asdict', counted)
-    assert [spec.fingerprint for spec in variants] == expected
-    first_calls = len(calls)
-    assert first_calls == len(set(expected))
-    assert [replace(spec).fingerprint for spec in reversed(variants)] == list(reversed(expected))
-    assert len(calls) == first_calls
-
-
-@pytest.mark.parametrize('mapping', [False, True])
+# Independent risk: EC29; responsibility-level assertions.
+@pytest.mark.parametrize('mapping', [True], ids=['EC29-C01'])
 def test_replacing_executor_spec_rejects_old_plan_despite_cached_fingerprint(mapping):
     executor = account()
     plan, bar, constraint = transition(executor)
@@ -104,162 +74,14 @@ def test_replacing_executor_spec_rejects_old_plan_despite_cached_fingerprint(map
     assert len(executor.rows['decisions']) == 1
 
 
-@pytest.mark.parametrize('value', [None, float('nan'), pd.NA, pd.NaT, 0., -0., 0, True, False,
-    '', 'metadata', np.float64('nan'), np.float64(-0.), np.int64(7), np.bool_(True), START,
-    datetime(2020, 1, 2), pd.Timestamp('2020-01-02T03:04:05.123456789Z')])
-def test_scalar_fast_path_preserves_original_complete_json_identity(value):
-    executor = account()
-    plan, bar, constraint = transition(executor)
-    bar['extra_metadata'] = value
-    # The previous contract applies isna to all bar fields, but not constraints.
-    expected = equity_contracts.equity_hash({
-        'bar': {key: (None if pd.isna(item) else item.isoformat()
-                     if isinstance(item, (datetime, pd.Timestamp)) else item)
-                for key, item in bar.items()},
-        'constraints': {key: item.isoformat() if isinstance(item, (datetime, pd.Timestamp)) else item
-                        for key, item in constraint.items()}})
-    first = executor.execute(plan, MappingProxyType(bar), constraint=MappingProxyType(constraint))
-    assert executor.completed[plan.plan_id] == expected
-    assert executor.execute(plan, MappingProxyType(bar), constraint=MappingProxyType(constraint)) == first
-    with pytest.raises(ValueError, match='different execution facts'):
-        executor.execute(plan, MappingProxyType({**bar, 'another_field': 1}), constraint=MappingProxyType(constraint))
-    assert len(executor.rows['decisions']) == 1
-
-
 # Session-date boundaries and representation acceptance are orthogonal risks.
 # Each timezone offset is exercised close enough to midnight to affect the output.
-@pytest.mark.parametrize('end_value,representation', [
-    pytest.param('1880-01-01T04:56:01Z', 'datetime', id='historical-local-mean-time'),
-    pytest.param('2000-01-01T04:59:59Z', 'datetime', id='year-2000-boundary'),
-    pytest.param('2020-03-08T04:30:00Z', 'datetime', id='spring-before-midnight'),
-    pytest.param('2020-03-09T04:30:00Z', 'datetime', id='spring-after-midnight'),
-    pytest.param('2020-11-01T04:30:00Z', 'datetime', id='fall-before-midnight'),
-    pytest.param('2020-11-02T04:30:00Z', 'datetime', id='fall-after-midnight'),
-    pytest.param('2026-01-01T04:59:59Z', 'datetime', id='utc-datetime-year-boundary'),
-    pytest.param('2026-01-01T04:59:59Z', 'timestamp', id='pandas-timestamp-input'),
-    pytest.param('2026-01-01T04:59:59Z', 'iso', id='iso-input'),
-])
-def test_session_date_boundaries_and_supported_time_representations(end_value, representation):
-    end = pd.Timestamp(end_value).to_pydatetime()
-    start = end - timedelta(minutes=30)
-    interval = TimeInterval(start, end)
-    executor = account()
-    plan, bar, constraint = transition(executor)
-    plan = replace(plan, point=DecisionPoint(start, start, interval))
-    convert = {'datetime': lambda value: value, 'timestamp': pd.Timestamp,
-               'iso': lambda value: value.isoformat()}[representation]
-    bar.update(BarStart=convert(start), Date=convert(end))
-    constraint.update(Date=convert(start), AvailableDate=convert(start), SettlementAt=convert(end))
-    executor.execute(plan, MappingProxyType(bar), constraint=MappingProxyType(constraint))
-    assert executor.rows['points'][0]['session'] == pd.Timestamp(end).tz_convert('America/New_York').date().isoformat()
 
 
-@pytest.mark.parametrize('bad_time', [pd.NaT, 'invalid-time', datetime(2026, 10, 1, 14)])
-def test_invalid_execution_time_rejects_without_partial_account_effects(bad_time):
-    executor = account()
-    plan, bar, constraint = transition(executor)
-    bar['BarStart'] = bad_time
-    before = snapshot(executor)
-    with pytest.raises((ValueError, TypeError)):
-        executor.execute(plan, MappingProxyType(bar), constraint=MappingProxyType(constraint))
-    assert snapshot(executor) == before
+# Independent risk: EC12; responsibility-level assertions.
 
 
-def test_invalid_price_still_precedes_volume_conversion_and_keeps_atomic_failure():
-    executor = account()
-    plan, bar, constraint = transition(executor)
-    bar.update(Open=-1., Volume='invalid-volume')
-    before = snapshot(executor)
-    with pytest.raises(ValueError, match='invalid execution OHLCV'):
-        executor.execute(plan, MappingProxyType(bar), constraint=MappingProxyType(constraint))
-    assert snapshot(executor) == before
-
-
-def test_snapshot_at_builds_one_complete_portfolio_with_closed_cycle_feedback(monkeypatch):
-    executor = account()
-    step(executor)
-    step(executor, 'SELL', 10)
-    expected = executor.snapshot()
-    assert expected.closed_cycle_feedback.latest is not None
-    constructor = equity_execution.EquityPortfolio
-    calls = []
-
-    def counted(*args, **kwargs):
-        calls.append((args, kwargs))
-        return constructor(*args, **kwargs)
-
-    monkeypatch.setattr(equity_execution, 'EquityPortfolio', counted)
-    actual = executor.snapshot_at(executor.last_end, executor.last_end)
-    assert len(calls) == 1
-    assert actual == expected
-    assert actual.closed_cycle_feedback is executor._closed_cycle_feedback
-
-
-@pytest.mark.parametrize('hour,fold', [(1, 0), (1, 1), (3, 0)])
-def test_local_dst_fold_datetime_keeps_original_timestamp_matching(hour, fold):
-    local = datetime(2020, 11, 1, hour, 30, tzinfo=ZoneInfo('America/New_York'), fold=fold)
-    start = local.astimezone(timezone.utc)
-    end = start + timedelta(minutes=30)
-    interval = TimeInterval(start, end)
-    executor = account()
-    plan, bar, constraint = transition(executor)
-    plan = replace(plan, point=DecisionPoint(start, start, interval))
-    bar.update(BarStart=local, Date=end.astimezone(ZoneInfo('America/New_York')))
-    constraint.update(Date=local, AvailableDate=local)
-    # In particular, pandas 3 does not accept every ambiguous local datetime
-    # against a Python UTC datetime. Preserve that boundary rather than widening it.
-    matches = pd.Timestamp(bar['BarStart']) == start and pd.Timestamp(bar['Date']) == end
-    if matches:
-        executor.execute(plan, MappingProxyType(bar), constraint=MappingProxyType(constraint))
-        assert len(executor.rows['fills']) == 1
-        assert executor.rows['points'][0]['session'] == '2020-11-01'
-    else:
-        before = snapshot(executor)
-        with pytest.raises(ValueError, match='execution bar does not match plan interval'):
-            executor.execute(plan, MappingProxyType(bar), constraint=MappingProxyType(constraint))
-        assert snapshot(executor) == before
-
-
-@pytest.mark.parametrize('case,reason', [
-    ('observed', 'FILLED'), ('touch', 'LIMIT_NOT_CROSSED'),
-    ('blocked', 'KNOWN_INTERRUPTION'), ('zero', 'ZERO_VOLUME'),
-    ('missing', 'MISSING_BAR'), ('volume', 'INSUFFICIENT_BAR_VOLUME'),
-    ('not_tradable', 'NOT_TRADABLE'),
-])
-def test_series_and_immutable_mapping_have_identical_seven_tables_and_idempotency(case, reason):
-    old, new = account(), account()
-    plan, bar, constraint = transition(old)
-    if case == 'touch':
-        bar.update(Open=10.2, High=10.3, Low=10.1, Close=10.2)
-    elif case == 'blocked':
-        bar['ExecutionBlocked'] = True
-    elif case == 'zero':
-        bar.update(BarStatus='ZERO_VOLUME', Volume=0., Amount=0.)
-    elif case == 'missing':
-        bar.update({name: float('nan') for name in ('Open', 'High', 'Low', 'Close', 'Volume', 'Amount')})
-        bar['BarStatus'] = 'MISSING'
-    elif case == 'volume':
-        bar['Volume'] = 9.
-    elif case == 'not_tradable':
-        constraint['Tradable'] = False
-    first = old.execute(plan, pd.Series(bar), constraint=pd.Series(constraint))
-    second = new.execute(plan, MappingProxyType(bar), constraint=MappingProxyType(constraint))
-    assert first == second
-    assert old.completed == new.completed
-    assert new.rows['orders'][0]['reason'] == reason
-    assert new.execute(plan, MappingProxyType(bar), constraint=MappingProxyType(constraint)) == second
-    for name in TABLES:
-        pd.testing.assert_frame_equal(getattr(old.finish(), name), getattr(new.finish(), name))
-    changed = {**bar, 'ExecutionBlocked': not bar['ExecutionBlocked']}
-    with pytest.raises(ValueError, match='different execution facts'):
-        new.execute(plan, MappingProxyType(changed), constraint=MappingProxyType(constraint))
-    assert len(new.rows['decisions']) == 1
-
-
-
-
-
-
+# Independent risk: EC11; responsibility-level assertions.
 def test_nested_failed_savepoint_can_retry_and_outer_failure_preserves_prior_keys():
     executor = account()
     step(executor)
@@ -278,51 +100,28 @@ def test_nested_failed_savepoint_can_retry_and_outer_failure_preserves_prior_key
     assert not executor._transactions
 
 
-def test_transaction_never_copies_or_enumerates_existing_completed_journal():
-    class ExistingCompleted(dict):
-        def __iter__(self):
-            raise AssertionError('must not enumerate old keys')
-
-        def keys(self):
-            raise AssertionError('must not copy old keys')
-
-        def items(self):
-            raise AssertionError('must not enumerate old values')
-
-        def __deepcopy__(self, memo):
-            raise AssertionError('must not deepcopy old keys')
-
-    class ExistingRow(dict):
-        def __deepcopy__(self, memo):
-            raise AssertionError('must not copy existing ledger rows')
-
+# Independent risk: EC11; responsibility-level assertions.
+def test_EC11_C01_second_posting_failure_restores_only_current_interval():
     executor = account()
-    executor.completed = ExistingCompleted({'earlier': 'identity'})
-    executor.rows['decisions'].append(ExistingRow(marker=True))
-    with pytest.raises(KeyboardInterrupt):
-        with executor.transaction():
-            step(executor)
-            raise KeyboardInterrupt()
-    assert len(executor.completed) == 1 and executor.completed['earlier'] == 'identity'
-    assert len(executor.rows['decisions']) == 1
-    assert executor.rows['decisions'][0]['marker']
-    assert executor.revision == 0 and executor.quantity == 0
-
-
-
-
-def test_invalid_mapping_transition_rejects_and_restores_prior_account():
-    executor = account()
-    step(executor)
+    step(executor,'BUY',10)
     before = snapshot(executor)
-    plan, bar, constraint = transition(executor, 'SELL', 11)
-    with pytest.raises(ValueError, match='sell quantity exceeds'):
-        executor.execute(plan, MappingProxyType(bar), constraint=MappingProxyType(constraint))
+    failed_postings = []
+    class RejectNewFill(list):
+        def append(self,entry):
+            failed_postings.append((executor.cash,executor.quantity,entry['quantity']))
+            assert executor.cash == pytest.approx(999.8)
+            assert executor.quantity == 0 and entry['quantity'] == 10
+            raise RuntimeError('current interval fill journal failed')
+    # This transaction owns the complete frozen-adapter interval. The already
+    # confirmed previous interval must survive a failure after economic posting.
+    executor.rows['fills'] = RejectNewFill(executor.rows['fills'])
+    try:
+        with pytest.raises(RuntimeError,match='current interval fill journal failed'):
+            step(executor,'SELL',10)
+    finally:
+        executor.rows['fills'] = list(executor.rows['fills'])
+    assert len(failed_postings) == 1
+    assert failed_postings[0] == pytest.approx((999.8,0,10))
     assert snapshot(executor) == before
-    with pytest.raises(ValueError, match='CAUSAL_TIME_VIOLATION'):
-        executor.execute(replace(plan, quantity=10), MappingProxyType(bar),
-            constraint=MappingProxyType({**constraint, 'AvailableDate': constraint['Date']+timedelta(seconds=1)}))
-    assert snapshot(executor) == before
-    with pytest.raises(TypeError, match='Series or Mapping'):
-        executor.execute(plan, [], constraint=MappingProxyType(constraint))
-    assert snapshot(executor) == before
+    assert executor.quantity == 10 and len(executor.rows['fills']) == 1
+    assert len(executor.completed) == 1

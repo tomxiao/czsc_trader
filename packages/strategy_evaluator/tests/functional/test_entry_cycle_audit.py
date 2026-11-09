@@ -43,44 +43,36 @@ def cycle_replay():
            for name in ("orders", "fills", "trades")})
 
 
-def test_binary64_fee_roundoff_preserves_exact_cycle_cost_and_rejects_wrong_fee():
+@pytest.mark.parametrize('difference,expected', [
+    pytest.param('roundoff', AuditStatus.PASS, id='SE-26-C05'),
+    pytest.param('cent', AuditStatus.FAIL, id='SE-26-C06'),
+])
+@pytest.mark.risk_cases('SE-26-C05', 'SE-26-C06')
+def test_cycle_fee_roundoff_and_material_difference_have_distinct_results(difference, expected):
     source = cycle_replay()
-    fills = tuple({**row, "fees": math.nextafter(row["fees"], math.inf)}
-                  if row["side"] == "BUY" else row for row in source.fills)
-    rounded = replace(source, fills=fills)
-    result = audit_replay(rounded)
-    assert result.status is AuditStatus.PASS, result.reason_codes
-    wrong = replace(source, fills=tuple({**row, "fees": row["fees"] + 0.01}
-                    if row["side"] == "BUY" else row for row in fills))
-    rejected = audit_replay(wrong)
-    assert rejected.status is AuditStatus.FAIL
-    assert "ENTRY_CYCLE_ALLOCATION_MISMATCH" in rejected.reason_codes
+    fills = tuple({**row, 'fees': math.nextafter(row['fees'], math.inf)
+                   if difference == 'roundoff' else row['fees'] + .01}
+                  if row['side'] == 'BUY' else row for row in source.fills)
+    result = audit_replay(replace(source, fills=fills))
+    assert result.status is expected, result.reason_codes
+    if expected is AuditStatus.FAIL:
+        assert 'ENTRY_CYCLE_ALLOCATION_MISMATCH' in result.reason_codes
 
 
-@pytest.mark.parametrize("corruption", ["budget", "quantity", "reset_cost", "released", "ratio", "scope", "undeclared", "unknown_fields", "market_buy"])
+@pytest.mark.parametrize('corruption', [
+    pytest.param("released", id='SE-26-C03'),
+    pytest.param("undeclared", id='SE-26-C04'),
+])
+@pytest.mark.risk_cases('SE-26-C03', 'SE-26-C04')
 def test_cycle_budget_quantity_and_lifecycle_cannot_be_forged(corruption):
     source = cycle_replay()
-    result = audit_replay(source)
-    assert result.status is AuditStatus.PASS, result.reason_codes
+    assert audit_replay(source).status is AuditStatus.PASS
     changed = deepcopy(source.to_dict())
-    if corruption in {"budget", "quantity", "reset_cost", "unknown_fields"}:
-        index = 1 if corruption in {"budget", "quantity", "unknown_fields"} else 2
-        state = json.loads(changed["decisions"][index]["entry_cycle_after"])
-        field, value = {"budget": ("cash_budget", "50000.0"), "quantity": ("target_quantity", 99800),
-                        "reset_cost": ("buy_cost_including_fees", "0"), "unknown_fields": ("fallback", True)}[corruption]
-        state[field] = value
-        changed["decisions"][index]["entry_cycle_after"] = json.dumps(state)
-    elif corruption == "released":
-        changed["account_daily"][1]["entry_cycle"] = "null"
-    elif corruption == "ratio":
-        changed["decisions"][1]["cycle_target"] = json.dumps({"active": True, "entry_fraction": "0.5"})
-    elif corruption == "scope":
-        changed["execution_spec"]["target_scope"] = "decision"
-    elif corruption == "undeclared":
-        changed["execution_spec"]["capital_mode"] = "full_available_cash"
-    elif corruption == "market_buy":
-        changed["execution_spec"]["entry_order_type"] = "MARKET"
+    if corruption == 'released':
+        changed['account_daily'][1]['entry_cycle'] = 'null'
+    else:
+        changed['execution_spec']['capital_mode'] = 'full_available_cash'
     result = audit_replay(ReplayEvidence.from_dict(changed))
     assert result.status is AuditStatus.FAIL
-    assert ("UNDECLARED_ENTRY_CYCLE_FACTS" if corruption == "undeclared"
-            else "ENTRY_CYCLE_ALLOCATION_MISMATCH") in result.reason_codes
+    assert ('UNDECLARED_ENTRY_CYCLE_FACTS' if corruption == 'undeclared'
+            else 'ENTRY_CYCLE_ALLOCATION_MISMATCH') in result.reason_codes

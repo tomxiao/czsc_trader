@@ -1,10 +1,6 @@
-"""Run the public browser API contract against a deterministic DOM adapter."""
+"""SC-03: Python resource boundary; browser behavior runs directly under Node."""
 
-from pathlib import Path
-import shutil
-import subprocess
-
-from strategy_chart import chart_body
+from strategy_chart import chart_body, get_chart_assets
 
 
 def test_shared_shell_has_direct_date_navigation_without_event_date_selector() -> None:
@@ -15,11 +11,11 @@ def test_shared_shell_has_direct_date_navigation_without_event_date_selector() -
     assert "非交易日事件" in body
 
 
-def test_shared_chart_runtime_contract() -> None:
-    node = shutil.which("node")
-    assert node is not None, "shared chart runtime tests require Node.js"
-    result = subprocess.run(
-        [node, "--test", str(Path(__file__).with_name("chart.test.cjs"))],
-        check=False, capture_output=True, encoding="utf-8", timeout=30,
-    )
-    assert result.returncode == 0, result.stdout + result.stderr
+def test_hosts_use_the_same_packaged_chart_assets() -> None:
+    from czsc_trader.backtesting import chart as historical
+    from paper_trading_engine import forward_chart as forward
+    assert historical.chart_body is forward.chart_body is chart_body
+    assert historical.get_chart_assets is get_chart_assets
+    assets = get_chart_assets()
+    assert '.strategy-chart' in assets.css
+    assert 'StrategyChart' in assets.javascript

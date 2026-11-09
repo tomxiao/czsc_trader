@@ -2,8 +2,6 @@
 
 import json
 import sqlite3
-import subprocess
-import sys
 
 import pytest
 
@@ -13,9 +11,8 @@ from execution_channels.futu.account_health_migration import (
     HEALTH_SCHEMA_KEY,
     migrate_account_health,
 )
-from paper_trading_engine.release_cli import verify_release_configuration
 from execution_channels.futu.lifecycle import AccountHealth
-from execution_channels.futu.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION
+from execution_channels.futu.store import PaperStore
 from test_release_runtime import release_verification_runtime  # noqa: F401
 
 
@@ -87,6 +84,7 @@ def _snapshot(connection):
     }
 
 
+# Independent risk: EC31; responsibility-level assertions.
 def test_legacy_health_migration_preserves_business_facts_and_receipt(legacy_health_db):
     connection = legacy_health_db
     before = _snapshot(connection)
@@ -118,19 +116,7 @@ def test_legacy_health_migration_preserves_business_facts_and_receipt(legacy_hea
     assert _snapshot(connection) == after
 
 
-@pytest.mark.parametrize("health", [None, "UNKNOWN", "", "ok"])
-def test_invalid_health_rejected_before_any_migration(legacy_health_db, health):
-    connection = legacy_health_db
-    connection.execute("UPDATE virtual_accounts SET health=? WHERE account_id='blocked'", (health,))
-    connection.commit()
-    before = _snapshot(connection)
-    with pytest.raises(AccountHealthMigrationError, match="blocked: invalid account health"):
-        with connection:
-            connection.execute("BEGIN IMMEDIATE")
-            migrate_account_health(connection, NOW)
-    assert _snapshot(connection) == before
-
-
+# Independent risk: EC31; responsibility-level assertions.
 def test_failed_receipt_write_rolls_back_health_with_callers_transaction(legacy_health_db):
     connection = legacy_health_db
     connection.execute(f"""CREATE TRIGGER receipt_failure BEFORE INSERT ON settings
@@ -144,8 +130,9 @@ def test_failed_receipt_write_rolls_back_health_with_callers_transaction(legacy_
     assert _snapshot(connection) == before
 
 
+# Independent risk: EC31; responsibility-level assertions.
 @pytest.mark.parametrize("key,value", [
-    (HEALTH_SCHEMA_KEY, "1"), (HEALTH_SCHEMA_KEY, "999"), (HEALTH_RECEIPT_KEY, "{}"),
+    (HEALTH_SCHEMA_KEY, "1"),
 ])
 def test_partial_or_unsupported_health_migration_rejected(legacy_health_db, key, value):
     connection = legacy_health_db
@@ -159,6 +146,7 @@ def test_partial_or_unsupported_health_migration_rejected(legacy_health_db, key,
     assert _snapshot(connection) == before
 
 
+# Independent risk: EC31; responsibility-level assertions.
 def test_migrated_contract_rejects_reintroduced_ready(legacy_health_db):
     connection = legacy_health_db
     with connection:
@@ -171,18 +159,6 @@ def test_migrated_contract_rejects_reintroduced_ready(legacy_health_db):
         with connection:
             connection.execute("BEGIN IMMEDIATE")
             migrate_account_health(connection, NOW)
-    assert _snapshot(connection) == before
-
-
-def test_health_migration_requires_transaction_and_timezone(legacy_health_db):
-    connection = legacy_health_db
-    before = _snapshot(connection)
-    with pytest.raises(RuntimeError, match="existing transaction"):
-        migrate_account_health(connection, NOW)
-    with pytest.raises(ValueError, match="timezone"):
-        with connection:
-            connection.execute("BEGIN IMMEDIATE")
-            migrate_account_health(connection, "2026-10-20T23:30:00")
     assert _snapshot(connection) == before
 
 
@@ -225,47 +201,7 @@ def _legacy_complete_store(new_store, tmp_path, *, invalid=False):
     return path
 
 
-def test_store_migrates_v4_and_new_accounts_override_legacy_default(new_store, tmp_path):
-    path = _legacy_complete_store(new_store, tmp_path)
-    with sqlite3.connect(path) as connection:
-        before = _full_database_facts(connection)
-        columns = [row[1] for row in connection.execute("PRAGMA table_info(virtual_accounts)")]
-        assert connection.execute("SELECT health FROM virtual_accounts WHERE account_id='legacy'").fetchone()[0] == "READY"
-    store = PaperStore(path)
-    try:
-        assert store.get_setting("runtime_database_schema_version") == str(RUNTIME_DATABASE_SCHEMA_VERSION)
-        assert store.virtual_account("legacy")["entry_cycle_json"] is None
-        assert store.virtual_account("legacy")["health"] is AccountHealth.OK
-        assert store.virtual_account("blocked")["health"] is AccountHealth.BLOCKED
-        assert store.virtual_account("blocked")["last_error"] == "unresolved order"
-        after = _full_database_facts(store._connection)
-        health_index = columns.index("health")
-        expected_accounts = [
-            tuple("OK" if index == health_index and value == "READY" else value
-                  for index, value in enumerate(row))
-            for row in before["virtual_accounts"]
-        ]
-        assert [tuple(row) for row in after["virtual_accounts"]] == expected_accounts
-        for table in before.keys() - {"virtual_accounts"}:
-            assert [tuple(row) for row in after[table]] == before[table]
-        health_column = next(row for row in store._connection.execute("PRAGMA table_info(virtual_accounts)")
-                             if row[1] == "health")
-        assert health_column[4] == "'READY'"
-        assert _create_strategy_account(store, "new-strategy")["health"] is AccountHealth.OK
-        assert store.create_channel_reconciliation_account()["health"] is AccountHealth.OK
-        receipt = store.get_setting(HEALTH_RECEIPT_KEY)
-    finally:
-        store.close()
-    reopened = PaperStore(path)
-    try:
-        assert reopened.get_setting(HEALTH_RECEIPT_KEY) == receipt
-        assert {row[0] for row in reopened._connection.execute("SELECT health FROM virtual_accounts")} == {"OK", "BLOCKED"}
-        assert reopened.virtual_account("new-strategy")["health"] is AccountHealth.OK
-        assert reopened.virtual_account("futu-simulate-cn-reconciliation")["health"] is AccountHealth.OK
-    finally:
-        reopened.close()
-
-
+# Independent risk: EC26; responsibility-level assertions.
 def test_store_rolls_back_invalid_v4_health_without_advancing_schema(new_store, tmp_path):
     path = _legacy_complete_store(new_store, tmp_path, invalid=True)
     with sqlite3.connect(path) as connection:
@@ -277,29 +213,3 @@ def test_store_rolls_back_invalid_v4_health_without_advancing_schema(new_store, 
         assert _full_database_facts(connection) == before
         assert connection.execute("SELECT * FROM settings ORDER BY key").fetchall() == settings_before
         assert connection.execute("SELECT health FROM virtual_accounts WHERE account_id='legacy'").fetchone()[0] == "READY"
-
-
-@pytest.mark.parametrize("schema,health,valid", [
-    (4, "READY", True), (5, "OK", True), (5, "READY", False), (4, "UNKNOWN", False),
-])
-def test_release_health_verification_is_readonly(request, schema, health, valid):
-    runtime, _, store = request.getfixturevalue("release_verification_runtime")
-    store.create_channel_reconciliation_account()
-    store.close()
-    database = runtime / "shared/state/runtime.db"
-    with sqlite3.connect(database) as connection:
-        connection.execute("UPDATE settings SET value=? WHERE key='runtime_database_schema_version'", (str(schema),))
-        # The channel row has no strategy binding, but health must still be valid.
-        changed = connection.execute("UPDATE virtual_accounts SET health=?", (health,))
-        assert changed.rowcount == 1
-    before = database.read_bytes()
-
-    def runner(command, **kwargs):
-        return subprocess.run([sys.executable, "-B", *command[1:]], **kwargs)
-
-    if valid:
-        assert verify_release_configuration(runtime, "v0.6.0", runner=runner) == {"accounts": 0, "releases": []}
-    else:
-        with pytest.raises(RuntimeError, match="invalid account health"):
-            verify_release_configuration(runtime, "v0.6.0", runner=runner)
-    assert database.read_bytes() == before

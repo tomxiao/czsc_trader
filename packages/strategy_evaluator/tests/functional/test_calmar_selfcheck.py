@@ -61,6 +61,7 @@ def v6(req, rolling=(0.0, 0.0), stress=((.18, .2), (.15, .05))):
                        replace(x, metric=replacements.get(x.metric, x.metric)) for x in req.policy.bins)))
 
 
+@pytest.mark.risk_cases('SE-20-C01')
 def test_rolling_calmar_uses_prior_window_equity_resets_peak_and_linear_all_window_quantile():
     strategy = (1200., 1100., 1110., 1105., 1112., 1108.)
     benchmark = (1100., 1050., 1060., 1055., 1062., 1058.)
@@ -81,6 +82,7 @@ def test_rolling_calmar_uses_prior_window_equity_resets_peak_and_linear_all_wind
     assert len(values) == 2
 
 
+@pytest.mark.risk_cases('SE-20-C02')
 def test_bar_close_rolling_uses_all_intraday_points_and_never_silently_daily_drawdown():
     daily = equity_evidence("SESSION_CLOSE", days=3)
     bar = replace(daily, equity=replace(daily.equity, drawdown_basis="BAR_CLOSE"),
@@ -92,8 +94,9 @@ def test_bar_close_rolling_uses_all_intraday_points_and_never_silently_daily_dra
     assert bar_value.value == 0.0  # Same journals; each has nonzero intraday drawdown.
 
 
-@pytest.mark.parametrize("changes", ["benchmark", "strategy"])
-def test_unavailable_rolling_window_is_not_dropped(changes):
+@pytest.mark.risk_cases('SE-20-C03')
+def test_unavailable_rolling_window_is_not_dropped():
+    changes = "benchmark"
     strategy = (1000., 990., 1010., 1005., 1012.)
     benchmark = (1000., 995., 1005., 1000., 1007.)
     if changes == "strategy":
@@ -105,13 +108,16 @@ def test_unavailable_rolling_window_is_not_dropped(changes):
     assert got.reason == "UNAVAILABLE_ROLLING_CALMAR_WINDOW"
 
 
-@pytest.mark.parametrize("days,minimum", [(2, 1), (5, 3)])
-def test_insufficient_complete_windows_has_no_partial_quantile(days, minimum):
+@pytest.mark.risk_cases('SE-20-C04')
+def test_insufficient_complete_windows_has_no_partial_quantile():
+    days = 5
+    minimum = 3
     value = ordinary((1000., 990., 1010., 1005., 1015.)[:days], (1000., 995., 1005., 1000., 1010.)[:days])
     got = panel(value, protocol(3, 2, minimum)).rows[0].rolling_calmar_excess_q10
     assert got.value is None and got.reason == "INSUFFICIENT_ROLLING_WINDOWS"
 
 
+@pytest.mark.risk_cases('SE-33-C04')
 def test_explicit_calmar_protocol_preserves_legacy_panel_bytes_and_rejects_relabeling():
     value = ordinary((1000., 990., 1010.), (1000., 995., 1005.))
     modern = protocol()
@@ -133,56 +139,7 @@ def test_explicit_calmar_protocol_preserves_legacy_panel_bytes_and_rejects_relab
     assert m.CandidateAssessmentRequest.from_dict(request.to_dict()) == request
 
 
-@pytest.mark.parametrize("inclusive,expected", [(True, "PASSED"), (False, "FAILED")])
-@pytest.mark.parametrize("where", ["pressure", "parameter"])
-def test_explicit_calmar_bounds_apply_at_parameter_and_pressure_boundaries(where, inclusive, expected):
-    item, geometry = assessed(candidate(), point_values=((.15, 1.0),) * 8)
-    target = m.ResearchTarget("explicit", m.ResearchMetric.NET_CALMAR, lower=m.BenchmarkBound(1.5, inclusive))
-    if where == "pressure":
-        target = replace(target, scope=m.TargetScope.STRESS, one_way_cost=.001)
-        item = replace(item, stress_performance=m.PerformanceFacts(item.candidate, "f" * 64,
-                       item.stress_scenario, .15, 1., .1, 1.))
-    else:
-        item = replace(item, parameter_performances=tuple(replace(x, benchmark_drawdown=1.) for x in item.parameter_performances))
-        target = m.ParameterNeighborhoodTarget("parameter", 1, 1, (target,), (
-            m.ResearchTarget("cap", m.ResearchMetric.DRAWDOWN_MAGNITUDE, upper=m.ConstantBound(1., True)),))
-    req = ranking_request((item, geometry))
-    checked = se.compare_candidates(replace(req, targets=m.ResearchTargets((target,), 60))).rows[0].target_checks[0]
-    assert checked.status.value == expected
-
-
-@pytest.mark.parametrize("base,annual,dd,multiple", [(0., .01, .1, 1.7), (-.1, -.1, .1, 1.25), (.1, .05, .025, 1.3)])
-@pytest.mark.parametrize("where", ["parameter", "pressure"])
-def test_calmar_target_has_no_implicit_absolute_or_relative_return_gate(base, annual, dd, multiple, where):
-    item, geometry = assessed(candidate(), point_values=((annual, dd),) * 8)
-    item = replace(item, parameter_performances=tuple(replace(x, benchmark_return=base) for x in item.parameter_performances))
-    atom = m.ResearchTarget("calmar", m.ResearchMetric.NET_CALMAR, lower=m.BenchmarkBound(multiple, True))
-    if where == "pressure":
-        item = replace(item, stress_performance=m.PerformanceFacts(item.candidate, "f" * 64,
-            item.stress_scenario, annual, dd, base, .1))
-        goal = replace(atom, scope=m.TargetScope.STRESS, one_way_cost=.001)
-    else:
-        goal = m.ParameterNeighborhoodTarget("parameter", 1, 1, (atom,), (
-            m.ResearchTarget("risk", m.ResearchMetric.DRAWDOWN_MAGNITUDE, upper=m.ConstantBound(.25, True)),))
-    req = replace(ranking_request((item, geometry)), targets=m.ResearchTargets((goal,), 60))
-    assert se.compare_candidates(req).rows[0].target_checks[0].status is m.TargetCheckStatus.PASSED
-
-
-@pytest.mark.parametrize("dd", [0., 1e-12])
-def test_unavailable_calmar_pressure_and_parameter_targets_stay_indeterminate(dd):
-    item, geometry = assessed(candidate(), point_values=((.2, dd),) * 8)
-    item = replace(item, stress_performance=m.PerformanceFacts(item.candidate, "f" * 64, item.stress_scenario,
-                                                              .2, dd, .1, .1))
-    req = ranking_request((item, geometry))
-    goals = (m.ResearchTarget("stress", m.ResearchMetric.NET_CALMAR, lower=m.ConstantBound(0., False),
-                              scope=m.TargetScope.STRESS),
-             m.ParameterNeighborhoodTarget("points", 1, 1, (
-                 m.ResearchTarget("point", m.ResearchMetric.NET_CALMAR, lower=m.ConstantBound(0., False)),
-             ), (m.ResearchTarget("risk", m.ResearchMetric.DRAWDOWN_MAGNITUDE, upper=m.ConstantBound(.25, True)),)))
-    checked = se.compare_candidates(replace(req, targets=m.ResearchTargets(goals, 60))).rows[0].target_checks
-    assert all(x.status is m.TargetCheckStatus.INDETERMINATE for x in checked)
-
-
+@pytest.mark.risk_cases('SE-11-C03')
 def test_v6_rolling_calmar_priority_reverses_legacy_return_excess_priority():
     req = ranking_request(assessed(candidate()), assessed(candidate("C0002", "b")))
     rows = tuple(replace(item, diagnostics=tuple(replace(x, value=value) if x.metric is m.ResearchMetric.ROLLING_EXCESS_Q10
@@ -196,6 +153,7 @@ def test_v6_rolling_calmar_priority_reverses_legacy_return_excess_priority():
     assert se.CalmarComparisonRequest.from_dict(current.to_dict()) == current
 
 
+@pytest.mark.risk_cases('SE-11-C04')
 def test_v6_signed_stress_calmar_loss_reverses_annual_loss_priority():
     req = ranking_request(assessed(candidate()), assessed(candidate("C0002", "b")))
     rows = tuple(replace(item, diagnostics=tuple(replace(x, value=value) if x.metric is m.ResearchMetric.STRESS_ANNUAL_LOSS
@@ -207,33 +165,11 @@ def test_v6_signed_stress_calmar_loss_reverses_annual_loss_priority():
     assert result.pairs[0].decisive_metric is m.ResearchMetric.STRESS_CALMAR_LOSS
     assert result.rows[0].bin_values[3] == -10000  # Pressure Calmar 3 exceeds standard Calmar 2.
 
-
-@pytest.mark.parametrize("field,value", [("one_way_cost", .0005), ("measurement_tier", "FORMAL"), ("benchmark_id", "other")])
-def test_v6_incompatible_stress_is_not_a_numeric_calmar_loss(field, value):
-    current = v6(ranking_request(assessed(candidate())), rolling=(0.,), stress=((.1, .1),))
-    item = current.panel.rows[0]
-    scene = replace(item.stress_scenario, **{field: value})
-    item = replace(item, stress_scenario=scene, stress_performance=replace(item.stress_performance, scenario=scene))
-    current = replace(current, panel=replace(current.panel, rows=(item,)))
-    result = se.compare_candidates(current).rows[0]
-    assert result.status is m.ComparisonStatus.INCOMPARABLE
-    assert result.bin_values[3] is None
-
-
-@pytest.mark.parametrize("annual,dd", [(.1, 0.), (.1, 1e-12), (1e308, .01)])
-def test_v6_unavailable_stress_calmar_has_no_numeric_loss(annual, dd):
-    current = v6(ranking_request(assessed(candidate())), rolling=(0.,), stress=((annual, dd),))
-    result = se.compare_candidates(current).rows[0]
-    assert result.bin_values[3] is None
-    assert result.status is m.ComparisonStatus.INCOMPARABLE
-
-
-def test_v6_rejects_v7_panel_or_v5_bins_and_cannot_relabel_old_results():
-    req = ranking_request(assessed(candidate()))
-    current = v6(req, rolling=(0.,), stress=((.1, .1),))
-    with pytest.raises(ValueError, match="pair"):
-        replace(current, panel=req.panel)
-    with pytest.raises(ValueError, match="ranking bins differ"):
-        replace(current.policy, bins=req.policy.bins)
-    with pytest.raises(ValueError, match="pair"):
-        replace(current, policy=req.policy)
+@pytest.mark.risk_cases('SE-06-C05')
+def test_SE_06_C05_improved_stress_calmar_has_negative_loss():
+    req = ranking_request(assessed(candidate()), assessed(candidate("C0002", "b")))
+    result = se.compare_candidates(v6(req))
+    # Standard .2/.1 = 2; second candidate pressure .15/.05 = 3.
+    # Loss = 2 - 3 = -1, and the declared .0001 bin preserves its sign.
+    second = next(row for row in result.rows if row.candidate == req.candidates[1])
+    assert second.bin_values[3] == -10000

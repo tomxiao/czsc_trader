@@ -21,7 +21,7 @@ from strategy_runtime.models import ExecutionPolicy
 from strategy_runtime.equity_replay import StrategyStateSchema
 from czsc_trader.application.context import RepositoryContext
 from czsc_trader.application.research_governance_service import (
-    create_research_batch, create_research_context, create_experiment, ResearchBatchRequest, ExperimentRequest)
+    create_research_context, ResearchBatchRequest, ExperimentRequest)
 from czsc_trader.research_tools import EquityEvaluationRequest, EquitySources, EvaluationBenchmark, EquityBuyHold
 
 
@@ -85,8 +85,6 @@ class _FixtureRequest:
 
 def setup_equity(tmp_path, decide=alternate, *, cash_policy=CashAvailabilityPolicy.IMMEDIATE_RESEARCH):
     repository = RepositoryContext(tmp_path, tmp_path / "research", tmp_path / "research/registrations", tmp_path / "strategies")
-    batch = create_research_batch(repository, ResearchBatchRequest("S999", "Equity fixture", "US:LITE",
-                                  {"goal": "fixture"}), actor="DEV", reason="isolated contract test")
     spec = ResearchExecutionSpec(UsEquitySpec(), BarFrequency.M30, AccountPolicy("USD", cash_policy),
                                  1, .01, .01, 0.)
     instrument, source = InstrumentId(MarketId.US, AssetClass.STOCK, "LITE"), SourceRef("fixture", "v1")
@@ -118,9 +116,12 @@ def setup_equity(tmp_path, decide=alternate, *, cash_policy=CashAvailabilityPoli
 
     config = ProviderConfig(bindings={}, equity_bindings={ProviderKey(product, MarketId.US, source):
                             ProviderBinding("fixture", "v1", fetch) for product in EquityProduct})
-    context = create_research_context(repository, batch, providers=config, execution_spec=spec)
+    from research_scaffold_support import seeded_research_context
+    context, experiment = seeded_research_context(repository,
+        ResearchBatchRequest("S999", "Equity fixture", "US:LITE", {"goal": "fixture"}),
+        ExperimentRequest("Fixture", "Does isolated US execution work?", date(2026, 10, 28)),
+        actor="DEV", reason="isolated contract test", providers=config, execution_spec=spec)
     context.evaluation.resources = ExecutionResources(max_workers=1, native_threads_per_worker=1)
-    experiment = create_experiment(context, ExperimentRequest("Fixture", "Does isolated US execution work?", date(2026, 10, 28)))
     candidate = _FixtureCandidate(strategy_id='S999', candidate_id='C0001', instrument=instrument,
         execution_spec_hash=spec.fingerprint, warmup_bars=1, decide=decide)
     request = _FixtureRequest(experiment, candidate, TimeInterval(grid[1].start, grid[-1].end),

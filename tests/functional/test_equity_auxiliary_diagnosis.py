@@ -1,3 +1,4 @@
+# Risk ownership: TDR-17
 """Account comparisons authenticate optional signals without treating them as traded assets."""
 from dataclasses import replace
 from datetime import date
@@ -13,8 +14,8 @@ from czsc_trader.research_tools.evaluation import EvaluationIdentity, Evaluation
 from equity_test_support import setup_auxiliary, account_research
 
 
-@pytest.mark.parametrize("different_cost", [False, True])
-def test_diagnosis_compares_optional_signal_inputs_but_keeps_execution_contract(tmp_path, different_cost):
+@pytest.mark.parametrize('different_execution', [pytest.param(False, id='TDR-17-C08'), pytest.param(True, id='TDR-17-C07')])
+def test_diagnosis_compares_optional_signal_inputs_but_keeps_execution_contract(tmp_path, different_execution):
     context, auxiliary, _, _ = setup_auxiliary(tmp_path)
     root = auxiliary.candidate.source_root / "price_only"
     root.mkdir()
@@ -28,15 +29,26 @@ def test_diagnosis_compares_optional_signal_inputs_but_keeps_execution_contract(
                          source_sha256=equity_source_hash(root, ("strategy.py",)))
     baseline = replace(auxiliary, candidate=replace(auxiliary.candidate, candidate_id="C0002",
                        definition=definition, source_root=root))
-    if different_cost:
-        baseline = replace(baseline, fee_rate=.002)
+    if different_execution:
+        changed_spec = replace(baseline.candidate.definition.execution_spec, buy_premium=.02)
+        baseline = replace(baseline, candidate=replace(baseline.candidate,
+            definition=replace(baseline.candidate.definition, execution_spec=changed_spec)))
     accounts = []
+    baseline_context = context
+    if different_execution:
+        from strategy_runtime import StrategyRuntime
+        from czsc_trader.research_tools.evaluation_access import EvaluationAccess
+        baseline_context = replace(context, execution_spec=changed_spec,
+            runtime=StrategyRuntime(dataflows=context.data, execution_spec=changed_spec),
+            evaluation=EvaluationAccess(dataflows=context.data, strategy_id=context.strategy_id, execution_spec=changed_spec))
+        baseline_context.evaluation.resources = context.evaluation.resources
     for name, request in (("auxiliary", auxiliary), ("baseline", baseline)):
-        with account_research(context, request) as (prepared, result, payload, execution):
-            evidence = publish_evidence(context, EvaluationEvidenceWrite(request.experiment, name, prepared, result), execution=execution)
+        selected_context = baseline_context if name == 'baseline' else context
+        with account_research(selected_context, request) as (prepared, result, payload, execution):
+            evidence = publish_evidence(selected_context, EvaluationEvidenceWrite(request.experiment, name, prepared, result), execution=execution)
             identity = dict(payload["evaluation_identity"])
             identity["candidate"] = CandidateKey(**identity["candidate"])
             accounts.append(AccountRunRef(evidence, EvaluationIdentity(**identity)))
     result = diagnose_accounts(context.repository, AccountDiagnosisRequest(*accounts,
         EvaluationWindow("full", date(2026, 10, 1), date(2026, 10, 2))))
-    assert result.status == ("INCOMPARABLE" if different_cost else "COMPUTED"), result.issues
+    assert result.status == ("INCOMPARABLE" if different_execution else "COMPUTED"), result.issues

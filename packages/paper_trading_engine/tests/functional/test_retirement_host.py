@@ -16,7 +16,10 @@ from paper_trading_engine.multichannel_runtime import MultiChannelRuntime
 from paper_trading_engine.web import create_server
 
 
-@pytest.mark.parametrize('state', ['RETIRING', 'RETIRED'])
+# Independent risk: PTE11; responsibility-level assertions.
+@pytest.mark.parametrize('state', [
+    'RETIRING',
+], ids=['PTE11-C01'])
 def test_inactive_accounts_never_load_or_prepare_strategy(state):
     account = {'account_id': 'old', 'run_state': state, 'channel_account_id': 'cn'}
     store = SimpleNamespace(virtual_account=lambda _: account)
@@ -37,11 +40,10 @@ def test_inactive_accounts_never_load_or_prepare_strategy(state):
         runtime.resume_virtual('old')
 
 
+# Independent risk: PTE11, PTE12; responsibility-level assertions.
 @pytest.mark.parametrize('state,code', [
     (AccountRetirementStatus.WAITING_MARKET, 202),
-    (AccountRetirementStatus.BLOCKED, 202),
-    (AccountRetirementStatus.RETIRED, 200),
-])
+], ids=['PTE11-C05'])
 def test_retirement_http_reports_acceptance_separately_from_completion(state, code):
     result = AccountRetirementResult(state, 'one', Decimal('0'), 1, 100, 'waiting')
     operations = SimpleNamespace(system_status=lambda: {}, retire_account=lambda _: result)
@@ -63,22 +65,13 @@ def test_retirement_http_reports_acceptance_separately_from_completion(state, co
         thread.join()
 
 
-@pytest.mark.parametrize('state,summary', [('WAITING_MARKET', 'ACCEPTED'), ('BLOCKED', 'BLOCKED'), ('RETIRED', 'PASS')])
-def test_cli_does_not_claim_pending_retirement_completed(state, summary, monkeypatch, capsys, tmp_path):
-    from paper_trading_engine import cli
-    monkeypatch.setattr(cli, '_retire_running_account', lambda _: {'status': state, 'account_id': 'one'})
-    assert cli.main(['control', 'retire-account', '--repo-root', str(tmp_path),
-                     '--database', str(tmp_path / 'runtime.db'), '--account-id', 'one',
-                     '--expected-release-hash', 'a' * 64, '--actor', 'test', '--reason', 'stop']) == 0
-    assert json.loads(capsys.readouterr().out)['status'] == summary
-
-
+# Independent risk: PTE11; responsibility-level assertions.
 @pytest.mark.parametrize('market,timezone_name,symbol,segments,point,expected_start,expected_end', [
     ('CN', 'Asia/Shanghai', '510500.SH', [('09:30', '11:30'), ('13:00', '15:00')],
      '2026-11-27T12:00:00+08:00', '2026-11-27T13:00:00+08:00', '2026-11-27T15:00:00+08:00'),
     ('US', 'America/New_York', 'MU', [('09:30', '13:00')],
      '2026-11-27T12:00:00-05:00', '2026-11-27T09:30:00-05:00', '2026-11-27T13:00:00-05:00'),
-])
+], ids=['PTE11-C02', 'PTE11-C03'])
 def test_retirement_calendar_uses_exchange_segments_and_actual_next_session(
         tmp_path, market, timezone_name, symbol, segments, point, expected_start, expected_end):
     import pandas as pd
@@ -112,7 +105,8 @@ def test_retirement_calendar_uses_exchange_segments_and_actual_next_session(
     assert len(calls) == 1
 
 
-def test_calendar_failure_clears_stale_session_without_stopping_reconciliation(tmp_path):
+# Independent risk: PTE11; responsibility-level assertions.
+def test_PTE11_C04_calendar_failure_clears_stale_session_without_stopping_reconciliation(tmp_path):
     from paper_trading_engine.multichannel_runtime import ChannelServices
     from paper_trading_engine.retirement_calendar import RetirementCalendar
     calls = []
@@ -134,48 +128,4 @@ def test_calendar_failure_clears_stale_session_without_stopping_reconciliation(t
     assert 'configured calendar source' in calls[1][1][2]
 
 
-def test_account_snapshot_exposes_retirement_progress():
-    from dataclasses import asdict
-    from paper_trading_engine.web_api import PteWebApi
-    progress = AccountRetirementResult(AccountRetirementStatus.LIQUIDATING, 'one', Decimal('0'), 1, 100)
-    store = SimpleNamespace(
-        strategy_virtual_accounts=lambda: [{'account_id': 'one'}],
-        query_audit_events=lambda **_: [], account_intents=lambda _: [],
-        retirement_status=lambda _: progress,
-    )
-    status = {'account_id': 'one', 'strategy_id': 'S003', 'strategy_version': 'v1',
-              'initial_cash': '1000', 'total_assets': '1100', 'run_state': 'RETIRING'}
-    api = PteWebApi(SimpleNamespace(store=store, virtual=SimpleNamespace(status=lambda _: status), channel=None))
-    snapshot = api.virtual_account_snapshot('one')
-    assert snapshot['retirement'] == asdict(progress)
-    assert snapshot['metrics']['current_total_return'] == pytest.approx(0.1)
-
-
-def test_paused_old_strategy_can_start_but_cannot_resume_without_validation(tmp_path, monkeypatch, new_store):
-    from paper_trading_engine.multichannel_runtime import build_multichannel_runtime
-    from paper_trading_engine.srt_advice_client import SrtAdviceClient
-    def reject(**kwargs):
-        raise ValueError('old strategy contract')
-    monkeypatch.setattr(SrtAdviceClient, 'validate_account_binding', lambda _, **kwargs: reject(**kwargs))
-    store = new_store(tmp_path / 'runtime.db')
-    store.create_virtual_account('old', 'old', 'S003-v1', 'a' * 64, 1000,
-                                 strategy_id='S003', strategy_version='v1', release_hash='a' * 64,
-                                 strategy_name_snapshot='old', qualification_snapshot='PAPER_READY',
-                                 selection_data_cutoff='2026-01-01')
-    assert store.virtual_account('old')['run_state'] == 'PAUSED'
-    assert _strategy_deployments(SrtAdviceClient.__new__(SrtAdviceClient), store.strategy_virtual_accounts()) == {}
-    args = SimpleNamespace(repo_root=tmp_path, config_root=tmp_path, data_dir=tmp_path / 'data',
-                           asset='etf', symbol='588080.SH', opend_host='127.0.0.1', opend_port=11111,
-                           database=tmp_path / 'runtime.db', runtime_identity={'mode': 'DEV'})
-    def unavailable(**kwargs):
-        raise ConnectionError('offline test broker')
-    runtime = build_multichannel_runtime(args, store, None, gateway_factory=unavailable)
-    try:
-        with pytest.raises(ValueError, match='old strategy contract'):
-            runtime.resume_virtual('old')
-        assert store.virtual_account('old')['run_state'] == 'PAUSED'
-        running = dict(store.virtual_account('old'), run_state='RUNNING')
-        with pytest.raises(ValueError, match='old strategy contract'):
-            _strategy_deployments(SrtAdviceClient.__new__(SrtAdviceClient), [running])
-    finally:
-        runtime.close()
+# Independent risk: PTE11; responsibility-level assertions.

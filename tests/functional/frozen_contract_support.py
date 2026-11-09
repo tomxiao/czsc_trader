@@ -1,3 +1,4 @@
+# Risk ownership: TDR-27 TDR-04
 """Current contracts and explicit rejection of retired serialized formats."""
 
 from pathlib import Path
@@ -5,18 +6,14 @@ import shutil
 
 import pytest
 from strategy_manager import StrategyRegistry
-from czsc_trader.application import RepositoryContext, freeze_candidate, deploy_strategy
-from czsc_trader.research_tools import delivery as d
-from czsc_trader.research_tools import ResearchBatchRef
+from czsc_trader.application import RepositoryContext
 from test_candidate_freeze import (
-    inspection as inspection, inspected_candidate as inspected_candidate, approve,
-    completed as completed, fresh_completed as fresh_completed,
+    inspection as inspection, inspected_candidate as inspected_candidate, completed as completed, fresh_completed as fresh_completed,
     fresh_inspection as fresh_inspection, managed_evaluation as managed_evaluation,
 )
 
 
-@pytest.mark.release_acceptance
-def test_real_frozen_versions_expose_installed_identity_only_after_deployment(loaded_release):
+def assert_installed_release_identity(loaded_release):
     from czsc_trader.application import strategy_info
     from czsc_trader.application.errors import ValidationError
     from strategy_runtime.equity_definition import EquityStrategyCandidate
@@ -44,15 +41,6 @@ def test_real_frozen_versions_expose_installed_identity_only_after_deployment(lo
         assert result.result["fee_rate"] == expected_fee
 
 
-@pytest.fixture
-def freshly_frozen(inspected_candidate):
-    # Exercise real freeze/deployment once from the same verified inspection seed
-    # used by persistence tests; consumers still receive private repository copies.
-    context, report, source = inspected_candidate
-    receipt = freeze_candidate(context, approve(context, report, source))
-    assert receipt.status.value == "COMMITTED", receipt
-    deploy_strategy(context, "S900-v1")
-    return context, StrategyRegistry(context.strategy_root).get_version("S900", "v1")
 
 
 @pytest.fixture
@@ -71,13 +59,3 @@ def current_frozen(tmp_path):
     with RegistryWriteLock(context.strategy_root).hold():
         pass
     return context, StrategyRegistry(context.strategy_root).get_version("S900", "v1")
-
-
-
-
-def test_delivery_receipt_rejects_old_schema():
-    reference = d.DeliveryReference(ResearchBatchRef("S900"), d.DeliveryStage.MANDATE, 1, "a" * 64)
-    raw = d.DeliveryReceipt(reference, (d.PublicationFile("report.md", "b" * 64),)).to_dict()
-    raw["schema_version"] = 1
-    with pytest.raises((TypeError, ValueError)):
-        d.DeliveryReceipt.from_dict(raw)

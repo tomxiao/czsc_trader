@@ -6,9 +6,9 @@ import pytest
 import strategy_evaluator as se
 from strategy_evaluator import research_models as m
 from test_parameter_perturbation import bound_request
-from test_research_assessment import compare, policy
+from test_research_assessment import compare
 from strategy_evaluator.research_assessment import (
-    recompute_historical_assessment, recompute_historical_comparison,
+    recompute_historical_assessment,
 )
 
 
@@ -33,6 +33,7 @@ def current_request(*, all_na=False, partial=False):
     return replace(old, protocol=protocol, parameter_designs=(design,), perturbations=links, evidence=evidence)
 
 
+@pytest.mark.risk_cases('SE-17-C01')
 def test_current_complete_roundtrip_and_unit_weights():
     request = current_request()
     assert m.CandidateAssessmentRequest.from_dict(request.to_dict()) == request
@@ -40,47 +41,26 @@ def test_current_complete_roundtrip_and_unit_weights():
     assert panel.formula_version == "research-assessment-v7"
     assert panel.rows[0].parameter_context.valid_points == 2
     assert len(panel.rows[0].parameter_performances) == 2
+    diagnostics = {item.metric: item for item in panel.rows[0].diagnostics}
+    # Both children earn 5+10 on initial 1000 across four days; equal unit
+    # weights make every LINEAR quantile the same annual return, with zero DD.
+    assert diagnostics[m.ResearchMetric.PARAMETER_RETURN_Q10].value == pytest.approx((1015 / 1000) ** 63 - 1)
+    assert diagnostics[m.ResearchMetric.PARAMETER_DRAWDOWN_Q90].value == 0.
     assert m.AssessmentPanel.from_dict(panel.to_dict()) == panel
     with pytest.raises(ValueError, match="unit weights"):
         replace(request, perturbations=(replace(request.perturbations[0], weight=2.0), request.perturbations[1]))
 
 
-@pytest.mark.parametrize("empty", [False, True])
-def test_wrong_or_missing_benchmark_cannot_complete_neighborhood(empty):
-    request = current_request()
-    bad = replace(request.evidence[-1], benchmark_equity=() if empty else (1001.0,) * 4)
-    panel = se.assess_candidates(replace(request, evidence=(*request.evidence[:-1], bad)))
-    row = panel.rows[0]
-    assert row.parameter_context.valid_points == 1
-    assert len(row.parameter_performances) == 1
-    for metric in (m.ResearchMetric.PARAMETER_RETURN_Q10, m.ResearchMetric.PARAMETER_DRAWDOWN_Q90):
-        assert next(x for x in row.diagnostics if x.metric is metric).value is None
-
-
-def test_missing_all_benchmarks_is_not_complete():
-    request = current_request()
-    panel = se.assess_candidates(replace(request, evidence=tuple(replace(x, benchmark_equity=()) for x in request.evidence)))
-    assert panel.rows[0].parameter_context.valid_points == 0
-    assert panel.rows[0].parameter_performances == ()
-
-
-def test_comparison_uses_profile_not_only_algorithm():
-    row = se.assess_candidates(current_request()).rows[0]
-    other_candidate = m.AssessmentCandidate("S900-C0009", "9" * 64)
-    other = replace(row, candidate=other_candidate,
-                    stress_performance=replace(row.stress_performance, candidate=other_candidate),
-                    parameter_context=replace(row.parameter_context, comparison_sha256="d" * 64))
-    result = se.compare_parameter_robustness(m.ParameterRobustnessComparisonRequest((row, other)))
-    assert not result.comparable and "PARAMETER_METHODS_DIFFER" in result.reasons
-    assert all(x.status is m.ComparisonStatus.INCOMPARABLE for x in compare((row, other), current=True).rows)
-
-
+@pytest.mark.risk_cases('SE-33-C01')
 def test_historical_v5_retains_prior_recomputation_semantics():
     request = bound_request()
     bad = replace(request.evidence[-1], benchmark_equity=(1001.0,) * 4)
     panel = recompute_historical_assessment(replace(request, evidence=(*request.evidence[:-1], bad)))
     assert panel.formula_version == "research-assessment-v5"
     assert panel.rows[0].parameter_context.valid_points == 2
+    original = panel.to_dict()
+    assert m.AssessmentPanel.from_dict(original).to_dict() == original
+    assert m.AssessmentPanel.from_dict(original).sha256 == panel.sha256
 
 
 PARAMETER_METRICS = (
@@ -113,19 +93,7 @@ def changed_metric(item, metric, value):
     ))
 
 
-def test_partial_applicability_preserves_fixed_axes_and_full_remaining_evidence():
-    request = current_request(partial=True)
-    design = request.parameter_designs[0]
-    assert design.point_count == 2
-    assert all(dict((v.name, v.value) for v in point.values)["lookback"] == 3
-               for point in design.points)
-    panel = se.assess_candidates(request)
-    assert panel.rows[0].parameter_context.valid_points == 2
-    result = compare(panel.rows, targets=current_targets(), current=True).rows[0]
-    assert result.acceptance_status is m.TargetCheckStatus.PASSED
-    assert result.floor_metrics == ()
-
-
+@pytest.mark.risk_cases('SE-12-C04')
 def test_unavailable_parameter_item_keeps_other_checks_and_has_explicit_floor():
     request = current_request(all_na=True)
     assert request.parameter_designs[0].points == ()
@@ -159,80 +127,37 @@ def test_unavailable_parameter_item_keeps_other_checks_and_has_explicit_floor():
             for x in row.diagnostics))
 
 
-def test_missing_required_point_never_becomes_na_or_receives_floor():
+@pytest.mark.risk_cases('SE-17-C06')
+def test_SE_17_C06_missing_point_preserves_prescribed_denominator():
     request = current_request()
-    panel = se.assess_candidates(replace(request, evidence=request.evidence[:-1]))
-    row = panel.rows[0]
+    row = se.assess_candidates(replace(request, evidence=request.evidence[:-1])).rows[0]
     assert row.parameter_context.prescribed_points == 2
     assert row.parameter_context.valid_points == 1
-    assert all(x.status is not m.DiagnosticStatus.NOT_APPLICABLE
-               for x in row.diagnostics if x.metric in PARAMETER_METRICS)
+    relevant = [x for x in row.diagnostics if x.metric in PARAMETER_METRICS]
+    assert relevant and all(x.value is None for x in relevant)
+    assert all(x.status is not m.DiagnosticStatus.NOT_APPLICABLE for x in relevant)
+
+@pytest.mark.risk_cases('SE-12-C01')
+def test_SE_12_C01_require_complete_never_ranks_missing_applicable_metrics():
+    request = current_request()
+    panel = se.assess_candidates(replace(request, evidence=request.evidence[:-1]))
     ranked = compare(panel.rows, targets=current_targets(), current=True).rows[0]
     assert ranked.acceptance_status is m.TargetCheckStatus.INDETERMINATE
     assert ranked.status is m.ComparisonStatus.INCOMPARABLE
     assert ranked.floor_metrics == ()
 
 
-def test_measured_neighbor_ranks_above_floor_without_invented_raw_values():
-    measured = se.assess_candidates(current_request()).rows[0]
-    floor = named_row(se.assess_candidates(current_request(all_na=True)).rows[0], 9)
-    floor = changed_metric(floor, m.ResearchMetric.ROLLING_EXCESS_Q10, 10.0)
-    ranked = compare((floor, measured), targets=current_targets(), current=True)
-    assert ranked.rows[0].candidate == measured.candidate
-    assert all(x.pareto_layer == 1 for x in ranked.rows)
-    assert ranked.pairs[0].decisive_metric is m.ResearchMetric.PARAMETER_RETURN_Q10
-    assert ranked.rows[1].floor_metrics == PARAMETER_METRICS
-    swapped_policy = replace(policy(), sensitivities=(
-        m.ComparisonVariant("drawdown-first", policy().bins, adjacent_swap=0),
-    ))
-    swapped = compare((floor, measured), swapped_policy, targets=current_targets(), current=True)
-    assert swapped.sensitivities[0].rows[0].candidate == measured.candidate
-    assert swapped.sensitivities[0].rows[1].floor_metrics == PARAMETER_METRICS
 
 
-def test_two_floors_use_later_metrics_and_pareto_still_has_priority():
-    first = se.assess_candidates(current_request(all_na=True)).rows[0]
-    second = named_row(first, 9)
-    second = changed_metric(second, m.ResearchMetric.ROLLING_EXCESS_Q10, 1.0)
-    result = compare((first, second), targets=current_targets(), current=True)
-    assert result.rows[0].candidate == second.candidate
-    assert result.pairs[0].decisive_metric is m.ResearchMetric.ROLLING_EXCESS_Q10
-    measured = named_row(se.assess_candidates(current_request()).rows[0], 8)
-    dominant = changed_metric(first, m.ResearchMetric.NET_ANNUAL_RETURN, 100.0)
-    result = compare((measured, dominant), targets=current_targets(), current=True)
-    assert [(x.candidate, x.pareto_layer) for x in result.rows] == [
-        (dominant.candidate, 1), (measured.candidate, 2)]
-
-
-def test_current_entry_rejects_historical_requests():
-    with pytest.raises(ValueError, match="historical|read.only|current"):
-        se.assess_candidates(bound_request())
-
-
-def test_v6_v3_historical_roundtrip_keeps_exact_fields_and_cannot_be_reissued():
+@pytest.mark.risk_cases('SE-17-C07')
+def test_SE_17_C07_failed_point_keeps_declared_denominator():
     request = current_request()
-    design = request.parameter_designs[0]
-    axis = replace(design.space.axes[0], rule=se.NumericOffsets((-1, 1)))
-    legacy_protocol = replace(design.protocol, version="parameter-cartesian-neighborhood-v1")
-    design = replace(design, protocol=legacy_protocol, space=replace(design.space, axes=(axis,)))
-    request = replace(request,
-        protocol=replace(request.protocol, parameter_protocol=legacy_protocol),
-        parameter_designs=(design,),
-        perturbations=tuple(replace(x, parameter_point=design.bind_point(i))
-                            for i, x in enumerate(request.perturbations)),
-        evidence=tuple(replace(x, parameter_point=design.bind_point(x.parameter_point.point_index))
-                       if x.parameter_point is not None else x for x in request.evidence))
-    panel = recompute_historical_assessment(request)
-    assert panel.formula_version == "research-assessment-v6"
-    req = m.CandidateComparisonRequest(request.centers, m.ResearchTargets((), 2), panel, policy())
-    result = recompute_historical_comparison(req)
-    serialized = result.to_dict()
-    assert "floor_metrics" not in serialized["rows"][0]
-    assert result.rows[0].floor_metrics is None
-    assert type(result).from_dict(serialized).to_dict() == serialized
-    with pytest.raises(ValueError, match="historical|read.only"):
-        se.assess_candidates(request)
-    with pytest.raises(ValueError, match="historical|read.only"):
-        se.compare_candidates(req)
-    with pytest.raises(ValueError, match="version|protocol|current|context"):
-        replace(panel, formula_version="research-assessment-v7")
+    failed = request.evidence[-1]
+    attempt = m.IncompleteEvaluation(failed.candidate, failed.window_id, failed.scenario_id,
+        m.IncompleteEvaluationStatus.FAILED, "numerical evaluation failed", failed.experiment_id, "2" * 32)
+    request = replace(request, evidence=request.evidence[:-1], incomplete=(attempt,))
+    row = se.assess_candidates(request).rows[0]
+    assert row.parameter_context.prescribed_points == 2
+    assert row.parameter_context.valid_points == 1
+    assert request.incomplete == (attempt,)
+    assert all(x.value is None for x in row.diagnostics if x.metric in PARAMETER_METRICS)

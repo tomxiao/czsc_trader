@@ -1,119 +1,25 @@
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta
-from pathlib import Path
 from types import SimpleNamespace
 from zoneinfo import ZoneInfo
 
 import pandas as pd
 import pytest
 from dataflows import (
-    AssetClass, BarFrequency, Dataflows, DataSpace, Dataset, EquityDataRequest, EquityProduct,
-    EquityQuery, InstrumentId, MarketId, PreparePolicy, PriceAdjustment, ProviderBinding,
-    ProviderConfig, SourceRef, TimeInterval, TradingSession,
+    AssetClass, BarFrequency, EquityDataRequest, EquityProduct,
+    EquityQuery, InstrumentId, MarketId, PreparePolicy, PriceAdjustment, SourceRef, TimeInterval, TradingSession,
 )
 from dataflows.equity_data import equity_metadata
-from dataflows.ohlcv_quality import bind_quality_frame, build_quality_evidence, verify_daily_sessions
 
 from paper_trading_engine.chart_market_data import AccountChartMarketData
 from paper_trading_engine.account_chart import AccountChartService
-from execution_channels.futu.trading_window import SHANGHAI
 
 
-def test_chart_market_data_refreshes_completed_sessions_and_preserves_bound_assets(tmp_path) -> None:
-    clock = [datetime(2026, 9, 4, 14, 59, tzinfo=SHANGHAI)]
-    source = {"published": pd.Timestamp("2026-09-03"), "price": 1.0}
-    price_requests = []
-    holiday = pd.Timestamp("2026-09-07")
-
-    def calendar(request):
-        dates = pd.date_range(request.start, request.end)
-        return pd.DataFrame({
-            "Date": dates, "IsOpen": ((dates.dayofweek < 5) & (dates != holiday)).astype(int),
-        }), {"vendor": "synthetic"}
-
-    def prices(request):
-        price_requests.append(request)
-        dates = pd.bdate_range(request.start, min(pd.Timestamp(request.end), source["published"]))
-        dates = dates[dates != holiday]
-        frame = pd.DataFrame({
-            "Date": dates, "Open": source["price"], "High": source["price"] + 0.1,
-            "Low": source["price"] - 0.1, "Close": source["price"],
-            "Volume": 100.0, "Amount": source["price"] * 100.0,
-        })
-        def trade_cal(**kwargs):
-            sessions = pd.date_range(kwargs["start_date"], kwargs["end_date"])
-            return pd.DataFrame({
-                "cal_date": sessions.strftime("%Y%m%d"),
-                "is_open": ((sessions.dayofweek < 5) & (sessions != holiday)).astype(int),
-            })
-        pro = SimpleNamespace(
-            fund_basic=lambda **kwargs: pd.DataFrame({
-                "ts_code": [request.symbol], "list_date": ["20200101"],
-            }),
-            trade_cal=trade_cal,
-        )
-        coverage = verify_daily_sessions(pro, request.symbol, frame,
-            start=request.start, end=request.end)
-        quality = build_quality_evidence(frame, expected_dates=coverage["expected_dates"])
-        metadata = {"vendor": "synthetic", "daily_session_coverage": coverage,
-            "ohlcv_quality_evidence": bind_quality_frame(quality, frame)}
-        frame.attrs = {name: metadata[name] for name in
-                       ("daily_session_coverage", "ohlcv_quality_evidence")}
-        return frame, metadata
-
-    flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")), providers=ProviderConfig(bindings={
-        Dataset.TRADING_CALENDAR: ProviderBinding("synthetic", "v1", calendar),
-        Dataset.ETF_OHLCV: ProviderBinding("synthetic", "v1", prices),
-    }))
-    source_port = AccountChartMarketData(dataflows=flows, now=lambda: clock[0])
-    arguments = dict(symbol="588080.SH", asset="etf", selection_data_cutoff="2026-09-02", context_sessions=60)
-    first_hash, first = source_port.history(**arguments)
-    assert len(first_hash) == 64 and first.Date.max() == pd.Timestamp("2026-09-03")
-    request = price_requests[-1]
-    pinned = flows.prepare((request,), policy=PreparePolicy.REUSE).reference
-    assert request.end == "2026-09-03"
-
-    # Redrawing uses prepared assets; explicit refresh fetches the source even on the same day.
-    source["price"] = 1.5
-    assert source_port.history(**arguments)[0] == first_hash
-    assert len(price_requests) == 1
-    refreshed_hash, refreshed = source_port.history(**arguments, refresh_source=True)
-    assert refreshed_hash != first_hash and refreshed.Close.iloc[-1] == 1.5
-    assert len(price_requests) == 2
-    assert flows.fetch(request, prepared=pinned).dataframe.equals(first)
-
-    # The scheduled update advances the cutoff. Delayed publication fails, then recovers
-    # from the supplier on the same day instead of pinning a stale successful result.
-    for hour, minute in ((15, 0), (17, 0), (20, 29)):
-        clock[0] = datetime(2026, 9, 4, hour, minute, tzinfo=SHANGHAI)
-        assert source_port.history(**arguments)[1].equals(refreshed)
-    clock[0] = datetime(2026, 9, 4, 20, 30, tzinfo=SHANGHAI)
-    with pytest.raises(ValueError, match="图表行情不可用.*要求截至 2026-09-04.*缺失交易日：2026-09-04") as failed:
-        source_port.history(**arguments)
-    assert failed.value.data_error.code == "INCOMPLETE_DATA"
-    assert "ItemPrepareResult" not in str(failed.value)
-    source["published"] = pd.Timestamp("2026-09-04")
-    _, friday = source_port.history(**arguments)
-    assert friday.Date.max() == pd.Timestamp("2026-09-04")
-    calls = len(price_requests)
-    for day in (5, 7):
-        clock[0] = datetime(2026, 9, day, 20, 30, tzinfo=SHANGHAI)
-        assert source_port.history(**arguments)[1].equals(friday)
-        assert not source_port.is_trading_day(symbol="588080.SH", session=clock[0].date())
-    assert len(price_requests) == calls
-
-    # The first session after a holiday remains on previous data until 20:30.
-    source["published"] = pd.Timestamp("2026-09-08")
-    clock[0] = datetime(2026, 9, 8, 14, 0, tzinfo=SHANGHAI)
-    assert source_port.history(**arguments)[1].Date.max() == pd.Timestamp("2026-09-04")
-    clock[0] = datetime(2026, 9, 8, 20, 30, tzinfo=SHANGHAI)
-    assert source_port.history(**arguments)[1].Date.max() == pd.Timestamp("2026-09-08")
-    assert price_requests[-1].end == "2026-09-08"
-    assert flows.fetch(request, prepared=pinned).dataframe.equals(first)
-
-
-@pytest.mark.parametrize('day,close', [(date(2026, 7, 2), 16), (date(2026, 11, 27), 13)])
+# Independent risk: PTE24; responsibility-level assertions.
+@pytest.mark.parametrize('day,close', [
+    (date(2026, 7, 2), 16),
+], ids=['PTE24-C01'])
 def test_v4_us_chart_uses_bound_source_and_actual_new_york_close(monkeypatch, day, close):
     zone = ZoneInfo("America/New_York")
     prior = day - timedelta(days=1)

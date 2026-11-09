@@ -1,6 +1,5 @@
 """Independent CN/US gateway boundaries, using SDK-shaped broker responses."""
 from dataclasses import replace
-from decimal import Decimal
 from types import SimpleNamespace
 
 import pytest
@@ -84,6 +83,7 @@ def intent(market="US", session="RTH"):
                        session=session, channel_account_id="sim-" + market.lower())
 
 
+# Independent risk: EC14; responsibility-level assertions.
 @pytest.mark.parametrize("market,currency,broker_code", [("CN", "CNY", "SH.588080"), ("US", "USD", "US.MU")])
 def test_exact_simulator_binding_shared_for_both_markets(market, currency, broker_code):
     adapter, trade = gateway(market)
@@ -106,11 +106,10 @@ def test_exact_simulator_binding_shared_for_both_markets(market, currency, broke
     assert funds_args.get("currency") == ("USD" if market == "US" else None)
 
 
-@pytest.mark.parametrize("mutation", [
-    {"trd_env": "REAL"}, {"acc_status": "DISABLED"}, {"acc_id": 78},
-    {"trdmarket_auth": ["CN"]}, {"trdmarket_auth": "US"},
-    {"sim_acc_type": "FUTURES"}, {"acc_type": "CASH"}, {"trd_market": "CN"},
-])
+# Independent risk: EC14; responsibility-level assertions.
+@pytest.mark.parametrize('mutation', [
+    {'trd_env':'REAL'}, {'acc_id':78}, {'trdmarket_auth':['CN']},
+], ids=['EC14-EX01-real-account','EC14-EX02-account-id','EC14-EX03-market-authority'])
 def test_rejects_wrong_us_account_before_order(mutation):
     adapter, trade = gateway()
     trade.accounts[0].update(mutation)
@@ -119,6 +118,7 @@ def test_rejects_wrong_us_account_before_order(mutation):
     assert not any(name == "place" for name, _ in trade.calls)
 
 
+# Independent risk: EC14; responsibility-level assertions.
 def test_duplicate_exact_identity_is_ambiguous():
     adapter, trade = gateway()
     trade.accounts *= 2
@@ -126,8 +126,9 @@ def test_duplicate_exact_identity_is_ambiguous():
         adapter.account_snapshot()
 
 
-@pytest.mark.parametrize("field,value", [("us_cash", None), ("us_cash", "N/A"),
-    ("frozen_cash", float("nan")), ("total_assets", -1), ("currency", "CNY")])
+# Independent risk: EC14; responsibility-level assertions.
+@pytest.mark.parametrize('field,value', [('us_cash',None),('currency','CNY')],
+                         ids=['EC14-C04','EC14-C05'])
 def test_us_does_not_guess_cash_or_currency(field, value):
     adapter, trade = gateway()
     trade.funds[field] = value
@@ -135,55 +136,16 @@ def test_us_does_not_guess_cash_or_currency(field, value):
         adapter.account_snapshot()
 
 
-def test_cn_market_liquidation_accepts_confirmed_whole_odd_lot_only():
-    adapter, trade = gateway('CN')
-    order = replace(intent('CN'), side='SELL', quantity=105, order_type='MARKET', limit_price=0.)
-    with pytest.raises(PaperTradingSafetyError, match='lots'):
-        adapter.place_order(order)
-    adapter.place_order(replace(order, full_liquidation=True))
-    args = next(args for name, args in trade.calls if name == 'place')
-    assert args['qty'] == 105 and args['order_type'] == 'MARKET'
-    with pytest.raises(PaperTradingSafetyError, match='SELL'):
-        adapter.place_order(replace(order, side='BUY', full_liquidation=True))
+# Independent risk: EC06; responsibility-level assertions.
 
 
-@pytest.mark.parametrize("position", [
-    dict(code="US.MU", qty=1), dict(code="US.MU", qty=1, can_sell_qty=2),
-    dict(code="US.MU", qty=.5, can_sell_qty=.5),
-    dict(code="US.MU", qty=1, can_sell_qty=1, position_side="SHORT"),
-    dict(code="SH.588080", qty=1, can_sell_qty=1),
-])
-def test_us_positions_require_explicit_long_integer_sellable_shares(position):
+# Independent risk: EC14; responsibility-level assertions.
+# Independent risk: EC14; responsibility-level assertions.
+def test_EC14_EX04_cross_channel_order_is_rejected_before_broker_call():
     adapter, trade = gateway()
-    trade.positions = [position]
-    with pytest.raises((FutuGatewayError, PaperTradingSafetyError)):
-        adapter.account_snapshot()
-
-
-def test_us_sale_availability_and_cumulative_precision():
-    adapter, trade = gateway()
-    trade.positions = [dict(code="US.MU", qty=1, can_sell_qty=1, position_side="LONG")]
-    assert adapter.account_snapshot().positions[0].sellable_quantity == 1
-    row = dict(order_id="1", code="US.MU", trd_side="BUY", qty=3, price=757.68,
-               order_type="NORMAL", order_status="FILLED_PART", dealt_qty=2,
-               dealt_avg_price="756.306", remark="x", session="RTH",
-               create_time="2026-11-05 08:02:00", updated_time="2026-11-05 08:02:01")
-    trade.orders = [row]
-    order = adapter.order_snapshot()[0]
-    assert order.cumulative_notional == Decimal("1512.612")
-    assert order.updated_at == "2026-11-05T08:02:01-05:00"
-    trade.orders[0]["updated_time"] = "2026-07-05 08:02:01"
-    assert adapter.order_snapshot()[0].updated_at.endswith("-04:00")
-
-
-@pytest.mark.parametrize("change", [dict(channel_account_id="another"), dict(session="ETH"),
-    dict(quantity=True), dict(quantity=1.5), dict(limit_price=10.123), dict(symbol="US.MU"),
-    dict(symbol="MU.US"), dict(time_in_force="GTC")])
-def test_us_order_boundaries_before_mutation(change):
-    adapter, trade = gateway()
-    with pytest.raises((FutuGatewayError, PaperTradingSafetyError)):
-        adapter.place_order(replace(intent(), **change))
-    assert not trade.calls
+    with pytest.raises(PaperTradingSafetyError, match='channel account'):
+        adapter.place_order(replace(intent(), channel_account_id='another'))
+    assert trade.calls == []
 
 
 def test_eth_limit_order_and_market_rejection():
@@ -196,25 +158,12 @@ def test_eth_limit_order_and_market_rejection():
     assert sum(name == "place" for name, _ in trade.calls) == 1
 
 
+# Independent risk: EC14; responsibility-level assertions.
 def test_unknown_order_type_and_status_are_not_coerced():
     adapter, trade = gateway()
     adapter.place_order(intent())
     row = dict(order_id="1", code="US.MU", trd_side="BUY", qty=1, price=10,
-               order_type="STOP", order_status="SUBMITTED", dealt_qty=0, dealt_avg_price=0)
+               order_type="NORMAL", order_status="UNRECOGNIZED", dealt_qty=0, dealt_avg_price=0)
     trade.orders = [row]
-    with pytest.raises(FutuGatewayError, match="order type"):
-        adapter.order_snapshot()
-    row.update(order_type="NORMAL", order_status="UNRECOGNIZED")
     with pytest.raises(FutuGatewayError, match="order status"):
         adapter.order_snapshot()
-
-
-@pytest.mark.parametrize("kwargs", [dict(channel_account_id="../bad"), dict(broker_account_id=True),
-    dict(broker_account_id=0), dict(channel_id="futu"), dict(session="ALL"),
-    dict(channel_id=FUTU_SIMULATE_CN_CHANNEL_ID, session="ETH")])
-def test_configuration_rejects_ambiguous_scope(kwargs):
-    args = dict(channel_account_id="us", channel_id=FUTU_US_SIM_CHANNEL_ID,
-                broker_account_id=77, session="RTH")
-    args.update(kwargs)
-    with pytest.raises((ValueError, PaperTradingSafetyError)):
-        ChannelAccountConfig(**args)

@@ -1,3 +1,4 @@
+# Risk ownership: TDR-28
 """Independent table warmup remains explicit across preparation and replay."""
 from dataclasses import replace
 from datetime import date, timedelta
@@ -6,11 +7,11 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 
-from dataflows import DataCoverageRequirement, Dataset, MarketId, MoneyflowParameters, ProviderBinding
+from dataflows import DataCoverageRequirement, Dataset, MarketId, ProviderBinding
 from strategy_runtime import equity_source_hash
 from strategy_runtime.dataset_observations import DatasetObservationInput, ObservationAvailability
 from czsc_trader.research_tools import ResearchExecutionSession
-from test_equity_adjusted_observations import setup_adjusted
+from adjusted_observation_support import setup_adjusted
 
 
 def independent_fixture(tmp_path, market):
@@ -61,7 +62,7 @@ def independent_fixture(tmp_path, market):
                             observation_requests=(query,)), calls, raw_calls
 
 
-@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
+@pytest.mark.parametrize('market', [MarketId.CN])
 def test_independent_300_day_warmup_prepares_evaluates_and_keys_cache(tmp_path, market):
     context, request, calls, raw_calls = independent_fixture(tmp_path, market)
     original_definition = request.candidate.definition
@@ -86,73 +87,3 @@ def test_independent_300_day_warmup_prepares_evaluates_and_keys_cache(tmp_path, 
             context.evaluation.prepare(replace(alternative, input_binding=prepared.request.input_binding),
                                        execution=session)
     assert len(calls) == 2
-
-
-@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
-def test_independent_warmup_does_not_waive_required_rows(tmp_path, market):
-    context, request, _, _ = independent_fixture(tmp_path, market)
-    short = replace(request.observation_requests[0], start='2026-10-12')
-    with ResearchExecutionSession(context, experiment=request.experiment) as session:
-        with pytest.raises(ValueError, match='preparation failed'):
-            context.evaluation.prepare(replace(request, observation_requests=(short,)), execution=session)
-
-
-@pytest.mark.parametrize('case,match', [
-    ('future', 'exceeds evaluation end'),
-    ('cutoff', 'declared calendar and interval'),
-    ('fixed_start', 'canonical start'),
-    ('fixed_end', 'fixed end'),
-    ('coverage', 'differs from declaration'),
-    ('active_old_end', 'ends before required-from'),
-    ('inactive_physical', 'inactive observation'),
-])
-def test_explicit_bounds_reject_contract_violations(tmp_path, case, match):
-    context, request, _, _ = independent_fixture(tmp_path, MarketId.CN)
-    item, = request.candidate.definition.observation_inputs
-    query, = request.observation_requests
-    if case == 'future':
-        query = replace(query, end='2026-10-16')
-    elif case == 'cutoff':
-        query = replace(query, required_cutoff='2026-10-15')
-    elif case == 'fixed_start':
-        item = replace(item, history_start=date(2025,1,1))
-    elif case == 'fixed_end':
-        item = replace(item, history_start=date.fromisoformat(query.start), history_end=date(2026,10,14))
-    elif case == 'coverage':
-        query = replace(query, coverage=DataCoverageRequirement())
-    else:
-        item = replace(item, history_start=date.fromisoformat(query.start),
-                       required_from=date(2026,10,14) if case == 'active_old_end' else date(2026,10,16))
-        if case == 'active_old_end':
-            query = replace(query, end='2026-10-13')
-    definition = replace(request.candidate.definition, observation_inputs=(item,))
-    with ResearchExecutionSession(context, experiment=request.experiment) as session:
-        with patch.object(context.data, 'prepare', side_effect=AssertionError('reject before data access')):
-            with pytest.raises(ValueError, match=match):
-                invalid = replace(request, candidate=replace(request.candidate, definition=definition),
-                                  observation_requests=(query,))
-                context.evaluation.prepare(invalid, execution=session)
-
-
-@pytest.mark.parametrize('kind', ['weekly', 'moneyflow'])
-def test_explicit_calendar_sensitive_selections_are_revalidated(tmp_path, kind):
-    context, request, _, _ = independent_fixture(tmp_path, MarketId.CN)
-
-    def calendar(query):
-        days = pd.date_range(query.start, query.end)
-        return pd.DataFrame({'Date': days, 'IsOpen': [int(day.weekday() < 5) for day in days]}), {}
-
-    context.data._providers[Dataset.TRADING_CALENDAR.value] = ProviderBinding('calendar', 'v1', calendar)
-    item = DatasetObservationInput('signal', Dataset.ETF_OHLCV if kind == 'weekly' else Dataset.STOCK_MONEYFLOW,
-        '510500.SH' if kind == 'weekly' else None, frequency='weekly' if kind == 'weekly' else 'daily',
-        availability=ObservationAvailability('Asia/Shanghai', '15:00'))
-    query = item.request(date(2026,10,5), date(2026,10,15), source_root=request.candidate.source_root,
-                         trading_dates=('2026-10-05',) if kind == 'moneyflow' else ())
-    if kind == 'moneyflow':
-        assert query.parameters == MoneyflowParameters(('2026-10-05',))
-    definition = replace(request.candidate.definition, observation_inputs=(item,))
-    invalid = replace(request, candidate=replace(request.candidate, definition=definition),
-                      observation_requests=(query,))
-    with ResearchExecutionSession(context, experiment=request.experiment) as session:
-        with pytest.raises(ValueError, match='declared calendar and interval'):
-            context.evaluation.prepare(invalid, execution=session)

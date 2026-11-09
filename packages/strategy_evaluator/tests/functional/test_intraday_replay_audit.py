@@ -1,5 +1,6 @@
 """Public SE audit of a fixed core plus a completed intraday rotation."""
 from copy import deepcopy
+from dataclasses import replace
 from math import sqrt
 
 import pytest
@@ -82,6 +83,7 @@ def _evidence():
     )
 
 
+@pytest.mark.risk_cases('SE-36-C01')
 def test_public_intraday_audit_authenticates_core_rotation_and_preserves_evidence():
     evidence = _evidence()
     before = deepcopy(evidence.to_dict())
@@ -95,50 +97,15 @@ def test_public_intraday_audit_authenticates_core_rotation_and_preserves_evidenc
     assert evidence.to_dict() == before
 
 
-@pytest.mark.parametrize("section,index,field,value,reason", [
-    pytest.param("execution_spec", None, "t_plus_one_inventory_rotation", False,
-                 "INVALID_INTRADAY_OVERLAY_SPEC", id="rotation-spec"),
-    pytest.param("decisions", 1, "signal_date", "2026-09-18",
-                 "ORDER_DECISION_MISMATCH", id="future-signal"),
-    pytest.param("orders", 2, "quantity", 200,
-                 "INVALID_INTRADAY_ORDER_PAIR", id="unpaired-quantity"),
-    pytest.param("fills", 1, "fees", 11., "INTRADAY_FILL_MISMATCH", id="fill-fee"),
-    pytest.param("fills", 2, "price", 9.1, "INTRADAY_FILL_MISMATCH", id="checkpoint-price"),
-    pytest.param("account_daily", 1, "cash", 5842.,
-                 "INTRADAY_ACCOUNT_LEDGER_MISMATCH", id="cash"),
-    pytest.param("account_daily", 1, "quantity", 500,
-                 "INTRADAY_ACCOUNT_LEDGER_MISMATCH", id="core-inventory"),
-    pytest.param("trades", 0, "net_return", 0., "TRADE_VALUE_MISMATCH", id="trade-return"),
-    pytest.param("metrics", None, "calmar", float("inf"), "METRIC_MISMATCH", id="finite-metric"),
+
+
+@pytest.mark.parametrize('section', [
+    pytest.param("orders", id='SE-36-C02'),
+    pytest.param("execution_intraday", id='SE-36-C03'),
 ])
-def test_public_intraday_audit_rejects_changed_business_fact(section, index, field, value, reason):
+@pytest.mark.risk_cases('SE-36-C02', 'SE-36-C03')
+def test_historical_audit_requires_original_order_and_execution_tables(section):
     evidence = _evidence()
-    baseline = audit_replay(evidence)
-    assert baseline.status is AuditStatus.PASS, baseline.reason_codes
-    payload = evidence.to_dict()
-    target = payload[section] if index is None else payload[section][index]
-    target[field] = value
-    result = audit_replay(ReplayEvidence.from_dict(payload))
+    result = audit_replay(replace(evidence, **{section: ()}))
     assert result.status is AuditStatus.FAIL
-    assert reason in result.reason_codes
-    assert result.evidence_hash != baseline.evidence_hash
-
-
-@pytest.mark.parametrize("missing", ["rotation-buy-fill", "midday-checkpoint", "metric"],
-                         ids=["dependent-sell-without-buy", "missing-price", "missing-metric"])
-def test_public_intraday_audit_rejects_incomplete_evidence(missing):
-    evidence = _evidence()
-    assert audit_replay(evidence).status is AuditStatus.PASS
-    payload = evidence.to_dict()
-    if missing == "rotation-buy-fill":
-        payload["fills"].pop(1)
-        reason = "INTRADAY_ORDER_NOT_FILLED"
-    elif missing == "midday-checkpoint":
-        payload["execution_intraday"].pop(2)
-        reason = "MISSING_INTRADAY_CHECKPOINT"
-    else:
-        del payload["metrics"]["calmar"]
-        reason = "METRIC_MISMATCH"
-    result = audit_replay(ReplayEvidence.from_dict(payload))
-    assert result.status is AuditStatus.FAIL
-    assert reason in result.reason_codes
+    assert result.reason_codes

@@ -1,3 +1,4 @@
+# Risk ownership: INFRA-02
 """Bounded access-conflict handling at the two actual publication boundaries."""
 
 import json
@@ -9,7 +10,7 @@ from czsc_trader.application import runtime_migration
 from paper_trading_engine import file_publication, srt_advice_client
 
 
-@pytest.fixture(params=["upgrade", "account-index"])
+@pytest.fixture
 def publication(request, tmp_path):
     if request.param == "upgrade":
         target = tmp_path / "version.json"
@@ -29,17 +30,15 @@ def publication(request, tmp_path):
             lambda: srt_advice_client.SrtAdviceClient._write_index(root, index))
 
 
-@pytest.mark.parametrize("codes,windows,succeeds", [
-    pytest.param((), True, True, id="first-attempt"),
-    # Both retryable errors are admitted; code 5 also exercises the retry limit.
-    pytest.param((32, 32), True, True, id="sharing-conflict-released"),
-    pytest.param((5,) * 4, True, True, id="last-allowed-attempt-succeeds"),
-    pytest.param((5,) * 5, True, False, id="persistent-access-denied"),
-    pytest.param((2,), True, False, id="missing-file-no-retry"),
-    pytest.param((None,), True, False, id="permission-without-winerror-no-retry"),
-    pytest.param((5, 2), True, False, id="different-error-stops-retry"),
-    pytest.param((5,), False, False, id="non-windows-no-retry"),
-])
+@pytest.mark.parametrize('publication,codes,windows,succeeds', [
+    pytest.param('upgrade', (32, 32), True, True, id='INFRA-02-C03'),
+    pytest.param('upgrade', (5,) * 5, True, False, id='INFRA-02-C04'),
+    pytest.param('upgrade', (2,), True, False, id='INFRA-02-C05'),
+    pytest.param('account-index', (32, 32), True, True, id='INFRA-02-X01'),
+    pytest.param('account-index', (5,) * 5, True, False, id='INFRA-02-X02'),
+    pytest.param('account-index', (2,), True, False, id='INFRA-02-X03'),
+], indirect=['publication'])
+
 def test_atomic_publication_preserves_bytes_and_bounds_conflicts(
         publication, monkeypatch, caplog, codes, windows, succeeds):
     module, target, scratch, expected, publish = publication

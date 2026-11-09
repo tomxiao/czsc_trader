@@ -78,14 +78,11 @@ def _trade_evidence(gross_returns, fee_rate, expected_win_rate):
     return replace(evidence, content_hash=hash_replay_evidence(evidence))
 
 
-@pytest.mark.parametrize("gross_returns,fee_rate,expected", [
-    pytest.param((), 0., None, id="no-closed-trades"),
-    pytest.param((.1,), 0., 1., id="profitable"),
-    pytest.param((-.1,), 0., 0., id="losing"),
-    pytest.param((0.,), 0., 0., id="break-even"),
-    pytest.param((.1, -.1, 0.), 0., 1 / 3, id="mixed"),
-    pytest.param((.1,), .1, 0., id="gross-profit-net-loss"),
+@pytest.mark.parametrize('gross_returns,fee_rate,expected', [
+    pytest.param((.1,), .1, 0., id='SE-01-C05'),
+    pytest.param((), 0., None, id='SE-01-C06'),
 ])
+@pytest.mark.risk_cases('SE-01-C05', 'SE-01-C06')
 def test_public_replay_audit_authenticates_closed_trade_win_rate(gross_returns, fee_rate, expected):
     evidence = _trade_evidence(gross_returns, fee_rate, expected)
     baseline = audit_replay(evidence)

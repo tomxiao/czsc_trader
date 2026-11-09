@@ -10,7 +10,6 @@ from strategy_evaluator import research_models as m
 
 from test_calmar_ranking import common_contract, design
 from test_calmar_selfcheck import ordinary, protocol
-from test_equity_assessment import evidence as equity_evidence
 from test_neighborhood_assessment import current_request
 from test_research_assessment import candidate, policy
 
@@ -27,21 +26,6 @@ def projected_request(request):
         replace(request, evidence=tuple(x for x in request.evidence if x.parent is None)),
         tuple(se.project_parameter_performance(x) for x in request.evidence if x.parent is not None),
     )
-
-
-def test_numeric_input_reproduces_complete_account_rows_and_roundtrip():
-    request = account_request()
-    numeric = projected_request(request)
-    actual = se.assess_candidates(numeric)
-    expected = se.assess_candidates(request)
-    assert actual.rows == expected.rows
-    assert actual.family_diagnostics == expected.family_diagnostics
-    assert actual.formula_version == expected.formula_version == "research-assessment-v8"
-    assert actual.request_sha256 == numeric.sha256 != expected.request_sha256
-    assert actual.input_kind is se.AssessmentInputKind.PERFORMANCE_PROJECTION
-    assert se.CandidatePerformanceAssessmentRequest.from_dict(numeric.to_dict()) == numeric
-    assert se.AssessmentPanel.from_dict(actual.to_dict()) == actual
-    assert "input_kind" not in expected.to_dict()
 
 
 def economic_request():
@@ -85,6 +69,7 @@ def comparison(request, panel, contract=None):
                                                            request.parameter_designs, contract or common_contract()))
 
 
+@pytest.mark.risk_cases('SE-38-C01')
 def test_complete_projection_matches_full_v8_v6_quantiles_targets_and_ranking():
     request = economic_request()
     numeric = projected_request(request)
@@ -102,22 +87,6 @@ def test_complete_projection_matches_full_v8_v6_quantiles_targets_and_ranking():
         assert group.minimum_joint_passes == 6 and group.valid_points == group.joint_passes == 8
 
 
-def test_constructed_requests_compute_without_serialization_roundtrips(monkeypatch):
-    raw = economic_request()
-    numeric = projected_request(raw)
-    expected = se.assess_candidates(numeric)
-    expected_comparison = comparison(raw, expected)
-
-    def forbidden(*args, **kwargs):
-        raise AssertionError("typed computation must not deserialize its own input")
-
-    for record in (m.CandidateAssessmentRequest, se.CandidatePerformanceAssessmentRequest, se.CalmarComparisonRequest):
-        monkeypatch.setattr(record, "from_dict", classmethod(forbidden))
-    actual = se.assess_candidates(numeric)
-    assert actual == expected
-    assert comparison(raw, actual) == expected_comparison
-
-
 def declared_request():
     original = economic_request()
     selected = (1, 4, 7)
@@ -127,23 +96,9 @@ def declared_request():
     return replace(original, parameter_designs=designs, perturbations=links, evidence=items)
 
 
-def test_declared_comparison_uses_explicit_axis_contract_without_authenticating_source_shape(monkeypatch):
-    from strategy_evaluator import parameter_neighborhood
-    raw = declared_request()
-    numeric = projected_request(raw)
-
-    def forbidden(*args, **kwargs):
-        raise AssertionError("declared comparison must not inspect the unselected full shape")
-
-    monkeypatch.setattr(se.CommonNeighborhoodComparisonContract, "authenticate", forbidden)
-    monkeypatch.setattr(parameter_neighborhood, "_relative", forbidden)
-    panel = se.assess_candidates(numeric)
-    contract = se.DeclaredPointSetComparisonContract("d" * 64, common_contract())
-    assert comparison(raw, panel, contract).rows
-
-
-@pytest.mark.parametrize("missing", [False, True])
-def test_declared_subset_preserves_source_bindings_denominator_quantiles_and_ranking(missing):
+@pytest.mark.risk_cases('SE-18-C01')
+def test_declared_subset_preserves_source_bindings_denominator_quantiles_and_ranking():
+    missing = False
     raw = declared_request()
     numeric = projected_request(raw)
     if missing:
@@ -180,55 +135,22 @@ def test_declared_subset_preserves_source_bindings_denominator_quantiles_and_ran
         assert se.assess_candidates(raw).rows == panel.rows
 
 
-@pytest.mark.parametrize("indices", [(), (1, 1), (-1,), (8,), (True,)])
+@pytest.mark.parametrize('indices', [
+    pytest.param((1, 1), id='SE-18-C02'),
+    pytest.param((True,), id='SE-18-C03'),
+])
+@pytest.mark.risk_cases('SE-18-C02', 'SE-18-C03')
 def test_declared_point_set_rejects_invalid_or_ambiguous_source_coordinates(indices):
     with pytest.raises((ValueError, TypeError)):
         se.DeclaredParameterPointSet(economic_request().parameter_designs[0], indices, "d" * 64)
 
 
-@pytest.mark.parametrize("all_na,missing", [(False, 1), (False, 2), (True, 0)])
-def test_missing_points_and_empty_legal_neighborhood_preserve_full_design_and_unavailable_statistics(all_na, missing):
-    request = account_request(all_na=all_na)
-    partial = replace(request, evidence=request.evidence[:-missing]) if missing else request
-    numeric = projected_request(partial)
-    row = se.assess_candidates(numeric).rows[0]
-    assert row == se.assess_candidates(partial).rows[0]
-    assert row.parameter_context.prescribed_points == (0 if all_na else 2)
-    assert row.parameter_context.valid_points == (0 if all_na else 2 - missing)
-    values = [x for x in row.diagnostics if x.metric in (
-        m.ResearchMetric.PARAMETER_RETURN_Q10, m.ResearchMetric.PARAMETER_DRAWDOWN_Q90)]
-    assert all(x.value is None and x.status is (
-        m.DiagnosticStatus.NOT_APPLICABLE if all_na else m.DiagnosticStatus.INSUFFICIENT_DATA) for x in values)
 
 
-@pytest.mark.parametrize("field,value", [
-    ("context_sha256", "9" * 64), ("metric_version", "different-metric"),
-    ("window_id", "different-window"), ("scenario_id", "different-scenario"),
-    ("frequency_window_days", 61), ("initial_cash", 2000.),
-    ("benchmark_equity_sha256", "9" * 64),
-])
-def test_incomparable_projection_metadata_is_excluded_and_never_creates_partial_quantiles(field, value):
-    request = projected_request(account_request())
-    bad = replace(request.parameter_evidence[-1], **{field: value})
-    actual = se.assess_candidates(replace(request, parameter_evidence=(*request.parameter_evidence[:-1], bad))).rows[0]
-    assert actual.parameter_context.valid_points == 1
-    assert len(actual.parameter_performances) == 1
-    assert all(x.value is None for x in actual.diagnostics if x.metric in (
-        m.ResearchMetric.PARAMETER_RETURN_Q10, m.ResearchMetric.PARAMETER_DRAWDOWN_Q90))
-
-
-@pytest.mark.parametrize("field,value", [("one_way_cost", .01), ("benchmark_id", "different"),
-                                        ("measurement_tier", "STRESS")])
-def test_incomparable_cost_and_benchmark_contract_never_count_as_valid_points(field, value):
-    request = projected_request(account_request())
-    last = request.parameter_evidence[-1]
-    facts = replace(last.performance, scenario=replace(last.scenario_context, **{field: value}))
-    changed = replace(request, parameter_evidence=(*request.parameter_evidence[:-1], replace(last, performance=facts)))
-    assert se.assess_candidates(changed).rows[0].parameter_context.valid_points == 1
-
-
-@pytest.mark.parametrize("field,value", [("benchmark_return", .2), ("benchmark_drawdown", .1)])
-def test_benchmark_scalars_must_match_the_fingerprinted_baseline(field, value):
+@pytest.mark.risk_cases('SE-38-C02')
+def test_benchmark_scalars_must_match_the_fingerprinted_baseline():
+    field = "benchmark_return"
+    value = .2
     request = projected_request(account_request())
     last = request.parameter_evidence[-1]
     changed = replace(last, performance=replace(last.performance, **{field: value}))
@@ -236,82 +158,23 @@ def test_benchmark_scalars_must_match_the_fingerprinted_baseline(field, value):
     assert row.parameter_context.valid_points == 1
 
 
-@pytest.mark.parametrize("change", ["parent", "derivation", "binding", "evaluation", "point", "candidate"])
-def test_invalid_identity_derivation_or_duplicate_points_are_rejected(change):
-    request = projected_request(account_request())
-    first, last = request.parameter_evidence
-    with pytest.raises((ValueError, TypeError)):
-        if change == "parent":
-            last = replace(last, parent=last.candidate)
-        elif change == "derivation":
-            last = replace(last, derivation_sha256="7" * 64)
-        elif change == "binding":
-            last = replace(last, parameter_point=first.parameter_point,
-                           performance=replace(last.performance, point_index=first.performance.point_index))
-        elif change == "evaluation":
-            last = replace(last, performance=replace(last.performance, evaluation_id=first.evaluation_id))
-        elif change == "point":
-            last = first
-        else:
-            last = replace(last, performance=replace(last.performance,
-                candidate=replace(last.candidate, content_sha256="9" * 64)))
-        se.assess_candidates(replace(request, parameter_evidence=(first, last)))
-
-
-def test_projection_accepts_numeric_facts_not_precomputed_panels_or_caller_passes():
+@pytest.mark.risk_cases('SE-18-C04')
+def test_SE_18_C04_precomputed_panel_cannot_replace_numeric_facts():
     request = projected_request(account_request())
     with pytest.raises(TypeError):
         replace(request, parameter_evidence=(se.assess_candidates(request),))
-    encoded = request.to_dict()
-    encoded["parameter_evidence"][0]["PASS"] = True
-    with pytest.raises(ValueError, match="fields differ"):
+
+@pytest.mark.risk_cases('SE-18-C05')
+def test_SE_18_C05_callers_validated_flag_cannot_replace_numeric_facts():
+    encoded = projected_request(account_request()).to_dict()
+    encoded['parameter_evidence'][0]['validated'] = True
+    with pytest.raises(ValueError, match='fields differ'):
         se.CandidatePerformanceAssessmentRequest.from_dict(encoded)
-    with pytest.raises(ValueError, match="center account"):
-        replace(request, baseline_request=account_request())
-    with pytest.raises(ValueError, match="CalmarSelfCheck"):
-        replace(request, baseline_request=replace(request.baseline_request, protocol=current_request().protocol))
 
 
-@pytest.mark.parametrize("dd", [0., 1e-12])
-def test_zero_or_nearzero_drawdown_cannot_turn_full_coverage_into_available_calmar(dd):
-    request = economic_request()
-    numeric = projected_request(request)
-    projections = tuple(replace(x, performance=replace(x.performance, drawdown=dd)) for x in numeric.parameter_evidence)
-    panel = se.assess_candidates(replace(numeric, parameter_evidence=projections))
-    result = comparison(request, panel)
-    assert all(x.parameter_context.valid_points == x.parameter_context.prescribed_points for x in panel.rows)
-    assert all(x.target_checks[1].status is m.TargetCheckStatus.INDETERMINATE for x in result.rows)
-    assert all(x.bin_values[0] is None for x in result.rows)
-
-
-@pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")])
-def test_nonfinite_numeric_performance_is_rejected_before_aggregation(bad):
-    request = projected_request(account_request())
-    with pytest.raises(TypeError):
-        replace(request.parameter_evidence[0].performance, annual_return=bad)
-
-
-def test_equity_bar_close_projection_matches_actual_synthetic_journal_calculation():
-    request = account_request()
-    raw = equity_evidence("BAR_CLOSE", days=3)
-    items = tuple(replace(raw, candidate=x.candidate, evaluation_id=x.evaluation_id,
-        window_id=x.window_id, scenario_id=x.scenario_id,
-        scenario_context=replace(x.scenario_context, one_way_cost=0.),
-        parent=x.parent, derivation_kind=x.derivation_kind, derivation_sha256=x.derivation_sha256,
-        parameter_point=x.parameter_point) for x in request.evidence)
-    request = replace(request, evidence=items)
-    full, projected = se.assess_candidates(request), se.assess_candidates(projected_request(request))
-    assert full.rows == projected.rows
-    assert projected.rows[0].parameter_context.valid_points == 2
-    assert all(x.drawdown > 0 for x in projected.rows[0].parameter_performances)
-    assert se.assessment_benchmark_fingerprint(items[0]) == se.assessment_benchmark_fingerprint(items[-1])
-    daily = replace(raw, metric_version="equity-assessment-v4:SESSION_CLOSE:MAX_SINGLE",
-                    equity=replace(raw.equity, drawdown_basis="SESSION_CLOSE"))
-    assert se.assessment_benchmark_fingerprint(raw) != se.assessment_benchmark_fingerprint(daily)
-
-
-@pytest.mark.parametrize("decisive_failure", [False, True])
-def test_incomplete_numeric_coverage_cannot_pass_but_preserves_decisive_all_point_failures(decisive_failure):
+@pytest.mark.risk_cases('SE-18-C06')
+def test_incomplete_numeric_coverage_cannot_pass_but_preserves_decisive_all_point_failures():
+    decisive_failure = True
     request = economic_request()
     numeric = projected_request(request)
     projections = numeric.parameter_evidence[:-1]

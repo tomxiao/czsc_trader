@@ -4,7 +4,6 @@ import pandas as pd
 import pytest
 
 from dataflows import DataRequest, DataStatus, Dataset, PreparePolicy
-from dataflows.errors import DataContractError, IncompleteDataError
 from dataflows.tushare_strategy_data import fetch_us_cpi_release
 
 
@@ -17,8 +16,7 @@ class FakeCpiPro:
     def eco_cal(self, **kwargs):
         self.eco_calls.append(kwargs)
         return pd.DataFrame(
-            row for row in self.rows
-            if kwargs["start_date"] <= row["date"] <= kwargs["end_date"]
+            row for row in self.rows if kwargs["start_date"] <= row["date"] <= kwargs["end_date"]
         )
 
     def trade_cal(self, **kwargs):
@@ -42,133 +40,42 @@ def _row(day: str, clock: str, value: str = "3.4%") -> dict[str, str]:
     }
 
 
-def test_us_cpi_release_converts_both_dst_clocks_and_delays_until_next_sse_session() -> None:
-    pro = FakeCpiPro([
-        _row("20240112", "21:30"),
-        _row("20240711", "20:30", "3.0%"),
-    ])
-    winter, metadata = fetch_us_cpi_release("2024-01-01", "2024-01-31", pro=pro)
-    summer, _ = fetch_us_cpi_release("2024-07-01", "2024-07-31", pro=pro)
-    frame = pd.concat([winter, summer], ignore_index=True)
-
-    assert frame["Date"].tolist() == [pd.Timestamp("2024-01-12"), pd.Timestamp("2024-07-11")]
-    assert frame["AvailableDate"].tolist() == [
-        pd.Timestamp("2024-01-15"),
-        pd.Timestamp("2024-07-12"),
-    ]
-    assert frame["ReleaseAt"].dt.strftime("%Y-%m-%dT%H:%M:%S%z").tolist() == [
-        "2024-01-12T21:30:00+0800",
-        "2024-07-11T20:30:00+0800",
-    ]
-    assert frame["YoYPercent"].tolist() == [3.4, 3.0]
-    assert metadata["source_time_field"] == "ReleaseAt"
-    assert metadata["official_release_timezone"] == "America/New_York"
-    assert len(pro.eco_calls) == 2
-
-
-def test_us_cpi_release_splits_vendor_queries_by_year() -> None:
-    pro = FakeCpiPro([
-        _row("20131217", "21:30"),
-        _row("20140116", "21:30"),
-    ])
-
-    frame, _ = fetch_us_cpi_release("2013-12-01", "2014-01-31", pro=pro)
-
-    assert len(frame) == 2
-    assert [call["start_date"] for call in pro.eco_calls] == ["20131201", "20140101"]
-
-
-@pytest.mark.parametrize(
-    ("rows", "calendar_gap", "error"),
-    [
-        ([_row("20240112", "20:30")], False, DataContractError),
-        ([_row("20240112", "21:30"), _row("20240112", "21:30")], False, DataContractError),
-        ([_row("20240112", "21:30")], True, IncompleteDataError),
-    ],
-)
-def test_us_cpi_release_fails_closed_on_source_or_calendar_errors(
-    rows: list[dict[str, str]], calendar_gap: bool, error: type[Exception]
-) -> None:
-    pro = FakeCpiPro(rows, calendar_gap=calendar_gap)
-    # Public admission below covers failure states; the adapter owns this matrix.
-    with pytest.raises(error) as raised:
-        fetch_us_cpi_release("2024-01-12", "2024-01-12", pro=pro)
-    assert raised.value.code == ("INCOMPLETE_DATA" if calendar_gap else "DATA_CONTRACT_MISMATCH")
-
-
-def test_us_cpi_release_facade_rejects_missing_actual_value(flow_factory) -> None:
+def test_DFLS_29_C03_us_cpi_release_facade_rejects_missing_actual_value(flow_factory) -> None:
     # The source adapter converts an empty actual to NaN. Numeric admission is
     # owned by the public facade, so this boundary must include preparation.
     pro = FakeCpiPro([_row("20240112", "21:30", "")])
-    flow = flow_factory({
-        Dataset.US_CPI_RELEASE.value: lambda _: fetch_us_cpi_release(
-            "2024-01-12", "2024-01-12", pro=pro
-        )
-    })
-    prepared = flow.prepare((
-        DataRequest(Dataset.US_CPI_RELEASE, None, "2024-01-12", "2024-01-12", None),
-    ), policy=PreparePolicy.REFRESH)
+    flow = flow_factory(
+        {
+            Dataset.US_CPI_RELEASE.value: lambda _: fetch_us_cpi_release(
+                "2024-01-12", "2024-01-12", pro=pro
+            )
+        }
+    )
+    prepared = flow.prepare(
+        (DataRequest(Dataset.US_CPI_RELEASE, None, "2024-01-12", "2024-01-12", None),),
+        policy=PreparePolicy.REFRESH,
+    )
     assert not prepared.ready and prepared.reference is None
-    item, = prepared.items
+    (item,) = prepared.items
     assert item.status is DataStatus.FAILED and item.identity is None
     assert item.error.code == "DATA_CONTRACT_MISMATCH"
     assert item.error.context["field"] == "YoYPercent"
 
 
-def test_us_cpi_release_rejects_missing_monthly_history(flow_factory) -> None:
-    pro = FakeCpiPro([
-        _row("20240112", "21:30"),
-        _row("20240312", "20:30"),
-    ])
-
-    flow = flow_factory({
-        Dataset.US_CPI_RELEASE.value: lambda _: fetch_us_cpi_release(
-            "2024-01-12", "2024-03-12", pro=pro
-        )
-    })
-    prepared = flow.prepare((
-        DataRequest(Dataset.US_CPI_RELEASE, None, "2024-01-12", "2024-03-12", None),
-    ), policy=PreparePolicy.REFRESH)
-    assert not prepared.ready and prepared.reference is None
-    item, = prepared.items
-    assert item.status is DataStatus.INCOMPLETE and item.identity is None
-    assert item.error.code == "INCOMPLETE_DATA"
-
-
-def test_us_cpi_release_facade_publishes_identity_and_excludes_forecast(flow_factory, publish_data, monkeypatch) -> None:
-    from dataflows import tushare_strategy_data
-    pro = FakeCpiPro([{**_row("20240112", "21:30"), "forecast": "99.0%", "previous": "88.0%"}])
-    monkeypatch.setattr(tushare_strategy_data, "get_tushare_pro", lambda _: pro)
-    flow = flow_factory()
-
-    result = publish_data(flow,
-        DataRequest(Dataset.US_CPI_RELEASE, None, "2024-01-12", "2024-01-12", "2024-01-12")
-    )
-
-    assert result.status is DataStatus.READY
-    assert result.identity is not None
-    assert result.identity.source == "tushare"
-    assert result.identity.metadata["available_at"].startswith("first SSE open day")
-    assert set(result.dataframe.columns) == {"Date", "ReleaseAt", "YoYPercent", "AvailableDate"}
-    assert result.dataframe.YoYPercent.tolist() == [3.4]
-    assert len(pro.eco_calls) == 1
-    assert pro.eco_calls[0]["start_date"] == "20240112"
-    assert pro.eco_calls[0]["end_date"] == "20240112"
-    assert pro.eco_calls[0]["country"] == "美国"
-    assert pro.eco_calls[0]["fields"] == "date,time,country,event,value"
-
-
-def test_us_cpi_release_facade_rejects_same_day_availability_from_any_provider(flow_factory) -> None:
-    pro = FakeCpiPro([_row("20240112", "21:30")])
-    frame, metadata = fetch_us_cpi_release("2024-01-12", "2024-01-12", pro=pro)
-    frame.loc[0, "AvailableDate"] = frame.loc[0, "Date"]
-    flow = flow_factory({Dataset.US_CPI_RELEASE.value: lambda _: (frame, metadata)})
-
-    prepared = flow.prepare((
-        DataRequest(Dataset.US_CPI_RELEASE, None, "2024-01-12", "2024-01-12", None),
-    ), policy=PreparePolicy.REFRESH)
-    assert not prepared.ready and prepared.reference is None
-    item, = prepared.items
-    assert item.status is DataStatus.FAILED and item.identity is None
-    assert item.error is not None
-    assert item.error.code == "DATA_CONTRACT_MISMATCH"
+@pytest.mark.parametrize(
+    "day,clock,through,expected",
+    [
+        ("20240112", "21:30", "2024-01-31", "2024-01-15"),
+        ("20240711", "20:30", "2024-07-31", "2024-07-12"),
+    ],
+    ids=["DFLS-29-C01", "DFLS-29-C02"],
+)
+def test_cpi_release_clock_and_actual_value(day, clock, through, expected):
+    pro = FakeCpiPro([{**_row(day, clock), "forecast": "99.9%"}])
+    frame, meta = fetch_us_cpi_release(through[:8] + "01", through, pro=pro)
+    assert frame.YoYPercent.tolist() == [3.4]
+    assert frame.AvailableDate.tolist() == [pd.Timestamp(expected)]
+    assert frame.ReleaseAt.dt.tz_convert("America/New_York").dt.strftime("%H:%M").tolist() == [
+        "08:30"
+    ]
+    assert meta["official_release_timezone"] == "America/New_York"

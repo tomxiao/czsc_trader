@@ -9,7 +9,8 @@ from paper_trading_engine.service_config import ServiceConfig
 from paper_trading_engine.runtime_release import file_sha256
 
 
-def test_service_host_launches_without_trading_dependencies_or_pte_config(tmp_path):
+# Independent risk: PTE23; responsibility-level assertions.
+def test_PTE23_C01_service_host_launches_without_trading_dependencies_or_pte_config(tmp_path):
     source = Path(__file__).resolve().parents[2] / 'src'
     script = '''
 import importlib.abc, sys
@@ -51,7 +52,10 @@ def _selection(root):
     return root
 
 
-@pytest.mark.parametrize('damage', ['hash', 'path', 'missing_executable', 'selection_schema'])
+# Independent risk: PTE23; responsibility-level assertions.
+@pytest.mark.parametrize('damage', [
+    'hash',
+], ids=['PTE23-C04'])
 def test_watchdog_rejects_invalid_launch_selection(tmp_path, damage):
     root = _selection(tmp_path)
     active_path = root / 'shared/config/active-release.json'

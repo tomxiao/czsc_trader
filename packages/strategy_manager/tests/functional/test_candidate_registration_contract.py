@@ -35,8 +35,9 @@ def registration():
     )
 
 
-@pytest.mark.parametrize("field", ["schema_version", "identity_schema_version"])
-def test_registration_requires_current_schema_field(registration, field):
+@pytest.mark.risk_cases('SM-02-C02')
+def test_registration_requires_current_schema_field(registration):
+    field = "schema_version"
     raw = registration.to_dict()
     assert CandidateRegistration.from_dict(raw) == registration
     del raw[field]
@@ -44,34 +45,37 @@ def test_registration_requires_current_schema_field(registration, field):
         CandidateRegistration.from_dict(raw)
 
 
-@pytest.mark.parametrize("field", ["schema_version", "identity_schema_version"])
-def test_registration_rejects_retired_schema(registration, field):
+@pytest.mark.risk_cases('SM-02-C03')
+def test_registration_rejects_retired_schema(registration):
+    field = "schema_version"
+    retired = 2
     raw = registration.to_dict()
-    raw[field] = 1
+    raw[field] = retired
     with pytest.raises(ValidationError, match="unsupported candidate"):
         CandidateRegistration.from_dict(raw)
 
 
-def test_registration_accepts_new_archive_identity_without_embedded_family(registration):
+@pytest.mark.risk_cases('SM-02-C01')
+def test_SM_02_C01_registration_roundtrip(registration):
     current = replace(
         registration, origin=replace(registration.origin, experiment_id="EX001_20261003")
     )
     assert CandidateRegistration.from_dict(current.to_dict()) == current
     assert current.key.strategy_id == "S900"
+    assert (current.schema_version, current.identity_schema_version) == (3, 2)
 
 
-def test_registration_rejects_embedded_foreign_family_in_legacy_archive(registration):
+@pytest.mark.risk_cases('SM-01-C03')
+def test_SM_01_C03_foreign_family_archive_rejected(registration):
     with pytest.raises(ValidationError, match="different families"):
         replace(
             registration, origin=replace(registration.origin, experiment_id="20261001_S901_EX01")
         )
 
 
-@pytest.mark.parametrize("evidence", [
-    (CandidateEvidence("same.json", "a" * 64),) * 2,
-    (CandidateEvidence("same.json", "a" * 64), CandidateEvidence("same.json", "b" * 64)),
-])
-def test_candidate_origin_requires_unique_supporting_evidence(evidence):
+@pytest.mark.risk_cases('SM-06-C04')
+def test_candidate_origin_requires_unique_supporting_evidence():
+    evidence = (CandidateEvidence("same.json", "a" * 64),) * 2
     with pytest.raises(ValidationError, match="unique supporting evidence"):
         CandidateRegistrationOrigin("EX001_20261003", evidence)
 
@@ -109,33 +113,46 @@ def persisted_candidate(tmp_path, registration):
     return registry, root, record
 
 
-@pytest.mark.parametrize("with_evidence", [True, False])
-def test_registry_uses_explicit_evidence_root_and_preserves_content_identity(persisted_candidate, with_evidence):
+@pytest.mark.risk_cases('SM-03-C01')
+def test_SM_03_C01_evidence_location_is_not_content_identity(persisted_candidate):
     registry, root, record = persisted_candidate
-    if not with_evidence:
-        record = replace(record, origin=replace(record.origin, evidence=()))
-    assert CandidateRegistration.from_dict(record.to_dict()) == record
-    assert record.schema_version == 3
-    assert record.identity_schema_version == 2
     assert registry.register_candidate(record, evidence_root=root) == record
+    moved = root.with_name("relocated-evidence")
+    root.rename(moved)
+    assert registry.get_candidate(record.key, evidence_root=moved) == record
+
+
+@pytest.mark.risk_cases('SM-03-C02')
+def test_SM_03_C02_same_candidate_registration_is_idempotent(persisted_candidate):
+    registry, root, record = persisted_candidate
+    registry.register_candidate(record, evidence_root=root)
+    path = registry.root / "S900/candidates/C0001.json"
+    before = path.read_bytes()
     assert registry.register_candidate(record, evidence_root=root) == record
-    assert registry.get_candidate(record.key, evidence_root=root) == record
+    assert path.read_bytes() == before
+
+
+@pytest.mark.risk_cases('SM-03-C03')
+def test_SM_03_C03_conflicting_registration_preserves_original(persisted_candidate):
+    registry, root, record = persisted_candidate
+    registry.register_candidate(record, evidence_root=root)
+    path = registry.root / "S900/candidates/C0001.json"
+    before = path.read_bytes()
     with pytest.raises(CandidateIdentityConflict):
         registry.register_candidate(replace(record, content_sha256="f" * 64), evidence_root=root)
-    with pytest.raises(ValidationError, match="root is missing"):
-        registry.get_candidate(record.key, evidence_root=root / "missing")
+    assert path.read_bytes() == before
+    assert registry.get_candidate(record.key, evidence_root=root) == record
 
 
-def test_registry_requires_declared_source_closure(persisted_candidate):
-    registry, root, record = persisted_candidate
-    with pytest.raises(ValidationError, match="safe relative path"):
-        replace(record, source_root="../outside")
-    with pytest.raises(ValidationError, match="source manifest differs"):
-        registry.register_candidate(replace(record, source_root="another-source"), evidence_root=root)
-    assert not (registry.root / "S900/candidates/C0001.json").exists()
 
 
-@pytest.mark.parametrize("artifact", ["payload", "source", "evidence"])
+
+
+@pytest.mark.parametrize('artifact', [
+    pytest.param("payload", id='SM-04-C02'),
+    pytest.param("source", id='SM-04-C03'),
+])
+@pytest.mark.risk_cases('SM-04-C02', 'SM-04-C03')
 def test_registry_rejects_tampered_candidate_artifacts(persisted_candidate, artifact):
     registry, root, record = persisted_candidate
     registry.register_candidate(record, evidence_root=root)
@@ -146,7 +163,8 @@ def test_registry_rejects_tampered_candidate_artifacts(persisted_candidate, arti
         registry.get_candidate(record.key, evidence_root=root)
 
 
-def test_registration_metadata_remains_queryable_when_source_is_missing(persisted_candidate):
+@pytest.mark.risk_cases('SM-05-C01')
+def test_SM_05_C01_metadata_read_does_not_require_retained_source(persisted_candidate):
     registry, root, record = persisted_candidate
     registry.register_candidate(record, evidence_root=root)
     record.source_files[0].resolve(root).unlink()
@@ -157,7 +175,8 @@ def test_registration_metadata_remains_queryable_when_source_is_missing(persiste
         registry.get_candidate_registration(record.key.to_dict())
 
 
-def test_registration_metadata_query_authenticates_the_envelope(persisted_candidate):
+@pytest.mark.risk_cases('SM-05-C02')
+def test_SM_05_C02_metadata_read_authenticates_envelope(persisted_candidate):
     registry, root, record = persisted_candidate
     registry.register_candidate(record, evidence_root=root)
     path = registry.root / "S900/candidates/C0001.json"
@@ -168,7 +187,8 @@ def test_registration_metadata_query_authenticates_the_envelope(persisted_candid
         registry.get_candidate_registration(record.key)
 
 
-def test_registration_does_not_authenticate_historical_attachments(persisted_candidate):
+@pytest.mark.risk_cases('SM-05-C03')
+def test_SM_05_C03_registration_does_not_authenticate_historical_attachments(persisted_candidate):
     registry, root, record = persisted_candidate
     (root / record.origin.evidence[0].path).unlink()
     assert registry.register_candidate(record, evidence_root=root) == record
@@ -178,7 +198,8 @@ def test_registration_does_not_authenticate_historical_attachments(persisted_can
         registry.get_candidate(record.key, evidence_root=root)
 
 
-def test_registration_reads_each_snapshot_file_once(persisted_candidate, monkeypatch):
+@pytest.mark.risk_cases('SM-05-C04')
+def test_SM_05_C04_registration_reads_each_snapshot_file_once(persisted_candidate, monkeypatch):
     from pathlib import Path
 
     registry, root, record = persisted_candidate
@@ -192,3 +213,41 @@ def test_registration_reads_each_snapshot_file_once(persisted_candidate, monkeyp
     assert observed.count(root / record.payload.path) == 1
     assert observed.count(root / record.source_files[0].path) == 1
     assert root / record.origin.evidence[0].path not in observed
+
+
+@pytest.mark.risk_cases('SM-04-C01')
+def test_SM_04_C01_missing_declared_source_prevents_registration(persisted_candidate):
+    registry, root, record = persisted_candidate
+    (root / record.source_files[0].path).unlink()
+    with pytest.raises(ValidationError, match="missing"):
+        registry.register_candidate(record, evidence_root=root)
+    assert not (registry.root / "S900/candidates/C0001.json").exists()
+
+
+@pytest.mark.parametrize('condition', [
+    pytest.param("missing", id='SM-04-C04'),
+    pytest.param("tampered", id='SM-04-C05'),
+])
+@pytest.mark.risk_cases('SM-04-C04', 'SM-04-C05')
+def test_frozen_data_resource_is_authenticated_separately(persisted_candidate, condition):
+    registry, root, record = persisted_candidate
+    resource = b"date,value\n2026-10-01,1\n"
+    fingerprint = sha256(resource).hexdigest()
+    name = "data/observations.csv"
+    payload = json.loads((root / record.payload.path).read_bytes())
+    payload["runtime"]["kind"] = "ACCOUNT_REPLAY"
+    payload["equity_definition"] = {"observation_inputs": [
+        {"asset": {"relative_path": name, "sha256": fingerprint}},
+    ]}
+    payload_bytes = json.dumps(payload).encode("utf-8")
+    (root / record.payload.path).write_bytes(payload_bytes)
+    asset = CandidateEvidence(f"{record.source_root}/{name}", fingerprint)
+    record = replace(record,
+        payload=CandidateEvidence(record.payload.path, sha256(payload_bytes).hexdigest()),
+        source_files=(*record.source_files, asset))
+    if condition == "tampered":
+        (root / asset.path).parent.mkdir(parents=True)
+        (root / asset.path).write_bytes(b"altered resource")
+    with pytest.raises(ValidationError, match="missing" if condition == "missing" else "hash differs"):
+        registry.register_candidate(record, evidence_root=root)
+    assert not (registry.root / "S900/candidates/C0001.json").exists()

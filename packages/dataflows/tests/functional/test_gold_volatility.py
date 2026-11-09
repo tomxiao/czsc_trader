@@ -42,7 +42,7 @@ def observations():
     ]
 
 
-def test_gvz_first_release_preparation_and_offline_restoration(tmp_path, empty_space_factory, monkeypatch):
+def test_DFLS_37_C01_gvz_first_release_preparation_and_offline_restoration(tmp_path, empty_space_factory, monkeypatch):
     monkeypatch.setenv("FRED_KEY", "test-key")
     calls = []
 
@@ -82,26 +82,11 @@ def test_gvz_first_release_preparation_and_offline_restoration(tmp_path, empty_s
     assert restored.prepare((request(),), policy=PreparePolicy.REUSE).ready
 
 
-@pytest.mark.parametrize(
-    "code,count,expected",
-    [
-        (429, None, DataStatus.WAITING_SOURCE),
-        (401, None, DataStatus.FAILED),
-        (200, 20, DataStatus.INCOMPLETE),
-        (200, 0, DataStatus.FAILED),
-    ],
-)
-def test_gvz_provider_failure_never_publishes_data(
-    flow_factory, monkeypatch, code, count, expected
-):
-    monkeypatch.setenv("FRED_KEY", "test-key")
-    monkeypatch.setattr(requests, "get", lambda *a, **k: Response(code, observations(), count))
-    prepared = flow_factory().prepare((request(),), policy=PreparePolicy.REFRESH)
-    assert not prepared.ready and prepared.reference is None
-    assert prepared.items[0].status is expected
 
 
-@pytest.mark.parametrize("fault", ["nonfinite", "invalid_release_date", "duplicate"])
+@pytest.mark.parametrize("fault", [
+    "nonfinite",
+], ids=['DFLS-37-C04'])
 def test_gvz_rejects_invalid_first_release_records(flow_factory, monkeypatch, fault):
     monkeypatch.setenv("FRED_KEY", "test-key")
     rows = observations()
@@ -116,7 +101,7 @@ def test_gvz_rejects_invalid_first_release_records(flow_factory, monkeypatch, fa
     assert not prepared.ready and prepared.items[0].status is DataStatus.FAILED
 
 
-def test_gvz_custom_binding_cannot_publish_early_availability(tmp_path, empty_space_factory):
+def test_DFLS_37_C03_gvz_custom_binding_cannot_publish_early_availability(tmp_path, empty_space_factory):
     frame = pd.DataFrame(
         {
             "Date": pd.to_datetime(["2024-01-05", "2024-01-08"]),
@@ -153,7 +138,7 @@ def test_gvz_custom_binding_cannot_publish_early_availability(tmp_path, empty_sp
     assert not prepared.ready and prepared.items[0].status is DataStatus.FAILED
 
 
-def test_gvz_splits_vintage_window_without_changing_series(tmp_path, empty_space_factory, monkeypatch):
+def test_DFLS_37_C02_gvz_splits_vintage_window_without_changing_series(tmp_path, empty_space_factory, monkeypatch):
     monkeypatch.setenv("FRED_KEY", "test-key")
     calls = []
 

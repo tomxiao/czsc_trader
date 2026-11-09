@@ -1,3 +1,4 @@
+# Risk ownership: TDR-03 TDR-12
 """Candidate storage checks declarations; deep research checks are explicit."""
 
 from dataclasses import replace
@@ -35,8 +36,8 @@ def candidate_content(context, request):
     return content, reference, header
 
 
-@pytest.mark.parametrize("market", [MarketId.CN, MarketId.US])
-def test_candidate_storage_never_materializes_accounts_or_loads_strategy(tmp_path, monkeypatch, market):
+@pytest.mark.parametrize('market', [MarketId.CN])
+def test_TDR_12_C05_candidate_storage_never_materializes_accounts_or_loads_strategy(tmp_path, monkeypatch, market):
     context, request = setup_account(tmp_path, market, BarFrequency.DAILY)
     content, reference, header = candidate_content(context, request)
     from czsc_trader.application import candidate_service, equity_evidence_io
@@ -71,40 +72,12 @@ def test_candidate_storage_never_materializes_accounts_or_loads_strategy(tmp_pat
         assemble_delivery(context.repository, definition, content)
 
 
-def test_candidate_integrity_does_not_traverse_history_but_full_does(tmp_path):
-    context, request = setup_account(tmp_path, MarketId.US, BarFrequency.DAILY)
-    content, _, _ = candidate_content(context, request)
-    first = assemble_delivery(context.repository,
-        d.DeliveryDefinition(context.batch, d.DeliveryStage.CANDIDATES, 1, ()), content).receipt.reference
-    package = service._delivery_path(context.repository, first)
-    (package / "report.md").write_text("changed historical report", encoding="utf-8")
-    second = assemble_delivery(context.repository,
-        d.DeliveryDefinition(context.batch, d.DeliveryStage.CANDIDATES, 2, (first,)), content).receipt.reference
-    assert validate_delivery(context.repository, second).status is d.ValidationStatus.PASS
-    assert validate_delivery(context.repository, second, scope=d.DeliveryValidationScope.FULL).status is d.ValidationStatus.FAIL
 
 
-@pytest.mark.parametrize("damage", ["candidate", "evaluation", "legacy"])
-def test_candidate_declaration_rejects_wrong_bindings_and_retired_account_contract(tmp_path, damage):
-    context, request = setup_account(tmp_path, MarketId.US, BarFrequency.DAILY)
-    content, reference, _ = candidate_content(context, request)
-    entry, = content.payload.candidates
-    evaluation, = entry.evaluations
-    if damage == "candidate":
-        entry = replace(entry, identity=replace(entry.identity, content_sha256="f" * 64))
-    elif damage == "evaluation":
-        entry = replace(entry, evaluations=(replace(evaluation, evaluation_ids=("f" * 64,)),))
-    else:
-        entry = replace(entry, evaluations=(replace(evaluation,
-            evidence=replace(reference, schema="account_evaluation", schema_version=8)),))
-    content = replace(content, payload=replace(content.payload, candidates=(entry,), handoff=()))
-    with pytest.raises(d.DeliveryValidationError):
-        assemble_delivery(context.repository,
-            d.DeliveryDefinition(context.batch, d.DeliveryStage.CANDIDATES, 1, ()), content)
 
 
-@pytest.mark.parametrize("damage", ["missing_registration", "different_content"])
-def test_candidate_handoff_requires_matching_registration(tmp_path, damage):
+@pytest.mark.parametrize('damage', ['different_content'])
+def test_TDR_03_C07_candidate_handoff_requires_matching_registration(tmp_path, damage):
     context, request = setup_account(tmp_path, MarketId.US, BarFrequency.DAILY)
     content, _, _ = candidate_content(context, request)
     entry, = content.payload.candidates

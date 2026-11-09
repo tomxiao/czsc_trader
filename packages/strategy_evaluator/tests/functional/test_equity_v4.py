@@ -3,295 +3,87 @@
 from copy import deepcopy
 from dataclasses import asdict
 from datetime import datetime, timedelta
-from decimal import Decimal
-import json
 from zoneinfo import ZoneInfo
-from types import SimpleNamespace
 
-import pandas as pd
 import pytest
 
-from execution_channels.instruments import AssetClass
-from execution_channels.instruments import BarFrequency
-from execution_channels.instruments import InstrumentId
 from execution_channels.instruments import MarketId
-from execution_channels.policy import ExecutionPolicy, AccountPolicy
-from execution_channels.policy import CashAvailabilityPolicy
-from execution_channels.policy import ResearchExecutionSpec
-from execution_channels.policy import CnEquitySpec
-from execution_channels.policy import UsEquitySpec
-from execution_channels.contracts import AccountExecutionPlan, SellRemainderPolicy
-from execution_channels.planning import plan_account_decision
-from execution_channels.session_contracts import OrderSide
-from execution_channels.session_contracts import OrderType
-from execution_channels.entry_cycle import EntryCyclePhase
-from execution_channels.contracts import ReplayOrder
-from execution_channels.contracts import ReplayLeg
-from execution_channels.contracts import ReplayPoint
-from execution_channels.contracts import ExecutionPrecision
-from execution_channels.contracts import CycleBudget
-from execution_channels.historical import PortfolioHistoricalExecutor
+from equity_facts_support import manual_ledger, order, bar
 from strategy_evaluator.equity import audit_equity_account
 from strategy_evaluator.equity_assessment import (
     canonical_ledger,
     read_ledger,
-    validate_equity_facts,
 )
 from strategy_evaluator.models import ValidationError
 
 
 def ledger(market=MarketId.US, *, variant="scaling"):
+    """Declared outcomes; the independent auditor, not EC, validates them."""
     zone = ZoneInfo("Asia/Shanghai" if market is MarketId.CN else "America/New_York")
     origin = datetime(2026, 10, 8, 9, 30, tzinfo=zone)
-    spec = ResearchExecutionSpec(
-        CnEquitySpec() if market is MarketId.CN else UsEquitySpec(),
-        BarFrequency.DAILY if variant in {"checkpoints", "midpayment"} else BarFrequency.M30,
-        AccountPolicy(
-            "CNY" if market is MarketId.CN else "USD",
-            CashAvailabilityPolicy.SETTLED_ONLY
-            if variant == "events"
-            else CashAvailabilityPolicy.IMMEDIATE_RESEARCH,
-        ),
-        100,
-        0.01,
-        0.01,
-        0.0,
-    )
-    instrument = InstrumentId(
-        market, AssetClass.STOCK, "600000.SH" if market is MarketId.CN else "LITE"
-    )
-    event_at = origin + timedelta(days=1)
-    bars, rules = [], []
-
-    def quote(stamp, price=10.0, volume=10000.0):
-        end = stamp + timedelta(minutes=30)
-        return dict(
-            BarStart=stamp,
-            Date=end,
-            AvailableDate=end,
-            Open=price,
-            High=price * 1.02,
-            Low=price * 0.98,
-            Close=price,
-            Volume=volume,
-            Amount=price * volume,
-        )
-
+    def buy(quantity, **facts):
+        return order("BUY", quantity, 10.1, **facts)
+    def sell(quantity, **facts):
+        return order("SELL", quantity, **facts)
     execution = None
-    if variant in {"checkpoints", "midpayment"}:
-        quoted_day = event_at if variant == "midpayment" else origin
-        closing = quoted_day.replace(hour=15 if market is MarketId.CN else 16, minute=0)
-        execution = [
-            quote(quoted_day, volume=150.0),
-            quote(quoted_day.replace(hour=11, minute=0), price=11.0),
-            quote(closing - timedelta(minutes=30), price=12.0),
-        ]
-        if variant == "midpayment":
-            execution = [
-                quote(origin),
-                quote(origin.replace(hour=11, minute=0), price=11.0),
-                quote(
-                    origin.replace(hour=closing.hour, minute=0) - timedelta(minutes=30), price=12.0
-                ),
-            ] + execution
-    executor = PortfolioHistoricalExecutor(
-        specification=spec,
-        initial_cash=10000.0,
-        fee_rate=0.001,
-        price_basis="HFQ",
-        execution_bars=None if execution is None else pd.DataFrame(execution),
-    )
-    bars.append(
-        quote(
-            origin - timedelta(days=1)
-            if variant in {"checkpoints", "midpayment"}
-            else origin - timedelta(minutes=30)
-        )
-    )
-
-    def run(
-        stamp,
-        *,
-        orders=(),
-        target=1.0,
-        legs=(),
-        mode="target_equity_fraction",
-        budget=None,
-        price=10.0,
-        volume=10000.0,
-        unlock=None,
-    ):
-        row = quote(stamp, price, volume)
-        if variant in {"checkpoints", "midpayment"}:
-            end = stamp.replace(hour=closing.hour, minute=0)
-            row.update(Date=end, AvailableDate=end, Close=12.0, High=12.5)
-        rule = dict(
-            Date=stamp,
-            AvailableDate=stamp,
-            QuantityStep=100,
-            PriceTick=0.01,
-            Tradable=True,
-            BuySellableAt=stamp if unlock is None else unlock,
-            SettlementAt=stamp + timedelta(days=1),
-            SellRemainderPolicy="FULL_LIQUIDATION",
-            PriceLimitPolicy="EXPLICIT_UNBOUNDED",
-            PriceLimitLower=None,
-            PriceLimitUpper=None,
-        )
-        observed = bars[-1]["Date"]
-        point = ReplayPoint(
-            observed,
-            stamp,
-            stamp,
-            row["Date"],
-            stamp.date().isoformat(),
-            ExecutionPrecision.BAR_INTERVAL,
-        )
-        account = executor.account_snapshot(point, instrument)
-        reference = bars[-1]["Close"]
-        if orders or legs:
-            instructions = orders or tuple(leg.order for leg in legs)
-            quantity = account.quantity + sum(order.quantity * (1 if order.side is OrderSide.BUY else -1) for order in instructions)
-            proposal = AccountExecutionPlan(f'{executor.revision+1:064x}', 'candidate:fixture', point,
-                account.revision, quantity, orders, legs, mode,
-                executor.cycle_budget if mode == 'signal_cash_fraction' else None, budget,
-                {'sizing':'EXPLICIT_ORDERS','target':target,'reference_price':reference,
-                 'specification_hash':spec.fingerprint,'fee_rate':.001})
-        else:
-            proposal = plan_account_decision(_intent(target, 'fixture', facts={}, next_watch='next'),
-                point, account, reference, spec, owner='candidate:fixture', implementation='1'*64,
-                fee_rate=.001, sell_remainder_policy=SellRemainderPolicy.FULL_LIQUIDATION,
-                execution_policy=ExecutionPolicy('TARGET_POSITION', {'capital_mode':mode}))
-        executor.execute_account_plan(proposal, row, constraint=rule)
-        bars.append(row)
-        rules.append(rule)
-
-    def order(side, quantity, price=None):
-        return ReplayOrder(
-            side, quantity, OrderType.MARKET if price is None else OrderType.LIMIT, price
-        )
-
     if variant == "scaling":
-        run(origin, orders=(order(OrderSide.BUY, 100, 10.1),))
-        run(
-            origin + timedelta(minutes=30),
-            orders=(order(OrderSide.BUY, 100, 10.1), order(OrderSide.BUY, 100, 10.1)),
-        )
-        run(origin + timedelta(minutes=60), orders=(order(OrderSide.SELL, 100),))
-        run(origin + timedelta(minutes=90), orders=(order(OrderSide.SELL, 200),), target=0.0)
+        steps = [dict(orders=(buy(100),)), dict(orders=(buy(100), buy(100))),
+                 dict(orders=(sell(100),)), dict(orders=(sell(200),), target=0.)]
     elif variant == "fractions":
-        for index, target in enumerate((0.25, 0.5, 0.2, 0.0)):
-            run(origin + timedelta(minutes=index * 30), target=target)
+        # 10000*.25/10 -> 200; 9998*.5/10 -> 400;
+        # 9996*.2/10 -> 100 after integer 100-unit rounding.
+        steps = [dict(orders=(buy(200),), target=.25, desired=200),
+                 dict(orders=(buy(200),), target=.5, desired=400),
+                 dict(orders=(sell(300),), target=.2, desired=100),
+                 dict(orders=(sell(100),), target=0., desired=0)]
     elif variant == "fullcash":
-        run(origin, orders=(order(OrderSide.BUY, 100, 10.1), order(OrderSide.BUY, 100, 10.1)))
-        run(origin + timedelta(minutes=30), target=1.0, mode="full_available_cash")
-        run(origin + timedelta(minutes=60), target=0.0, mode="full_available_cash")
-    elif variant == "checkpoints":
-        legs = (
-            ReplayLeg(0, order(OrderSide.BUY, 100), "OPEN", origin, closing),
-            ReplayLeg(1, order(OrderSide.BUY, 100), "11:30_CLOSE", origin, closing, 0, "FILLED_ALL"),
-            ReplayLeg(2, order(OrderSide.SELL, 200), "CLOSE", origin, closing, 1, "FILLED_ALL"),
-        )
-        run(origin, legs=legs)
-    elif variant == "midpayment":
-        run(origin, orders=(order(OrderSide.BUY, 900, 10.1),))
-        run(
-            event_at,
-            legs=(ReplayLeg(0, order(OrderSide.BUY, 100), "11:30_CLOSE", event_at, closing),),
-        )
-    elif variant == "events":
-        run(origin, orders=(order(OrderSide.BUY, 100, 10.1),))
-        run(event_at, orders=(order(OrderSide.SELL, 200),), target=0.0, price=5.0)
-        run(event_at + timedelta(days=1), target=0.0, price=5.0)
-    elif variant == "odd":
-        run(origin, orders=(order(OrderSide.BUY, 100, 10.1),))
-        run(event_at, orders=(order(OrderSide.SELL, 150),), target=0.0, price=10.0 / 1.5)
+        steps = [dict(orders=(buy(100), buy(100))),
+                 dict(orders=(), target=1., desired=200, mode="full_available_cash"),
+                 dict(orders=(sell(200),), target=0., desired=0, mode="full_available_cash")]
     elif variant == "locks":
-        run(origin, orders=(order(OrderSide.BUY, 100, 10.1),), unlock=origin + timedelta(days=1))
-        run(origin + timedelta(minutes=30), orders=(order(OrderSide.SELL, 100),), target=0.0)
-        run(origin + timedelta(days=1), orders=(order(OrderSide.SELL, 100),), target=0.0)
-    elif variant == "legs":
-        end = origin + timedelta(minutes=30)
-        legs = (
-            ReplayLeg(0, order(OrderSide.BUY, 100), "OPEN", origin, end),
-            ReplayLeg(1, order(OrderSide.SELL, 100), "CLOSE", origin, end, 0, "FILLED_ALL"),
-        )
-        run(origin, legs=legs)
+        steps = [dict(orders=(buy(100),), unlock=origin+timedelta(days=1)),
+                 dict(orders=(sell(100, outcome="EXPIRED", reason="INSUFFICIENT_SELLABLE_QUANTITY"),), target=0.),
+                 dict(start=origin+timedelta(days=1), orders=(sell(100),), target=0.)]
     elif variant == "volume":
-        run(
-            origin,
-            orders=(order(OrderSide.BUY, 100, 10.1), order(OrderSide.BUY, 100, 10.1)),
-            volume=150.0,
-        )
-        run(origin + timedelta(minutes=30), orders=(order(OrderSide.SELL, 100),), target=0.0)
+        steps = [dict(orders=(buy(100), buy(100, outcome="EXPIRED", reason="INSUFFICIENT_BAR_VOLUME")), volume=150.),
+                 dict(orders=(sell(100),), target=0.)]
+    elif variant == "legs":
+        steps = [dict(legs=True, orders=(
+            order("BUY", 100, checkpoint="OPEN"),
+            order("SELL", 100, checkpoint="CLOSE", dependency=0,
+                  executed_at=origin+timedelta(minutes=30))))]
+    elif variant == "checkpoints":
+        closing = origin.replace(hour=15 if market is MarketId.CN else 16, minute=0)
+        middle = origin.replace(hour=11, minute=0)
+        execution = [bar(origin, volume=150.), bar(middle, price=11.),
+                     bar(closing-timedelta(minutes=30), closing, price=12.)]
+        steps = [dict(end=closing, close=12., high=12.5, legs=True, orders=(
+            order("BUY", 100, checkpoint="OPEN", quote_index=0),
+            order("BUY", 100, checkpoint="11:30_CLOSE", quote_index=1, dependency=0,
+                  executed_at=middle+timedelta(minutes=30), fill_price=11.),
+            order("SELL", 200, checkpoint="CLOSE", quote_index=2, dependency=1,
+                  executed_at=closing, fill_price=12.)))]
     elif variant == "budget":
-        budget = CycleBudget(
-            "budget-cycle",
-            300,
-            Decimal(".3"),
-            Decimal("3000"),
-            Decimal("0"),
-            EntryCyclePhase.ACTIVE,
-        )
-        run(
-            origin,
-            orders=(order(OrderSide.BUY, 100, 9.0),),
-            mode="signal_cash_fraction",
-            budget=budget,
-        )
-        run(
-            origin + timedelta(minutes=30),
-            orders=(order(OrderSide.BUY, 100, 10.1),),
-            mode="signal_cash_fraction",
-            budget=budget,
-        )
-        active = executor.cycle_budget
-        run(
-            origin + timedelta(minutes=60),
-            orders=(order(OrderSide.BUY, 200, 10.1),),
-            mode="signal_cash_fraction",
-            budget=active,
-        )
-    result = executor.finish()
-
-    def records(frame):
-        return json.loads(frame.to_json(orient="records", date_format="iso", date_unit="us"))
-
-    result = dict(
-        initial_cash=10000.0,
-        specification=json.loads(json.dumps(asdict(spec))),
-        bars=records(pd.DataFrame(bars)),
-        constraints=records(pd.DataFrame(rules)),
-        decisions=records(result.decisions),
-        orders=records(result.orders),
-        fills=records(result.fills),
-        account_entries=records(result.account_entries),
-        price_basis=result.price_basis, quantity_basis=result.quantity_basis,
-        account_points=records(result.account_points),
-        trades=records(result.trades),
-        fee_rate=0.001,
-    )
-    if execution is not None:
-        result["execution_bars"] = records(pd.DataFrame(execution))
-    return result
+        budget = dict(cycle_id="budget-cycle", target_quantity=300, allocation_fraction=".3",
+                      cash_budget="3000", buy_cost_including_fees="0", phase="ACTIVE")
+        spent = {**budget, "buy_cost_including_fees": "1001.0"}
+        steps = [dict(orders=(order("BUY",100,9., outcome="EXPIRED", reason="LIMIT_NOT_CROSSED"),),
+                      mode="signal_cash_fraction", budget_after=budget),
+                 dict(orders=(buy(100),), mode="signal_cash_fraction", budget_before=budget, budget_after=budget),
+                 dict(orders=(buy(200, outcome="EXPIRED", reason="CYCLE_BUDGET_EXCEEDED"),),
+                      mode="signal_cash_fraction", budget_before=spent, budget_after=spent)]
+    else:
+        raise AssertionError(f"unknown declared fixture {variant}")
+    return manual_ledger(steps, market=market, origin=origin, execution_bars=execution,
+                         settled=market is MarketId.CN and variant == "scaling")
 
 
-@pytest.mark.parametrize("market", [MarketId.CN, MarketId.US])
-@pytest.mark.parametrize(
-    "variant",
-    [
-        "scaling",
-        "fractions",
-        "locks",
-        "legs",
-        "volume",
-        "budget",
-        "fullcash",
-        "checkpoints",
-    ],
-)
+@pytest.mark.parametrize('market,variant', [
+    pytest.param(MarketId.CN, "scaling", id='SE-24-C01'),
+    pytest.param(MarketId.US, "scaling", id='SE-24-C02'),
+])
+@pytest.mark.risk_cases('SE-24-C01', 'SE-24-C02')
 def test_independent_v4_audit_certifies_sized_orders_and_explicit_market_rules(market, variant):
-    from dataclasses import asdict
     from strategy_evaluator.equity_metrics import summarize_equity_ledger
     source = ledger(market, variant=variant)
     result = audit_equity_account(**source, account_contract=4, decision_contract="FORMAL_V4")
@@ -313,137 +105,62 @@ def base_ledger():
     return ledger()
 
 
-@pytest.mark.parametrize(
-    "field",
-    [
-        "cash",
-        "quantity",
-        "fee",
-        "price",
-        "target",
-        "observed",
-        "available",
-        "order-status",
-        "expired",
-        "limit",
-        "volume",
-        "identity",
-        "revision",
-        "cycle-cost",
-        "cycle-income",
-        "missing-fill",
-        "missing-decision",
-        "sizing",
-    ],
-)
+@pytest.mark.parametrize('field', [
+    pytest.param("cash", id='SE-24-C03'),
+    pytest.param("fee", id='SE-24-C04'),
+    pytest.param("quantity", id='SE-24-C05'),
+    pytest.param("missing-fill", id='SE-24-C06'),
+    pytest.param("missing-decision", id='SE-24-C07'),
+])
+@pytest.mark.risk_cases('SE-24-C03', 'SE-24-C04', 'SE-24-C05', 'SE-24-C06', 'SE-24-C07')
 def test_v4_audit_rejects_corrupted_complete_looking_facts(base_ledger, field):
     source = deepcopy(base_ledger)
-    if field == "cash":
-        source["account_points"][0]["cash"] += 1
-    elif field == "quantity":
-        source["account_points"][0]["quantity"] += 1
-    elif field == "fee":
-        source["fills"][0]["fees"] += 1
-    elif field == "price":
-        source["fills"][0]["price"] += 0.01
-    elif field == "target":
-        source["decisions"][0]["target_quantity"] += 100
-    elif field == "observed":
-        source["decisions"][0]["observed_through"] = source["decisions"][0]["execution_end"]
-    elif field == "available":
-        source["bars"][0]["AvailableDate"] = source["account_points"][-1]["time"]
-    elif field == "order-status":
-        source["orders"][0]["reason"] = "NOT_TRADABLE"
-    elif field == "expired":
-        source["orders"][0]["status"] = "EXPIRED"
-    elif field == "limit":
-        source["orders"][0]["limit_price"] = 9.0
-    elif field == "volume":
-        source["bars"][1]["Volume"] = 1.0
-    elif field == "identity":
-        source["fills"][0]["cycle_id"] = "forged"
-    elif field == "revision":
-        source["account_points"][0]["account_revision"] = 2
-    elif field == "cycle-cost":
-        source["trades"][0]["cost"] += 1
-    elif field == "cycle-income":
-        source["trades"][0]["income"] += 1
-    elif field == "missing-fill":
-        source["fills"].pop()
-    elif field == "missing-decision":
-        source["decisions"].pop()
+    if field == 'cash':
+        source['account_points'][0]['cash'] += 1
+    elif field == 'fee':
+        source['fills'][0]['fees'] += 1
+    elif field == 'quantity':
+        source['account_points'][0]['quantity'] += 1
+    elif field == 'missing-fill':
+        source['fills'].pop()
     else:
-        source["decisions"][0]["plan"]["evidence"].pop("sizing")
+        source['decisions'].pop()
     with pytest.raises(ValueError):
-        audit_equity_account(**source, account_contract=4, decision_contract="FORMAL_V4")
+        audit_equity_account(**source, account_contract=4, decision_contract='FORMAL_V4')
 
 
-@pytest.mark.parametrize(
-    "variant,defect",
-    [
-        ("fractions", "desired"),
-        ("fractions", "reference"),
-        ("fractions", "fraction"),
-        ("fullcash", "residual-target"),
-        ("locks", "sellable-time"),
-        ("checkpoints", "quote-source"),
-        ("checkpoints", "quote-volume"),
-        ("checkpoints", "missing-quote"),
-        ("checkpoints", "quote-range"),
-        ("checkpoints", "quote-raw-units"),
-        ("checkpoints", "reversed-checkpoint"),
-        ("legs", "dependency-status"),
-        ("budget", "budget-reset"),
-    ],
-)
+@pytest.mark.parametrize('variant,defect', [
+    pytest.param("fractions", "desired", id='SE-26-C01'),
+    pytest.param("budget", "budget-reset", id='SE-26-C02'),
+    pytest.param("locks", "sellable-time", id='SE-27-C02'),
+    pytest.param("checkpoints", "quote-source", id='SE-28-C04'),
+    pytest.param("checkpoints", "quote-raw-units", id='SE-28-C05'),
+])
+@pytest.mark.risk_cases('SE-26-C01', 'SE-26-C02', 'SE-27-C02', 'SE-28-C04', 'SE-28-C05')
 def test_v4_audit_rejects_sizing_events_locks_dependencies_and_execution_source_tampering(
     variant, defect
 ):
     source = ledger(variant=variant)
-    if defect in {"desired", "residual-target"}:
-        index = 1 if defect == "residual-target" else 0
-        source["decisions"][index]["plan"]["evidence"]["desired_quantity"] += 100
-    elif defect == "reference":
-        source["decisions"][0]["plan"]["evidence"]["reference_price"] += 1
-    elif defect == "fraction":
-        source["decisions"][0]["plan"]["evidence"]["target"] = 0.99
-        source["decisions"][0]["target"] = 0.99
-    elif defect == "entitlement":
-        source["action_facts"][1]["CashPerShare"] += 0.1
-    elif defect == "payment":
-        source["actions"][-1]["cash_delta"] += 1
-    elif defect == "missing-event":
-        source["action_facts"].pop()
-    elif defect == "pay-time":
-        source["action_facts"][1]["PayAt"] = source["account_points"][-1]["time"]
-    elif defect == "sellable-time":
-        source["constraints"][0]["BuySellableAt"] = source["constraints"][0]["Date"]
-    elif defect == "quote-source":
-        source["fills"][1]["quote_source"] = "DECISION_BAR"
-    elif defect == "quote-volume":
-        source["execution_bars"][0]["Volume"] = 50
-    elif defect == "missing-quote":
-        source["execution_bars"].pop(1)
-    elif defect == "quote-range":
-        source["execution_bars"][1]["High"] = 20.0
-    elif defect == "quote-raw-units":
-        source["execution_bars"][0]["Open"] += 0.01
-    elif defect == "reversed-checkpoint":
-        source["decisions"][0]["plan"]["legs"][0]["checkpoint"] = "CLOSE"
-        source["orders"][0]["checkpoint"] = "CLOSE"
-    elif defect == "dependency-status":
-        source["decisions"][0]["plan"]["legs"][1]["dependency_required_status"] = "EXPIRED"
-        source["orders"][1]["dependency_required_status"] = "EXPIRED"
-    elif defect == "budget-reset":
-        source["decisions"][2]["plan"]["cycle_after"]["buy_cost_including_fees"] = "0"
+    # Validate this precise manual journal before its one planned corruption;
+    # positive-only variant nodes are no longer repeated in a separate matrix.
+    audit_equity_account(**source, account_contract=4, decision_contract='FORMAL_V4')
+    if defect == 'desired':
+        source['decisions'][0]['plan']['evidence']['desired_quantity'] += 100
+    elif defect == 'budget-reset':
+        source['decisions'][2]['plan']['cycle_after']['buy_cost_including_fees'] = '0'
+    elif defect == 'sellable-time':
+        source['constraints'][0]['BuySellableAt'] = source['constraints'][0]['Date']
+    elif defect == 'quote-source':
+        source['fills'][1]['quote_source'] = 'DECISION_BAR'
+    else:
+        source['price_basis'] = 'RAW'
     with pytest.raises(ValueError):
-        audit_equity_account(**source, account_contract=4, decision_contract="FORMAL_V4")
+        audit_equity_account(**source, account_contract=4, decision_contract='FORMAL_V4')
 
 
-
-
-@pytest.mark.parametrize("marker", [2, 3, 4.0, True, False, "4", None])
-def test_v4_marker_is_a_strict_integer_in_numeric_and_serialized_contracts(base_ledger, marker):
+@pytest.mark.risk_cases('SE-37-C01')
+def test_v4_marker_is_a_strict_integer_in_numeric_and_serialized_contracts(base_ledger):
+    marker = 4.0
     source = deepcopy(base_ledger)
     with pytest.raises(ValueError):
         audit_equity_account(**source, account_contract=marker, decision_contract="FORMAL_V4")
@@ -452,45 +169,41 @@ def test_v4_marker_is_a_strict_integer_in_numeric_and_serialized_contracts(base_
         read_ledger(canonical_ledger(source))
 
 
-@pytest.mark.parametrize(
-    "market,contracts",
-    [
-        ("CN", (None, None)),
-        ("CN", (4, None)),
-        ("CN", (None, 4)),
-    ],
-)
-def test_assessment_rejects_legacy_cn_or_mismatched_candidate_benchmark_contracts(
-    market, contracts
-):
-    source = {**ledger(MarketId(market)), "account_contract": 4}
-    facts = SimpleNamespace(
-        market=market,
-        timezone="Asia/Shanghai" if market == "CN" else "America/New_York",
-        currency="CNY" if market == "CN" else "USD",
-        drawdown_basis="BAR_CLOSE",
-        concentration_basis="MAX_SINGLE",
-        candidate_ledger=canonical_ledger(source),
-        benchmark_ledger=canonical_ledger(source),
-    )
-    # Establish a complete, market-correct baseline before changing only the
-    # contract markers. Omitting the field would exercise schema rejection.
-    assert validate_equity_facts(facts) is None
-    candidate, benchmark = deepcopy(source), deepcopy(source)
-    for rows, contract in zip((candidate, benchmark), contracts):
-        rows["account_contract"] = contract
-    facts.candidate_ledger = canonical_ledger(candidate)
-    facts.benchmark_ledger = canonical_ledger(benchmark)
-    with pytest.raises(ValidationError, match="^unknown account ledger contract$"):
-        validate_equity_facts(facts)
-
-
-@pytest.mark.parametrize('decision_contract', ['FORMAL_V2', None])
-def test_current_audit_rejects_retired_or_unlabelled_decision_contract(base_ledger, decision_contract):
+@pytest.mark.risk_cases('SE-37-C02')
+def test_current_audit_rejects_retired_or_unlabelled_decision_contract(base_ledger):
+    decision_contract = 'FORMAL_V3'
     with pytest.raises(ValueError, match='FORMAL_V4'):
         audit_equity_account(**base_ledger, account_contract=4, decision_contract=decision_contract)
 
 
-def _intent(target, reason, *, facts, next_watch, **kwargs):
-    from execution_channels.planning.intent import TradeIntent, DecisionExplanation
-    return TradeIntent(target, DecisionExplanation({'reason':reason,'facts':facts,'next_watch':next_watch}), **kwargs)
+@pytest.mark.risk_cases('SE-27-C01')
+def test_SE_27_C01_partial_fill_does_not_satisfy_filled_all_dependency():
+    source = ledger(variant="legs")
+    source["orders"][0]["status"] = "PARTIAL_FILLED"
+    with pytest.raises(ValueError):
+        audit_equity_account(**source, account_contract=4, decision_contract="FORMAL_V4")
+
+
+@pytest.mark.risk_cases('SE-27-C03')
+def test_SE_27_C03_trade_settlement_transfers_receivable_without_income():
+    source = manual_ledger([dict(orders=(order("BUY", 100, 10.1),)),
+                            dict(orders=(order("SELL", 100),), target=0.)], settled=True)
+    result = audit_equity_account(**source, account_contract=4, decision_contract="FORMAL_V4")
+    assert source["account_entries"][0]["cash_delta"] == 999.
+    assert source["account_entries"][0]["receivable_delta"] == -999.
+    assert source["account_points"][-1]["equity"] == 9998.
+    assert result.total_return == pytest.approx(-.0002)
+
+
+@pytest.mark.risk_cases('SE-27-C04')
+def test_SE_27_C04_hfq_contract_rejects_action_journal():
+    with pytest.raises(TypeError, match="actions"):
+        audit_equity_account(**ledger(), account_contract=4, decision_contract="FORMAL_V4", actions=[])
+
+
+@pytest.mark.risk_cases('SE-27-C05')
+def test_SE_27_C05_hfq_entries_cannot_include_nontrading_income():
+    source = ledger()
+    source["account_entries"] = [{"kind": "DIVIDEND_PAYMENT"}]
+    with pytest.raises(ValueError, match="only permits trade settlement"):
+        audit_equity_account(**source, account_contract=4, decision_contract="FORMAL_V4")

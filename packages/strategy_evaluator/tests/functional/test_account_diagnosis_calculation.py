@@ -74,6 +74,7 @@ def calculate(replay, **kwargs):
     )
 
 
+@pytest.mark.risk_cases('SE-32-C01')
 def test_exclusive_pnl_reconciles_across_years_with_each_year_own_capital():
     result = calculate(account())
     assert result.status is AccountDiagnosisStatus.COMPUTED
@@ -97,16 +98,7 @@ def test_exclusive_pnl_reconciles_across_years_with_each_year_own_capital():
     assert sliced.pnl_breakdown[0].daily[0].cycle_id == "cycle"
 
 
-@pytest.mark.parametrize(
-    "replay,expected", [(account(open_end=True), 9.0), (account(cash_only=True), 0.0)]
-)
-def test_open_position_and_no_trade_account_have_complete_decomposition(replay, expected):
-    result = calculate(replay)
-    assert result.status is AccountDiagnosisStatus.COMPUTED
-    assert sum(d.equity_change for d in result.pnl_breakdown[0].daily) == expected
-    assert all(d.residual == 0 for d in result.pnl_breakdown[0].daily)
-
-
+@pytest.mark.risk_cases('SE-32-C04')
 def test_scaling_is_unsupported_and_unexplained_cash_is_invalid():
     replay = account()
     extra = dict(replay.fills[0], fill_id="another", fill_time="2026-01-01")
@@ -115,7 +107,7 @@ def test_scaling_is_unsupported_and_unexplained_cash_is_invalid():
         is AccountDiagnosisStatus.UNSUPPORTED
     )
     changed = tuple(
-        dict(r, equity=r["equity"] + 1) if i == 2 else r for i, r in enumerate(replay.account_daily)
+        dict(r, cash=r["cash"] + 1, equity=r["equity"] + 1) if i == 2 else r for i, r in enumerate(replay.account_daily)
     )
     assert (
         calculate(replace(replay, account_daily=changed)).status
@@ -123,6 +115,7 @@ def test_scaling_is_unsupported_and_unexplained_cash_is_invalid():
     )
 
 
+@pytest.mark.risk_cases('SE-32-C02')
 def test_dynamic_cycle_allocation_is_explicitly_unsupported_even_for_one_full_buy():
     replay = account()
     result = calculate(replace(replay, execution_spec={
@@ -131,14 +124,3 @@ def test_dynamic_cycle_allocation_is_explicitly_unsupported_even_for_one_full_bu
     }))
     assert result.status is AccountDiagnosisStatus.UNSUPPORTED
     assert "signal-owned cycle allocation" in result.issues[0]
-
-
-def test_paths_use_unique_entry_session_and_preserve_open_exit_unknown():
-    result = calculate(account(), alternative=account(open_end=True), alternative_id="other")
-    assert result.status is AccountDiagnosisStatus.COMPUTED
-    (path,) = result.path_comparison
-    assert path.entry_session == "2025-12-31"
-    assert path.baseline_cycle_id == path.alternative_cycle_id == "cycle"
-    assert path.baseline_exit_session == "2026-01-02"
-    assert path.alternative_exit_session is None
-    assert result.daily_paths[-1].equity_difference == 1

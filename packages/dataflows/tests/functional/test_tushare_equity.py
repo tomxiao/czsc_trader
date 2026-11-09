@@ -54,7 +54,7 @@ class Pro:
     fund_adj = adj_factor
 
 
-def setup(monkeypatch, tmp_path, asset_class, frequency):
+def setup(monkeypatch, tmp_path, asset_class, frequency, *, space=None):
     client = Pro()
     for module in (tushare_stock, tushare_etf, tushare_equity):
         monkeypatch.setattr(module, "get_tushare_pro", lambda _: client)
@@ -66,16 +66,22 @@ def setup(monkeypatch, tmp_path, asset_class, frequency):
         PriceAdjustment.BACKWARD if product is EquityProduct.BARS else PriceAdjustment.NONE))
         for product in (EquityProduct.BARS, EquityProduct.SESSIONS))
     bindings = tushare_equity_observation_bindings(source=source)
-    flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path("assets")),
+    # Adapter validation needs no database. Only the explicit publication cases
+    # below create a space; schema creation/reopen is owned by test_data_space.
+    flows = None if space is None else Dataflows(base_dir=tmp_path, space=space,
                      providers=ProviderConfig(bindings={}, equity_bindings=bindings))
     return client, requests, bindings, flows
 
 
-@pytest.mark.parametrize("asset_class", list(AssetClass))
-@pytest.mark.parametrize("frequency", list(BarFrequency))
+@pytest.mark.parametrize("asset_class,frequency", [
+    (AssetClass.STOCK, BarFrequency.DAILY),
+    (AssetClass.ETF, BarFrequency.DAILY),
+    (AssetClass.ETF, BarFrequency.M30),
+], ids=['DFLS-15-C01', 'DFLS-15-C02', 'DFLS-15-C03'])
 def test_cn_hfq_prepare_reload_preserves_prices_units_calendar_and_availability(
-        monkeypatch, tmp_path, asset_class, frequency):
-    client, requests, bindings, flows = setup(monkeypatch, tmp_path, asset_class, frequency)
+        monkeypatch, tmp_path, empty_space_factory, asset_class, frequency):
+    client, requests, bindings, flows = setup(monkeypatch, tmp_path, asset_class, frequency,
+        space=empty_space_factory("assets"))
     prepared = flows.prepare(requests, policy=PreparePolicy.REUSE)
     assert prepared.ready, [i.error for i in prepared.items]
     fetched = flows.fetch(requests[0], prepared=prepared.reference)
@@ -114,65 +120,33 @@ def test_cn_hfq_prepare_reload_preserves_prices_units_calendar_and_availability(
     pd.testing.assert_frame_equal(reloaded.dataframe, frame)
 
 
-@pytest.mark.parametrize("adjustment", [PriceAdjustment.NONE, PriceAdjustment.FORWARD])
-def test_cn_observation_binding_rejects_other_price_contracts(monkeypatch, tmp_path, adjustment):
-    _, requests, bindings, _ = setup(monkeypatch, tmp_path, AssetClass.STOCK, BarFrequency.DAILY)
-    p = requests[0].parameters
-    request = EquityDataRequest(p.instrument, p.source, EquityQuery(
-        EquityProduct.BARS, p.query.start, p.query.end, p.query.frequency, adjustment))
-    with pytest.raises(DataContractError, match="backward-adjusted"):
-        bindings[p.provider_key].fetch(request)
 
 
-@pytest.mark.parametrize("product", [EquityProduct.BARS, EquityProduct.SESSIONS])
-def test_cn_observation_binding_rejects_incomplete_independent_calendar(monkeypatch, tmp_path, product):
-    client, requests, _, flows = setup(monkeypatch, tmp_path, AssetClass.STOCK, BarFrequency.DAILY)
-    client.defect = "calendar_gap"
-    result = flows.prepare(tuple(r for r in requests if r.parameters.query.product is product), policy=PreparePolicy.REFRESH)
-    assert not result.ready and result.reference is None
-    assert result.items[0].error.code == "INCOMPLETE_DATA"
 
 
-@pytest.mark.parametrize("defect", ["missing_bar", "early_availability", "wrong_adjustment"])
-def test_cn_observation_bridge_enforces_grid_availability_and_adjustment(monkeypatch, tmp_path, defect):
-    _, requests, _, flows = setup(monkeypatch, tmp_path, AssetClass.STOCK, BarFrequency.M30)
-    original = tushare_equity.fetch_stock_ohlcv
-
-    def mutated(*args, **kwargs):
-        frame, metadata = original(*args, **kwargs)
-        if defect == "missing_bar":
-            frame = frame.iloc[1:].reset_index(drop=True)
-        elif defect == "early_availability":
-            frame["AvailableDate"] -= pd.Timedelta(minutes=1)
-        else:
-            metadata["adjustment"] = "none"
-        return frame, metadata
-
-    monkeypatch.setattr(tushare_equity, "fetch_stock_ohlcv", mutated)
-    prepared = flows.prepare(requests, policy=PreparePolicy.REFRESH)
-    assert not prepared.ready and prepared.reference is None
 
 
-@pytest.mark.parametrize('asset_class', list(AssetClass))
-@pytest.mark.parametrize('frequency', list(BarFrequency))
+@pytest.mark.parametrize('asset_class,frequency', [
+    (AssetClass.STOCK, BarFrequency.DAILY),
+    (AssetClass.ETF, BarFrequency.M30),
+], ids=['DFLS-15-C04', 'DFLS-15-C07'])
 def test_cn_explicit_raw_binding_preserves_unadjusted_prices(monkeypatch, tmp_path, asset_class, frequency):
     _, requests, _, _ = setup(monkeypatch,tmp_path,asset_class,frequency)
     p=requests[0].parameters
     req=EquityDataRequest(p.instrument,p.source,EquityQuery(EquityProduct.BARS,
         p.query.start,p.query.end,frequency,PriceAdjustment.NONE))
     bindings=tushare_equity.tushare_equity_bindings(source=p.source)
-    flows=Dataflows(base_dir=tmp_path,space=DataSpace(Path('raw')),
-        providers=ProviderConfig(bindings={},equity_bindings=bindings))
-    result=flows.prepare((req,),policy=PreparePolicy.REUSE)
-    assert result.ready,[item.error for item in result.items]
-    output=flows.fetch(req,prepared=result.reference)
-    assert output.dataframe.Close.eq(4.).all()
-    assert output.dataframe.Volume.sum()==800.
-    assert output.identity.metadata['adjustment']=='none'
-    assert output.identity.metadata['publication_time_verified'] is False
+    frame,metadata=bindings[req.parameters.provider_key].fetch(req)
+    assert frame.Close.eq(4.).all()
+    assert frame.Volume.sum()==800.
+    assert metadata['adjustment']=='none'
+    assert metadata['acquisition_method']=='PROVIDER_RAW'
+    assert metadata['publication_time_verified'] is False
 
 
-@pytest.mark.parametrize('defect', ['permission', 'missing_fields', 'wrong_instrument', 'duplicate'])
+@pytest.mark.parametrize('defect', [
+    'permission',
+], ids=['DFLS-15-C05'])
 def test_provider_adjusted_failure_never_switches_to_computed_method(monkeypatch, tmp_path, defect):
     client, requests, bindings, _ = setup(monkeypatch, tmp_path, AssetClass.STOCK, BarFrequency.DAILY)
     original = client.stk_factor_pro

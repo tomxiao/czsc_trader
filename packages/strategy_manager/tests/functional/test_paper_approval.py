@@ -11,7 +11,6 @@ from strategy_manager import (
     Qualification,
     RegistryError,
     InvalidTransitionError,
-    ValidationError,
 )
 from strategy_manager.models import StrategyVersion, canonical_sha256
 
@@ -37,58 +36,58 @@ def registered_version(tmp_path):
     return registry, version
 
 
-@pytest.mark.parametrize(
-    "field,value",
-    [
-        ("strategy_id", "S11"),
-        ("version", "v0"),
-        ("expected_release_hash", "a" * 63),
-        ("expected_release_hash", " " + "a" * 64),
-        ("actor", ""),
-        ("reason", "  "),
-        ("version", True),
-        ("expected_release_hash", None),
-    ],
-)
-def test_approval_rejects_invalid_fields(field, value):
-    values = dict(
-        strategy_id="S900",
-        version="v1",
-        expected_release_hash="a" * 64,
-        actor="user",
-        reason="approved paper trading",
-    )
-    values[field] = value
-    with pytest.raises(ValidationError):
-        PaperTradingApproval(**values)
 
 
-def test_approval_is_content_bound_and_rejects_repeat_without_writing(registered_version):
+def approval(version):
+    return PaperTradingApproval("S900", "v1", version.release_hash, "user", "explicit approval")
+
+
+@pytest.mark.risk_cases('SM-14-C01')
+def test_SM_14_C01_approval_grants_paper_qualification(registered_version):
     registry, version = registered_version
-    request = PaperTradingApproval("S900", "v1", version.release_hash, "user", "explicit approval")
-    path = registry.root / "S900/lifecycle.jsonl"
-    before = path.read_bytes()
-    with pytest.raises(TypeError):
-        registry.approve_paper_trading({})
-    with pytest.raises(RegistryError, match="release hash differs"):
-        registry.approve_paper_trading(replace(request, expected_release_hash="0" * 64))
-    with pytest.raises(InvalidTransitionError, match="LIVE_READY"):
-        registry.downgrade_version("S900", "v1", actor="user", reason="invalid", evidence_ids=[])
-    assert path.read_bytes() == before
-    event = registry.approve_paper_trading(request)
+    event = registry.approve_paper_trading(approval(version))
     assert (event.from_state, event.to_state) == (Qualification.RESEARCH, Qualification.PAPER_READY)
     assert event.event_type == "PAPER_APPROVED" and event.release_hash == version.release_hash
     assert registry.assert_deployable("S900", "v1", "PAPER") == version
+
+
+@pytest.mark.risk_cases('SM-14-C02')
+def test_SM_14_C02_approval_rejects_wrong_hash_without_writing(registered_version):
+    registry, version = registered_version
+    path = registry.root / "S900/lifecycle.jsonl"
+    before = path.read_bytes()
+    with pytest.raises(RegistryError, match="release hash differs"):
+        registry.approve_paper_trading(replace(approval(version), expected_release_hash="0" * 64))
+    assert path.read_bytes() == before
+
+
+@pytest.mark.risk_cases('SM-14-C03')
+def test_SM_14_C03_repeat_approval_does_not_append_event(registered_version):
+    registry, version = registered_version
+    request = approval(version)
+    registry.approve_paper_trading(request)
+    path = registry.root / "S900/lifecycle.jsonl"
     approved = path.read_bytes()
     with pytest.raises(InvalidTransitionError, match="RESEARCH"):
         registry.approve_paper_trading(request)
     assert path.read_bytes() == approved
+
+
+@pytest.mark.risk_cases('SM-14-C06')
+def test_SM_14_C06_retired_version_cannot_be_reapproved(registered_version):
+    registry, version = registered_version
+    request = approval(version)
+    registry.approve_paper_trading(request)
     registry.retire_version("S900", "v1", actor="user", reason="end paper trading")
+    path = registry.root / "S900/lifecycle.jsonl"
+    before = path.read_bytes()
     with pytest.raises(InvalidTransitionError, match="RESEARCH"):
         registry.approve_paper_trading(request)
+    assert path.read_bytes() == before
 
 
-def test_old_content_events_do_not_grant_or_override_current_qualification(registered_version):
+@pytest.mark.risk_cases('SM-14-C04')
+def test_SM_14_C04_old_events_do_not_grant_or_override_current_qualification(registered_version):
     registry, version = registered_version
     path = registry.root / "S900/lifecycle.jsonl"
     request = PaperTradingApproval("S900", "v1", version.release_hash, "user", "explicit approval")

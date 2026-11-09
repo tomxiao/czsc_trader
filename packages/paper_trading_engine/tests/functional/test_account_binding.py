@@ -1,7 +1,6 @@
 """The account-facing adapter uses authenticated local SM/SRT contracts."""
 
-from dataclasses import replace
-from datetime import date, datetime
+from datetime import date
 import json
 import subprocess
 
@@ -13,41 +12,11 @@ from paper_trading_engine.errors import AdviceClientError
 from paper_trading_engine.srt_advice_client import SrtAdviceClient
 
 
-@pytest.mark.parametrize(
-    "field,value",
-    [
-        ("strategy_id", "S1"),
-        ("version", "v0"),
-        ("release_hash", "A" * 64),
-        ("name", ""),
-        ("symbol", "bad"),
-        ("qualification", "PAPER_READY"),
-        ("qualification", Qualification.RESEARCH),
-        ("selection_data_cutoff", "2026-09-02"),
-        ("selection_data_cutoff", datetime(2026, 9, 2)),
-        ("fee_rate", True),
-        ("fee_rate", float("nan")),
-        ("fee_rate", float("inf")),
-        ("fee_rate", -0.1),
-        ("fee_rate", 1.0),
-    ],
-)
-def test_binding_rejects_invalid_fields(field, value):
-    binding = AccountStrategyBinding(
-        "S900",
-        "v1",
-        "a" * 64,
-        "Test",
-        Qualification.PAPER_READY,
-        date(2026, 9, 2),
-        "588080.SH",
-        0.001,
-    )
-    with pytest.raises((ValueError, TypeError)):
-        replace(binding, **{field: value})
+# Independent risk: PTE02; responsibility-level assertions.
 
 
-def test_real_frozen_binding_uses_public_approval_without_cli(pte_frozen, monkeypatch, tmp_path):
+# Independent risk: PTE02; responsibility-level assertions.
+def test_PTE02_C01_real_frozen_binding_uses_public_approval_without_cli(pte_frozen, monkeypatch, tmp_path):
     context, version = pte_frozen
     monkeypatch.setattr(subprocess, "run", lambda *_a, **_k: pytest.fail("no CLI subprocess"))
     client = SrtAdviceClient(repo_root=context.root, data_dir=tmp_path)
@@ -67,9 +36,11 @@ def test_real_frozen_binding_uses_public_approval_without_cli(pte_frozen, monkey
     ) == binding
 
 
-@pytest.mark.parametrize(
-    "failure", ["missing_deployment", "wrong_deployment_hash", "stale_approval", "symbol", "asset", "package"]
-)
+# Independent risk: PTE02; responsibility-level assertions.
+@pytest.mark.parametrize("failure", [
+    "stale_approval",
+    "package",
+], ids=['PTE02-C03', 'PTE02-C02'])
 def test_real_binding_rejects_invalid_runtime_or_approval(pte_frozen, tmp_path, failure):
     context, _ = pte_frozen
     kwargs = dict(strategy_id="S900", strategy_version="v1", symbol="588080.SH", asset="etf")

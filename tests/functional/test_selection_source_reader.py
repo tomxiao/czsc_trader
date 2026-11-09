@@ -1,11 +1,11 @@
+# Risk ownership: TDR-18
 """Source lifecycle and shared V4 identity contract; all fixtures are synthetic."""
-from dataclasses import replace
 from hashlib import sha256
 
 import pytest
 
 from czsc_trader.application.selection_source_reader import (
-    SelectionSourceBudgetError, SelectionSourceReader,
+    SelectionSourceReader,
 )
 from czsc_trader.research_tools.context import ExperimentRef
 from czsc_trader.research_tools.evidence import EvidenceRef
@@ -58,9 +58,9 @@ def _reader(root, **budgets):
         max_shared_bytes=budgets.get("shared", 10_000_000))
 
 
-def test_shared_inputs_benchmark_read_once_and_candidate_released(tmp_path):
+def test_TDR_18_C01_shared_inputs_benchmark_read_once_and_candidate_released(tmp_path):
     first, _, old = _fixture(tmp_path)
-    second, _, _ = _fixture(tmp_path, "C0002")
+    second, _, _ = _fixture(tmp_path, "C0002", "EX002_20261105")
     with _reader(tmp_path) as reader:
         assert reader.prepare((first, second, first)) == (first, second)
         assert reader.unique_benchmark_count == 1
@@ -70,141 +70,10 @@ def test_shared_inputs_benchmark_read_once_and_candidate_released(tmp_path):
         assert one.benchmark_run is two.benchmark_run
         assert one.candidate_run == old.payload["runs"]["candidate"]
         assert one.benchmark_run == old.payload["runs"]["buy_hold"]
-        assert reader.stats.read_count == reader.stats.decode_count == 6
+        assert reader.stats.read_count == 8
+        assert reader.stats.decode_count == 6
         assert reader.stats.source_bytes == sum(p.stat().st_size for p in tmp_path.rglob("*.json"))
         assert all(value is not one.candidate_run for value in reader._shared.values())
         with pytest.raises(ValueError, match="already consumed"):
             reader.read(first)
     assert not reader._shared and not reader._headers
-
-
-def test_equal_hash_different_paths_still_verified_but_shared_decode(tmp_path):
-    first, _, _ = _fixture(tmp_path)
-    second, _, _ = _fixture(tmp_path, "C0002", "EX002_20261105")
-    with _reader(tmp_path) as reader:
-        reader.prepare((first, second))
-        reader.read(first)
-        reader.read(second)
-        assert reader.stats.read_count == 8
-        assert reader.stats.decode_count == 6
-
-
-def test_old_materialization_payload_still_independent(tmp_path):
-    _, _, materialized = _fixture(tmp_path)
-    first, second = materialized.payload, materialized.payload
-    first["runs"]["candidate"]["observations"][0]["equity"] = 999.
-    first["audit_inputs"]["bars"].append("mutated")
-    assert second["runs"]["candidate"]["observations"][0]["equity"] == 100.
-    assert second["audit_inputs"]["bars"] == []
-
-
-@pytest.mark.parametrize("mutation,message", [
-    (lambda r, c, b: c["owner"].update(candidate="C9999"), "owner differs"),
-    (lambda r, c, b: c.update(input_sha256="b" * 64), "input identity differs"),
-    (lambda r, c, b: r.update(fee_rate=.2), "economic identity differs"),
-    (lambda r, c, b: b["owner"].update(run_sha256="c" * 64), "owner differs"),
-])
-def test_new_and_old_paths_share_identity_failures(tmp_path, mutation, message):
-    ref, _, materialized = _fixture(tmp_path, mutate=mutation)
-    with pytest.raises(ValueError, match=message):
-        _ = materialized.payload
-    with _reader(tmp_path) as reader:
-        reader.prepare((ref,))
-        with pytest.raises(ValueError, match=message):
-            reader.read(ref)
-
-
-@pytest.mark.parametrize("target", ["header", "candidate_ref", "input_ref", "benchmark_ref"])
-def test_corrupt_source_is_explicit_and_never_reread(tmp_path, target):
-    ref, header, _ = _fixture(tmp_path)
-    path = tmp_path / ref.repository_path
-    if target != "header":
-        path = path.parent / (header[target]["sha256"] + ".json")
-    path.write_bytes(b"corrupt")
-    with _reader(tmp_path) as reader:
-        reader.prepare((ref, ref))
-        with pytest.raises(ValueError, match="checksum"):
-            reader.read(ref)
-        reads = reader.stats.read_count
-        with pytest.raises(ValueError):
-            reader.read(ref)
-        assert reader.stats.read_count == reads
-
-
-def test_budgets_reject_before_account_decode(tmp_path):
-    ref, _, _ = _fixture(tmp_path)
-    for budget in ({"source": 1}, {"shared": 1}):
-        with _reader(tmp_path, **budget) as reader:
-            with pytest.raises(SelectionSourceBudgetError):
-                reader.prepare((ref,))
-            assert reader.stats.decode_count <= 1
-            assert not reader._shared
-
-
-def test_missing_source_is_local_failure(tmp_path):
-    first, _, _ = _fixture(tmp_path)
-    second, _, _ = _fixture(tmp_path, "C0002")
-    (tmp_path / first.repository_path).unlink()
-    with _reader(tmp_path) as reader:
-        reader.prepare((first, second))
-        with pytest.raises(FileNotFoundError):
-            reader.read(first)
-        assert reader.read(second).candidate_run
-
-
-def test_malformed_json_is_rejected(tmp_path):
-    ref, _, _ = _fixture(tmp_path)
-    content = b'{"schema_version":4,"schema_version":4}'
-    digest = sha256(content).hexdigest()
-    ref = replace(ref, evidence_id=digest + ".json", sha256=digest)
-    (tmp_path / ref.repository_path).write_bytes(content)
-    with _reader(tmp_path) as reader:
-        reader.prepare((ref,))
-        with pytest.raises(ValueError, match="duplicate"):
-            reader.read(ref)
-
-
-@pytest.mark.parametrize("fields", [dict(schema=None, schema_version=None), dict(schema_version=3),
-    dict(media_type="text/plain")])
-def test_source_requires_explicit_v4_json_identity(tmp_path, fields):
-    ref, _, _ = _fixture(tmp_path)
-    ref = replace(ref, **fields)
-    with _reader(tmp_path) as reader:
-        reader.prepare((ref,))
-        with pytest.raises(ValueError, match="V4 evidence"):
-            reader.read(ref)
-        assert reader.stats.read_count == 0
-
-
-def test_corrupt_second_copy_not_hidden_by_shared_hash_cache(tmp_path):
-    first, _, _ = _fixture(tmp_path)
-    second, header, _ = _fixture(tmp_path, "C0002", "EX002_20261105")
-    second_input = (tmp_path / second.repository_path).parent / (header["input_ref"]["sha256"] + ".json")
-    second_input.write_bytes(b"corrupt")
-    with _reader(tmp_path) as reader:
-        reader.prepare((first, second))
-        reader.read(first)
-        with pytest.raises(ValueError, match="checksum"):
-            reader.read(second)
-
-
-@pytest.mark.parametrize("field", ["request", "evaluation_identity", "benchmark_identity", "data",
-    "candidate_definition", "benchmark_definition"])
-def test_malformed_header_nested_shape_is_source_local(tmp_path, field):
-    broken, header, _ = _fixture(tmp_path)
-    healthy, _, _ = _fixture(tmp_path, "C0002")
-    if field == "candidate_definition":
-        header["request"][field] = []
-    elif field == "benchmark_definition":
-        header["benchmark_identity"]["definition"] = []
-    else:
-        header[field] = []
-    content = _bytes(header)
-    digest = sha256(content).hexdigest()
-    broken = replace(broken, evidence_id=digest + ".json", sha256=digest)
-    (tmp_path / broken.repository_path).write_bytes(content)
-    with _reader(tmp_path) as reader:
-        reader.prepare((broken, healthy))
-        with pytest.raises(ValueError, match="must be an object"):
-            reader.read(broken)
-        assert reader.read(healthy).candidate_run

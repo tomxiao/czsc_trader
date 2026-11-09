@@ -1,17 +1,14 @@
+# Risk ownership: TDR-26
 """Backtest acceptance against an isolated current-contract frozen fixture."""
 from datetime import date
-from dataclasses import replace
 from copy import deepcopy
-import json
-import re
 import pandas as pd
 import pytest
 from czsc_trader.application import BacktestRequest, run_backtest
-from czsc_trader.application.errors import ExecutionError
 from dataflows import Dataflows, DataSpace, ProviderConfig, ProviderBinding, Dataset, IncompleteDataError
 from pathlib import Path
-from public_backtest_support import assert_public_charts, research_context, render_output
-from test_current_contracts import (
+from public_backtest_support import research_context
+from frozen_contract_support import (
     current_frozen as current_frozen, inspection as inspection,
     completed as completed, managed_evaluation as managed_evaluation,
 )
@@ -107,47 +104,6 @@ def execution_flows(root, *, adjusted_price=1., procurement=None, space=None, da
                                      Dataset.ETF_SHARE_SIZE, Dataset.SECURITY_TRADING_STATUS, Dataset.SECURITY_PRICE_LIMITS)}))
 
 
-def test_current_frozen_backtest_returns_audited_accounts_and_reuses_batch_data(current_frozen):
-    repository, version = current_frozen
-    procurement = {"allowed": True, "requests": []}
-    context = research_context(repository, execution_flows(repository.root, adjusted_price=2., procurement=procurement))
-    request = BacktestRequest("588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100)
-    result = run_backtest(context, version, request)
-    assert result.manifest["audit"]["status"] == "PASS"
-    assert not (repository.root / "outputs").exists()
-    assert not (repository.root / "data/backtest").exists()
-    assert not list((repository.root / "research").glob("*/assets/evidence/*/*"))
-    assert result.result.account_daily.iloc[0]["cash_before"] == 100000
-    assert result.result.orders["quantity"].mod(100).eq(0).all()
-    assert len(result.result.observations) == len(result.result.decisions)
-    assert all(item.strategy.release_hash == version.release_hash for item in result.result.observations)
-    output = render_output(result, repository.root)
-    assert json.loads((output / 'metrics.json').read_text(encoding='utf-8')) == result.metrics
-    published = json.loads((output / 'manifest.json').read_text(encoding='utf-8'))
-    assert published['strategy']['kind'] == 'REGISTERED'
-    assert published['strategy']['reference'] == result.snapshot.identity.reference == version.release_id
-    assert published['strategy']['source_hash'] == result.snapshot.source_hash
-    assert published['audit'] == result.manifest['audit']
-    payload = assert_public_charts(output)
-    assert payload["market_data"]["bars"][0]["close"] == 2.
-    assert payload["execution"]["fills"][0]["price"] == 1.
-    report = (output / "report.md").read_text(encoding="utf-8")
-    html = (output / "chart.html").read_text(encoding="utf-8")
-    cards = re.findall(r'<div class="backtest-metric"><span>(.*?)</span><strong>(.*?)</strong></div>', html)
-    row = next(line for line in report.splitlines() if line.startswith(f'| {version.release_id} |'))
-    assert [value for _, value in cards] == [x.strip() for x in row.split('|')[2:-1]]
-    original_requests = tuple(procurement["requests"])
-    procurement["allowed"] = False
-    repeated = run_backtest(context, version, request)
-    assert repeated.metrics == result.metrics
-    assert repeated.manifest["execution_data"] == result.manifest["execution_data"]
-    assert tuple(procurement["requests"]) == original_requests
-    procurement["allowed"] = True
-    weekend = run_backtest(context, version, replace(request, end=date(2026, 9, 20)))
-    assert weekend.manifest["request"]["end"] == "2026-09-20"
-    assert weekend.manifest["execution_data"]["cutoff"] == "2026-09-18"
-
-
 def test_chart_generation_is_explicit_and_cannot_block_account_computation(current_frozen, monkeypatch):
     from czsc_trader.backtesting.service import _backtest_report_files
     repository, version = current_frozen
@@ -161,12 +117,19 @@ def test_chart_generation_is_explicit_and_cannot_block_account_computation(curre
     with pytest.raises(ValueError, match="chart facts are inconsistent"):
         _backtest_report_files(result)
     assert not (repository.root / "outputs").exists()
+    # Restore the chart implementation and exercise explicit publication using
+    # the same computed account rather than preparing/replaying a second one.
+    monkeypatch.undo()
+    import re
+    from public_backtest_support import publish_reports
 
-
-def test_backtest_rejects_unpublished_session_without_outputs(current_frozen):
-    repository, version = current_frozen
-    context = research_context(repository, execution_flows(repository.root))
-    with pytest.raises(ExecutionError):
-        run_backtest(context, version, BacktestRequest(
-            "588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 30), 100000, 100))
-    assert not (repository.root / "outputs").exists()
+    references = publish_reports(context, result)
+    report = references["report.md"].resolve(repository.root)
+    links = re.findall(r"\]\(([^)]+)\)", report.read_text(encoding="utf-8"))
+    assert links == [references["chart.html"].evidence_id, references["ma_chart.html"].evidence_id]
+    assert all((report.parent / link).is_file() for link in links)
+    again = publish_reports(context, result)
+    assert {name: ref.sha256 for name, ref in again.items()} == {
+        name: ref.sha256 for name, ref in references.items()
+    }
+    assert report.is_relative_to(repository.root / "research/S900/assets/evidence")

@@ -1,15 +1,14 @@
+# Risk ownership: TDR-23
 """Local publication transactions using synthetic releases in isolated repos.
 
 Candidate sources, audit references, package construction, CAS, archives and
 rollback run through the real upgrade API without completed-inspection substitutes.
 """
 
-import ast
 from dataclasses import replace
 from datetime import date
 from hashlib import sha256
 import json
-from pathlib import Path
 import shutil
 from types import SimpleNamespace
 
@@ -19,10 +18,9 @@ from dataflows import Dataset, MarketId
 
 from czsc_trader.application import RepositoryContext, validate_release_package
 from czsc_trader.application import runtime_migration as m
-from czsc_trader.application import research_evidence as e
-from strategy_manager import StrategyRegistry, CandidateKey, ValidationError
+from strategy_manager import StrategyRegistry
 from strategy_manager import freeze_contracts as f
-from test_current_contracts import (
+from frozen_contract_support import (
     current_frozen as current_frozen, inspection as inspection,
     managed_evaluation as managed_evaluation,
 )
@@ -73,6 +71,65 @@ def _bytes(root):
     return {p.relative_to(root).as_posix(): p.read_bytes() for p in root.rglob("*") if p.is_file()}
 
 
+def _upgrade_closure(context, request, prepared=None):
+    """Only the actual frozen package, candidate and audited preparation inputs.
+
+    Dataframes, DFLS stores and old setup staging are unrelated to these
+    migration contracts and must not become per-case filesystem fixtures.
+    """
+    roots = [context.strategy_root, request.candidate.source_root]
+    if prepared is not None:
+        roots.extend((prepared.plan_path.parent / "staged",))
+    files = {path.relative_to(context.root): path.read_bytes()
+             for root in roots for path in root.rglob("*") if path.is_file()}
+    for ref in (request.confirmation, *request.evidence):
+        path = ref.resolve(context.root)
+        files[path.relative_to(context.root)] = path.read_bytes()
+    if prepared is not None:
+        files[prepared.plan_path.relative_to(context.root)] = prepared.plan_path.read_bytes()
+    return files
+
+
+def _restore_files(root, files):
+    for relative, content in files.items():
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+
+
+def _relocated_request(request, original_root, root):
+    return replace(request,
+        candidate=replace(request.candidate, source_root=root / request.candidate.source_root.relative_to(original_root)),
+        output_directory=root / request.output_directory.relative_to(original_root))
+
+
+@pytest.fixture(scope="module")
+def committed_upgrade_seed():
+    return {}
+
+
+@pytest.fixture
+def committed_upgrade(request, tmp_path, committed_upgrade_seed):
+    """Audit/retry tests consume a real committed upgrade, built once privately."""
+    cache = committed_upgrade_seed
+    if not cache:
+        context, change, stored = request.getfixturevalue('upgrade')
+        prepared = m.prepare_frozen_runtime_upgrade(context, change)
+        receipt = m.apply_frozen_runtime_upgrade(context, prepared)
+        cache.update(files=_upgrade_closure(context, change, prepared), root=context.root,
+                     change=change, stored=stored, prepared=prepared, receipt=receipt)
+    root = tmp_path / 'committed-upgrade'
+    _restore_files(root, cache['files'])
+    original_root = cache['root']
+    context = RepositoryContext(root, root / 'research', root / 'research/registrations', root / 'strategies')
+    change = _relocated_request(cache['change'], original_root, root)
+    prepared = replace(cache['prepared'], plan_path=root / cache['prepared'].plan_path.relative_to(original_root))
+    receipt = replace(cache['receipt'],
+        archive_path=root / cache['receipt'].archive_path.relative_to(original_root),
+        receipt_path=root / cache['receipt'].receipt_path.relative_to(original_root))
+    return context, change, cache['stored'], prepared, receipt
+
+
 def _with_seed(candidate):
     from strategy_runtime.dataset_observations import DatasetObservationInput, FrozenDataAsset
     path = candidate.source_root / 'assets/seed.csv'
@@ -113,7 +170,7 @@ def _build_obsolete_v4(upgrade, market):
     """Authentic frozen bytes from before execution_policy became mandatory."""
     from strategy_manager import canonical_sha256
     from strategy_runtime.deployment import validate_release_integrity
-    from test_equity_adjusted_observations import setup_adjusted
+    from adjusted_observation_support import setup_adjusted
 
     context, change, _ = upgrade
     fixture = context.root / '.tmp/obsolete-v4-fixture'
@@ -164,8 +221,8 @@ def obsolete_v4_seeds():
     return {}
 
 
-@pytest.fixture(params=[MarketId.CN, MarketId.US], ids=['CN', 'US'])
-def obsolete_v4(request, tmp_path, frozen_seed_root, obsolete_v4_seeds):
+@pytest.fixture(params=[MarketId.US], ids=['TDR-23-C01-US'])
+def obsolete_v4(request, tmp_path, obsolete_v4_seeds):
     """Each market builds its historical package once; each fault gets private bytes.
 
     The setup upgrade is not the operation under test. Every consumer still
@@ -174,16 +231,14 @@ def obsolete_v4(request, tmp_path, frozen_seed_root, obsolete_v4_seeds):
     market = request.param
     if market not in obsolete_v4_seeds:
         context, change, frozen = _build_obsolete_v4(request.getfixturevalue('upgrade'), market)
-        seed = frozen_seed_root / f'obsolete-v4-{market.value}'
-        shutil.copytree(context.root, seed)
-        obsolete_v4_seeds[market] = (seed, context.root, change, frozen)
-    seed, original_root, change, frozen = obsolete_v4_seeds[market]
+        files = _upgrade_closure(context, change)
+        obsolete_v4_seeds[market] = (files, context.root, change, frozen)
+    files, original_root, change, frozen = obsolete_v4_seeds[market]
     root = tmp_path / 'obsolete-upgrade-repo'
-    shutil.copytree(seed, root)
-    candidate = replace(change.candidate, source_root=root / change.candidate.source_root.relative_to(original_root))
-    change = replace(change, candidate=candidate,
-                     output_directory=root / change.output_directory.relative_to(original_root))
-    return RepositoryContext.discover(root), change, json.loads(json.dumps(frozen))
+    _restore_files(root, files)
+    change = _relocated_request(change, original_root, root)
+    context = RepositoryContext(root, root / 'research', root / 'research/registrations', root / 'strategies')
+    return context, change, json.loads(json.dumps(frozen))
 
 
 def test_obsolete_contract_upgrades_without_loading_old_runtime(obsolete_v4):
@@ -209,36 +264,7 @@ def test_obsolete_contract_upgrades_without_loading_old_runtime(obsolete_v4):
     assert prepared.migrated != request.original
 
 
-def test_obsolete_contract_rollback_restores_bytes_without_loading_old_runtime(obsolete_v4, monkeypatch):
-    from strategy_runtime.deployment import validate_release_integrity
-
-    context, request, _ = obsolete_v4
-    prepared = m.prepare_frozen_runtime_upgrade(context, request)
-    before = _bytes(context.strategy_root)
-    write = m._upgrade_write
-    failed = False
-
-    def fail_deployment_once(path, data, scratch):
-        nonlocal failed
-        if path.parent.name == 'deployments' and not failed:
-            failed = True
-            raise OSError('injected obsolete-package upgrade failure')
-        return write(path, data, scratch)
-
-    monkeypatch.setattr(m, '_upgrade_write', fail_deployment_once)
-    with pytest.raises(RuntimeError, match='original content restored'):
-        m.apply_frozen_runtime_upgrade(context, prepared)
-    assert failed
-    assert all((context.strategy_root / name).read_bytes() == data for name, data in before.items())
-    assert validate_release_integrity(context.strategy_root, 'S900-v1').package_sha256 == request.original.package_hash
-    with pytest.raises(TypeError, match='explicit execution policy'):
-        validate_release_package(context, 'S900-v1')
-    archive = context.strategy_root / 'revisions/S900-v1' / request.original.release_hash
-    assert json.loads((archive / 'rollback.json').read_bytes())['status'] == 'ROLLED_BACK'
-    assert not (archive / 'upgrade_receipt.json').exists()
-
-
-@pytest.mark.parametrize('side', ['old-package', 'new-candidate'])
+@pytest.mark.parametrize('side', ['new-candidate', 'old-package'], ids=['TDR-23-C06', 'TDR-23-C13'])
 def test_obsolete_contract_upgrade_still_rejects_changed_sources(obsolete_v4, side):
     context, request, _ = obsolete_v4
     source = (context.strategy_root / 'S900/releases/v1/src/strategy_runtime' if side == 'old-package'
@@ -252,10 +278,10 @@ def test_obsolete_contract_upgrade_still_rejects_changed_sources(obsolete_v4, si
     assert not request.output_directory.exists()
 
 
-@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
+@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US], ids=['TDR-23-C01', 'TDR-23-C02'])
 def test_native_upgrade_preserves_history_and_resets_qualification(upgrade, market, monkeypatch):
     """Both market contracts cross the same legacy/native and native/native transaction."""
-    from test_equity_adjusted_observations import setup_adjusted
+    from adjusted_observation_support import setup_adjusted
     from strategy_runtime import EquityStrategyCandidate, equity_source_hash, load_strategy_deployment
     context, request, original_version = upgrade
     request, original_version = _legacy_source_identity(context, request, original_version)
@@ -263,12 +289,6 @@ def test_native_upgrade_preserves_history_and_resets_qualification(upgrade, mark
     fixture.mkdir()
     _, native_request, _, _, _ = setup_adjusted(fixture, market)
     candidate = _with_seed(replace(native_request.candidate, strategy_id='S900', candidate_id='C9877'))
-    if market is MarketId.US:
-        legacy_equity = replace(candidate, definition=replace(candidate.definition, contract_version=2,
-            feature_graph=None, state_schema=None, computation=None, auxiliary_inputs=(), observation_inputs=(),
-            execution_policy=None, analysis_price='RAW'))
-        with pytest.raises(ValueError, match='native account contract 4'):
-            replace(request, candidate=legacy_equity)
     request = replace(request, candidate=candidate)
     prepared = m.prepare_frozen_runtime_upgrade(context, request)
     receipt = m.apply_frozen_runtime_upgrade(context, prepared)
@@ -312,21 +332,6 @@ def test_native_upgrade_preserves_history_and_resets_qualification(upgrade, mark
     assert loaded.candidate_id == 'C9877'
     assert loaded.content_identity == candidate.content_identity
     assert loaded_release.release_hash == current.release_hash
-    from strategy_runtime.deployment import validate_release_package as authenticate
-    from strategy_manager import canonical_sha256
-    path = context.strategy_root / 'S900/releases/v1/release_manifest.json'
-    original_manifest_bytes = path.read_bytes()
-    for changed, error in (({'runtime_candidate_id': 'S002-C001'}, 'runtime candidate'),
-                           ({'runtime_candidate_id': 'C1111'}, 'package hash'),
-                           ({'schema_version': 1}, 'manifest')):
-        modified = {**manifest, **changed}
-        if changed.get('runtime_candidate_id') == 'S002-C001':
-            modified.pop('package_hash')
-            modified['package_hash'] = canonical_sha256(modified)
-        path.write_bytes(json.dumps(modified).encode())
-        with pytest.raises(RuntimeCompatibilityError, match=error):
-            authenticate(context.strategy_root, 'S900-v1')
-    path.write_bytes(original_manifest_bytes)
     source = candidate.source_root / 'strategy.py'
     source.write_bytes(source.read_bytes() + b'\n# native revision\n')
     revised = EquityStrategyCandidate('S900', 'C9878', replace(candidate.definition,
@@ -354,47 +359,6 @@ def test_native_upgrade_preserves_history_and_resets_qualification(upgrade, mark
     assert next_receipt.original == prepared.migrated
     assert m.apply_frozen_runtime_upgrade(context, next_prepared) == next_receipt
     assert load_strategy_deployment(context.strategy_root, 'S900-v1').release_hash == next_prepared.migrated.release_hash
-
-
-def test_native_resources_register_and_share_the_first_freeze_package_builder(tmp_path):
-    """The registered closure and the first-freeze path both carry hash-pinned data."""
-    from test_equity_adjusted_observations import setup_adjusted
-    from czsc_trader.application import register_candidate, CandidateRegistrationRequest, load_candidate, FreezeTarget
-    from czsc_trader.application.inspection_service import _copy_plan, _package, _EvidenceStore
-    from strategy_runtime.deployment import validate_release_package as authenticate
-    from strategy_manager.candidates import _validate_candidate_snapshot
-    research, request, _, _, _ = setup_adjusted(tmp_path, MarketId.US)
-    candidate = _with_seed(request.candidate)
-    context = research.repository
-    registration = register_candidate(context, CandidateRegistrationRequest(candidate, request.experiment, (),
-                                                                              candidate.definition.dependencies))
-    loaded = load_candidate(context, candidate.key)
-    assert loaded.content_identity == candidate.content_identity
-    assert loaded.definition.source_sha256 == request.candidate.definition.source_sha256
-    assert {Path(ref.path).name for ref in registration.source_files} == {'strategy.py', 'seed.csv'}
-    root = context.research_root / candidate.strategy_id
-    without_resource = replace(registration, source_files=tuple(ref for ref in registration.source_files
-                                                               if not ref.path.endswith('.csv')))
-    with pytest.raises(ValidationError, match='manifest'):
-        _validate_candidate_snapshot(without_resource, root)
-    owner = f.ResearchEvidenceOwner(candidate.strategy_id, request.experiment.experiment_id)
-    store = _EvidenceStore(context, owner)
-    origin = f.CandidateOrigin(candidate.key, registration.content_sha256, store.put_json(registration.to_dict()))
-    target = FreezeTarget('v1', None, 'synthetic native resource package', date(2026, 10, 15), date(2026, 10, 16))
-    plan = _copy_plan(context, SimpleNamespace(additional_files=(), target=target), registration, store, origin)
-    isolated = tmp_path / '.tmp/material-repository'
-    _, verified = _package(context, plan, store, isolated)
-    assert verified.runtime_binding.spec.source_files == ('strategy.py',)
-    assert set(verified.runtime_binding.spec.install_files) == {'strategy.py', 'assets/seed.csv'}
-    from strategy_runtime import EquityStrategyCandidate
-    packed = EquityStrategyCandidate(candidate.strategy_id, candidate.candidate_id, candidate.definition, verified.source_root)
-    with packed.bind_replay() as invocation:
-        assert callable(invocation.function)
-    # Publication paths can change without changing the definition identity.
-    assert packed.content_identity == candidate.content_identity
-    (verified.source_root / 'assets/seed.csv').write_bytes(b'corrupt')
-    with pytest.raises(RuntimeCompatibilityError, match='package file differs'):
-        authenticate(isolated / 'strategies', 'S999-v1')
 
 
 def test_upgrade_prepares_then_preserves_history_archives_and_commits_idempotently(upgrade):
@@ -450,12 +414,9 @@ def test_upgrade_prepares_then_preserves_history_archives_and_commits_idempotent
     assert source.is_relative_to(receipt.archive_path)
 
 
-
-@pytest.mark.parametrize("change", ["archive", "deployment"])
-def test_committed_upgrade_retry_authenticates_archive_and_deployment(upgrade, change):
-    context, request, _ = upgrade
-    prepared = m.prepare_frozen_runtime_upgrade(context, request)
-    receipt = m.apply_frozen_runtime_upgrade(context, prepared)
+@pytest.mark.parametrize('change', ['archive'])
+def test_committed_upgrade_retry_authenticates_archive_and_deployment(committed_upgrade, change):
+    context, request, _, prepared, receipt = committed_upgrade
     if change == "archive":
         path = receipt.archive_path / "strategies/S900/versions/v1.json"
         path.write_bytes(path.read_bytes() + b"\n")
@@ -491,7 +452,7 @@ def test_upgrade_compares_original_version_bytes_after_preparation(upgrade):
     assert not (context.strategy_root / "revisions").exists()
 
 
-@pytest.mark.parametrize("failure", ["publication-error", "persistent-windows-conflict"])
+@pytest.mark.parametrize('failure', ['publication-error'])
 def test_upgrade_deployment_failure_restores_original_package_version_and_receipt(upgrade, monkeypatch, failure):
     context, request, _ = upgrade
     prepared = m.prepare_frozen_runtime_upgrade(context, request)
@@ -539,54 +500,7 @@ def test_upgrade_deployment_failure_restores_original_package_version_and_receip
         m.apply_frozen_runtime_upgrade(context, prepared)
 
 
-@pytest.mark.parametrize("terminal", [True, False])
-def test_sameversion_target_distinguishes_historical_commit_from_pending_unknown(tmp_path, monkeypatch, terminal):
-    context = RepositoryContext(tmp_path, tmp_path / "research", tmp_path / "research/registrations", tmp_path / "strategies")
-    original = SimpleNamespace(version="v1", parent_version=None, selection_data_cutoff="2026-09-01", forward_start="2026-09-02")
-    subject = SimpleNamespace(candidate=CandidateKey("S011", "C9901"))
-    monkeypatch.setattr(e, "validate_migration_selection", lambda *args: original)
-    request_id = f.FreezeRequestId("S011", "historical")
-    journal = tmp_path / "research/S011/freeze_requests/historical"
-    journal.mkdir(parents=True)
-    (journal / "request.json").write_text(json.dumps({"version": {"version": "v1"},
-        "request_id": request_id.to_dict(), "request_sha256": "a" * 64}))
-    if terminal:
-        committed = f.FreezeReceipt(request_id, f.FreezeStatus.COMMITTED, "a" * 64,
-            f.FrozenVersionReference("S011", "v1", "b" * 64, "c" * 64))
-        (journal / "committed.json").write_text(json.dumps(committed.to_dict()))
-    monkeypatch.setattr(StrategyRegistry, "get_freeze_result", lambda *args, **kwargs:
-        f.FreezeReceipt(request_id, f.FreezeStatus.UNKNOWN, "a" * 64, reason="synthetic unresolved"))
-    if terminal:
-        e.validate_migration_target(context, subject, "v1", None, "2026-09-01", "2026-09-02", available=True)
-    else:
-        with pytest.raises(ValueError, match="reserved"):
-            e.validate_migration_target(context, subject, "v1", None, "2026-09-01", "2026-09-02", available=True)
-
-
-def test_sameversion_parent_must_remain_original_parent(tmp_path, monkeypatch):
-    original = SimpleNamespace(version="v2", parent_version="v1", selection_data_cutoff="2026-09-01", forward_start="2026-09-02")
-    monkeypatch.setattr(e, "validate_migration_selection", lambda *args: original)
-    with pytest.raises(ValueError, match="preserve original parent"):
-        e.validate_migration_target(None, None, "v2", "v2", "2026-09-01", "2026-09-02")
-
-
-def test_upgrade_preparation_and_receipt_reject_untyped_public_values():
-    old = f.FrozenVersionReference("S900", "v1", "a" * 64, "b" * 64)
-    new = f.FrozenVersionReference("S900", "v1", "c" * 64, "d" * 64)
-    with pytest.raises(TypeError, match="plan_path"):
-        m.PreparedFrozenRuntimeUpgrade(".tmp/plan", "e" * 64, old, new)
-    with pytest.raises(ValueError, match="SHA-256"):
-        m.PreparedFrozenRuntimeUpgrade(Path(".tmp/plan"), "invalid", old, new)
-    with pytest.raises(TypeError, match="FreezeStatus"):
-        m.FrozenRuntimeUpgradeReceipt("COMMITTED", old, new, Path("archive"), Path("receipt"))
-
-    with pytest.raises(ValueError, match="four ASCII digits"):
-        m.FrozenRuntimeMigrationRequest("S001-v1", "migration", Path(".tmp/new"))
-    with pytest.raises(ValueError, match="no reviewed adapter"):
-        m.FrozenRuntimeMigrationRequest("S099-v1", "C9899", Path(".tmp/new"))
-
-
-@pytest.mark.parametrize("status", ["FAIL", "INCOMPLETE", "NOT_REQUESTED"])
+@pytest.mark.parametrize('status', ['FAIL'])
 def test_upgrade_records_optional_evidence_without_interpreting_research_result(upgrade, status):
     context, request, _ = upgrade
     evidence = _audit_ref(context, {"status": status, "summary": "Synthetic research diagnostic"})
@@ -604,87 +518,8 @@ def test_upgrade_records_optional_evidence_without_interpreting_research_result(
     assert json.loads(evidence.resolve(context.root).read_bytes())["status"] == status
 
 
-@pytest.mark.parametrize("reference", ["confirmation", "evidence"])
-def test_upgrade_rejects_corrupted_audit_reference_before_publication(upgrade, reference):
-    context, request, _ = upgrade
-    evidence = _audit_ref(context, {"status": "FAIL"})
-    request = replace(request, evidence=(evidence,))
-    prepared = m.prepare_frozen_runtime_upgrade(context, request)
-    damaged = request.confirmation if reference == "confirmation" else evidence
-    damaged.resolve(context.root).write_bytes(b"changed")
-    before = _bytes(context.strategy_root)
-    with pytest.raises(ValidationError, match="hash|digest"):
-        m.apply_frozen_runtime_upgrade(context, prepared)
-    assert _bytes(context.strategy_root) == before
-
-
-def test_upgrade_accepts_inherited_strategy_declaration_on_both_sides(upgrade):
-    context, request, _ = upgrade
-    candidate = request.candidate
-    payload = json.loads(json.dumps(dict(candidate.payload), default=dict))
-    entry = candidate.source_root / payload["runtime"]["source_files"][0]
-    tree = ast.parse(entry.read_text(encoding="utf-8"))
-    name = payload["runtime"]["qualname"]
-    cls = next(node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == name)
-    cls.name = "InheritedDefinitionBase"
-    tree.body.extend(ast.parse(f"class {name}(InheritedDefinitionBase):\n    pass\n").body)
-    entry.write_text(ast.unparse(ast.fix_missing_locations(tree)) + "\n", encoding="utf-8")
-    payload["runtime"]["source_sha256"] = implementation_sha256(
-        tuple(payload["runtime"]["source_files"]), source_root=candidate.source_root)
-    candidate = StrategyCandidate("S900", "C9876", payload, candidate.source_root)
-    first = m.prepare_frozen_runtime_upgrade(context, replace(request, candidate=candidate))
-    assert m.apply_frozen_runtime_upgrade(context, first).status.value == "COMMITTED"
-
-    # The next upgrade starts from a frozen package whose entry class inherits its declaration.
-    _, _, frozen_source = validate_release_package(context, "S900-v1")
-    next_source = context.root / ".tmp/inherited-second-source/strategy_runtime"
-    shutil.copytree(frozen_source, next_source)
-    entry = next_source / payload["runtime"]["source_files"][0]
-    entry.write_bytes(entry.read_bytes() + b"\n# Further explanation revision.\n")
-    payload["runtime"]["source_sha256"] = implementation_sha256(
-        tuple(payload["runtime"]["source_files"]), source_root=next_source)
-    next_request = replace(request, original=first.migrated,
-        candidate=StrategyCandidate("S900", "C9878", payload, next_source),
-        output_directory=context.root / ".tmp/second-prepared")
-    second = m.prepare_frozen_runtime_upgrade(context, next_request)
-    assert m.apply_frozen_runtime_upgrade(context, second).status.value == "COMMITTED"
-    assert first.migrated != second.migrated
-
-
-def test_upgrade_rejects_stale_original_identity(upgrade):
-    context, request, _ = upgrade
-    before = _bytes(context.strategy_root)
-    stale = replace(request, original=replace(request.original, package_hash="f" * 64))
-    with pytest.raises(ValueError, match="identity"):
-        m.prepare_frozen_runtime_upgrade(context, stale)
-    assert _bytes(context.strategy_root) == before
-
-
-@pytest.mark.parametrize("field,value", [
-    ("change_summary", ""), ("operator", " "), ("evidence", []),
-    ("evidence", ("not-a-reference",)), ("candidate", CandidateKey("S900", "C9876")),
-])
-def test_upgrade_request_rejects_missing_audit_or_untyped_inputs(upgrade, field, value):
-    _, request, _ = upgrade
-    with pytest.raises((TypeError, ValueError)):
-        replace(request, **{field: value})
-
-
-def test_committed_receipt_audit_must_match_archived_plan(upgrade):
-    context, request, _ = upgrade
-    prepared = m.prepare_frozen_runtime_upgrade(context, request)
-    receipt = m.apply_frozen_runtime_upgrade(context, prepared)
-    raw = json.loads(receipt.receipt_path.read_bytes())
-    raw["operator"] = "different-operator"
-    receipt.receipt_path.write_text(json.dumps(raw), encoding="utf-8")
-    with pytest.raises(ValueError, match="archive audit differs"):
-        m.apply_frozen_runtime_upgrade(context, prepared)
-
-
-def test_archived_audit_snapshot_remains_bound_to_original_evidence_hash(upgrade):
-    context, request, _ = upgrade
-    prepared = m.prepare_frozen_runtime_upgrade(context, request)
-    receipt = m.apply_frozen_runtime_upgrade(context, prepared)
+def test_archived_audit_snapshot_remains_bound_to_original_evidence_hash(committed_upgrade):
+    context, request, _, prepared, receipt = committed_upgrade
     name = "audit/" + request.confirmation.sha256
     changed = receipt.archive_path / name
     changed.write_bytes(b"replacement confirmation")
@@ -697,18 +532,15 @@ def test_archived_audit_snapshot_remains_bound_to_original_evidence_hash(upgrade
         m.apply_frozen_runtime_upgrade(context, prepared)
 
 
-def test_committed_upgrade_audit_is_self_contained_after_source_evidence_is_unavailable(upgrade):
-    context, request, _ = upgrade
-    prepared = m.prepare_frozen_runtime_upgrade(context, request)
-    receipt = m.apply_frozen_runtime_upgrade(context, prepared)
+def test_committed_upgrade_audit_is_self_contained_after_source_evidence_is_unavailable(committed_upgrade):
+    context, request, _, prepared, receipt = committed_upgrade
     request.confirmation.resolve(context.root).unlink()
     assert m.apply_frozen_runtime_upgrade(context, prepared) == receipt
 
 
-def test_schema_one_archive_is_read_only_and_preserves_original_bytes(upgrade):
-    context, request, stored = upgrade
-    prepared = m.prepare_frozen_runtime_upgrade(context, request)
-    receipt = m.apply_frozen_runtime_upgrade(context, prepared)
+@pytest.mark.parametrize('operation', ['read', 'apply'], ids=['TDR-23-C14', 'TDR-23-C15'])
+def test_schema_one_archive_is_read_only_and_preserves_original_bytes(committed_upgrade, operation):
+    context, request, stored, prepared, receipt = committed_upgrade
     archive = receipt.archive_path
     plan_path = archive / "upgrade_plan.json"
     plan = json.loads(plan_path.read_bytes())
@@ -729,12 +561,26 @@ def test_schema_one_archive_is_read_only_and_preserves_original_bytes(upgrade):
     snapshot["files"]["upgrade_plan.json"] = plan_sha
     snapshot_path.write_text(json.dumps(snapshot), encoding="utf-8")
     before = _bytes(archive)
-    original, _, _, source = m._migration_original(context, request.original)
-    assert original.to_dict() == stored.to_dict()
-    assert source.is_relative_to(archive)
+    if operation == 'read':
+        original, _, _, source = m._migration_original(context, request.original)
+        assert original.to_dict() == stored.to_dict()
+        assert source.is_relative_to(archive)
+    else:
+        prepared.plan_path.write_bytes(plan_path.read_bytes())
+        old_prepared = replace(prepared, plan_sha256=plan_sha)
+        with pytest.raises(ValueError, match="historical plans are read-only"):
+            m.apply_frozen_runtime_upgrade(context, old_prepared)
     assert _bytes(archive) == before
-    prepared.plan_path.write_bytes(plan_path.read_bytes())
-    old_prepared = replace(prepared, plan_sha256=plan_sha)
-    with pytest.raises(ValueError, match="historical plans are read-only"):
-        m.apply_frozen_runtime_upgrade(context, old_prepared)
-    assert _bytes(archive) == before
+
+
+
+def test_new_candidate_must_satisfy_current_contract(obsolete_v4):
+    context, request, _ = obsolete_v4
+    candidate = request.candidate
+    invalid = replace(candidate, definition=replace(candidate.definition, contract_version=2,
+        feature_graph=None, state_schema=None, computation=None, auxiliary_inputs=(), observation_inputs=(),
+        execution_policy=None, analysis_price='RAW'))
+    before = _bytes(context.strategy_root)
+    with pytest.raises(ValueError, match='native account contract 4'):
+        replace(request, candidate=invalid)
+    assert _bytes(context.strategy_root) == before

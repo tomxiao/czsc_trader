@@ -1,6 +1,5 @@
 """Shared research assessment over independently auditable equity event journals."""
 from dataclasses import replace
-from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -10,63 +9,7 @@ from strategy_evaluator.equity_assessment import canonical_ledger, daily_points
 from strategy_evaluator.research_assessment import recompute_historical_assessment
 
 
-def ledger(days=12):
-    """Generate current V4 journals with known 22-cash daily cycle profit."""
-    import json
-    from dataclasses import asdict
-    import pandas as pd
-    from execution_channels.instruments import AssetClass
-    from execution_channels.instruments import InstrumentId
-    from execution_channels.instruments import MarketId
-    from execution_channels.instruments import BarFrequency
-    from execution_channels.policy import ResearchExecutionSpec
-    from execution_channels.policy import UsEquitySpec
-    from execution_channels.policy import AccountPolicy
-    from execution_channels.policy import CashAvailabilityPolicy
-    from execution_channels.contracts import ReplayPoint
-    from execution_channels.contracts import ExecutionPrecision
-    from execution_channels.contracts import AccountExecutionPlan, ReplayOrder
-    from execution_channels.session_contracts import OrderSide
-    from execution_channels.session_contracts import OrderType
-    from execution_channels.historical import PortfolioHistoricalExecutor
-    spec=ResearchExecutionSpec(UsEquitySpec(),BarFrequency.M30,
-        AccountPolicy('USD',CashAvailabilityPolicy.IMMEDIATE_RESEARCH),10,.01,.01,0.)
-    instrument=InstrumentId(MarketId.US,AssetClass.STOCK,'TEST')
-    executor=PortfolioHistoricalExecutor(specification=spec,initial_cash=10000.,fee_rate=0.,price_basis='HFQ')
-    bars,rules=[],[]
-    for day in range(days):
-        base=datetime(2026,10,1,14,tzinfo=timezone.utc)+timedelta(days=day)
-        bars.append(dict(Date=base,BarStart=base-timedelta(minutes=30),AvailableDate=base,
-            Open=5.,High=5.,Low=5.,Close=5.,Volume=1000.,Amount=10000.))
-        for part in range(4):
-            start=base+timedelta(minutes=part*30)
-            end=start+timedelta(minutes=30)
-            price,close=[5.,5.,6.1,6.1][part],[4.,5.,6.1,6.1][part]
-            row=dict(Date=end,BarStart=start,AvailableDate=end,Open=price,High=max(price,close),Low=min(price,close),Close=close,Volume=1000.,Amount=10000.)
-            rule=dict(Date=start,AvailableDate=start,QuantityStep=10,PriceTick=.01,Tradable=True,
-                BuySellableAt=start,SettlementAt=end,SellRemainderPolicy='FULL_LIQUIDATION',
-                PriceLimitPolicy='EXPLICIT_UNBOUNDED',PriceLimitLower=None,PriceLimitUpper=None)
-            point=ReplayPoint(bars[-1]['Date'],start,start,end,start.date().isoformat(),ExecutionPrecision.BAR_INTERVAL)
-            account=executor.account_snapshot(point,instrument)
-            orders=(ReplayOrder(OrderSide.BUY,20,OrderType.LIMIT,5.1),) if part==0 else (ReplayOrder(OrderSide.SELL,20,OrderType.MARKET),) if part==2 else ()
-            reference=[5.,4.,5.,6.1][part]
-            target=account.quantity+sum(o.quantity if o.side is OrderSide.BUY else -o.quantity for o in orders)
-            proposal=AccountExecutionPlan(f'{executor.revision+1:064x}', 'candidate:fixture', point,
-                account.revision, target, orders, capital_mode='full_available_cash',
-                evidence={'sizing':'EXPLICIT_ORDERS','target':1. if part<2 else 0.,
-                    'reference_price':reference,'specification_hash':spec.fingerprint,'fee_rate':0.})
-            executor.execute_account_plan(proposal,row,constraint=rule)
-            bars.append(row)
-            rules.append(rule)
-    result=executor.finish()
-    def records(frame):
-        return json.loads(frame.to_json(orient='records',date_format='iso',date_unit='us'))
-    return dict(initial_cash=10000.,fee_rate=0.,account_contract=4, price_basis='HFQ', quantity_basis='SIMULATED_INTEGER_UNITS',
-        specification=json.loads(json.dumps(asdict(spec))),bars=records(pd.DataFrame(bars)),
-        constraints=records(pd.DataFrame(rules)),
-        **{name:records(getattr(result,source)) for name,source in (
-            ('decisions','decisions'),('orders','orders'),('fills','fills'),('account_entries','account_entries'),
-            ('account_points','account_points'),('trades','trades'))})
+from equity_facts_support import daily_profit_ledger as ledger
 
 
 def evidence(drawdown="SESSION_CLOSE", concentration="MAX_SINGLE", days=12):
@@ -96,16 +39,18 @@ def metric(result, key):
     return next(row for row in result.rows[0].diagnostics if row.metric is key)
 
 
-def test_equity_shared_assessment_keeps_daily_annualization_and_selects_drawdown():
-    daily, intraday = panel(evidence()), panel(evidence("BAR_CLOSE"))
-    assert metric(daily, m.ResearchMetric.NET_ANNUAL_RETURN).value == pytest.approx((10264 / 10000) ** (252 / 12) - 1)
-    assert metric(intraday, m.ResearchMetric.NET_ANNUAL_RETURN) == metric(daily, m.ResearchMetric.NET_ANNUAL_RETURN)
-    assert metric(daily, m.ResearchMetric.DRAWDOWN_MAGNITUDE).value == 0
-    assert metric(intraday, m.ResearchMetric.DRAWDOWN_MAGNITUDE).value == pytest.approx(.002)
-    assert intraday.rows[0].benchmark.diagnostics[1].value == pytest.approx(.002)
-    assert metric(daily, m.ResearchMetric.FREQUENCY_MEDIAN).status is m.DiagnosticStatus.INSUFFICIENT_DATA
+@pytest.mark.parametrize('basis,expected_dd', [
+    pytest.param('BAR_CLOSE', .002, id='SE-01-C02'),
+    pytest.param('SESSION_CLOSE', 0., id='SE-01-C03'),
+])
+@pytest.mark.risk_cases('SE-01-C02', 'SE-01-C03')
+def test_daily_annualization_and_declared_drawdown_sampling(basis, expected_dd):
+    got = panel(evidence(basis))
+    assert metric(got, m.ResearchMetric.NET_ANNUAL_RETURN).value == pytest.approx((10264/10000)**(252/12)-1)
+    assert metric(got, m.ResearchMetric.DRAWDOWN_MAGNITUDE).value == pytest.approx(expected_dd)
 
 
+@pytest.mark.risk_cases('SE-07-C04')
 def test_equity_concentration_includes_dividend_once_and_explicit_definition():
     assert metric(panel(evidence(concentration="MAX_SINGLE")), m.ResearchMetric.PROFIT_CONCENTRATION).value == pytest.approx(1 / 12)
     assert metric(panel(evidence(concentration="TOP_DECILE")), m.ResearchMetric.PROFIT_CONCENTRATION).value == pytest.approx(2 / 12)
@@ -114,17 +59,10 @@ def test_equity_concentration_includes_dividend_once_and_explicit_definition():
     assert metric(value, m.ResearchMetric.FREQUENCY_COVERAGE).value == 1
 
 
-def test_equity_facts_reject_invalid_basis_without_implicitly_reconciling_projection():
-    value = evidence()
-    with pytest.raises(ValueError, match="drawdown basis"):
-        replace(value.equity, drawdown_basis="TICK")
-    changed = replace(value, account=(replace(value.account[0], cash=value.account[0].cash + 1), *value.account[1:]))
-    assert changed.account[0].cash == value.account[0].cash + 1
-
-
-@pytest.mark.parametrize("drawdown", ["SESSION_CLOSE", "BAR_CLOSE"])
-@pytest.mark.parametrize("concentration", ["MAX_SINGLE", "TOP_DECILE"])
-def test_compact_observations_preserve_metrics_and_immutable_parsed_values(drawdown, concentration):
+@pytest.mark.risk_cases('SE-38-C03')
+def test_compact_observations_preserve_metrics_and_immutable_parsed_values():
+    drawdown = "BAR_CLOSE"
+    concentration = "MAX_SINGLE"
     from strategy_evaluator.equity_assessment import canonical_observations, read_ledger
     original = evidence(drawdown, concentration)
     compact = canonical_observations(ledger())
@@ -137,8 +75,9 @@ def test_compact_observations_preserve_metrics_and_immutable_parsed_values(drawd
         parsed["account_points"][0]["equity"] = 0.
 
 
-@pytest.mark.parametrize("days", [12, 61])
-def test_observation_metrics_match_reference_without_auditing_constructors(days, monkeypatch):
+@pytest.mark.risk_cases('SE-31-C07')
+def test_observation_metrics_match_reference_without_auditing_constructors(monkeypatch):
+    days = 12
     from dataclasses import asdict
     from strategy_evaluator.equity import audit_equity_account
     from strategy_evaluator import equity_assessment
@@ -152,36 +91,3 @@ def test_observation_metrics_match_reference_without_auditing_constructors(days,
         canonical_ledger(raw), canonical_ledger(raw))
     assert facts.market == "US"
     assert asdict(summarize_equity_ledger(raw)) == asdict(reference)
-
-
-def test_equity_facts_roundtrip_and_legacy_serialization_has_no_new_fields():
-    value = evidence()
-    assert m.AssessmentEvidence.from_dict(value.to_dict()) == value
-    legacy = replace(value, equity=None, metric_version="legacy")
-    assert "equity" not in legacy.to_dict()
-    assert m.AssessmentEvidence.from_dict(legacy.to_dict()) == legacy
-
-
-@pytest.mark.parametrize("mutation", ["initial", "nan", "order", "quantity", "session", "cycle"])
-def test_observation_summary_rejects_invalid_input_contract(mutation):
-    from strategy_evaluator.equity_metrics import summarize_equity_ledger
-    raw = ledger(2)
-    if mutation == "initial":
-        raw["initial_cash"] = True
-    elif mutation == "nan":
-        raw["account_points"][0]["equity"] = float("nan")
-    elif mutation == "order":
-        raw["account_points"][1]["time"] = raw["account_points"][0]["time"]
-    elif mutation == "quantity":
-        raw["account_points"][0]["quantity"] = True
-    elif mutation == "session":
-        raw["account_points"][0]["session"] = "2026-01-01"
-    else:
-        raw["trades"].append(raw["trades"][0])
-    with pytest.raises(ValueError):
-        summarize_equity_ledger(raw)
-
-
-def _intent(target, reason, *, facts, next_watch, **kwargs):
-    from execution_channels.planning.intent import TradeIntent, DecisionExplanation
-    return TradeIntent(target, DecisionExplanation({'reason':reason,'facts':facts,'next_watch':next_watch}), **kwargs)

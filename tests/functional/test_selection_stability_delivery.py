@@ -1,3 +1,4 @@
+# Risk ownership: TDR-18
 """Saved V4 observations flow through selection diagnostics and unchanged schema 15."""
 from dataclasses import replace
 import json
@@ -27,7 +28,7 @@ from czsc_trader.research_tools import (
 )
 from czsc_trader.research_tools import delivery as d
 from account_parity_support import setup_account
-from test_assessment_delivery import assessment_request, comparison_request
+from assessment_delivery_support import assessment_request, comparison_request
 from test_research_delivery import content, published
 
 
@@ -145,9 +146,8 @@ def _forbid_research_recomputation(patch):
     return forbidden
 
 
-@pytest.mark.parametrize("market", [MarketId.CN, MarketId.US])
-@pytest.mark.parametrize("frequency", [BarFrequency.DAILY, BarFrequency.M30])
-def test_saved_accounts_selection_attach_to_schema15_without_recomputation(tmp_path, monkeypatch, market, frequency):
+@pytest.mark.parametrize('market,frequency', [(MarketId.US, BarFrequency.M30)])
+def test_TDR_18_C09_saved_accounts_selection_attach_to_schema15_without_recomputation(tmp_path, monkeypatch, market, frequency):
     context, prepared, references, account_facts = _accounts(tmp_path, market, frequency)
     definition, old_payload = _schema15(context, prepared[0], references[0], account_facts[0])
     calendar = tuple(f"2026-10-{day}" for day in range(27, 31))

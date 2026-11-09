@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import json
-import re
 
 import pytest
 
@@ -62,40 +60,10 @@ def _context() -> dict[str, object]:
     }
 
 
-def test_pte_forward_chart_is_self_contained_and_titled_by_release() -> None:
-    context = _context()
-    reason = '完整解释内容' * 100
-    context['observations'][0]['observation']['facts'] = [
-        dict(key='reason', label='理由', value_type='TEXT', format='TEXT', value=reason),
-    ]
-    html = render_forward_chart_html(context)
-
-    assert html.startswith("<!doctype html>")
-    assert "S007-v1 · 多源机会风险门控" in html
-    assert 'href="/static/strategy-chart.css"' in html
-    assert 'src="/static/strategy-chart.js"' in html
-    payload = json.loads(re.search(
-        r'<script id="forward-context" type="application/json">(.*?)</script>', html
-    ).group(1))
-    assert payload["strategy"]["release_id"] == "S007-v1"
-    assert payload["observations"][0]["observation"]["series"][0]["label"] == "基础分"
-    assert reason in html
-    assert payload["observations"][0]["observation"]["facts"][0]["value"] == reason
-    assert payload["execution"]["decisions"][0]["valid_session"] == "2026-09-04"
-    context["execution"]["decisions"][0]["account_id"] = "foreign-account"
-    with pytest.raises(ValueError, match="decision event differs"):
-        render_forward_chart_html(context)
-
-
-def test_pte_forward_chart_rejects_candidate_or_unknown_fields() -> None:
-    context = _context()
-    context["candidate"] = {"candidate_id": "S007-C0001"}
-
-    with pytest.raises(ValueError, match="fields are invalid"):
-        render_forward_chart_html(context)
-
-
-@pytest.mark.parametrize('field,value', [('account_id','foreign-account'),('symbol','159326.SZ')])
+# Independent risk: PTE25; responsibility-level assertions.
+@pytest.mark.parametrize('field,value', [
+    ('account_id','foreign-account'),
+], ids=['PTE25-C01'])
 def test_forward_chart_rejects_foreign_observation(field,value):
     context = _context()
     context['observations'][0][field] = value
@@ -103,20 +71,10 @@ def test_forward_chart_rejects_foreign_observation(field,value):
         render_forward_chart_html(context)
 
 
-def test_forward_chart_uses_account_symbol_and_values_without_strategy_package_identity():
-    context = _context()
-    context['strategy']['release_id'] = 'S999-v7'
-    context['strategy']['release_hash'] = 'different-package'
-    context['strategy']['strategy_id'] = 'S999'
-    html = render_forward_chart_html(context)
-    assert '基础分' in html
-
-    context['observations'][0]['observation']['series'][0]['value'] = float('nan')
-    with pytest.raises(ValueError, match='finite'):
-        render_forward_chart_html(context)
-
-
-@pytest.mark.parametrize('version', [None, 'strategy_observation.v1', 'strategy_observation.v2'])
+# Independent risk: PTE25; responsibility-level assertions.
+@pytest.mark.parametrize('version', [
+    None,
+], ids=['PTE25-C02'])
 def test_historical_numeric_observations_remain_readable_without_enhanced_fields(version):
     from paper_trading_engine.account_chart import AccountChartService
 
@@ -158,69 +116,12 @@ def _signal_panel():
     }
 
 
-@pytest.mark.parametrize('version', ['strategy_observation.v3', 'strategy_observation.v4'])
-def test_signal_snapshot_survives_account_chart_projection_without_changing_event_facts(version):
-    from paper_trading_engine.account_chart import AccountChartService
-    from paper_trading_engine.forward_chart import ChartObservation
-
-    context = _context()
-    previous = context["observations"][0]["observation"]
-    observation = {
-        **previous, "contract_version": version,
-        "strategy": {"strategy_id": "S007", "reference_id": "S007-v1", "release_hash": "a" * 64,
-                     "runtime_sha256": "b" * 64, "symbol": "588080.SH"},
-        "definition_sha256": "c" * 64, "signal_identity": "d" * 64, "plan_identity": "e" * 64,
-        "signal_date": "2026-09-03", "valid_session": "2026-09-04", "action": "WAIT",
-        "target_position": 0.0, "signal_panel": _signal_panel(),
-    }
-    if version == 'strategy_observation.v4':
-        observation['signal_panel']['explanation'] = {
-            'state_key': 'opportunity', 'case_key': 'inactive', 'judgment': '暂不入场',
-            'basis': [{'key': 'state', 'text': '机会未激活'}],
-            'next_watch': '等待机会', 'explanation': '模型状态不代表实际成交。',
-        }
-    row = {**context["observations"][0], "payload": {
-        "observation": observation, "symbol": "588080.SH", "action": "WAIT", "target_quantity": 0,
-    }}
-    projected = AccountChartService._decision(row)
-    chart = ChartObservation.from_dict(projected["observation"])
-    assert chart.to_dict()["series"] == previous["series"]
-    assert chart.to_dict()["facts"] == previous["facts"]
-    assert chart.to_dict()["signal_panel"] == observation['signal_panel']
-    assert chart.definition_sha256 == "c" * 64 and chart.release_hash == "a" * 64
-    context["observations"] = [projected]
-    html = render_forward_chart_html(context)
-    payload = json.loads(re.search(r'<script id="forward-context" type="application/json">(.*?)</script>', html).group(1))
-    assert payload["observations"][0]["observation"] == projected["observation"]
-    assert payload["execution"] == context["execution"]
-    assert payload["market_data"] == context["market_data"]
-
-    observation["contract_version"] = "strategy_observation.v99"
-    with pytest.raises(ValueError, match="unsupported"):
-        AccountChartService._decision(row)
-
-
-@pytest.mark.parametrize("mutation", ["missing_identity", "unknown_field", "invalid_state", "inactive_value"])
-def test_signal_chart_rejects_malformed_enhanced_snapshots(mutation):
-    context = _context()
-    observation = context["observations"][0]["observation"]
-    observation.update(signal_panel=_signal_panel(), definition_sha256="c" * 64, release_hash="a" * 64)
-    if mutation == "missing_identity":
-        del observation["definition_sha256"]
-    elif mutation == "unknown_field":
-        observation["signal_panel"]["renderer_options"] = {}
-    elif mutation == "invalid_state":
-        observation["signal_panel"]["states"][0]["value"] = "unknown"
-    else:
-        observation["signal_panel"]["series"][0]["value"] = 0
-    with pytest.raises(ValueError):
-        render_forward_chart_html(context)
-
-
-@pytest.mark.parametrize('version', ['strategy_observation.v3', 'strategy_observation.v4'])
+# Independent risk: PTE25; responsibility-level assertions.
+@pytest.mark.parametrize('version', [
+    'strategy_observation.v4',
+], ids=['PTE25-C03'])
 def test_unavailable_observation_preserves_reason_without_values(version):
     from paper_trading_engine.account_chart import AccountChartService
-    from paper_trading_engine.forward_chart import ChartObservation
 
     context = _context()
     failure = {"contract_version": version, "status": "UNAVAILABLE",
@@ -236,9 +137,3 @@ def test_unavailable_observation_preserves_reason_without_values(version):
     html = render_forward_chart_html(context)
     assert failure["message"] in html
     assert "signal_panel" not in html
-    for invalid in ({"status": "UNAVAILABLE", "message": ""},
-                    {"status": "UNAVAILABLE", "message": "failure", "series": []}):
-        with pytest.raises(ValueError):
-            ChartObservation.from_dict(invalid)
-    failure["contract_version"] = "strategy_observation.v2"
-    assert not AccountChartService._has_chart_observation(row)

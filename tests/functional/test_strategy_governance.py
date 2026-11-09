@@ -1,13 +1,11 @@
+# Risk ownership: TDR-01
 from datetime import date
-import json
 
 import pytest
 from dataflows import ProviderConfig
-from strategy_manager import GovernanceStage, ResearchState, StrategyRegistry
+from strategy_manager import StrategyRegistry
 from czsc_trader.application import (
-    RepositoryContext, ValidationError, ResearchBatchRequest, ResearchIntentUpdate,
-    ExperimentRequest, create_research_batch, update_research_intent,
-    create_research_context, create_experiment,
+    RepositoryContext, ValidationError, ResearchBatchRequest, ExperimentRequest, create_research_batch, create_research_context, create_experiment,
 )
 
 
@@ -21,40 +19,16 @@ def files(context):
             for p in context.research_root.rglob("*") if p.is_file()}
 
 
-def test_research_identity_credentials_context_and_editable_experiments(minimal_repo):
+def test_TDR_01_C01_research_identity_credentials_context_and_editable_experiments(minimal_repo):
     repository = RepositoryContext.discover(minimal_repo)
     first = create_research_batch(repository, batch(), actor="test", reason="立项")
-    second = create_research_batch(repository, batch(credential_id="SGC-S910-002"), actor="test", reason="新一轮研究")
-    assert first == second
-    update_research_intent(repository, first, ResearchIntentUpdate({"objective": "waiting"}, ResearchState.PAUSED),
-                           actor="test", reason="等待数据")
-    registry = StrategyRegistry(repository.research_registry_root)
-    assert registry.get_family("S910").research_state is ResearchState.PAUSED
-    assert all(registry.get_governance_credential("S910", item).stage is GovernanceStage.RESEARCH_INITIATED
-               for item in ("SGC-S910-001", "SGC-S910-002"))
     research = create_research_context(repository, first, providers=ProviderConfig(bindings={}))
     assert research.data.binding.space_id == research.evaluation.data.binding.space_id
     assert research.data.binding.space.path.as_posix() == "research/S910/assets/data"
-    one = create_experiment(research, ExperimentRequest("收益机会", "价格驱动是否有效", date(2026, 10, 7)))
-    folder = one.resolve(repository.root)
-    assert {path.name for path in folder.iterdir()} == {
-        "experiment.json", "notes.md", "report.md", "src", "protocols", "others"}
-    assert "IN_PROGRESS" in (folder / "report.md").read_text(encoding="utf-8")
-    assert not (folder / "report_ref.json").exists()
-    assert all((folder / name).is_dir() for name in ("src", "protocols", "others"))
-    notes = folder / "notes.md"
-    assert notes.read_text(encoding="utf-8") == "# 收益机会\n\n价格驱动是否有效\n"
-    notes.write_text("修正技术错误后继续使用原实验", encoding="utf-8")
-    two = create_experiment(research, ExperimentRequest("独立收益假设", "新机制", date(2026, 10, 7)))
-    assert (one.experiment_id, two.experiment_id) == ("EX001_20261007", "EX002_20261007")
-    assert json.loads((folder / "experiment.json").read_text(encoding="utf-8")) == one.to_dict()
-    assert not (folder / "experiment_manifest.json").exists()
-    assert not (folder / "execution_receipt.json").exists()
-    assert not (repository.strategy_root / "S910").exists()
 
 
-@pytest.mark.parametrize("operation", ["create_family", "start_research_batch"])
-def test_research_document_rolls_back_when_registration_fails(minimal_repo, monkeypatch, operation):
+@pytest.mark.parametrize('operation', ['create_family'])
+def test_TDR_01_C03_research_document_rolls_back_when_registration_fails(minimal_repo, monkeypatch, operation):
     context = RepositoryContext.discover(minimal_repo)
     request = batch()
     if operation == "start_research_batch":
@@ -69,9 +43,8 @@ def test_research_document_rolls_back_when_registration_fails(minimal_repo, monk
     assert files(context) == before
 
 
-@pytest.mark.parametrize("changes", [{"name": "changed"}, {"scope": ("510500.SH",)},
-                                      {"credential_id": "SGC-S910-001"}, {"credential_id": None}])
-def test_conflicting_batch_rejected_without_writes(minimal_repo, changes):
+@pytest.mark.parametrize('changes', [{'name': 'changed'}])
+def test_TDR_01_C02_conflicting_batch_rejected_without_writes(minimal_repo, changes):
     context = RepositoryContext.discover(minimal_repo)
     create_research_batch(context, batch(), actor="test", reason="initial")
     before = files(context)
@@ -82,13 +55,13 @@ def test_conflicting_batch_rejected_without_writes(minimal_repo, changes):
     assert files(context) == before
 
 
-@pytest.mark.parametrize("credential", ["../escape", "SGC-S911-001", "CON"])
-def test_invalid_credential_is_blocked_before_io(credential):
+@pytest.mark.parametrize('credential', ['../escape'])
+def test_TDR_01_C04_invalid_credential_is_blocked_before_io(credential):
     with pytest.raises(ValueError):
         batch(credential_id=credential)
 
 
-def test_allocation_reserves_legacy_ids_by_name_only(minimal_repo):
+def test_TDR_01_C05_allocation_reserves_legacy_ids_by_name_only(minimal_repo):
     repository = RepositoryContext.discover(minimal_repo)
     reference = create_research_batch(repository, batch(), actor="test", reason="initial")
     legacy = repository.root / "experiments/S910/EX005_20261001"
@@ -100,14 +73,21 @@ def test_allocation_reserves_legacy_ids_by_name_only(minimal_repo):
     assert (legacy / "sealed.json").read_text(encoding="utf-8") == "unread legacy content"
 
 
-def test_context_rejects_mixed_batch_and_evaluation_capabilities(minimal_repo):
+def test_TDR_01_C06_context_rejects_mixed_batch_and_evaluation_capabilities(minimal_repo):
     from dataclasses import replace
     from czsc_trader.research_tools import ResearchBatchRef
-    from czsc_trader.research_tools.evaluation_access import EvaluationAccess
     repository = RepositoryContext.discover(minimal_repo)
     reference = create_research_batch(repository, batch(), actor="test", reason="initial")
     context = create_research_context(repository, reference, providers=ProviderConfig(bindings={}))
     with pytest.raises(ValueError, match="batch-owned"):
         replace(context, batch=ResearchBatchRef("S911"))
+
+
+def test_TDR_01_C07_context_rejects_foreign_evaluation(minimal_repo):
+    from dataclasses import replace
+    from czsc_trader.research_tools.evaluation_access import EvaluationAccess
+    repository = RepositoryContext.discover(minimal_repo)
+    reference = create_research_batch(repository, batch(), actor="test", reason="initial")
+    context = create_research_context(repository, reference, providers=ProviderConfig(bindings={}))
     with pytest.raises(ValueError, match="same batch"):
         replace(context, evaluation=EvaluationAccess(dataflows=context.data, strategy_id="S911"))

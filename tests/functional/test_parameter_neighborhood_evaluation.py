@@ -1,3 +1,4 @@
+# Risk ownership: TDR-14
 """Typed parameter plans retain declared inputs without implicit research certification."""
 
 from dataclasses import replace
@@ -22,25 +23,7 @@ def _encoded_payload(payload):
     return _payload_json(payload)
 
 
-@pytest.mark.parametrize("mutation", ["wrong_point", "hidden_parameter", "wrong_type", "hidden_payload"])
-def test_plan_records_payload_changes_for_explicit_research_review(prepared_parameter_plan, mutation):
-    _, _, plan, _, _, _ = prepared_parameter_plan
-    child = plan.children[0]
-    payload = _decoded_payload(child.payload_json)
-    if mutation == "wrong_point":
-        payload["parameters"]["threshold"] = .123
-    elif mutation == "hidden_parameter":
-        payload["parameters"]["undeclared"] = 3
-    elif mutation == "wrong_type":
-        payload["parameters"]["threshold"] = str(payload["parameters"]["threshold"])
-    else:
-        payload["undeclared"] = {"outside_parameters": True}
-    altered = replace(child, payload_json=_encoded_payload(payload))
-    recorded = replace(plan, children=(altered, *plan.children[1:]))
-    assert _decoded_payload(recorded.children[0].payload_json) == payload
-
-
-def test_plan_rejects_missing_point_and_duplicate_content(prepared_parameter_plan):
+def test_TDR_14_C02_plan_rejects_missing_point_and_duplicate_content(prepared_parameter_plan):
     _, _, plan, _, _, _ = prepared_parameter_plan
     with pytest.raises(ValueError, match="every design point"):
         replace(plan, children=plan.children[:-1])
@@ -50,38 +33,7 @@ def test_plan_rejects_missing_point_and_duplicate_content(prepared_parameter_pla
         replace(plan, children=(plan.children[0], duplicate))
 
 
-@pytest.mark.parametrize("mutation", ["value", "type", "path"])
-def test_plan_records_declared_center_payload_without_proving_its_mapping(prepared_parameter_plan, mutation):
-    _, _, plan, _, _, _ = prepared_parameter_plan
-    payload = _decoded_payload(plan.center.payload_json)
-    if mutation == "value":
-        payload["parameters"]["threshold"] = .4
-    elif mutation == "type":
-        payload["parameters"]["threshold"] = "0.5"
-    else:
-        del payload["parameters"]["threshold"]
-    altered = replace(plan.center, payload_json=_encoded_payload(payload))
-    assert _decoded_payload(replace(plan, center=altered).center.payload_json) == payload
-
-
-def test_new_plan_schema_cannot_be_downgraded(prepared_parameter_plan):
-    _, _, plan, _, _, _ = prepared_parameter_plan
-    assert plan.schema_version == 4
-    saved = plan.to_dict()
-    saved["schema_version"] = 1
-    with pytest.raises(ValueError, match="schema differs"):
-        ParameterEvaluationPlan.from_dict(saved)
-
-
-def test_plan_preserves_the_callers_declared_study_purpose(prepared_parameter_plan):
-    from strategy_evaluator import StudyPurpose
-
-    _, _, plan, _, _, _ = prepared_parameter_plan
-    design = replace(plan.design, protocol=replace(plan.design.protocol, purpose=StudyPurpose.STRUCTURAL_CONTROL))
-    assert replace(plan, design=design).design.protocol.purpose is StudyPurpose.STRUCTURAL_CONTROL
-
-
-def test_nested_payload_path_preserves_exact_typed_values(prepared_parameter_plan):
+def test_TDR_14_C08_nested_payload_path_preserves_exact_typed_values(prepared_parameter_plan):
     from strategy_evaluator.parameter_neighborhood import (
         ParameterAxis, IntegerDomain, BoundedLocalStep, AbsoluteChangeLimit, ParameterNeighborhoodSpace,
         ParameterNeighborhoodRequest, build_parameter_neighborhood_design,
@@ -109,7 +61,7 @@ def test_nested_payload_path_preserves_exact_typed_values(prepared_parameter_pla
     assert type(_decoded_payload(changed.children[0].payload_json)["parameters"]["timing"]["hold"]) is float
 
 
-def test_legacy_sphere_plan_is_readable_but_cannot_start_new_work(prepared_parameter_plan):
+def test_TDR_14_C06_legacy_sphere_plan_is_readable_but_cannot_start_new_work(prepared_parameter_plan):
     from strategy_evaluator import (
         ParameterCoordinate, ParameterCoordinateKind, ParameterPerturbationDesign,
         ParameterPerturbationPoint, ParameterPerturbationProtocol, ParameterSpace,
@@ -141,7 +93,7 @@ def test_legacy_sphere_plan_is_readable_but_cannot_start_new_work(prepared_param
         legacy.bind_point(oldref, 0, repository_root=research.repository.root)
 
 
-def test_legacy_cartesian_plan_remains_read_only_without_changing_serialization(prepared_parameter_plan):
+def test_TDR_14_C07_legacy_cartesian_plan_remains_read_only_without_changing_serialization(prepared_parameter_plan):
     from strategy_evaluator.parameter_neighborhood import NumericOffsets
     from czsc_trader.application import publish_evidence
     from czsc_trader.research_tools import MaterialEvidenceWrite

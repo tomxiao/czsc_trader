@@ -5,11 +5,9 @@ import sqlite3
 
 import pandas as pd
 import pytest
-from ohlcv_test_support import ohlcv_fixture_metadata
 
 from dataflows import (
     DataRequest,
-    DataTemporalContract,
     PreparePolicy,
     EvidenceParameters,
     DataStatus,
@@ -17,8 +15,7 @@ from dataflows import (
     IncompleteDataError,
     SourceNotReadyError,
 )
-from dataflows.errors import EmptyDataError
-from dataflows import tushare_common
+from dataflows.errors import EmptyDataError, DataContractError, SourceRequestError
 
 
 def _frame() -> pd.DataFrame:
@@ -39,282 +36,119 @@ def _request(dataset: str | Dataset = Dataset.ETF_OHLCV) -> DataRequest:
     return DataRequest(dataset, "588080.SH", "2026-09-14", "2026-09-15", "2026-09-15")
 
 
-def test_ready_result_has_stable_identity_and_detached_data(flow_factory, publish_data) -> None:
-    source = _frame()
-    metadata = {"vendor": "test", **ohlcv_fixture_metadata(source, start="2026-09-14", end="2026-09-15")}
-    dataflows = flow_factory({Dataset.ETF_OHLCV.value: lambda request: (source, metadata)})
-
-    first = publish_data(dataflows, _request())
-    second = publish_data(dataflows, _request())
-
-    assert first.status is DataStatus.READY
-    assert first.ready
-    assert first.identity is not None
-    assert first.identity.source == "test"
-    assert first.identity.data_cutoff == "2026-09-15T00:00:00"
-    assert first.identity.metadata["source_time_field"] == "Date"
-    assert first.identity.metadata["availability_time_field"] == "Date"
-    assert first.identity.metadata["source_calendar"] == "SOURCE_NATIVE"
-    assert first.identity.metadata["available_at"] == "SOURCE_PERIOD_CLOSE"
-    assert first.identity.metadata["request_range_policy"] == "EXACT"
-    assert first.identity.metadata["primary_key"] == ["Date"]
-    assert first.identity.primary_key == ("Date",)
-    assert first.identity.temporal_contract == DataTemporalContract(
-        "Date", "Date", "SOURCE_NATIVE", "SOURCE_PERIOD_CLOSE", "EXACT",
-    )
-    assert first.identity.content_sha256 == second.identity.content_sha256
-    first.dataframe.loc[0, "Close"] = 99
-    assert source.loc[0, "Close"] == 1.1
-
-
-@pytest.mark.parametrize("key", [[], "Date", ["Date", "Date"], ["Date", "Symbol"], None])
-def test_table_publication_rejects_invalid_product_primary_key(flow_factory, publish_data, key):
-    frame = pd.DataFrame({"Date": ["2026-09-15"], "OvernightRate": [1.0]})
-    flows = flow_factory({Dataset.SHIBOR_DAILY: lambda _: (frame, {"primary_key": key})})
-    result = publish_data(flows, DataRequest(Dataset.SHIBOR_DAILY, None, "2026-09-15", "2026-09-15", None))
-    assert result.status is DataStatus.FAILED
-    assert "primary key" in result.error.message
-
-
-@pytest.mark.parametrize('dataset,symbol,column,frequency', [
-    (Dataset.INDEX_CONSTITUENT_WEIGHT, '000905.SH', 'ConstituentSymbol', 'snapshot'),
-    (Dataset.STOCK_MONEYFLOW, '600000.SH', 'Symbol', 'daily'),
-])
-def test_retained_panel_without_key_metadata_uses_exact_product_contract(dataset, symbol, column, frequency):
-    from dataflows.facade import _date_bounds
-    from dataflows.errors import DataContractError
-    frame = pd.DataFrame({'Date': ['2026-09-15'] * 2, column: ['600000.SH', '600001.SH']})
-    request = DataRequest(dataset, symbol, '2026-09-15', '2026-09-15', None, frequency=frequency)
-    metadata = {}
-    assert _date_bounds(frame, request, metadata) == ('2026-09-15T00:00:00', '2026-09-15T00:00:00')
-    assert metadata == {}
-    with pytest.raises(DataContractError, match='duplicate primary keys'):
-        _date_bounds(pd.concat([frame, frame.iloc[[0]]]), request, metadata)
-    with pytest.raises(DataContractError, match='missing primary-key values'):
-        _date_bounds(frame.assign(**{column: None}), request, metadata)
-
-
-@pytest.mark.parametrize("field", ["source_time_field", "availability_time_field"])
-def test_ready_result_validates_declared_source_time_metadata(clone_published_flow, publish_data, field) -> None:
-    frame = pd.DataFrame({"Date": ["2026-09-15"], "OvernightRate": [1.0]})
-    metadata = {"vendor": "test", "source_time_field": "Date", "availability_time_field": "Date"}
-    request = DataRequest(Dataset.SHIBOR_DAILY, None, "2026-09-15", "2026-09-15", None)
-    flows, baseline = clone_published_flow("source-time", {
-        Dataset.SHIBOR_DAILY: lambda _: (frame, metadata),
-    }, request)
-    metadata[field] = "Missing"
-    result = publish_data(flows, request)
-    assert result.status is DataStatus.FAILED
-    assert result.error.code == "DATA_CONTRACT_MISMATCH"
-    assert result.error.context[field] == "Missing"
-    assert result.error.message == f"provider {'source' if field == 'source_time_field' else 'availability'} time field is unavailable"
-    assert flows.fetch(request, prepared=baseline.prepared).identity == baseline.identity
-
-
-def test_tushare_pro_client_does_not_persist_global_token(monkeypatch) -> None:
-    observed: dict[str, str] = {}
-
-    monkeypatch.setenv("TUSHARE_TOKEN", "test-token")
-    monkeypatch.setattr(
-        tushare_common.ts,
-        "set_token",
-        lambda token: (_ for _ in ()).throw(AssertionError("Pro client must not persist tk.csv")),
-    )
-    monkeypatch.setattr(
-        tushare_common,
-        "_TusharePro",
-        lambda token: observed.setdefault("token", token),
-    )
-
-    client = tushare_common.get_tushare_pro()
-
-    assert client == "test-token"
-    assert observed == {"token": "test-token"}
-
-
-def test_unknown_dataset_is_rejected_at_construction() -> None:
-    with pytest.raises(ValueError):
-        _request("unknown.dataset")
-
-
-def test_provider_states_are_not_reported_as_ready(flow_factory, publish_data) -> None:
-    def waiting(request: DataRequest):
-        raise SourceNotReadyError("daily source has not been published", available_at="20:30")
-
-    def incomplete(request: DataRequest):
-        raise IncompleteDataError("one dependency is missing", dependency="shibor")
-
-    waiting_result = publish_data(flow_factory({Dataset.ETF_OHLCV.value: waiting}), _request())
-    incomplete_result = publish_data(flow_factory({Dataset.ETF_OHLCV.value: incomplete}), _request())
-
-    assert waiting_result.status is DataStatus.WAITING_SOURCE
-    assert waiting_result.error is not None and waiting_result.error.retryable
-    assert waiting_result.dataframe.empty
-    assert incomplete_result.status is DataStatus.INCOMPLETE
-    assert incomplete_result.error is not None
-    assert incomplete_result.error.context["dependency"] == "shibor"
-
-
-def test_legacy_empty_error_remains_value_error_and_maps_to_empty(flow_factory, publish_data) -> None:
-    def empty(request: DataRequest):
-        raise EmptyDataError("vendor returned no data")
-
-    error = EmptyDataError("vendor returned no data")
-    result = publish_data(flow_factory({Dataset.ETF_OHLCV.value: empty}), _request())
-
-    assert isinstance(error, ValueError)
-    assert result.status is DataStatus.EMPTY
-    assert result.error is not None and result.error.code == "EMPTY_DATA"
-
-
-def test_out_of_boundary_data_fails_contract(flow_factory, publish_data) -> None:
-    frame = _frame()
-    frame.loc[1, "Date"] = "2026-09-16"
-    result = publish_data(flow_factory(
-        {Dataset.ETF_OHLCV.value: lambda request: (frame, {"vendor": "test"})}
-    ), _request())
-
-    assert result.status is DataStatus.FAILED
-    assert result.error is not None
-    assert result.error.code == "DATA_CONTRACT_MISMATCH"
-
-
-def test_facade_blocks_semantically_invalid_ohlcv_before_ready(flow_factory, publish_data, tmp_path) -> None:
-    frame = _frame()
-    frame.loc[1, "High"] = 0.5
-    calls = []
-    metadata = {"vendor": "test", **ohlcv_fixture_metadata(_frame(), start="2026-09-14", end="2026-09-15")}
+@pytest.mark.parametrize(
+    "error_type,status",
+    [
+        (SourceNotReadyError, DataStatus.WAITING_SOURCE),
+        (EmptyDataError, DataStatus.EMPTY),
+        (IncompleteDataError, DataStatus.INCOMPLETE),
+        (DataContractError, DataStatus.FAILED),
+        (SourceRequestError, DataStatus.FAILED),
+    ],
+    ids=["DFLS-04-C01", "DFLS-04-C02", "DFLS-04-C03", "DFLS-04-C04", "DFLS-04-C05"],
+)
+def test_public_prepare_preserves_error_semantics_without_publication(
+    flow_factory, tmp_path, error_type, status
+):
+    failure = error_type("source rejected", missing_date="2026-09-15")
+    if error_type is EmptyDataError:
+        assert isinstance(failure, ValueError)
 
     def provider(request):
-        calls.append(request)
-        return frame, metadata
+        raise failure
 
-    flows = flow_factory({Dataset.ETF_OHLCV: provider})
-    result = publish_data(flows, _request())
-    assert result.status is DataStatus.FAILED
-    assert result.error.code == "DATA_CONTRACT_MISMATCH"
-    with sqlite3.connect(tmp_path / "space-0" / "assets.sqlite3") as connection:
-        assert [connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
-                for table in ("assets", "asset_lookup", "preparations")] == [0, 0, 0]
-    frame.loc[1, "High"] = 1.3
-    recovered = flows.prepare((_request(),), policy=PreparePolicy.REUSE)
-    assert recovered.ready and len(calls) == 2
-    assert flows.fetch(_request(), prepared=recovered.reference).dataframe.High.tolist() == [1.2, 1.3]
+    request = DataRequest(Dataset.SHIBOR_DAILY, None, "2026-09-15", "2026-09-15", None)
+    flow = flow_factory({Dataset.SHIBOR_DAILY: provider})
+    result = flow.prepare((request,), policy=PreparePolicy.REFRESH)
+    assert not result.ready and result.reference is None
+    (item,) = result.items
+    assert item.status is status and item.identity is None
+    assert (item.error.code, item.error.retryable) == (failure.code, failure.retryable)
+    assert item.error.context["missing_date"] == "2026-09-15"
+    with sqlite3.connect(tmp_path / "space-0/assets.sqlite3") as connection:
+        assert connection.execute("SELECT COUNT(*) FROM assets").fetchone()[0] == 0
+        assert connection.execute("SELECT COUNT(*) FROM asset_lookup").fetchone()[0] == 0
+        assert connection.execute("SELECT COUNT(*) FROM preparations").fetchone()[0] == 0
 
 
-def test_facade_blocks_invalid_calendar_before_ready(flow_factory, publish_data) -> None:
-    calendar = pd.DataFrame({"Date": ["2026-09-14", "2026-09-15"], "IsOpen": [1, 2]})
-    request = DataRequest(
-        Dataset.TRADING_CALENDAR,
-        "SSE",
-        "2026-09-14",
-        "2026-09-15",
-        "2026-09-15",
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"dataset": "unknown.dataset"},
+        {"start": "2026-09-16"},
+        {"dataset": Dataset.COMPANY_FINANCIAL_DISCLOSURES, "frequency": "daily"},
+    ],
+    ids=["DFLS-01-C01", "DFLS-01-C02", "DFLS-01-C03"],
+)
+def test_request_shape_rejected_without_acquisition(changes):
+    args = dict(
+        dataset=Dataset.SHIBOR_DAILY,
+        symbol=None,
+        start="2026-09-14",
+        end="2026-09-15",
+        required_cutoff=None,
     )
-
-    result = publish_data(flow_factory(
-        {
-            Dataset.TRADING_CALENDAR.value: lambda ignored: (
-                calendar,
-                {"vendor": "test", "primary_key": ["Date"]},
-            )
-        }
-    ), request)
-
-    assert result.status is DataStatus.FAILED
-    assert result.error is not None
-    assert result.error.code == "DATA_CONTRACT_MISMATCH"
+    if changes.get("dataset") is Dataset.COMPANY_FINANCIAL_DISCLOSURES:
+        args["symbol"] = "600000.SH"
+    with pytest.raises(ValueError):
+        DataRequest(**{**args, **changes})
 
 
-def test_default_registry_covers_all_active_frozen_strategy_inputs(flow_factory) -> None:
-    expected = {
-        Dataset.US_POLICY_UNCERTAINTY_DAILY.value,
-        Dataset.FUTURES_SHFE_GOLD_DAILY.value,
-        Dataset.FUTURES_SHFE_GOLD_MAPPING.value,
-        Dataset.FUTURES_SHFE_GOLD_HOLDING.value,
-        Dataset.ETF_OHLCV.value,
-        Dataset.ETF_UNADJUSTED_DAILY.value,
-        Dataset.SHIBOR_DAILY.value,
-        Dataset.US_REAL_YIELD_DAILY.value,
-        Dataset.USDCNH_DAILY.value,
-        Dataset.FXCM_DAILY.value,
-        Dataset.SGE_GOLD_DAILY.value,
-        Dataset.DOMESTIC_INDEX_DAILY.value,
-        Dataset.CN_CPI_MONTHLY.value,
-        Dataset.CN_PPI_MONTHLY.value,
-        Dataset.CN_MONEY_MONTHLY.value,
-        Dataset.INDEX_DAILY_BASIC.value,
-        Dataset.ETF_SHARE_SIZE.value,
-        Dataset.GLOBAL_INDEX_DAILY.value,
-        Dataset.VIX_DAILY.value,
-        Dataset.INDEX_CONSTITUENT_WEIGHT.value,
-        Dataset.STOCK_MONEYFLOW.value,
-        Dataset.TRADING_CALENDAR.value,
-        Dataset.STRATEGY_FEATURE_EVIDENCE.value,
-    }
+@pytest.mark.parametrize(
+    "through", [pd.Timestamp("2026-09-14"), "not-a-date"], ids=["DFLS-01-C04", "DFLS-01-C05"]
+)
+def test_observation_cutoff_requires_explicit_iso_string(through):
+    from dataflows import DataCoverageRequirement
 
-    assert expected.issubset(flow_factory().datasets)
+    with pytest.raises(ValueError, match="observations_through"):
+        DataCoverageRequirement(observations_through=through)
 
 
-def test_constituent_weight_snapshots_prepare_and_restore_offline(tmp_path, monkeypatch) -> None:
-    from pathlib import Path
-    from dataflows import Dataflows, DataSpace, PreparePolicy, ProviderConfig
-    from dataflows import tushare_strategy_data
+def test_DFLS_01_C06_cn_instrument_rejects_us_symbol():
+    from dataflows import InstrumentId, MarketId, AssetClass
 
-    # The cross-year production regression belongs to this public prepare/fetch
-    # scenario, so it does not need a second direct-provider success traversal.
-    dates = ['2025-09-30', '2025-10-31', '2025-11-28', '2025-12-31',
-             '2026-01-30', '2026-02-27', '2026-03-31', '2026-04-30',
-             '2026-05-29', '2026-06-30', '2026-07-31', '2026-08-31',
-             '2026-09-30', '2026-10-30']
-    frame = pd.DataFrame([{'Date':pd.Timestamp(day), 'ConstituentSymbol':f'{i:06d}.SZ', 'Weight':.2}
-                          for day in dates for i in range(500)])
-    calls = []
-
-    class WeightPro:
-        def trade_cal(self, **kwargs):
-            days = pd.date_range(kwargs['start_date'],kwargs['end_date'])
-            return pd.DataFrame({'exchange':'SSE', 'cal_date':days.strftime('%Y%m%d'), 'is_open':(days.dayofweek < 5).astype(int)})
-
-        def index_weight(self, **kwargs):
-            calls.append(kwargs)
-            return frame.loc[frame.Date.eq(pd.Timestamp(kwargs['trade_date']))].assign(index_code='000905.SH').rename(
-                columns={"Date": "trade_date", "ConstituentSymbol": "con_code", "Weight": "weight"})
-
-    monkeypatch.setattr(tushare_strategy_data, "get_tushare_pro", lambda _: WeightPro())
-    request = DataRequest(Dataset.INDEX_CONSTITUENT_WEIGHT, "000905.SH",
-                          "2025-09-04", "2026-11-05", None, frequency="snapshot")
-    flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")), providers=ProviderConfig())
-    prepared = flows.prepare((request,), policy=PreparePolicy.REUSE)
-    assert prepared.ready
-    assert calls == [{"index_code": "000905.SH", "trade_date": day,
-                      "fields": "index_code,con_code,trade_date,weight"} for day in (value.replace('-', '') for value in dates)]
-    offline = Dataflows(base_dir=tmp_path, space=DataSpace(Path("market")), providers=ProviderConfig({}))
-    result = offline.fetch(request, prepared=prepared.reference)
-    assert result.ready
-    pd.testing.assert_frame_equal(result.dataframe.reset_index(drop=True), frame)
-    assert list(result.dataframe.columns) == ["Date", "ConstituentSymbol", "Weight"]
-    assert result.identity.source == "tushare"
-    assert result.identity.metadata["primary_key"] == ["Date", "ConstituentSymbol"]
-    assert result.identity.metadata["frequency"] == "snapshot"
-    assert result.identity.metadata['expected_snapshot_dates'] == dates
-    assert len(result.dataframe) == 7000
-    assert result.dataframe.groupby('Date').ConstituentSymbol.nunique().eq(500).all()
-    assert len(calls) == 14  # Offline restore must not reacquire any source.
+    with pytest.raises(ValueError):
+        InstrumentId(MarketId.CN, AssetClass.STOCK, "AAPL")
 
 
-@pytest.mark.parametrize("dataset,frequency", [
-    (Dataset.INDEX_CONSTITUENT_WEIGHT, "monthly"),
-    (Dataset.INDEX_CONSTITUENT_WEIGHT, "30m"),
-    (Dataset.ETF_OHLCV, "snapshot"),
-])
-def test_snapshot_frequency_is_dataset_specific(dataset, frequency) -> None:
-    with pytest.raises(ValueError, match="frequency must be"):
-        DataRequest(dataset, "000905.SH", "2026-08-01", "2026-09-30", None,
-                    frequency=frequency)
+@pytest.mark.parametrize(
+    "defect",
+    [None, "duplicate", "missing", "null", "legacy", "conflict"],
+    ids=["DFLS-02-C01", "DFLS-02-C02", "DFLS-02-C03", "DFLS-02-C04", "DFLS-02-C05", "DFLS-02-C06"],
+)
+def test_panel_primary_key_values_and_declaration(defect):
+    from dataflows.facade import _date_bounds
+
+    frame = pd.DataFrame(
+        {"Date": ["2026-09-15"] * 2, "ConstituentSymbol": ["600000.SH", "600001.SH"]}
+    )
+    request = DataRequest(
+        Dataset.INDEX_CONSTITUENT_WEIGHT,
+        "000905.SH",
+        "2026-09-15",
+        "2026-09-15",
+        None,
+        frequency="snapshot",
+    )
+    metadata = {} if defect == "legacy" else {"primary_key": ["Date", "ConstituentSymbol"]}
+    if defect == "duplicate":
+        frame.loc[1, "ConstituentSymbol"] = "600000.SH"
+    elif defect == "missing":
+        frame = frame.drop(columns="ConstituentSymbol")
+    elif defect == "null":
+        frame.loc[1, "ConstituentSymbol"] = None
+    elif defect == "conflict":
+        metadata["primary_key"] = ["Date"]
+    if defect in {None, "legacy"}:
+        before = dict(metadata)
+        assert _date_bounds(frame, request, metadata) == ("2026-09-15T00:00:00",) * 2
+        assert len(frame) == 2 and metadata == before
+    else:
+        with pytest.raises(DataContractError):
+            _date_bounds(frame, request, metadata)
 
 
-def test_strategy_feature_evidence_is_hash_pinned_and_bounded(flow_factory, publish_data, tmp_path) -> None:
+def test_DFLS_40_C01_feature_evidence_pinned_subset(flow_factory, publish_data, tmp_path) -> None:
     source = tmp_path / "evidence.csv"
     source.write_text(
         "date,feature\n2026-09-01,1.0\n2026-09-02,2.0\n",
@@ -341,82 +175,30 @@ def test_strategy_feature_evidence_is_hash_pinned_and_bounded(flow_factory, publ
     assert result.identity.source == "repository"
 
 
-def test_required_cutoff_prevents_stale_data_from_becoming_ready(flow_factory, publish_data) -> None:
-    frame = _frame().iloc[[0]].copy()
-    request = DataRequest(
-        Dataset.ETF_OHLCV,
-        "588080.SH",
-        "2026-09-14",
-        "2026-09-15",
-        "2026-09-15",
-    )
-
-    result = publish_data(flow_factory(
-        {Dataset.ETF_OHLCV.value: lambda ignored: (frame, {"vendor": "test", **ohlcv_fixture_metadata(frame, start=request.start, end=request.end)})}
-    ), request)
-
-    assert result.status is DataStatus.INCOMPLETE
-    assert result.error is not None
-    assert result.error.code == "INCOMPLETE_DATA"
-
-
-def test_declared_start_coverage_prevents_truncated_history_from_becoming_ready(flow_factory, publish_data) -> None:
-    frame = pd.DataFrame(
-        {
-            "Date": ["2016-11-29", "2024-12-31"],
-            "OvernightRate": [2.30, 1.50],
-        }
+def test_DFLS_40_C02_feature_evidence_rejects_changed_bytes(flow_factory, tmp_path):
+    source = tmp_path / "evidence.csv"
+    source.write_text("date,feature\n2026-09-02,1.0\n", encoding="utf8")
+    params = EvidenceParameters(
+        repository_root=tmp_path,
+        source_path="evidence.csv",
+        source_sha256=sha256(source.read_bytes()).hexdigest(),
     )
     request = DataRequest(
-        Dataset.SHIBOR_DAILY,
+        Dataset.STRATEGY_FEATURE_EVIDENCE,
+        "S007-v1",
+        "2026-09-02",
+        "2026-09-02",
         None,
-        "2013-07-29",
-        "2024-12-31",
-        "2024-12-31",
+        parameters=params,
     )
-
-    result = publish_data(flow_factory(
-        {
-            Dataset.SHIBOR_DAILY.value: lambda ignored: (
-                frame,
-                {
-                    "vendor": "test",
-                    "primary_key": ["Date"],
-                    "maximum_start_lag_days": 10,
-                },
-            )
-        }
-    ), request)
-
-    assert result.status is DataStatus.INCOMPLETE
-    assert result.error is not None
-    assert result.error.code == "INCOMPLETE_DATA"
-    assert result.error.context["actual_start"].startswith("2016-11-29")
+    source.write_text("date,feature\n2026-09-02,2.0\n", encoding="utf8")
+    result = flow_factory().prepare((request,), policy=PreparePolicy.REFRESH)
+    assert result.reference is None and result.items[0].status is DataStatus.FAILED
+    assert result.items[0].identity is None
 
 
-def test_vix_dataset_rejects_invalid_price_bars(flow_factory, publish_data) -> None:
-    frame = pd.DataFrame(
-        {
-            "Date": ["2026-09-15"],
-            "Open": [20.0],
-            "High": [19.0],
-            "Low": [18.0],
-            "Close": [21.0],
-            "PercentChange": [0.05],
-        }
-    )
-    result = publish_data(flow_factory(
-        {Dataset.VIX_DAILY.value: lambda ignored: (frame, {"vendor": "test"})}
-    ),
-        DataRequest(
-            Dataset.VIX_DAILY,
-            "VIX",
-            "2026-09-15",
-            "2026-09-15",
-            "2026-09-15",
+def test_DFLS_40_C03_feature_evidence_rejects_escaping_path(tmp_path):
+    with pytest.raises(ValueError):
+        EvidenceParameters(
+            repository_root=tmp_path, source_path="../evidence.csv", source_sha256="a" * 64
         )
-    )
-
-    assert result.status is DataStatus.FAILED
-    assert result.error is not None
-    assert result.error.code == "DATA_CONTRACT_MISMATCH"

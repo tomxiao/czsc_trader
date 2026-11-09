@@ -1,3 +1,4 @@
+# Risk ownership: TDR-22
 """Real two-goal inspection, publication and exact-package freezing."""
 
 from dataclasses import fields, replace
@@ -19,8 +20,8 @@ from czsc_trader.application import (
 )
 from czsc_trader.research_tools import delivery as d
 from czsc_trader.research_tools.context import ResearchBatchRef
-from test_research_contract_upgrade import managed_evaluation as managed_evaluation
-from test_assessment_delivery import completed as completed, fresh_completed as fresh_completed
+from managed_evaluation_support import managed_evaluation as managed_evaluation
+from assessment_delivery_support import completed as completed, fresh_completed as fresh_completed
 from stage5_pte_support import unit_price_protocol
 
 
@@ -64,12 +65,12 @@ def _build_inspection(completed):
 
 
 @pytest.fixture
-def fresh_inspection(fresh_completed):
+def fresh_inspection(fresh_completed, pinned_inspection_environment):
     return _build_inspection(fresh_completed)
 
 
 @pytest.fixture
-def inspection(request, tmp_path, frozen_seed_root):
+def inspection(request, tmp_path, frozen_seed_root, pinned_inspection_environment):
     from czsc_trader.research_tools._evaluation_workers import pack
 
     seed, data = frozen_seed_root / "inspection-v2-input", frozen_seed_root / "inspection-v2-input.pkl"
@@ -154,74 +155,7 @@ def _delivery(context, report, *, revision=1, decisions=(), freeze=None, pending
     return assemble_delivery(context, definition, content).receipt
 
 
-def test_stage_five_delivery_publishes_report_and_approval(inspected_candidate, monkeypatch):
-    from czsc_trader.application import validate_delivery
-    import subprocess
-
-    def forbidden_worker(*args, **kwargs):
-        raise AssertionError("Publishing, validating and freezing saved inspection cannot rerun workers")
-
-    monkeypatch.setattr(subprocess, "Popen", forbidden_worker)
-
-    context, report, source = inspected_candidate
-    first = _delivery(context, report, pending_decisions=())
-    assert validate_delivery(context, first.reference).status is d.ValidationStatus.PASS
-    path = context.research_root / "S900/deliveries/INSPECTION/1/report.md"
-    original = path.read_bytes()
-    operation = approve(context, report, source)
-    frozen = freeze_candidate(context, operation)
-    second = _delivery(context, report, revision=2, decisions=(operation.approval,), freeze=frozen)
-    assert validate_delivery(context, second.reference).status is d.ValidationStatus.PASS
-    assert path.read_bytes() == original
-    document = json.loads((context.research_root / "S900/assets/deliveries/INSPECTION/2/delivery.json").read_text())
-    assert document["schema_version"] == document["definition"]["schema_version"] == 9
-    assert document["definition"]["predecessors"] == []
-
-
-@pytest.mark.parametrize("material", ["source", "payload"])
-def test_damaged_candidate_produces_failed_report_without_freezing(inspection, material):
-    from czsc_trader.application.research_evidence import validate_inspection
-
-    context, request, _ = inspection
-    registration = StrategyRegistry(context.research_registry_root).get_candidate_registration(request.candidate)
-    reference = registration.source_files[0] if material == "source" else registration.payload
-    target = reference.resolve(context.research_root / "S900")
-    target.write_bytes(target.read_bytes() + b"\n# corruption")
-    report = inspect_candidate(context, request)
-    assert report.status is f.InspectionStatus.FAIL
-    assert report.pte_runtime.status is f.InspectionStatus.NOT_RUN
-    assert validate_inspection(context.root, report.reference) == report
-    _assert_not_freezable(context, report)
-    assert _delivery(context, report).schema_version == 9
-
-
-def test_original_evaluation_is_optional_but_invalid_explicit_reference_fails(inspection):
-    from czsc_trader.application.inspection_execution import compare_baseline
-    from czsc_trader.application.inspection_service import _EvidenceStore
-
-    context, request, _ = inspection
-    replay = request.replays[0]
-    registration = StrategyRegistry(context.research_registry_root).get_candidate_registration(request.candidate)
-    document = json.loads(replay.baseline.evidence.resolve(context.root).read_text(encoding='utf-8'))
-    run, = (value for value in document['runs'] if
-        (value['window_id'], value['scenario_id']) ==
-        (replay.coordinate.window_id, replay.coordinate.scenario_id))
-    # Actual published ledger facts are sufficient for reference validation.
-    # The roundtrip owns independent candidate replay versus baseline comparison
-    # and the complete failure-report/freeze integration is covered separately.
-    facts = run['replay_evidence']
-    store = _EvidenceStore(context, f.ResearchEvidenceOwner(
-        request.candidate.strategy_id, request.experiment.experiment_id))
-    assert compare_baseline(context, replace(replay, baseline=None), facts, registration,
-        request.protocol.float_tolerance, store) == ({'status': 'NOT_REQUESTED'}, ())
-    changed = replace(replay.baseline, evaluation_ids=("f" * 64,))
-    with pytest.raises(ValueError, match='baseline must identify exactly one matching coordinate'):
-        compare_baseline(context, replace(replay, baseline=changed), facts, registration,
-            request.protocol.float_tolerance, store)
-    assert store.references == []
-
-
-def test_changed_inspected_bytes_rejected_before_freeze(inspected_candidate):
+def test_TDR_22_C03_changed_inspected_bytes_rejected_before_freeze(inspected_candidate):
     context, report, source = inspected_candidate
     operation = approve(context, report, source)
     target = report.release.files[0].source.resolve(context.root)
@@ -231,33 +165,51 @@ def test_changed_inspected_bytes_rejected_before_freeze(inspected_candidate):
     assert get_freeze_result(context, operation.request_id).status is f.FreezeStatus.NOT_FOUND
 
 
-def test_approval_identity_and_decision_immutability(inspected_candidate):
+@pytest.mark.parametrize('change', ['reason', 'confirmation'], ids=['TDR-22-C07', 'TDR-22-C08'])
+def test_approval_identity_and_decision_immutability(inspected_candidate, change):
     context, report, source = inspected_candidate
-    operation = approve(context, report, source)
-    with pytest.raises(ValueError):
-        freeze_candidate(context, replace(operation, approval=report.selection))
     selection = f.ResearchDecision.from_dict(json.loads(report.selection.evidence.resolve(context.root).read_text()))
     assert record_research_decision(context, replace(selection, confirmation_source=file_ref(context.root, source))) == report.selection
+    before = report.selection.evidence.resolve(context.root).read_bytes()
+    if change == 'reason':
+        changed = replace(selection, reason='Changed selection content')
+    else:
+        confirmation = source.with_name('different-confirmation.json')
+        confirmation.write_bytes(b'{"approval":"different source"}')
+        changed = replace(selection, confirmation_source=file_ref(context.root, confirmation))
     with pytest.raises((ValueError, ValidationError)):
-        record_research_decision(context, replace(selection, reason="Changed selection content"))
+        record_research_decision(context, changed)
+
+    assert report.selection.evidence.resolve(context.root).read_bytes() == before
 
 
-def test_corrupt_freeze_receipt_does_not_change_runtime_version(inspected_candidate):
+
+
+
+
+def test_TDR_22_C01_unapproved_selection_cannot_create_version(inspected_candidate):
+    context, report, _ = inspected_candidate
+    operation = f.FreezeCandidateRequest(f.FreezeRequestId('S900', 'unapproved'), report.reference, report.selection)
+    with pytest.raises(ValueError):
+        freeze_candidate(context, operation)
+    assert get_freeze_result(context, operation.request_id).status is f.FreezeStatus.NOT_FOUND
+    assert not context.strategy_root.exists()
+
+
+def test_TDR_22_C02_approval_must_match_exact_inspected_plan(inspected_candidate):
     context, report, source = inspected_candidate
-    operation = approve(context, report, source)
-    freeze_candidate(context, operation)
-    path = context.research_root / "S900/freeze_requests/request1/committed.json"
-    path.write_text("{malformed")
-    receipt = get_freeze_result(context, operation.request_id)
-    assert receipt.status is f.FreezeStatus.UNKNOWN
-    assert receipt.version is None
-    assert freeze_candidate(context, operation) == receipt
-    assert StrategyRegistry(context.strategy_root).get_version("S900", "v1").release_id == "S900-v1"
+    decision = f.ResearchDecision('wrong-plan', 'S900', f.DecisionAction.APPROVE,
+        f.FreezeSubject(report.origin.candidate, report.origin.content_sha256,
+            report.reference, 'f' * 64, report.plan.version),
+        file_ref(context.root, source), 'Approve a different package plan')
+    before = {p.relative_to(context.root): p.read_bytes() for p in context.root.rglob('*') if p.is_file()}
+    with pytest.raises(ValueError, match='does not match inspected plan'):
+        record_research_decision(context, decision)
+    assert {p.relative_to(context.root): p.read_bytes() for p in context.root.rglob('*') if p.is_file()} == before
+    assert not context.strategy_root.exists()
 
 
-def test_empty_or_duplicate_scenarios_rejected_before_execution(inspection):
+def test_TDR_20_C01_missing_scenario_rejected_before_execution(inspection):
     _, request, _ = inspection
-    with pytest.raises(ValueError, match="nonempty unique"):
+    with pytest.raises(ValueError, match='nonempty unique'):
         replace(request, replays=())
-    with pytest.raises(ValueError, match="nonempty unique"):
-        replace(request, replays=(request.replays[0], request.replays[0]))

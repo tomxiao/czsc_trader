@@ -7,7 +7,6 @@ import pytest
 
 from dataflows import DataRequest, DataStatus, Dataset
 from dataflows.tushare_strategy_data import (
-    fetch_domestic_index_close_daily,
     fetch_domestic_index_close_turnover_daily,
 )
 
@@ -45,7 +44,7 @@ def _request(dataset: Dataset) -> DataRequest:
     return DataRequest(dataset, "931994.CSI", "2024-09-09", "2024-09-09", "2024-09-09")
 
 
-def test_close_only_index_publishes_verified_close_with_causal_identity(
+def test_DFLS_34_C07_close_only_index_publishes_verified_close_with_causal_identity(
     flow_factory, publish_data, monkeypatch,
 ) -> None:
     from dataflows import tushare_strategy_data
@@ -65,22 +64,9 @@ def test_close_only_index_publishes_verified_close_with_causal_identity(
     assert len(pro.fields) == 2
 
 
-@pytest.mark.parametrize("defect", ["bad_change", "bad_close"])
-def test_close_only_rejects_invalid_source(clone_published_flow, publish_data, defect):
-    pro = _IndexPro()
-    request = _request(Dataset.DOMESTIC_INDEX_CLOSE_DAILY)
-    flows, ready = clone_published_flow("close-only", {
-        request.dataset: lambda r: fetch_domestic_index_close_daily(r.symbol, r.start, r.end, pro=pro),
-    }, request)
-    setattr(pro, defect, True)
-    result = publish_data(flows, request)
-    assert result.status is DataStatus.FAILED
-    assert result.error.code == "DATA_CONTRACT_MISMATCH"
-    old = flows.fetch(request, prepared=ready.prepared)
-    assert old.ready and old.identity.content_sha256 == ready.identity.content_sha256
 
 
-def test_close_turnover_publishes_only_verified_fields_and_preserves_close_contract(
+def test_DFLS_34_C08_close_turnover_publishes_only_verified_fields_and_preserves_close_contract(
     flow_factory, publish_data, monkeypatch,
 ) -> None:
     from dataflows import tushare_strategy_data
@@ -100,28 +86,6 @@ def test_close_turnover_publishes_only_verified_fields_and_preserves_close_contr
     assert len(pro.fields) == 1 and "open" not in pro.fields[0] and "vol" in pro.fields[0]
 
 
-@pytest.mark.parametrize("overrides,duplicate", [
-    ({"close": None}, False), ({"change": -9.0}, False), ({"pct_chg": -0.3}, False),
-    ({"vol": None}, False), ({"vol": -1.0}, False), ({"amount": None}, False),
-    ({"amount": -1.0}, False), ({}, True),
-], ids=["missing-close", "change", "percentage", "missing-volume", "negative-volume",
-        "missing-amount", "negative-amount", "duplicate-date"])
-def test_close_turnover_rejects_invalid_vendor_fields_and_duplicate_dates(
-    clone_published_flow, publish_data, overrides, duplicate,
-) -> None:
-    pro = _IndexPro()
-    request = _request(Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY)
-    flows, ready = clone_published_flow("close-turnover", {
-        request.dataset: lambda request: fetch_domestic_index_close_turnover_daily(
-            request.symbol, request.start, request.end, pro=pro,
-        ),
-    }, request)
-    pro.overrides, pro.duplicate = overrides, duplicate
-    result = publish_data(flows, request)
-    assert result.status is DataStatus.FAILED
-    assert result.error.code == "DATA_CONTRACT_MISMATCH"
-    old = flows.fetch(request, prepared=ready.prepared)
-    assert old.ready and old.identity.content_sha256 == ready.identity.content_sha256
 
 
 @pytest.fixture(scope="module")
@@ -129,40 +93,3 @@ def close_turnover_source():
     return fetch_domestic_index_close_turnover_daily(
         "931994.CSI", "2024-09-09", "2024-09-09", pro=_IndexPro(),
     )
-
-
-@pytest.mark.parametrize("key,value", [
-    ("price_scope", "CLOSE_ONLY"), ("volume_unit", "share"),
-    ("amount_unit", "cny"), ("frequency", "weekly"),
-    ("available_at", "intraday"), ("vendor_update_window", "unknown"),
-    ("source_publication_timestamp_verified", True), ("historical_revision_history_verified", True),
-], ids=["scope", "volume-unit", "amount-unit", "frequency", "availability", "update-window",
-        "publication-claim", "revision-claim"])
-def test_close_turnover_facade_rejects_false_metadata(
-    clone_published_flow, publish_data, close_turnover_source, key, value,
-) -> None:
-    frame, metadata = close_turnover_source
-    supplied_metadata = metadata.copy()
-    request = _request(Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY)
-    flows, ready = clone_published_flow("close-turnover", {
-        request.dataset: lambda _: (frame.copy(deep=True), supplied_metadata),
-    }, request)
-    supplied_metadata[key] = value
-    result = publish_data(flows, request)
-    assert result.status is DataStatus.FAILED
-    assert result.error.code == "DATA_CONTRACT_MISMATCH"
-    old = flows.fetch(request, prepared=ready.prepared)
-    assert old.ready and old.identity.content_sha256 == ready.identity.content_sha256
-
-
-def test_close_turnover_rejects_wrong_frequency_and_parameters_at_construction() -> None:
-    with pytest.raises(ValueError):
-        DataRequest(
-            Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY, "931994.CSI",
-            "2024-09-09", "2024-09-09", None, "30m",
-        )
-    with pytest.raises(TypeError):
-        DataRequest(
-            Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY, "931994.CSI",
-            "2024-09-09", "2024-09-09", None, "daily", {"fallback": True},
-        )

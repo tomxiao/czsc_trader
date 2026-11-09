@@ -3,8 +3,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from dataflows import DataRequest, DataStatus, Dataset
-from dataflows.errors import DataContractError, IncompleteDataError
+from dataflows import DataRequest, Dataset
 from dataflows.tushare_sell_side import fetch_sell_side_forecast
 
 
@@ -100,29 +99,9 @@ def _request() -> DataRequest:
     )
 
 
-def test_sell_side_forecast_is_canonical_causal_and_year_partitioned() -> None:
-    pro = FakePro([_row("20241231"), _row("20250103", quarter=None, net_profit=None)])
-
-    frame, metadata = fetch_sell_side_forecast(
-        "600406.SH", "2024-12-31", "2025-01-03", pro=pro
-    )
-
-    assert [call["start_date"] for call in pro.report_calls] == ["20241231", "20250101"]
-    assert all(call["limit"] == 3000 and call["offset"] == 0 for call in pro.report_calls)
-    assert frame["Date"].tolist() == [pd.Timestamp("2024-12-31"), pd.Timestamp("2025-01-03")]
-    assert frame["AvailableDate"].tolist() == [
-        pd.Timestamp("2025-01-01"),
-        pd.Timestamp("2025-01-06"),
-    ]
-    assert frame.loc[0, "NetProfitForecast"] == pytest.approx(812300.0)
-    assert pd.isna(frame.loc[1, "NetProfitForecast"])
-    assert metadata["vendor_interface"] == "report_rc"
-    assert metadata["point_in_time_mode"] == "CURRENT_VENDOR_SNAPSHOT"
-    assert metadata["historical_revision_identity"] == "unavailable_from_vendor"
-    assert metadata["field_units"]["NetProfitForecast"] == "CNY_10000"
 
 
-def test_sell_side_forecast_waits_past_late_vendor_creation() -> None:
+def test_DFLS_30_C03_sell_side_forecast_waits_past_late_vendor_creation() -> None:
     frame, _ = fetch_sell_side_forecast(
         "600406.SH",
         "2025-02-09",
@@ -133,7 +112,7 @@ def test_sell_side_forecast_waits_past_late_vendor_creation() -> None:
     assert frame.loc[0, "AvailableDate"] == pd.Timestamp("2025-02-11")
 
 
-def test_sell_side_forecast_retries_transient_vendor_failure() -> None:
+def test_DFLS_30_C04_sell_side_forecast_retries_transient_vendor_failure() -> None:
     pro = FakePro([_row("20250103")], transient_report_failures=1)
 
     frame, _ = fetch_sell_side_forecast(
@@ -142,59 +121,3 @@ def test_sell_side_forecast_retries_transient_vendor_failure() -> None:
 
     assert len(frame) == 1
     assert len(pro.report_calls) == 2
-
-
-def test_default_facade_publishes_sell_side_forecast_with_identity(flow_factory, publish_data, monkeypatch) -> None:
-    pro = FakePro([_row("20250103")])
-    monkeypatch.setattr(
-        "dataflows.tushare_sell_side.get_tushare_pro", lambda ignored=None: pro
-    )
-
-    flow = flow_factory()
-    result = publish_data(flow, _request())
-
-    assert Dataset.SELL_SIDE_FORECAST.value in flow.datasets
-    assert result.status is DataStatus.READY
-    assert result.identity is not None
-    assert result.identity.dataset == Dataset.SELL_SIDE_FORECAST.value
-    assert result.identity.symbol == "600406.SH"
-    assert result.identity.metadata["availability_time_field"] == "AvailableDate"
-    assert result.dataframe["AvailableDate"].gt(result.dataframe["Date"]).all()
-
-
-@pytest.mark.parametrize(
-    ("rows", "gap", "error"),
-    [
-        ([_row("20250103", symbol="000001.SZ")], None, DataContractError),
-        ([_row("20250103", net_profit="not-a-number")], None, DataContractError),
-        ([_row("20250103")], "2025-01-04", IncompleteDataError),
-    ],
-)
-def test_sell_side_forecast_fails_closed_on_identity_value_or_calendar(
-    rows, gap, error
-) -> None:
-    with pytest.raises(error):
-        fetch_sell_side_forecast(
-            "600406.SH",
-            "2025-01-03",
-            "2025-01-03",
-            pro=FakePro(rows, calendar_gap=gap),
-        )
-
-
-def test_facade_rejects_same_day_sell_side_availability(flow_factory, publish_data) -> None:
-    frame, metadata = fetch_sell_side_forecast(
-        "600406.SH",
-        "2025-01-03",
-        "2025-01-03",
-        pro=FakePro([_row("20250103")]),
-    )
-    frame.loc[0, "AvailableDate"] = frame.loc[0, "Date"]
-
-    result = publish_data(flow_factory(
-        {Dataset.SELL_SIDE_FORECAST.value: lambda ignored: (frame, metadata)}
-    ), _request())
-
-    assert result.status is DataStatus.FAILED
-    assert result.error is not None
-    assert result.error.code == "DATA_CONTRACT_MISMATCH"

@@ -1,105 +1,20 @@
+# Risk ownership: TDR-16
 """V4 public execution, shared benchmark and auditable account facts."""
 
 from equity_test_support import setup_account_research
-from dataclasses import FrozenInstanceError, replace
+from dataclasses import replace
 import json
 
 import pytest
-from strategy_runtime.equity_definition import equity_source_hash
-from strategy_runtime.equity_features import FeatureGraph
-from strategy_runtime.equity_replay import StrategyStateSchema
 from czsc_trader.research_tools.execution import ResearchExecutionSession
-from czsc_trader.research_tools.equity_evaluation import EquityArtifact, EquityEvaluationResult, validate_equity_result
+from czsc_trader.research_tools.equity_evaluation import EquityArtifact, EquityEvaluationResult
 from czsc_trader.research_tools.equity_replay import (
-    prepare_equity, evaluate_many_equity, materialize_equity, build_equity_assessment,
+    materialize_equity, build_equity_assessment,
 )
 
 
-def test_account_shared_snapshot_benchmark_without_independent_audit(tmp_path, monkeypatch):
-    from strategy_runtime.resources import ExecutionResources
-    from czsc_trader.research_tools import equity_replay
-    context, request, _, calls = setup_account_research(tmp_path)
-    access = context.evaluation
-    access.resources = ExecutionResources(max_workers=1, native_threads_per_worker=1)
-    from strategy_evaluator import equity, equity_assessment
-    def forbidden_audit(*args, **kwargs):
-        raise AssertionError("default account calculation must not independently audit")
-    monkeypatch.setattr(equity, "audit_equity_account", forbidden_audit)
-    monkeypatch.setattr(equity_assessment, "audit_equity_account", forbidden_audit)
-    owners = []
-    compute = equity_replay._compute_account
-    def record_owner(*args):
-        owners.append(args[3])
-        return compute(*args)
-    monkeypatch.setattr(equity_replay, "_compute_account", record_owner)
-    fetched = []
-    original = access.data.fetch
-    def fetch(*args, **kwargs):
-        fetched.append(args[0])
-        return original(*args, **kwargs)
-    monkeypatch.setattr(access.data, "fetch", fetch)
-    other = replace(request, candidate=replace(request.candidate, candidate_id="C0002"))
-    with ResearchExecutionSession(context, experiment=request.experiment) as execution:
-        assert execution.equity_statistics is None
-        left = access.prepare(request, execution=execution)
-        right = access.prepare(other, execution=execution)
-        assert access.prepare(left.request, execution=execution).snapshot is left.snapshot
-        pressure = access.prepare(replace(request, fee_rate=.002), execution=execution)
-        assert pressure.snapshot is left.snapshot
-        assert pressure.benchmark_identity != left.benchmark_identity
-        assert left.snapshot is right.snapshot
-        assert left.benchmark_identity == right.benchmark_identity
-        assert len(fetched) == 3 and len(calls) == 3
-        outcomes = access.evaluate_many((left, right, left), execution=execution)
-        assert all(item.status.value == "SUCCEEDED" for item in outcomes), [item.error for item in outcomes]
-        a, b, duplicate = (item.result for item in outcomes)
-        assert duplicate.content == a.content
-        validate_equity_result(access, left, duplicate, execution=execution)
-        assert a.payload["benchmark_ref"] == b.payload["benchmark_ref"]
-        assert a.payload["candidate_ref"] != b.payload["candidate_ref"]
-        assert set(owners) == {
-            f"candidate:S999:C0001:{request.candidate.content_identity.content_sha256}",
-            f"candidate:S999:C0002:{other.candidate.content_identity.content_sha256}",
-            "benchmark:" + left.benchmark_identity.sha256,
-        }
-        statistics = execution.equity_statistics
-        assert statistics.input_snapshots == 1
-        assert (statistics.candidate_runs, statistics.benchmark_runs) == (2, 1)
-        assert len(statistics.account_timings) == 3
-        assert {item.owner for item in statistics.account_timings} == set(owners)
-        assert all(0 <= item.feature_seconds <= item.replay_seconds and item.decisions == 25
-                   for item in statistics.account_timings)
-        assert "strategy_runtime.equity_source_runtime" in left.identity(access.execution_spec)["engine_sources"]
-        validate_equity_result(access, left, a, execution=execution)
-        assert execution.equity_statistics == statistics
-        with pytest.raises(ValueError, match="exact certified"):
-            validate_equity_result(access, left, EquityEvaluationResult(a.request_hash, a.content, a.artifacts), execution=execution)
-        with pytest.raises(ValueError, match="not issued"):
-            evaluate_many_equity(access, (replace(left),), execution=execution)
-        repeated, = access.evaluate_many((left,), execution=execution)
-        assert repeated.result is not None, repeated.error
-        accumulated = execution.equity_statistics
-        assert (accumulated.candidate_runs, accumulated.benchmark_runs) == (3, 1)
-        assert len(accumulated.account_timings) == 3
-        owner = f"candidate:S999:C0001:{request.candidate.content_identity.content_sha256}"
-        assert next(item for item in accumulated.account_timings if item.owner == owner).decisions == 50
-        assert statistics.candidate_runs == 2  # earlier public snapshot cannot change
-        with pytest.raises(FrozenInstanceError):
-            statistics.candidate_runs = 99
-        assert len(fetched) == 3
-    first = build_equity_assessment(a)
-    second = build_equity_assessment(b)
-    assert first[0].result_sha256 == a.result_hash and second[0].result_sha256 == b.result_hash
-    assert materialize_equity(a).payload["runs"]["candidate"]["metrics"]["closed_cycles"] == 12
-
-
-def test_account_refs_check_structure_without_recertifying_recorded_metrics(tmp_path):
-    context, request, _, _ = setup_account_research(tmp_path)
-    with ResearchExecutionSession(context, experiment=request.experiment) as execution:
-        prepared = prepare_equity(context.evaluation, request, execution=execution)
-        outcome, = evaluate_many_equity(context.evaluation, (prepared,), execution=execution)
-        assert outcome.result is not None, outcome.error
-        result = outcome.result
+def test_TDR_16_C02_account_refs_check_structure_without_recertifying_recorded_metrics(account_facts):
+    _, result = account_facts
     saved = {item.sha256: item.content for item in result.artifacts}
     view = materialize_equity(result.content, lambda ref: saved[ref["sha256"]])
     assert view.source_sha256 == result.result_hash
@@ -128,19 +43,15 @@ def test_account_refs_check_structure_without_recertifying_recorded_metrics(tmp_
     assert projected.equity == original.equity
 
 
-def test_projection_preserves_metrics_without_recomputation(tmp_path, monkeypatch):
+def test_TDR_16_C01_projection_preserves_metrics_without_recomputation(account_facts, monkeypatch):
     from strategy_evaluator.equity_assessment import canonical_ledger, equity_performance, equity_concentration
     from czsc_trader.research_tools import equity_replay
-    context, request, _, _ = setup_account_research(tmp_path)
-    with ResearchExecutionSession(context, experiment=request.experiment) as execution:
-        prepared = context.evaluation.prepare(request, execution=execution)
-        result, = context.evaluation.evaluate_many((prepared,), execution=execution)
-        assert result.result is not None, result.error
-        raw = materialize_equity(result.result).payload
-        def forbidden(*args, **kwargs):
-            raise AssertionError("fact projection must not recompute recorded metrics")
-        monkeypatch.setattr(equity_replay, "summarize_equity_ledger", forbidden)
-        facts, = build_equity_assessment(result.result)
+    _, result = account_facts
+    raw = materialize_equity(result).payload
+    def forbidden(*args, **kwargs):
+        raise AssertionError("fact projection must not recompute recorded metrics")
+    monkeypatch.setattr(equity_replay, "summarize_equity_ledger", forbidden)
+    facts, = build_equity_assessment(result)
     ledgers = {}
     economic = {name: raw["audit_inputs"][name] for name in (
         "bars", "price_basis", "quantity_basis", "constraints", "specification", "initial_cash", "fee_rate")}
@@ -159,226 +70,42 @@ def test_projection_preserves_metrics_without_recomputation(tmp_path, monkeypatc
         assert len(compact.equity.candidate_ledger) < len(full.equity.candidate_ledger)
 
 
-def test_prepared_execution_does_not_rebuild_source_identity_or_certify_result(tmp_path, monkeypatch):
-    from czsc_trader.application import publish_evidence
-    from czsc_trader.research_tools import EvaluationEvidenceWrite, build_assessment_evidence
-    from czsc_trader.research_tools import equity_replay
-    from czsc_trader.research_tools.equity_evaluation import EquityEvaluationRequest
+
+
+def test_TDR_04_C04_old_raw_result_cannot_be_reinterpreted(account_facts):
+    from czsc_trader.research_tools.equity_replay import validate_result_structure
+    _, result = account_facts
+    payload = result.payload
+    payload['request']['price_basis'] = 'RAW'
+    with pytest.raises(ValueError, match='HFQ simulated units'):
+        validate_result_structure(payload)
+
+
+def test_TDR_16_C04_candidate_label_preserves_economic_facts(tmp_path):
     context, request, _, _ = setup_account_research(tmp_path)
+    renamed = replace(request, candidate=replace(request.candidate, candidate_id='C0002'))
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
-        prepared = context.evaluation.prepare(request, execution=execution)
-        def forbidden(*args, **kwargs):
-            raise AssertionError("prepared execution must not re-read source identities or certify the account")
-        projection = equity_replay.build_equity_assessment
-        monkeypatch.setattr(EquityEvaluationRequest, "identity", forbidden)
-        monkeypatch.setattr(equity_replay, "build_equity_assessment", forbidden)
-        outcome, = context.evaluation.evaluate_many((prepared,), execution=execution)
-        assert outcome.result is not None, outcome.error
-        monkeypatch.setattr(equity_replay, "build_equity_assessment", projection)
-        facts, = build_assessment_evidence(prepared, outcome.result, execution=execution)
-        assert facts.result_sha256 == outcome.result.result_hash
-        reference = publish_evidence(context, EvaluationEvidenceWrite(request.experiment, "once",
-            prepared, outcome.result), execution=execution)
-        assert reference.resolve(context.repository.root).read_bytes() == outcome.result.content
-
-
-def test_account_requires_explicit_owned_session(tmp_path):
-    context, request, _, _ = setup_account_research(tmp_path)
-    with pytest.raises(TypeError, match="explicit ResearchExecutionSession"):
-        context.evaluation.prepare(request)
-    with pytest.raises(TypeError, match="explicit ResearchExecutionSession"):
-        prepare_equity(context.evaluation, request, execution=None)
-    assert not hasattr(context.evaluation, "evaluate")
-    with pytest.raises(TypeError, match="session-owned"):
-        context.evaluation.evaluate_many((request,))
-    with ResearchExecutionSession(context, experiment=request.experiment) as execution:
-        with pytest.raises(ValueError, match="not issued"):
-            evaluate_many_equity(context.evaluation, (request,), execution=execution)
-
-
-def test_account_auxiliary_and_sessions_use_indexed_availability(tmp_path, monkeypatch):
-    from equity_test_support import setup_auxiliary, current_account_request
-    from strategy_runtime import equity_context
-    context, request, _, _ = setup_auxiliary(tmp_path)
-    request = current_account_request(context, request)
-    root = request.candidate.source_root
-    (root / "strategy.py").write_text(
-        "from strategy_runtime import AccountDecision\n"
-        "from strategy_runtime import AccountStepResult, StateRecord\n"
-        "def step(ctx, state):\n"
-        "    target = 0 if ctx.portfolio.quantity else 1\n"
-        "    return AccountStepResult(AccountDecision.from_facts(target, 'auxiliary', "
-        "facts={'market_close': ctx.auxiliary_histories['market'].last()['Close'], "
-        "'end': ctx.session.segments[-1].end.isoformat()}, next_watch='next bar'), cycle_values=StateRecord())\n",
-        encoding="utf-8")
-    definition = replace(request.candidate.definition, contract_version=4, entrypoint="strategy:step",
-        source_sha256=equity_source_hash(root, ("strategy.py",)), feature_graph=FeatureGraph((), ()),
-        state_schema=StrategyStateSchema())
-    request = replace(request, candidate=replace(request.candidate, definition=definition))
-    def forbidden(*args, **kwargs):
-        raise AssertionError("account must not rebuild full-history v2 contexts")
-    monkeypatch.setattr(equity_context, "build_equity_decision_context", forbidden)
-    with ResearchExecutionSession(context, experiment=request.experiment) as execution:
-        prepared = context.evaluation.prepare(request, execution=execution)
-        outcome, = context.evaluation.evaluate_many((prepared,), execution=execution)
-        assert outcome.result is not None, outcome.error
-        assert execution.equity_statistics.benchmark_runs == 1
-    assert build_equity_assessment(outcome.result)
-
-
-def test_account_public_timing_rejects_invalid_units_and_owner():
-    from czsc_trader.research_tools import EquityAccountTiming, EquityExecutionStatistics
-    with pytest.raises(ValueError, match="owner differs"):
-        EquityAccountTiming("BENCHMARK", "candidate:S999:C0001:hash", 0., 1., 1, 1)
-    with pytest.raises(ValueError, match="finite"):
-        EquityAccountTiming("BENCHMARK", "benchmark:hash", 0., float("nan"), 1, 1)
-    with pytest.raises(ValueError, match="inclusive"):
-        EquityAccountTiming("BENCHMARK", "benchmark:hash", 2., 1., 1, 1)
-    valid = EquityAccountTiming("BENCHMARK", "benchmark:hash", 0., 1., 1, 1)
-    with pytest.raises(ValueError, match="unique"):
-        EquityExecutionStatistics(1, 0, 2, (valid, valid))
-
-
-def test_account_parameter_plan_uses_owned_preparation_without_refetch(tmp_path, monkeypatch):
-    from strategy_runtime import ExecutionResources
-    from strategy_evaluator import (AssessmentCandidate, ParameterAxis, RealDomain, BoundedLocalStep,
-        RelativeChangeLimit, ParameterNeighborhoodProtocol, ParameterNeighborhoodRequest,
-        ParameterNeighborhoodSpace, build_parameter_neighborhood_design)
-    from strategy_manager import CandidateDerivation, CandidateDerivationKind, CandidateEvidence
-    from czsc_trader.application import publish_evidence
-    from czsc_trader.research_tools import MaterialEvidenceWrite, ParameterEvaluationPlan, EvaluationLineage
-    from czsc_trader.research_tools.parameter_evaluation import validate_parameter_request
-
-    context, request, _, _ = setup_account_research(tmp_path)
-    context.evaluation.resources = ExecutionResources(max_workers=2, native_threads_per_worker=1)
-    root = request.candidate.source_root
-    (root / "strategy.py").write_text(
-        "from strategy_runtime import AccountDecision\n"
-        "from strategy_runtime import AccountStepResult, StateRecord\n"
-        "def step(ctx, state):\n"
-        "    active = int(ctx.history.last()['Close'] >= ctx.parameters['threshold'])\n"
-        "    target = 0 if ctx.portfolio.quantity else active\n"
-        "    return AccountStepResult(AccountDecision.from_facts(target, 'threshold', "
-        "facts={'threshold': ctx.parameters['threshold']}, next_watch='next bar'), cycle_values=StateRecord())\n",
-        encoding="utf-8")
-    definition = replace(request.candidate.definition, source_sha256=equity_source_hash(root, ("strategy.py",)),
-        parameters_json='{"threshold":10.0}', parameter_schema_json='{"threshold":{"type":"number","minimum":1,"maximum":20}}')
-    request = replace(request, candidate=replace(request.candidate, definition=definition))
-    fetched = []
-    fetch = context.data.fetch
-    def counted(*args, **kwargs):
-        fetched.append(args[0])
-        return fetch(*args, **kwargs)
-    monkeypatch.setattr(context.data, "fetch", counted)
-    with ResearchExecutionSession(context, experiment=request.experiment) as execution:
-        center = context.evaluation.prepare(request, execution=execution)
-        def material(name, content):
-            return publish_evidence(context, MaterialEvidenceWrite(request.experiment, name, content,
-                "application/json", "json"), execution=execution)
-        mapping, feasible = material("map", b"{}"), material("feasibility", b"{}")
-        design = build_parameter_neighborhood_design(ParameterNeighborhoodRequest(
-            AssessmentCandidate("S999-C0001", definition.content_identity.content_sha256), ParameterNeighborhoodProtocol(),
-            ParameterNeighborhoodSpace((ParameterAxis("threshold", 10., RealDomain(1., 20.),
-                BoundedLocalStep(RelativeChangeLimit(.05)), ("threshold",), "price"),),
-                mapping.sha256, feasible.sha256)), feasibility=lambda _: True).design
-        children = tuple(context.evaluation.prepare(replace(center.request, candidate=replace(center.candidate,
-            candidate_id=f"C{index + 2:04}", definition=replace(definition,
-                parameters_json=json.dumps({v.name: v.value for v in point.values})))), execution=execution)
-            for index, point in enumerate(design.points))
-        kwargs = dict(mapping_evidence=mapping, feasibility_evidence=feasible, dataflows=context.data)
-        with pytest.raises(TypeError, match="session-owned"):
-            ParameterEvaluationPlan.create(design, center.request, tuple(x.request for x in children), **kwargs)
-        with pytest.raises(TypeError, match="explicit ResearchExecutionSession"):
-            ParameterEvaluationPlan.create(design, center, children, **kwargs)
-        with pytest.raises(ValueError, match="not issued"):
-            ParameterEvaluationPlan.create(design, replace(center), children, execution=execution, **kwargs)
-        plan = ParameterEvaluationPlan.create(design, center, children, execution=execution, **kwargs)
-        assert plan.schema_version == 4 and ParameterEvaluationPlan.from_dict(plan.to_dict()) == plan
-        ref = material("plan", json.dumps(plan.to_dict()).encode())
-        bound = []
-        for index, child in enumerate(children):
-            derivation = CandidateDerivation(center.candidate.key, center.candidate.content_identity.content_sha256,
-                child.candidate.key, child.candidate.content_identity.content_sha256, CandidateDerivationKind.PARAMETERS,
-                {v.name: v.value for v in design.points[index].values}, design.protocol.sha256,
-                CandidateEvidence(ref.repository_path, ref.sha256))
-            proposed = replace(child.request, lineage=EvaluationLineage(derivation,
-                plan.bind_point(ref, index, repository_root=context.repository.root)))
-            with pytest.raises(TypeError, match="session-owned"):
-                validate_parameter_request(proposed, context.data)
-            prepared = context.evaluation.prepare(proposed, execution=execution)
-            validate_parameter_request(prepared, context.data, execution=execution)
-            bound.append(prepared)
-        assert len(fetched) == 3
-        outcomes = context.evaluation.evaluate_many(tuple(bound), execution=execution)
-        assert all(item.result is not None for item in outcomes), [item.error for item in outcomes]
-        assert execution.stats.pool_starts == 1
-        assert sorted(materialize_equity(item.result).payload["runs"]["candidate"]["metrics"]["closed_cycles"]
-                      for item in outcomes) == [0, 12]
-        for index, item in enumerate(outcomes):
-            facts, = build_equity_assessment(item.result)
-            assert facts.parameter_point == design.bind_point(index) and facts.parent == design.center
-        changed = context.evaluation.prepare(replace(bound[0].request, initial_cash=1001., audit_inputs_sha256=None), execution=execution)
-        assert changed.request.initial_cash == 1001.
-        assert changed.contract_content != bound[0].contract_content
-        assert len(fetched) == 3
-    with ResearchExecutionSession(context, experiment=request.experiment) as other_execution:
-        with pytest.raises(ValueError, match="not issued"):
-            validate_parameter_request(bound[0], context.data, execution=other_execution)
-
-
-@pytest.mark.parametrize("mutation", ["delete", "replace"])
-def test_account_loaded_account_finishes_and_publishes_after_source_change(tmp_path, monkeypatch, mutation):
-    from strategy_runtime.resources import ExecutionResources
-    from execution_channels.historical.portfolio import PortfolioHistoricalExecutor
-    from czsc_trader.application import publish_evidence
-    from czsc_trader.research_tools import EvaluationEvidenceWrite, build_assessment_evidence
-
-    context, request, _, _ = setup_account_research(tmp_path)
-    context.evaluation.resources = ExecutionResources(max_workers=1, native_threads_per_worker=1)
-    source = request.candidate.source_root / "strategy.py"
-    execute = PortfolioHistoricalExecutor.execute_account_plan
-    changed = False
-    def change_after_first_execution(executor, plan, bar, *, constraint):
-        nonlocal changed
-        result = execute(executor, plan, bar, constraint=constraint)
-        if not changed:
-            # The candidate task runs first in this one-worker public batch.
-            # Its module has loaded and its first decision has already executed.
-            if mutation == "delete":
-                source.unlink()
-            else:
-                source.write_text("raise RuntimeError('replacement must not be loaded')\n", encoding="utf-8")
-            changed = True
-        return result
-    monkeypatch.setattr(PortfolioHistoricalExecutor, "execute_account_plan", change_after_first_execution)
-    with ResearchExecutionSession(context, experiment=request.experiment) as execution:
-        prepared = context.evaluation.prepare(request, execution=execution)
-        outcome, = context.evaluation.evaluate_many((prepared,), execution=execution)
-        assert changed and outcome.result is not None, outcome.error
-        facts, = build_assessment_evidence(prepared, outcome.result, execution=execution)
-        reference = publish_evidence(context, EvaluationEvidenceWrite(request.experiment, "loaded-module",
-            prepared, outcome.result), execution=execution)
-        assert reference.schema_version == 4
-        assert reference.resolve(context.repository.root).read_bytes() == outcome.result.content
-        assert facts.result_sha256 == outcome.result.result_hash
-        runs = materialize_equity(outcome.result).payload["runs"]
-        assert runs["candidate"]["metrics"]["closed_cycles"] == 12
-        assert runs["buy_hold"]["metrics"]["closed_cycles"] == 0
-        assert execution.equity_statistics.benchmark_runs == 1
-        # A new account must load independently rather than borrow the first
-        # account's already loaded module after its source has disappeared.
-        subsequent, = context.evaluation.evaluate_many((prepared,), execution=execution)
-        assert subsequent.status.value == "FAILED" and subsequent.result is None
-        # Publishing facts must not keep the completed result or handle alive.
-        import gc
-        from weakref import ref
-        result_ref, prepared_ref = ref(outcome.result), ref(prepared)
-        del outcome, prepared
-        gc.collect()
-        assert result_ref() is None and prepared_ref() is None
-
-
-def test_checkpoint_rejects_retired_account_schema():
-    from czsc_trader.research_tools._equity_checkpoint import decode_result
-    with pytest.raises(ValueError, match="V4 artifact closure"):
-        decode_result({"kind": "equity-research/v2"}, "0" * 64)
+        original = context.evaluation.prepare(request, execution=execution)
+        labelled = context.evaluation.prepare(renamed, execution=execution)
+        first, second = context.evaluation.evaluate_many((original, labelled), execution=execution)
+        assert first.result is not None and second.result is not None
+        a, = build_equity_assessment(first.result)
+        b, = build_equity_assessment(second.result)
+        assert a.candidate.candidate_id != b.candidate.candidate_id
+        assert a.account == b.account and a.context_sha256 == b.context_sha256
+        # Candidate identity namespaces cycle IDs. Keep a one-to-one mapping,
+        # then compare every economic field and its fill/trade linkage.
+        assert len(a.fills) == len(b.fills)
+        cycles = {}
+        for left, right in zip(a.fills, b.fills, strict=True):
+            assert cycles.setdefault(right.cycle_id, left.cycle_id) == left.cycle_id
+            assert left == replace(right, cycle_id=cycles[right.cycle_id])
+        assert len(set(cycles.values())) == len(cycles)
+        assert a.closed_cycles == tuple(replace(c, cycle_id=cycles[c.cycle_id]) for c in b.closed_cycles)
+        left_ledger = json.loads(a.equity.candidate_ledger)
+        right_ledger = json.loads(b.equity.candidate_ledger)
+        assert {t['cycle_id'] for t in right_ledger['trades']} == {c.cycle_id for c in b.closed_cycles}
+        for trade in right_ledger['trades']:
+            trade['cycle_id'] = cycles[trade['cycle_id']]
+        assert left_ledger == right_ledger
+        assert a.equity == replace(b.equity, candidate_ledger=a.equity.candidate_ledger)

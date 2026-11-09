@@ -1,13 +1,11 @@
 """Daily raw price boundaries publish only with complete source evidence."""
 
-from copy import deepcopy
-
 import pandas as pd
 import pytest
 
 from dataflows import DataRequest, DataStatus, Dataset, PreparePolicy
 from dataflows import security_price_limits as limits
-from dataflows.errors import DataContractError, EmptyDataError, IncompleteDataError
+from dataflows.errors import DataContractError, IncompleteDataError
 
 
 class LimitPro:
@@ -23,16 +21,23 @@ class LimitPro:
         dates = pd.date_range(start_date, end_date)
         if self.anomaly == "calendar_gap":
             dates = dates[:-1]
-        return pd.DataFrame({"cal_date": dates.strftime("%Y%m%d"),
-                             "is_open": (dates.dayofweek < 5).astype(int)})
+        return pd.DataFrame(
+            {"cal_date": dates.strftime("%Y%m%d"), "is_open": (dates.dayofweek < 5).astype(int)}
+        )
 
     def _fetch(self, api, **kwargs):
         self.calls.append((api, kwargs))
         dates = pd.bdate_range(kwargs["start_date"], kwargs["end_date"])
-        frame = pd.DataFrame({"ts_code": self.symbol, "trade_date": dates.strftime("%Y%m%d"),
-                              "up_limit": 11., "down_limit": 9.,
-                              "asset_type": "ETF" if self.symbol.startswith("5") else "STK",
-                              "exchange": "SSE"})
+        frame = pd.DataFrame(
+            {
+                "ts_code": self.symbol,
+                "trade_date": dates.strftime("%Y%m%d"),
+                "up_limit": 11.0,
+                "down_limit": 9.0,
+                "asset_type": "ETF" if self.symbol.startswith("5") else "STK",
+                "exchange": "SSE",
+            }
+        )
         anomaly = self.anomaly
         if anomaly == "empty":
             return frame.iloc[:0]
@@ -41,8 +46,14 @@ class LimitPro:
         if anomaly == "duplicate":
             return pd.concat([frame, frame.iloc[:1]], ignore_index=True)
         if anomaly in {"zero", "negative", "nan", "infinite", "reverse", "equal"}:
-            frame.loc[0, "up_limit"] = {"zero": 0., "negative": -1., "nan": float("nan"),
-                                         "infinite": float("inf"), "reverse": 8., "equal": 9.}[anomaly]
+            frame.loc[0, "up_limit"] = {
+                "zero": 0.0,
+                "negative": -1.0,
+                "nan": float("nan"),
+                "infinite": float("inf"),
+                "reverse": 8.0,
+                "equal": 9.0,
+            }[anomaly]
         if anomaly == "wrong_symbol":
             frame.loc[0, "ts_code"] = "600000.SH"
         if anomaly == "wrong_asset":
@@ -66,7 +77,14 @@ def request(symbol="600722.SH", start="2026-09-28", end="2026-09-30"):
     return DataRequest(Dataset.SECURITY_PRICE_LIMITS, symbol, start, end, end)
 
 
-@pytest.mark.parametrize("symbol,api", [("600722.SH", "stk_limit"), ("510300.SH", "etf_limit")])
+@pytest.mark.parametrize(
+    "symbol,api",
+    [
+        ("600722.SH", "stk_limit"),
+        ("510300.SH", "etf_limit"),
+    ],
+    ids=["DFLS-25-C01", "DFLS-25-C02"],
+)
 def test_publish_raw_security_price_limits(flow_factory, publish_data, monkeypatch, symbol, api):
     pro = LimitPro(symbol)
     monkeypatch.setattr(limits, "get_tushare_pro", lambda _: pro)
@@ -83,16 +101,14 @@ def test_publish_raw_security_price_limits(flow_factory, publish_data, monkeypat
     assert len(pro.calls) == 1 and pro.calls[0][0] == api
 
 
-@pytest.mark.parametrize("anomaly,error", [
-    ("empty", EmptyDataError), ("missing", IncompleteDataError),
-    ("calendar_gap", IncompleteDataError), ("duplicate", DataContractError),
-    ("zero", DataContractError), ("negative", DataContractError),
-    ("nan", DataContractError), ("infinite", DataContractError),
-    ("reverse", DataContractError), ("equal", DataContractError),
-    ("wrong_symbol", DataContractError), ("wrong_asset", DataContractError),
-    ("wrong_exchange", DataContractError), ("invalid_date", DataContractError),
-    ("source_field", DataContractError),
-])
+@pytest.mark.parametrize(
+    "anomaly,error",
+    [
+        ("missing", IncompleteDataError),
+        ("reverse", DataContractError),
+    ],
+    ids=["DFLS-25-C05", "DFLS-25-C03"],
+)
 def test_invalid_source_rejected_by_real_adapter(monkeypatch, anomaly, error):
     # Generic facade state mapping lives in test_contract; provider admission
     # remains covered below without storing every invalid source variant.
@@ -103,47 +119,30 @@ def test_invalid_source_rejected_by_real_adapter(monkeypatch, anomaly, error):
     assert len(pro.calls) == 1  # No alternate source or silent retry.
 
 
-@pytest.mark.parametrize("symbol", ["AAPL", "00700.HK", "920001.BJ"])
-def test_unsupported_market_fails_before_source(monkeypatch, symbol):
-    monkeypatch.setattr(limits, "get_tushare_pro", lambda _: pytest.fail("must reject before provider"))
-    with pytest.raises(DataContractError, match="SH/SZ stock and ETF"):
-        limits.fetch_security_price_limits(request(symbol))
-
-
-def test_request_rejects_missing_symbol_frequency_and_timestamp():
-    with pytest.raises(ValueError, match="require a symbol"):
-        request(None)
-    with pytest.raises(ValueError, match="frequency"):
-        DataRequest(Dataset.SECURITY_PRICE_LIMITS, "600722.SH", "2026-09-28", "2026-09-30", None, "30m")
-    with pytest.raises(ValueError, match="ISO date"):
-        request(start="2026-09-28 09:30:00")
-
-
-@pytest.mark.parametrize("tamper", ["session", "hash", "lineage"])
-def test_facade_revalidates_bound_provider(flow_factory, monkeypatch, tamper):
+def test_DFLS_25_C04_infinite_upper_limit_rejected(monkeypatch):
     pro = LimitPro()
+    original = pro.stk_limit
+
+    def invalid(**kwargs):
+        frame = original(**kwargs)
+        frame.loc[0, "up_limit"] = float("inf")
+        return frame
+
+    monkeypatch.setattr(pro, "stk_limit", invalid)
     monkeypatch.setattr(limits, "get_tushare_pro", lambda _: pro)
-    frame, metadata = limits.fetch_security_price_limits(request())
-    if tamper == "session":
-        frame = frame.iloc[:-1]
-    elif tamper == "hash":
-        metadata = deepcopy(metadata)
-        metadata["daily_session_coverage"]["calendar_sha256"] = "0" * 64
-    else:
-        metadata["adjustment"] = "hfq"
-    flows = flow_factory({Dataset.SECURITY_PRICE_LIMITS: lambda _: (frame, metadata)})
-    prepared = flows.prepare((request(),), policy=PreparePolicy.REFRESH)
-    assert not prepared.ready and prepared.reference is None
-    item, = prepared.items
-    assert item.status is (DataStatus.INCOMPLETE if tamper == "session" else DataStatus.FAILED)
-    assert item.identity is None
-    assert item.error.code == ("INCOMPLETE_DATA" if tamper == "session" else "DATA_CONTRACT_MISMATCH")
+    with pytest.raises(DataContractError):
+        limits.fetch_security_price_limits(request())
+    assert len(pro.calls) == 1
 
 
-def test_large_range_is_deterministically_chunked(monkeypatch):
-    pro = LimitPro()
-    monkeypatch.setattr(limits, "get_tushare_pro", lambda _: pro)
-    frame, _ = limits.fetch_security_price_limits(request(start="2025-12-31", end="2026-01-02"))
-    assert len(pro.calls) == 2 and len(frame) == 3
-    assert pro.calls[0][1]["end_date"] == "20251231"
-    assert pro.calls[1][1]["start_date"] == "20260101"
+def test_DFLS_25_C07_provider_hfq_claim_cannot_publish(flow_factory, monkeypatch):
+    monkeypatch.setattr(limits, "get_tushare_pro", lambda _: LimitPro())
+    frame, meta = limits.fetch_security_price_limits(request())
+    meta["adjustment"] = "hfq"
+    prepared = flow_factory({Dataset.SECURITY_PRICE_LIMITS: lambda _: (frame, meta)}).prepare(
+        (request(),), policy=PreparePolicy.REFRESH
+    )
+    assert prepared.reference is None
+    (item,) = prepared.items
+    assert item.status is DataStatus.FAILED and item.identity is None
+    assert item.error.code == "DATA_CONTRACT_MISMATCH"

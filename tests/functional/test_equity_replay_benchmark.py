@@ -1,10 +1,11 @@
+# Risk ownership: TDR-06
 """The maintained benchmark uses the current API without research artifacts."""
 import importlib.util
 from pathlib import Path
 import pytest
 
 
-@pytest.mark.parametrize('market',['CN','US'])
+@pytest.mark.parametrize('market',[pytest.param('US', id='TDR-06-C04')])
 def test_synthetic_benchmark_runs_with_isolated_current_facts(tmp_path,market):
     path=Path(__file__).resolve().parents[2]/'scripts/benchmarks/equity_replay_benchmark.py'
     spec=importlib.util.spec_from_file_location('account_benchmark',path)

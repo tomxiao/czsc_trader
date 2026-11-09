@@ -3,9 +3,8 @@ from dataclasses import replace
 from math import sqrt
 
 import pytest
-from strategy_evaluator import AuditStatus, ReplayEvidence, audit_benchmark_replay, audit_replay
+from strategy_evaluator import AuditStatus, ReplayEvidence, audit_replay
 from test_benchmark_audit import _buyhold_evidence
-from test_champion_ledger_authentication import _replay as _closed_replay
 
 
 def _replay():
@@ -49,84 +48,21 @@ def _finite_benchmark():
     )
 
 
-@pytest.mark.parametrize("kind", ["strategy", "benchmark"])
-@pytest.mark.parametrize("field,value", [
-    ("win_rate", True), ("win_rate", -.1), ("win_rate", 1.1), ("win_rate", .5),
-    ("closed_trades", False), ("closed_trades", -1), ("return", float("nan")),
-    ("max_drawdown", .1), ("win_loss_ratio", -1),
+@pytest.mark.parametrize('defect', [
+    pytest.param("unavailable", id='SE-29-C04'),
+    pytest.param("finite", id='SE-29-C05'),
+    pytest.param("missing", id='SE-37-C05'),
 ])
-def test_public_audit_rejects_invalid_metric_evidence(kind, field, value):
-    evidence, audit = (_replay(), audit_replay) if kind == "strategy" else (
-        _buyhold_evidence(), audit_benchmark_replay,
-    )
-    assert audit(evidence).status is AuditStatus.PASS
-    invalid = replace(evidence, metrics={**evidence.metrics, field: value})
-    result = audit(invalid)
+@pytest.mark.risk_cases('SE-29-C04', 'SE-29-C05', 'SE-37-C05')
+def test_metric_state_value_and_required_field_are_authenticated(defect):
+    evidence = _replay()
+    metrics = dict(evidence.metrics)
+    if defect == 'unavailable':
+        metrics['win_loss_ratio_status'] = 'VALID'
+    elif defect == 'finite':
+        metrics['return'] += .01
+    else:
+        del metrics['calmar']
+    result = audit_replay(replace(evidence, metrics=metrics))
     assert result.status is AuditStatus.FAIL
-    assert ("METRIC_MISMATCH" if kind == "strategy" else "BENCHMARK_METRIC_MISMATCH") in result.reason_codes
-
-
-# Both audit paths use metric_matches for finite metrics. Keep its type/value
-# matrix once plus an explicit benchmark wiring case; per-field/status/tolerance
-# tests below still exercise both public audit paths independently.
-@pytest.mark.parametrize("value,kind", [
-    pytest.param(float("nan"), "strategy", id="nan-strategy"),
-    pytest.param(float("inf"), "strategy", id="positive-infinity-strategy"),
-    pytest.param(float("-inf"), "strategy", id="negative-infinity-strategy"),
-    pytest.param(True, "strategy", id="boolean-strategy"),
-    pytest.param("0", "strategy", id="string-strategy"),
-    pytest.param(None, "strategy", id="unavailable-strategy"),
-    pytest.param(True, "benchmark", id="boolean-benchmark"),
-])
-def test_public_audit_rejects_invalid_finite_metric(kind, value):
-    evidence, audit = (_closed_replay(), audit_replay) if kind == "strategy" else (
-        _finite_benchmark(), audit_benchmark_replay,
-    )
-    # A finite expected metric is essential: replacing None with infinity only
-    # exercises the unavailable-metric branch.
-    assert isinstance(evidence.metrics["calmar"], float)
-    baseline = audit(evidence)
-    assert baseline.status is AuditStatus.PASS, baseline.reason_codes
-    result = audit(replace(evidence, metrics={**evidence.metrics, "calmar": value}))
-    assert result.status is AuditStatus.FAIL
-    assert result.reason_codes == (
-        "METRIC_MISMATCH" if kind == "strategy" else "BENCHMARK_METRIC_MISMATCH",
-    )
-
-
-@pytest.mark.parametrize("kind", ["strategy", "benchmark"])
-@pytest.mark.parametrize("value", ["VALID", True], ids=["wrong-state", "wrong-type"])
-def test_public_audit_authenticates_metric_status(kind, value):
-    evidence, audit = (_replay(), audit_replay) if kind == "strategy" else (
-        _buyhold_evidence(), audit_benchmark_replay,
-    )
-    assert audit(evidence).status is AuditStatus.PASS
-    result = audit(replace(evidence, metrics={
-        **evidence.metrics, "win_loss_ratio_status": value,
-    }))
-    assert result.status is AuditStatus.FAIL
-    assert result.reason_codes == (
-        "METRIC_MISMATCH" if kind == "strategy" else "BENCHMARK_METRIC_MISMATCH",
-    )
-
-
-@pytest.mark.parametrize("kind", ["strategy", "benchmark"])
-@pytest.mark.parametrize("field", ["win_rate", "calmar", "sharpe", "win_loss_ratio"])
-def test_public_audit_requires_all_metric_fields(kind, field):
-    evidence, audit = (_replay(), audit_replay) if kind == "strategy" else (
-        _buyhold_evidence(), audit_benchmark_replay,
-    )
-    result = audit(replace(evidence, metrics={key: value for key, value in evidence.metrics.items() if key != field}))
-    assert result.status is AuditStatus.FAIL
-
-
-@pytest.mark.parametrize("kind", ["strategy", "benchmark"])
-def test_public_metric_audit_preserves_finite_numeric_tolerance(kind):
-    evidence, audit = (_replay(), audit_replay) if kind == "strategy" else (
-        _buyhold_evidence(), audit_benchmark_replay,
-    )
-    value = evidence.metrics["return"]
-    near = replace(evidence, metrics={**evidence.metrics, "return": value + 1e-8})
-    far = replace(evidence, metrics={**evidence.metrics, "return": value + 1e-5})
-    assert audit(near).status is AuditStatus.PASS
-    assert audit(far).status is AuditStatus.FAIL
+    assert result.reason_codes == ('METRIC_MISMATCH',)

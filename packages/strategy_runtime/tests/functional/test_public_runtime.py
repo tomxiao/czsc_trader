@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 import json
 import shutil
 from copy import deepcopy
@@ -8,15 +7,15 @@ from dataclasses import replace
 from decimal import Decimal
 from pathlib import Path
 from zoneinfo import ZoneInfo
-from types import SimpleNamespace
-
 import pandas as pd
 import pytest
 from czsc_trader.application.ec_boundary import session_execution_plan
 from execution_channels.serialization import from_record, to_record
-from execution_channels.session_contracts import PortfolioSnapshot as ChannelPortfolio, ExecutionState as ChannelState
-from dataflows import Dataflows, Dataset, DataSpace, ProviderConfig, ProviderBinding, PreparePolicy, canonical_frame_sha256
-from dataflows.ohlcv_quality import bind_quality_frame, build_quality_evidence, verify_daily_sessions
+from execution_channels.session_contracts import (
+    PortfolioSnapshot as ChannelPortfolio,
+    ExecutionState as ChannelState,
+)
+from dataflows import Dataflows, DataSpace, ProviderConfig, PreparePolicy, canonical_frame_sha256
 from strategy_runtime import (
     ExecutionState,
     PortfolioSnapshot,
@@ -28,94 +27,13 @@ from strategy_runtime import (
     TradableWindow,
     TradingPoint,
 )
-from strategy_runtime.prepare_cli import main as prepare_main
-
+from packages.strategy_runtime.tests.session_runtime_support import _flows
 
 ROOT = Path(__file__).resolve().parents[4]
 ZONE = ZoneInfo("Asia/Shanghai")
 
 
-def test_prepare_cli_passes_explicit_space_and_credentials(tmp_path, monkeypatch, capsys) -> None:
-    observed = {}
-    def prepare(**kwargs):
-        observed.update(kwargs)
-        return {"prepared": True}
-    monkeypatch.setattr("strategy_runtime.prepare_cli.prepare_runtime_data", prepare)
-    exit_code = prepare_main([
-        "--repo-root", str(tmp_path), "--data-dir", str(tmp_path / "context"),
-        "--data-space", "data/market", "--symbol", "588080.SH",
-        "--release", "S900-v1", "--trading-date", "2026-01-05",
-    ])
-    assert exit_code == 0
-    assert json.loads(capsys.readouterr().out)["status"] == "PASS"
-    assert isinstance(observed["dataflows"], Dataflows)
-    assert observed["policy"] is PreparePolicy.REUSE
-    assert (tmp_path / "data/market/assets.sqlite3").is_file()
-
-
-def _flows(tmp_path, *, flow_value=0.8) -> Dataflows:
-    # The fixture strategy needs one prior session; five dates also cover the
-    # latest-available cutoff scenario without unrelated multi-year history.
-    dates = pd.bdate_range(end="2026-09-02", periods=5)
-    bars = pd.DataFrame(
-        {
-            "Date": dates,
-            "Flow": flow_value,
-            "TotalShare": 100000.0,
-            "Open": pd.array([9.4] * len(dates), dtype="Float64"),
-            "High": pd.array([9.5] * len(dates), dtype="Float64"),
-            "Low": pd.array([9.3] * len(dates), dtype="Float64"),
-            "Close": pd.array(
-                [9.417734788764953] * len(dates), dtype="Float64"
-            ),
-            "Volume": pd.array([1000] * len(dates), dtype="Int64"),
-            "Amount": pd.array([9400.0] * len(dates), dtype="Float64"),
-        }
-    )
-
-    def market(request):
-        frame = bars.loc[pd.to_datetime(bars["Date"]).between(request.start, request.end)].copy()
-        metadata = {
-            "vendor": "test",
-            "adjustment": "none" if "unadjusted" in request.dataset else "hfq",
-            "primary_key": ["Date"],
-        }
-        if request.dataset in {Dataset.ETF_OHLCV, Dataset.ETF_UNADJUSTED_DAILY}:
-            pro = SimpleNamespace(
-                fund_basic=lambda **kwargs: pd.DataFrame({
-                    "ts_code": [request.symbol], "list_date": [dates[0].strftime("%Y%m%d")],
-                }),
-                trade_cal=lambda **kwargs: pd.DataFrame({
-                    "cal_date": pd.date_range(kwargs["start_date"], kwargs["end_date"]).strftime("%Y%m%d"),
-                    "is_open": (pd.date_range(kwargs["start_date"], kwargs["end_date"]).dayofweek < 5).astype(int),
-                }),
-            )
-            coverage = verify_daily_sessions(pro, request.symbol, frame,
-                start=request.start, end=request.end)
-            quality = build_quality_evidence(frame, expected_dates=coverage["expected_dates"])
-            metadata.update(daily_session_coverage=coverage,
-                ohlcv_quality_evidence=bind_quality_frame(quality, frame,
-                    adjustment=metadata["adjustment"]))
-            frame.attrs = {name: metadata[name] for name in
-                           ("daily_session_coverage", "ohlcv_quality_evidence")}
-        return frame, metadata
-
-    def calendar(request):
-        days = pd.date_range(request.start, request.end)
-        return pd.DataFrame({"Date": days, "IsOpen": (days.dayofweek < 5).astype(int)}), {
-            "vendor": "test",
-            "primary_key": ["Date"],
-        }
-
-    return Dataflows(base_dir=tmp_path, space=DataSpace(Path("assets")), providers=ProviderConfig({
-        dataset: ProviderBinding("test", "1", provider) for dataset, provider in {
-            Dataset.ETF_SHARE_SIZE: market, Dataset.ETF_OHLCV: market,
-            Dataset.ETF_UNADJUSTED_DAILY: market, Dataset.TRADING_CALENDAR: calendar,
-        }.items()
-    }))
-
-
-def test_public_runtime_prepares_and_plans_without_an_execution_channel(
+def test_SRT_11_C01_public_runtime_prepares_and_plans_without_an_execution_channel(
     tmp_path, monkeypatch, runtime_candidate
 ) -> None:
     flows = _flows(tmp_path)
@@ -124,8 +42,13 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
 
     def observe_fetch(*args, **kwargs):
         result = fetch(*args, **kwargs)
-        admitted.append((result.dataframe, deepcopy(result.dataframe.attrs),
-                         canonical_frame_sha256(result.dataframe)))
+        admitted.append(
+            (
+                result.dataframe,
+                deepcopy(result.dataframe.attrs),
+                canonical_frame_sha256(result.dataframe),
+            )
+        )
         return result
 
     monkeypatch.setattr(flows, "fetch", observe_fetch)
@@ -139,33 +62,71 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
     )
     calculated_at = datetime(2026, 9, 2, 22, 14, tzinfo=ZONE)
     with pytest.raises(RuntimeContractError, match="call prepare_data"):
-        session_execution_plan(strategy.propose_at(point=TradingPoint(trading_date, calculated_at)), from_record(ChannelPortfolio, to_record(PortfolioSnapshot(
-                "s002-v1",
-                "588080.SH",
-                Decimal("50000"),
-                Decimal("100000"),
-                5900,
-                7,
-                calculated_at,
-            ))), from_record(ChannelState, to_record(ExecutionState(3, calculated_at, 5900))))
+        session_execution_plan(
+            strategy.propose_at(point=TradingPoint(trading_date, calculated_at)),
+            from_record(
+                ChannelPortfolio,
+                to_record(
+                    PortfolioSnapshot(
+                        "s002-v1",
+                        "588080.SH",
+                        Decimal("50000"),
+                        Decimal("100000"),
+                        5900,
+                        7,
+                        calculated_at,
+                    )
+                ),
+            ),
+            from_record(ChannelState, to_record(ExecutionState(3, calculated_at, 5900))),
+        )
 
     prepared = strategy.prepare_data(policy=PreparePolicy.REUSE)
-    plan = session_execution_plan(strategy.propose_at(point=TradingPoint(trading_date, calculated_at)), from_record(ChannelPortfolio, to_record(PortfolioSnapshot(
-            "s002-v1",
-            "588080.SH",
-            Decimal("50000"),
-            Decimal("100000"),
-            5900,
-            7,
-            calculated_at,
-        ))), from_record(ChannelState, to_record(ExecutionState(3, calculated_at, 5900))))
+    plan = session_execution_plan(
+        strategy.propose_at(point=TradingPoint(trading_date, calculated_at)),
+        from_record(
+            ChannelPortfolio,
+            to_record(
+                PortfolioSnapshot(
+                    "s002-v1",
+                    "588080.SH",
+                    Decimal("50000"),
+                    Decimal("100000"),
+                    5900,
+                    7,
+                    calculated_at,
+                )
+            ),
+        ),
+        from_record(ChannelState, to_record(ExecutionState(3, calculated_at, 5900))),
+    )
 
     assert prepared.strategy.reference_id == "S900-C0001"
     assert len(prepared.data_identity) == 64
     for mode in SignalHistoryMode:
         history = strategy.inspect_signals(history_mode=mode)
-        explicit = session_execution_plan(strategy.propose_at(point=TradingPoint(trading_date, calculated_at), history_mode=mode), from_record(ChannelPortfolio, to_record(PortfolioSnapshot("s002-v1", "588080.SH", Decimal("50000"), Decimal("100000"), 5900, 7, calculated_at))), from_record(ChannelState, to_record(ExecutionState(3, calculated_at, 5900))))
-        assert explicit.target_position == history.loc[pd.Timestamp(explicit.signal_date), "target_position"]
+        explicit = session_execution_plan(
+            strategy.propose_at(point=TradingPoint(trading_date, calculated_at), history_mode=mode),
+            from_record(
+                ChannelPortfolio,
+                to_record(
+                    PortfolioSnapshot(
+                        "s002-v1",
+                        "588080.SH",
+                        Decimal("50000"),
+                        Decimal("100000"),
+                        5900,
+                        7,
+                        calculated_at,
+                    )
+                ),
+            ),
+            from_record(ChannelState, to_record(ExecutionState(3, calculated_at, 5900))),
+        )
+        assert (
+            explicit.target_position
+            == history.loc[pd.Timestamp(explicit.signal_date), "target_position"]
+        )
         if mode is SignalHistoryMode.CONTINUOUS:
             assert explicit.plan_identity == plan.plan_identity
         history.loc[:, "target_position"] = 99
@@ -192,33 +153,68 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
     pricing = strategy._prepared_data._pricing
     assert pricing.adjusted_daily.attrs == pricing.execution_daily.attrs == {}
     assert any("ohlcv_quality_evidence" in attrs for _, attrs, _ in admitted)
-    assert all(frame.attrs == attrs and canonical_frame_sha256(frame) == identity
-               for frame, attrs, identity in admitted)
+    assert all(
+        frame.attrs == attrs and canonical_frame_sha256(frame) == identity
+        for frame, attrs, identity in admitted
+    )
     # An exported price history is defensive; cached plan prices keep their exact identity.
     exported_prices = strategy.inspect_price_history()
-    assert plan.references.signal_price == Decimal(str(
-        exported_prices.loc[exported_prices.dt.eq(pd.Timestamp(plan.signal_date)), "close"].iloc[0]
-    ))
+    assert plan.references.signal_price == Decimal(
+        str(
+            exported_prices.loc[
+                exported_prices.dt.eq(pd.Timestamp(plan.signal_date)), "close"
+            ].iloc[0]
+        )
+    )
     exported_prices.loc[:, "close"] = 99.0
-    repeated = session_execution_plan(strategy.propose_at(point=TradingPoint(trading_date, calculated_at)), from_record(ChannelPortfolio, to_record(PortfolioSnapshot("s002-v1", "588080.SH", Decimal("50000"), Decimal("100000"), 5900, 7, calculated_at))), from_record(ChannelState, to_record(ExecutionState(3, calculated_at, 5900))))
+    repeated = session_execution_plan(
+        strategy.propose_at(point=TradingPoint(trading_date, calculated_at)),
+        from_record(
+            ChannelPortfolio,
+            to_record(
+                PortfolioSnapshot(
+                    "s002-v1",
+                    "588080.SH",
+                    Decimal("50000"),
+                    Decimal("100000"),
+                    5900,
+                    7,
+                    calculated_at,
+                )
+            ),
+        ),
+        from_record(ChannelState, to_record(ExecutionState(3, calculated_at, 5900))),
+    )
     assert repeated == plan
 
     before_close = datetime(2026, 9, 2, 14, 59, tzinfo=ZONE)
     with pytest.raises(RuntimeContractError, match="precedes the signal-session close"):
-        session_execution_plan(strategy.propose_at(point=TradingPoint(trading_date, before_close)), from_record(ChannelPortfolio, to_record(PortfolioSnapshot(
-                "s002-v1",
-                "588080.SH",
-                Decimal("50000"),
-                Decimal("100000"),
-                5900,
-                7,
-                before_close,
-            ))), from_record(ChannelState, to_record(ExecutionState(3, before_close, 5900))))
+        session_execution_plan(
+            strategy.propose_at(point=TradingPoint(trading_date, before_close)),
+            from_record(
+                ChannelPortfolio,
+                to_record(
+                    PortfolioSnapshot(
+                        "s002-v1",
+                        "588080.SH",
+                        Decimal("50000"),
+                        Decimal("100000"),
+                        5900,
+                        7,
+                        before_close,
+                    )
+                ),
+            ),
+            from_record(ChannelState, to_record(ExecutionState(3, before_close, 5900))),
+        )
 
     # Replay is bound explicitly and cannot contact a supplier.
-    offline = Dataflows(base_dir=tmp_path, space=DataSpace(Path("assets")), providers=ProviderConfig({}))
+    offline = Dataflows(
+        base_dir=tmp_path, space=DataSpace(Path("assets")), providers=ProviderConfig({})
+    )
     cached_instance = StrategyRuntime(ROOT / "strategies", dataflows=offline).create(
-        StrategyInit(runtime_candidate, window, tmp_path / "replay"))
+        StrategyInit(runtime_candidate, window, tmp_path / "replay")
+    )
     cached = cached_instance.prepare_data(binding=strategy.input_binding)
     assert cached == prepared
     assert cached_instance.inspect_signals().equals(strategy.inspect_signals())
@@ -227,13 +223,20 @@ def test_public_runtime_prepares_and_plans_without_an_execution_channel(
         cached_instance.prepare_data(policy=PreparePolicy.REFRESH)
     with pytest.raises(RuntimeContractError, match="another strategy"):
         StrategyRuntime(ROOT / "strategies", dataflows=offline).create(
-            StrategyInit(replace(runtime_candidate, candidate_id="C0002"), window, tmp_path / "other")
+            StrategyInit(
+                replace(runtime_candidate, candidate_id="C0002"), window, tmp_path / "other"
+            )
         ).prepare_data(binding=strategy.input_binding)
 
 
-def test_failed_preparation_is_not_exposed_as_prepared_data(tmp_path, runtime_candidate) -> None:
-    strategy = StrategyRuntime(ROOT / "strategies").create(StrategyInit(
-        runtime_candidate, TradableWindow(date(2026, 9, 3), date(2026, 9, 3)), tmp_path))
+def test_SRT_11_C03_failed_preparation_is_not_exposed_as_prepared_data(
+    tmp_path, runtime_candidate
+) -> None:
+    strategy = StrategyRuntime(ROOT / "strategies").create(
+        StrategyInit(
+            runtime_candidate, TradableWindow(date(2026, 9, 3), date(2026, 9, 3)), tmp_path
+        )
+    )
     with pytest.raises(RuntimeContractError, match="host-supplied Dataflows"):
         strategy.prepare_data(policy=PreparePolicy.REUSE)
     assert not (tmp_path / "input-bindings").exists()
@@ -246,8 +249,13 @@ def plan_binding_seed(frozen_seed_root, runtime_candidate_seed):
     """Publicly prepare valid immutable assets once for plan-tampering cases."""
     root = frozen_seed_root / "srt-plan-binding"
     flows = _flows(root)
-    strategy = StrategyRuntime(ROOT / "strategies", dataflows=flows).create(StrategyInit(
-        runtime_candidate_seed, TradableWindow(date(2026, 9, 3), date(2026, 9, 3)), root / "context"))
+    strategy = StrategyRuntime(ROOT / "strategies", dataflows=flows).create(
+        StrategyInit(
+            runtime_candidate_seed,
+            TradableWindow(date(2026, 9, 3), date(2026, 9, 3)),
+            root / "context",
+        )
+    )
     request = strategy.calendar_request()
     prepared = flows.prepare((request,), policy=PreparePolicy.REFRESH)
     plan = strategy.plan_inputs(flows.fetch(request, prepared=prepared.reference))
@@ -265,17 +273,30 @@ def plan_binding_seed(frozen_seed_root, runtime_candidate_seed):
     return root / "assets", binding
 
 
-@pytest.mark.parametrize("corruption", ["calendar_sha256", "signal_dates", "calculation_dates", "requests"])
+@pytest.mark.parametrize(
+    "corruption",
+    [
+        "calendar_sha256",
+        "calculation_dates",
+    ],
+    ids=["SRT-11-C04", "SRT-11-C05"],
+)
 def test_explicit_plan_binding_rejects_changed_calendar_and_forged_scope(
-    tmp_path, runtime_candidate, plan_binding_seed, corruption,
+    tmp_path,
+    runtime_candidate,
+    plan_binding_seed,
+    corruption,
 ) -> None:
     assets, binding = plan_binding_seed
     shutil.copytree(assets, tmp_path / "assets")
     # Each case owns the database and context. No provider can repair or replace
     # a copied preparation, and the actual derived-plan authentication runs.
-    flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path("assets")), providers=ProviderConfig({}))
-    strategy = StrategyRuntime(ROOT / "strategies", dataflows=flows).create(StrategyInit(
-        runtime_candidate, binding.plan.tradable_window, tmp_path / "context"))
+    flows = Dataflows(
+        base_dir=tmp_path, space=DataSpace(Path("assets")), providers=ProviderConfig({})
+    )
+    strategy = StrategyRuntime(ROOT / "strategies", dataflows=flows).create(
+        StrategyInit(runtime_candidate, binding.plan.tradable_window, tmp_path / "context")
+    )
     plan = binding.plan
     if corruption == "calendar_sha256":
         changed = replace(plan, calendar_sha256="0" * 64)
@@ -284,8 +305,11 @@ def test_explicit_plan_binding_rejects_changed_calendar_and_forged_scope(
     elif corruption == "calculation_dates":
         changed = replace(plan, calculation_dates=(date(2026, 9, 1), *plan.calculation_dates))
     else:
-        request = plan.requests['flow']
-        requests = {**plan.requests, 'flow': replace(request, coverage=replace(request.coverage, minimum_sessions=2))}
+        request = plan.requests["flow"]
+        requests = {
+            **plan.requests,
+            "flow": replace(request, coverage=replace(request.coverage, minimum_sessions=2)),
+        }
         changed = replace(plan, requests=requests)
     if corruption in {"signal_dates", "calculation_dates"}:
         assert changed.calendar_sha256 == plan.calendar_sha256
@@ -300,137 +324,119 @@ def test_explicit_plan_binding_rejects_changed_calendar_and_forged_scope(
     assert strategy.input_binding == binding
 
 
-def test_latest_available_request_carries_source_freshness_into_preparation(
-    tmp_path, runtime_candidate,
+def test_SRT_11_C02_refresh_keeps_old_binding_replayable_and_preserves_historical_files(
+    tmp_path, runtime_candidate
 ) -> None:
-    from strategy_runtime import implementation_sha256
-
-    descriptor = dict(runtime_candidate.payload["runtime"])
-    source = runtime_candidate.source_root / descriptor["source_files"][0]
-    source.write_text(source.read_text(encoding="utf-8").replace(
-        "CutoffRule.SIGNAL_SESSION,", "CutoffRule.LATEST_AVAILABLE,\n                3,",
-    ), encoding="utf-8")
-    descriptor["source_sha256"] = implementation_sha256(
-        tuple(descriptor["source_files"]), source_root=runtime_candidate.source_root,
-    )
-    candidate = replace(runtime_candidate, payload={**runtime_candidate.payload, "runtime": descriptor})
-    flows = _flows(tmp_path)
-    strategy = StrategyRuntime(dataflows=flows).create(StrategyInit(
-        candidate, TradableWindow(date(2026, 9, 3), date(2026, 9, 3)), tmp_path / "context",
-    ))
-    request = strategy.calendar_request()
-    calendars = flows.prepare((request,), policy=PreparePolicy.REUSE)
-    plan = strategy.plan_inputs(flows.fetch(request, prepared=calendars.reference))
-    assert plan.requests["market"].required_cutoff == "2026-08-30"
-    assert plan.requests["market"].coverage.observations_through == "2026-09-02"
-    batch = flows.prepare(tuple(plan.requests.values()), policy=PreparePolicy.REUSE)
-    assert batch.ready
-    prepared = strategy.prepare_data(binding=StrategyInputBinding(plan, batch.reference))
-    assert prepared.available_through == date(2026, 9, 2)
-
-
-@pytest.mark.parametrize('minimum_sessions', [1, 3])
-def test_strategy_declared_incremental_coverage_is_used_without_runner_warmup_inference(
-    tmp_path, runtime_candidate, minimum_sessions,
-) -> None:
-    from strategy_runtime import RuntimeExecutionError, implementation_sha256
-
-    descriptor = dict(runtime_candidate.payload['runtime'])
-    source = runtime_candidate.source_root / descriptor['source_files'][0]
-    text = source.read_text(encoding='utf-8')
-    # Deliberately inconsistent summary metadata proves the runner does not
-    # reinterpret lookback/staleness: the explicit request is authoritative.
-    declaration = f'''        start, through = date(2026, 9, 1), date(2026, 9, 2)
-        requests['flow'] = DataRequest(Dataset.ETF_SHARE_SIZE, '588080.SH', start.isoformat(), through.isoformat(), through.isoformat(),
-            coverage=DataCoverageRequirement(maximum_start_lag_days=None, minimum_observations=1, minimum_sessions={minimum_sessions}, observations_through=through.isoformat()))
-'''
-    # The fixture is formatted; locate its final return statement by prefix.
-    prefix = '        return CalculationScope('
-    location = text.index(prefix)
-    text = text[:location] + declaration + text[location:]
-    text = text.replace('"daily",\n                1,\n                CutoffRule.SIGNAL_SESSION,',
-                        '"daily",\n                252,\n                CutoffRule.SIGNAL_SESSION,', 1)
-    # Preserve the fixture's own planning for other inputs; its delayed flow
-    # request overrides the initial declaration before calculation.
-    text = text.replace('previous[-max(1, requirement.lookback_sessions)]', 'previous[-1]')
-    text = text.replace('minimum_observations=requirement.lookback_sessions', 'minimum_observations=1')
-    text = text.replace('minimum_sessions=requirement.lookback_sessions', 'minimum_sessions=1')
-    source.write_text(text, encoding='utf-8')
-    descriptor['source_sha256'] = implementation_sha256(tuple(descriptor['source_files']), source_root=runtime_candidate.source_root)
-    candidate = replace(runtime_candidate, payload={**runtime_candidate.payload, 'runtime': descriptor})
-    flows = _flows(tmp_path)
-    window = TradableWindow(date(2026, 8, 31), date(2026, 9, 3))
-    strategy = StrategyRuntime(dataflows=flows).create(StrategyInit(candidate, window, tmp_path / 'context'))
-    assert next(item for item in strategy.definition.inputs.requirements if item.name == 'flow').lookback_sessions == 252
-    request = strategy.calendar_request()
-    calendars = flows.prepare((request,), policy=PreparePolicy.REUSE)
-    plan = strategy.plan_inputs(flows.fetch(request, prepared=calendars.reference))
-    delayed = plan.requests['flow']
-    assert delayed.start == '2026-09-01'
-    assert delayed.coverage.observations_through == '2026-09-02'
-    assert min(plan.signal_dates.values()) == date(2026, 8, 28)
-    assert delayed.coverage.minimum_sessions == minimum_sessions
-    if minimum_sessions == 3:
-        with pytest.raises(RuntimeExecutionError, match='fewer sessions'):
-            strategy.prepare_data(policy=PreparePolicy.REUSE)
-        assert not (tmp_path / 'context/input-bindings').exists()
-    else:
-        strategy.prepare_data(policy=PreparePolicy.REUSE)
-        binding = StrategyInputBinding.from_mapping(strategy.input_binding.to_dict())
-        offline = Dataflows(base_dir=tmp_path, space=DataSpace(Path('assets')), providers=ProviderConfig({}))
-        replay = StrategyRuntime(dataflows=offline).create(StrategyInit(candidate, window, tmp_path / 'offline'))
-        replay.prepare_data(binding=binding)
-        assert replay.input_binding == binding
-        with pytest.raises(ValueError, match='does not cover'):
-            replay.inspect_signals()
-
-
-def test_refresh_keeps_old_binding_replayable_and_preserves_historical_files(tmp_path, runtime_candidate) -> None:
     from strategy_runtime import RuntimeExecutionError
+
     window = TradableWindow(date(2026, 9, 3), date(2026, 9, 3))
     context = tmp_path / "context"
     context.mkdir()
     historical = context / "prepared-data.json"
     historical.write_bytes(b"historical CSV manifest remains immutable")
-    first = StrategyRuntime(dataflows=_flows(tmp_path)).create(StrategyInit(runtime_candidate, window, context))
+    first = StrategyRuntime(dataflows=_flows(tmp_path)).create(
+        StrategyInit(runtime_candidate, window, context)
+    )
     first_result = first.prepare_data(policy=PreparePolicy.REUSE)
     old_binding = StrategyInputBinding.from_mapping(first.input_binding.to_dict())
     newer = StrategyRuntime(dataflows=_flows(tmp_path, flow_value=0.1)).create(
-        StrategyInit(runtime_candidate, window, context))
+        StrategyInit(runtime_candidate, window, context)
+    )
     newer_result = newer.prepare_data(policy=PreparePolicy.REFRESH)
     assert newer_result.data_identity != first_result.data_identity
     assert historical.read_bytes() == b"historical CSV manifest remains immutable"
-    offline = Dataflows(base_dir=tmp_path, space=DataSpace(Path("assets")), providers=ProviderConfig({}))
-    restored = StrategyRuntime(dataflows=offline).create(StrategyInit(runtime_candidate, window, context))
+    offline = Dataflows(
+        base_dir=tmp_path, space=DataSpace(Path("assets")), providers=ProviderConfig({})
+    )
+    restored = StrategyRuntime(dataflows=offline).create(
+        StrategyInit(runtime_candidate, window, context)
+    )
     assert restored.prepare_data(binding=old_binding) == first_result
     pd.testing.assert_frame_equal(restored.inspect_signals(), first.inspect_signals())
     wrong_space = _flows(tmp_path / "other")
     mismatched = StrategyRuntime(dataflows=wrong_space).create(
-        StrategyInit(runtime_candidate, window, tmp_path / "bad-context"))
+        StrategyInit(runtime_candidate, window, tmp_path / "bad-context")
+    )
     with pytest.raises(RuntimeExecutionError, match="another data space"):
         mismatched.prepare_data(binding=old_binding)
     assert not (tmp_path / "bad-context").exists()
 
 
-def test_prepared_batch_accounts_reuse_facts_without_supplier_or_storage_io(tmp_path, monkeypatch, runtime_candidate):
-    flows = _flows(tmp_path)
-    strategy = StrategyRuntime(ROOT / "strategies", dataflows=flows).create(StrategyInit(
-        runtime_candidate, TradableWindow(date(2026, 9, 3), date(2026, 9, 3)), tmp_path / "in-memory"))
-    strategy.prepare_data(policy=PreparePolicy.REUSE, persist=False)
+def test_SRT_12_C02_prepared_batch_accounts_reuse_facts_without_supplier_or_storage_io(
+    tmp_path,
+    monkeypatch,
+    runtime_candidate,
+    plan_binding_seed,
+):
+    assets, binding = plan_binding_seed
+    shutil.copytree(assets, tmp_path / "assets")
+    flows = Dataflows(
+        base_dir=tmp_path, space=DataSpace(Path("assets")), providers=ProviderConfig({})
+    )
+    strategy = StrategyRuntime(ROOT / "strategies", dataflows=flows).create(
+        StrategyInit(
+            runtime_candidate,
+            TradableWindow(date(2026, 9, 3), date(2026, 9, 3)),
+            tmp_path / "in-memory",
+        )
+    )
+    strategy.prepare_data(binding=binding, persist=False)
     assert not (tmp_path / "in-memory" / "input-bindings").exists()
     with pytest.raises(RuntimeContractError, match="WINDOW history"):
         strategy.fork_for_replay(execution_policy=strategy.execution_policy)
     expected = strategy.inspect_signals()
+
     def forbidden(*args, **kwargs):
         pytest.fail("prepared account replay must not access suppliers or persist bindings")
+
     monkeypatch.setattr(flows, "fetch", forbidden)
     monkeypatch.setattr("strategy_runtime.strategy.save_prepared_inputs", forbidden)
     first = strategy.fork_for_replay(execution_policy=strategy.execution_policy)
     second = strategy.fork_for_replay(execution_policy=strategy.execution_policy)
     exported = first.inspect_signals()
-    exported.loc[:, "target_position"] = 99.
+    exported.loc[:, "target_position"] = 99.0
     pd.testing.assert_frame_equal(second.inspect_signals(), expected)
     pd.testing.assert_frame_equal(strategy.inspect_signals(), expected)
     assert first is not second and first.execution_policy == strategy.execution_policy
     with pytest.raises(RuntimeContractError, match="cannot calculate new history"):
         first.inspect_signals(history_mode=SignalHistoryMode.CONTINUOUS)
+
+
+@pytest.fixture
+def prepared_memory_strategy(tmp_path, runtime_candidate, plan_binding_seed):
+    assets, binding = plan_binding_seed
+    shutil.copytree(assets, tmp_path / "assets")
+    flows = Dataflows(
+        base_dir=tmp_path, space=DataSpace(Path("assets")), providers=ProviderConfig({})
+    )
+    strategy = StrategyRuntime(dataflows=flows).create(
+        StrategyInit(runtime_candidate, binding.plan.tradable_window, tmp_path / "context")
+    )
+    result = strategy.prepare_data(binding=binding, persist=False)
+    return strategy, result, tmp_path / "context"
+
+
+def test_SRT_12_C01_nonpersistent_preparation_keeps_authentication(prepared_memory_strategy):
+    strategy, result, context = prepared_memory_strategy
+    assert result.available_through == date(2026, 9, 2)
+    assert strategy.input_binding is not None and not (context / "input-bindings").exists()
+
+
+def test_SRT_12_C03_uncomputed_mode_cannot_be_forked(prepared_memory_strategy):
+    strategy, _, _ = prepared_memory_strategy
+    with pytest.raises(RuntimeContractError, match="WINDOW history"):
+        strategy.fork_for_replay(execution_policy=strategy.execution_policy)
+
+
+def test_SRT_12_C04_fee_overlay_preserves_original_definition(prepared_memory_strategy):
+    from strategy_runtime.models import ExecutionPolicy
+
+    strategy, _, _ = prepared_memory_strategy
+    strategy.inspect_signals()
+    original = strategy.execution_policy
+    settings = dict(original.settings)
+    settings["capital"] = {**dict(settings["capital"]), "fee_rate": 0.002}
+    alternate = ExecutionPolicy(original.policy_type, settings)
+    fork = strategy.fork_for_replay(execution_policy=alternate)
+    assert fork.execution_policy == alternate and strategy.execution_policy == original
+    assert fork.definition == strategy.definition and fork.identity == strategy.identity

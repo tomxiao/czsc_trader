@@ -1,41 +1,102 @@
-"""Both computation models obey the same preparation and ownership contract."""
+"""TDR-02: ownership needs genuine preparation, not replay or publication.
+
+Market/computation crossings have separate E2E coverage. This boundary has no
+market branch; use one real handle and verify its lifecycle without executing it.
+"""
 from dataclasses import replace
 
 import pytest
 
-from czsc_trader.research_tools import ResearchExecutionSession, PreparedAccountEvaluation
-from test_research_contract_upgrade import managed_evaluation as managed_evaluation
+from czsc_trader.research_tools import ResearchExecutionSession
+from czsc_trader.research_tools.account_preparation import require_account
 
 
-@pytest.mark.parametrize('market', ['CN', 'US'])
-@pytest.mark.parametrize('computation', ['BATCH_HISTORY', 'STATEFUL_STEP'])
-def test_account_preparation_ownership_and_input_isolation(tmp_path, market, computation):
+
+
+def test_TDR_02_C01_account_handle_01(tmp_path, monkeypatch):
     from account_parity_support import setup_account
-    from strategy_runtime import StrategyComputation, ExecutionResources
+    from strategy_runtime import ExecutionResources
     from dataflows import MarketId, BarFrequency
-    context, proposal = setup_account(tmp_path, MarketId(market), BarFrequency.DAILY, StrategyComputation(computation))
+    context, proposal = setup_account(tmp_path, MarketId.CN, BarFrequency.DAILY)
     context.evaluation.resources = ExecutionResources(1)
     experiment = proposal.experiment
     access = context.evaluation
-    with pytest.raises(TypeError, match='explicit ResearchExecutionSession'):
-        access.prepare(proposal)
+    from czsc_trader.research_tools import equity_replay
+    def no_replay(*args, **kwargs):
+        raise AssertionError('ownership checks must not calculate accounts')
+    monkeypatch.setattr(equity_replay, '_compute_account', no_replay)
     with ResearchExecutionSession(context, experiment=experiment) as execution:
         bound = access.prepare(proposal, execution=execution)
-        assert type(bound) is PreparedAccountEvaluation
-        changed = access.prepare(replace(proposal, initial_cash=200_000), execution=execution)
-        assert changed.snapshot is bound.snapshot
-        assert changed.benchmark_identity != bound.benchmark_identity
-        with pytest.raises(ValueError, match='not issued'):
-            access.evaluate_many((replace(bound),), execution=execution)
-        outcomes = access.evaluate_many((bound, changed), execution=execution)
-        assert all(item.status.value == 'SUCCEEDED' for item in outcomes), [item.error for item in outcomes]
-        assert outcomes[0].request_hash != outcomes[1].request_hash
-        from czsc_trader.research_tools import EvaluationEvidenceWrite
-        from czsc_trader.application import publish_evidence_many
-        writes = tuple(EvaluationEvidenceWrite(experiment, f'account-{i}', item, outcome.result)
-                       for i, (item, outcome) in enumerate(zip((bound, changed), outcomes, strict=True)))
-        published = publish_evidence_many(context, writes, execution=execution)
-        assert all(item.status.value == 'PUBLISHED' for item in published), published
+        assert require_account(access, bound, execution) is bound.request
+
+
+def test_TDR_02_C02_account_handle_02(tmp_path, monkeypatch):
+    from account_parity_support import setup_account
+    from strategy_runtime import ExecutionResources
+    from dataflows import MarketId, BarFrequency
+    context, proposal = setup_account(tmp_path, MarketId.CN, BarFrequency.DAILY)
+    context.evaluation.resources = ExecutionResources(1)
+    experiment = proposal.experiment
+    access = context.evaluation
+    from czsc_trader.research_tools import equity_replay
+    def no_replay(*args, **kwargs):
+        raise AssertionError('ownership checks must not calculate accounts')
+    monkeypatch.setattr(equity_replay, '_compute_account', no_replay)
+    with ResearchExecutionSession(context, experiment=experiment) as execution:
+        bound = access.prepare(proposal, execution=execution)
     with ResearchExecutionSession(context, experiment=experiment) as other:
         with pytest.raises(ValueError, match='not issued'):
-            access.evaluate_many((bound,), execution=other)
+            require_account(access, bound, other)
+
+
+def test_TDR_02_C03_account_handle_03(tmp_path, monkeypatch):
+    from account_parity_support import setup_account
+    from strategy_runtime import ExecutionResources
+    from dataflows import MarketId, BarFrequency
+    context, proposal = setup_account(tmp_path, MarketId.CN, BarFrequency.DAILY)
+    context.evaluation.resources = ExecutionResources(1)
+    experiment = proposal.experiment
+    access = context.evaluation
+    from czsc_trader.research_tools import equity_replay
+    def no_replay(*args, **kwargs):
+        raise AssertionError('ownership checks must not calculate accounts')
+    monkeypatch.setattr(equity_replay, '_compute_account', no_replay)
+    with ResearchExecutionSession(context, experiment=experiment) as execution:
+        bound = access.prepare(proposal, execution=execution)
+    with pytest.raises(RuntimeError, match='context manager'):
+        require_account(access, bound, execution)
+
+
+def test_TDR_02_C04_account_handle_04(tmp_path, monkeypatch):
+    from account_parity_support import setup_account
+    from strategy_runtime import ExecutionResources
+    from dataflows import MarketId, BarFrequency
+    context, proposal = setup_account(tmp_path, MarketId.CN, BarFrequency.DAILY)
+    context.evaluation.resources = ExecutionResources(1)
+    experiment = proposal.experiment
+    access = context.evaluation
+    from czsc_trader.research_tools import equity_replay
+    def no_replay(*args, **kwargs):
+        raise AssertionError('ownership checks must not calculate accounts')
+    monkeypatch.setattr(equity_replay, '_compute_account', no_replay)
+    with ResearchExecutionSession(context, experiment=experiment) as execution:
+        bound = access.prepare(proposal, execution=execution)
+        with pytest.raises(ValueError, match='not issued'):
+            require_account(access, replace(bound), execution)
+
+
+def test_TDR_02_C05_account_handle_05(tmp_path, monkeypatch):
+    from account_parity_support import setup_account
+    from strategy_runtime import ExecutionResources
+    from dataflows import MarketId, BarFrequency
+    context, proposal = setup_account(tmp_path, MarketId.CN, BarFrequency.DAILY)
+    context.evaluation.resources = ExecutionResources(1)
+    experiment = proposal.experiment
+    from czsc_trader.research_tools import equity_replay
+    def no_replay(*args, **kwargs):
+        raise AssertionError('ownership checks must not calculate accounts')
+    monkeypatch.setattr(equity_replay, '_compute_account', no_replay)
+    with ResearchExecutionSession(context, experiment=experiment):
+        with pytest.raises(RuntimeError, match='active execution session'):
+            with ResearchExecutionSession(context, experiment=experiment):
+                pass

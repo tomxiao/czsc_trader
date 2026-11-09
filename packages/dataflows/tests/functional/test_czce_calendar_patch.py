@@ -9,6 +9,8 @@ import pytest
 
 from dataflows import DataRequest, Dataflows, DataSpace, Dataset, PreparePolicy, ProviderBinding, ProviderConfig
 from dataflows._czce_calendar_patch import PATCH_ID, PATCH_SOURCE_HASHES, apply_czce_calendar_patch
+from dataflows.errors import DataContractError, DataRepairError
+from dataflows.facade import _validate_provider_output
 
 
 @pytest.fixture
@@ -39,7 +41,7 @@ def _publish(root, frame, *, exchange="CZCE", start="2022-12-30", end="2023-01-0
     return prepared, flow.fetch(request, prepared=prepared.reference) if prepared.ready else None
 
 
-def test_certified_single_missing_day_is_published_with_source_lineage(calendar_root):
+def test_DFLS_39_C01_certified_day_publishes_with_pinned_lineage(calendar_root):
     original = _frame()
     prepared, result = _publish(calendar_root, original)
     assert prepared.ready, prepared.items
@@ -54,16 +56,23 @@ def test_certified_single_missing_day_is_published_with_source_lineage(calendar_
     assert len(original) == 4
 
 
-def test_correct_existing_row_is_idempotent(calendar_root):
+def test_DFLS_39_C02_existing_correct_day_is_idempotent():
     frame = pd.concat([_frame(), pd.DataFrame({"Date": [pd.Timestamp("2022-12-31")],
                                              "IsOpen": [0], "PreviousTradingDate": [pd.Timestamp("2022-12-30")]})]).sort_values("Date").reset_index(drop=True)
-    prepared, result = _publish(calendar_root, frame)
-    assert prepared.ready and len(result.dataframe) == 5
-    assert not result.identity.metadata.get("calendar_repairs")
+    result, metadata = apply_czce_calendar_patch(frame,exchange="CZCE",start_date="2022-12-30",end_date="2023-01-03")
+    pd.testing.assert_frame_equal(result,frame)
+    assert not metadata.get("calendar_repairs")
 
 
-@pytest.mark.parametrize("case", ["open_conflict", "previous_conflict", "duplicate", "no_previous", "other_hole", "wrong_exchange"])
-def test_patch_rejects_conflicts_and_does_not_infer_other_dates(calendar_root, case):
+@pytest.mark.parametrize("case", [
+    "open_conflict",
+    "previous_conflict",
+    "duplicate",
+    "no_previous",
+    "other_hole",
+    "wrong_exchange",
+], ids=['DFLS-39-C03', 'DFLS-39-C04', 'DFLS-39-C05', 'DFLS-39-C06', 'DFLS-39-C07', 'DFLS-39-C08'])
+def test_patch_rejects_conflicts_and_does_not_infer_other_dates(case):
     frame = _frame()
     if case in {"open_conflict", "previous_conflict", "duplicate"}:
         extra = pd.DataFrame({"Date": [pd.Timestamp("2022-12-31")],
@@ -74,17 +83,21 @@ def test_patch_rejects_conflicts_and_does_not_infer_other_dates(calendar_root, c
         frame = frame.loc[frame.Date.ne("2022-12-30")]
     elif case == "other_hole":
         frame = frame.loc[frame.Date.ne("2023-01-01")]
-    prepared, result = _publish(calendar_root, frame, exchange="SSE" if case == "wrong_exchange" else "CZCE")
-    assert not prepared.ready and result is None
+    exchange = "SSE" if case == "wrong_exchange" else "CZCE"
+    request = DataRequest(Dataset.TRADING_CALENDAR,exchange,"2022-12-30","2023-01-03","2023-01-03")
+    if case in {"other_hole","wrong_exchange"}:
+        # The repair must leave unregistered gaps for the real calendar validator.
+        result, metadata = apply_czce_calendar_patch(frame,exchange=exchange,start_date=request.start,end_date=request.end)
+        with pytest.raises(DataContractError,match="every requested calendar date"):
+            _validate_provider_output(result,request,metadata)
+    else:
+        with pytest.raises(DataRepairError):
+            apply_czce_calendar_patch(frame,exchange=exchange,start_date=request.start,end_date=request.end)
 
 
-def test_unaffected_range_is_not_patched(calendar_root):
-    prepared, result = _publish(calendar_root, _frame(), start="2023-01-01")
-    assert prepared.ready and len(result.dataframe) == 3
-    assert not result.identity.metadata.get("calendar_repairs")
 
 
-def test_official_source_bytes_match_pinned_patch_hashes():
+def test_DFLS_39_C09_official_evidence_bytes_match_pinned_hashes():
     directory = Path(__file__).parents[2] / "patch_evidence" / "czce_20221231"
     manifest = json.loads((directory / "source_manifest.json").read_text(encoding="utf-8"))
     assert manifest["patch_id"] == PATCH_ID

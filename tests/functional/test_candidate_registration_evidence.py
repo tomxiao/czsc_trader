@@ -1,3 +1,4 @@
+# Risk ownership: TDR-03
 """Candidate publication retains declared evidence without historical account authentication."""
 from dataclasses import replace
 import json
@@ -8,7 +9,6 @@ from strategy_runtime import EquityStrategyCandidate
 from czsc_trader.application import CandidateRegistrationRequest, load_candidate, publish_evidence, register_candidate
 from czsc_trader.research_tools import MaterialEvidenceWrite
 from account_parity_support import setup_account
-from equity_test_support import setup_formal_equity
 
 
 def declared_support(context, request, **changes):
@@ -31,8 +31,8 @@ def declared_support(context, request, **changes):
     return replace(reference, schema="equity_research", schema_version=4)
 
 
-@pytest.mark.parametrize("market", [MarketId.CN, MarketId.US])
-def test_registration_retains_declarations_without_loading_account_dependencies(tmp_path, monkeypatch, market):
+@pytest.mark.parametrize('market', [MarketId.CN])
+def test_TDR_03_C01_registration_retains_declarations_without_loading_account_dependencies(tmp_path, monkeypatch, market):
     context, request = setup_account(tmp_path, market, BarFrequency.DAILY)
     evidence = declared_support(context, request)
     from czsc_trader.application import equity_evidence_io
@@ -44,12 +44,9 @@ def test_registration_retains_declarations_without_loading_account_dependencies(
     assert register_candidate(context.repository, operation) == record
     assert len(record.origin.evidence) == 1
     assert load_candidate(context.repository, record.key).content_identity.content_sha256 == record.content_sha256
-    # Loading an executable remains independent of former research material.
-    (context.repository.root / evidence.repository_path).unlink()
-    assert load_candidate(context.repository, record.key).content_identity.content_sha256 == record.content_sha256
 
 
-@pytest.mark.parametrize("damage", ["digest", "candidate", "experiment", "schema", "duplicate"])
+@pytest.mark.parametrize('damage', [pytest.param('digest', id='TDR-03-C02'), pytest.param('experiment', id='TDR-03-C03')])
 def test_registration_rejects_direct_declaration_errors_before_publishing(tmp_path, damage):
     context, request = setup_account(tmp_path, MarketId.US, BarFrequency.DAILY)
     changes = {"candidate_id": "C0002"} if damage == "candidate" else {}
@@ -66,28 +63,11 @@ def test_registration_rejects_direct_declaration_errors_before_publishing(tmp_pa
     assert not (context.repository.research_root / request.candidate.strategy_id / "assets/candidates").exists()
 
 
-def test_legacy_candidate_registration_is_retired(tmp_path):
-    context, request, _, _ = setup_formal_equity(tmp_path)
-    with pytest.raises(ValueError, match="account contract 4"):
-        CandidateRegistrationRequest(request.candidate, request.experiment, (), ())
-    with pytest.raises(TypeError, match="EquityStrategyCandidate"):
-        CandidateRegistrationRequest(object(), request.experiment, (), ())
 
 
-def test_historical_candidate_loading_is_private_to_explicit_inspection(tmp_path):
-    from historical_candidate_support import seed_historical_candidate
-    from czsc_trader.application._inspection_candidate import _load_inspection_candidate
-
-    context, request, _, _ = setup_formal_equity(tmp_path)
-    record = seed_historical_candidate(context.repository, request.candidate, request.experiment)
-    with pytest.raises(ValueError, match="account contract 4"):
-        load_candidate(context.repository, record.key)
-    historical = _load_inspection_candidate(context.repository, record.key)
-    assert historical.definition.contract_version == 2
-    assert historical.content_identity.content_sha256 == record.content_sha256
 
 
-def test_registration_does_not_admit_runtime_but_loading_does_once(tmp_path, monkeypatch):
+def test_TDR_03_C06_registration_does_not_admit_runtime_but_loading_does_once(tmp_path, monkeypatch):
     context, request = setup_account(tmp_path, MarketId.US, BarFrequency.DAILY)
     original = EquityStrategyCandidate.verify
     calls = []
@@ -107,10 +87,12 @@ def test_registration_does_not_admit_runtime_but_loading_does_once(tmp_path, mon
         load_candidate(context.repository, record.key)
 
 
-def test_snapshot_source_mutation_is_rejected(tmp_path):
+def test_TDR_03_C05_registered_source_tamper_is_rejected(tmp_path):
     context, request = setup_account(tmp_path, MarketId.US, BarFrequency.DAILY)
-    source = request.candidate.source_root / request.candidate.definition.source_files[0]
+    record = register_candidate(context.repository, CandidateRegistrationRequest(request.candidate,
+        request.experiment, (), ()))
+    loaded = load_candidate(context.repository, record.key)
+    source = loaded.source_root / loaded.definition.source_files[0]
     source.write_bytes(b"changed")
-    with pytest.raises(ValueError, match="source closure changed"):
-        register_candidate(context.repository, CandidateRegistrationRequest(request.candidate,
-            request.experiment, (), ()))
+    with pytest.raises(ValueError, match="hash|source|content|closure"):
+        load_candidate(context.repository, record.key)

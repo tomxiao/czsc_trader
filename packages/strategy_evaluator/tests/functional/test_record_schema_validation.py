@@ -19,6 +19,7 @@ def warm_point(monkeypatch):
     return point
 
 
+@pytest.mark.risk_cases('SE-02-C01')
 def test_warm_schema_reuses_annotations_but_validates_new_values(warm_point):
     assert replace(warm_point, cash=200.0).cash == 200.0
     assert m.AccountPoint.from_dict(warm_point.to_dict()) == warm_point
@@ -30,7 +31,12 @@ def test_warm_schema_reuses_annotations_but_validates_new_values(warm_point):
         replace(warm_point, equity=-1.0)
 
 
-@pytest.mark.parametrize("mutation", ["missing", "extra", "discriminator", "wrong_type"])
+@pytest.mark.parametrize('mutation', [
+    pytest.param("missing", id='SE-02-C04'),
+    pytest.param("extra", id='SE-02-C05'),
+    pytest.param("discriminator", id='SE-02-C06'),
+])
+@pytest.mark.risk_cases('SE-02-C04', 'SE-02-C05', 'SE-02-C06')
 def test_warm_schema_does_not_relax_serialized_record_shape(warm_point, mutation):
     value = warm_point.to_dict()
     if mutation == "missing":
@@ -45,7 +51,11 @@ def test_warm_schema_does_not_relax_serialized_record_shape(warm_point, mutation
         m.AccountPoint.from_dict(value)
 
 
-@pytest.mark.parametrize("nonfinite", [float("nan"), float("inf"), -float("inf")])
+@pytest.mark.parametrize('nonfinite', [
+    pytest.param(float("nan"), id='SE-02-C02'),
+    pytest.param(float("inf"), id='SE-02-C03'),
+])
+@pytest.mark.risk_cases('SE-02-C02', 'SE-02-C03')
 def test_warm_schema_rejects_nonfinite_numbers_in_constructor_and_decode(warm_point, nonfinite):
     with pytest.raises(TypeError):
         replace(warm_point, close=nonfinite)

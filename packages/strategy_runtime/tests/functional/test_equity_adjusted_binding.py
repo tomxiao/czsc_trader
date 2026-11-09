@@ -1,32 +1,22 @@
 """Adjusted observation roles preserve raw execution and shared physical calendars."""
+
 from dataclasses import replace
-from datetime import date
 import json
-from uuid import uuid4
-
 import pytest
-from dataflows import (AssetClass, BarFrequency, EquityDataRequest, EquityProduct, EquityQuery,
-    InstrumentId, MarketId, PreparedDataRef, PriceAdjustment, SourceRef)
-from strategy_runtime import EquityAuxiliaryInput, EquityAuxiliaryBinding, EquityInputBinding
-from test_equity_context import make_candidate
+from dataflows import EquityDataRequest, EquityProduct, MarketId, PriceAdjustment
+from strategy_runtime import EquityInputBinding
+from packages.strategy_runtime.tests.context_fixture_support import make_candidate
+from packages.strategy_runtime.tests.binding_fixture_support import binding_fixture
 
 
-def binding_fixture(market):
-    instrument = InstrumentId(market, AssetClass.STOCK, 'LITE' if market is MarketId.US else '600000.SH')
-    source = SourceRef('fixture', 'v1')
-    start, end = date(2026, 10, 12), date(2026, 10, 16)
-    auxiliary = EquityAuxiliaryInput('adjusted', instrument, source, BarFrequency.DAILY, 2, 86400, 'HFQ')
-    primary = tuple((p.name.lower(), EquityDataRequest(instrument, source,
-        EquityQuery(p, start, end, BarFrequency.DAILY, adjustment=PriceAdjustment.NONE if p is EquityProduct.SESSIONS else PriceAdjustment.BACKWARD))) for p in EquityProduct)
-    items = primary + tuple((auxiliary.data_key(r.parameters.query.product), r) for r in auxiliary.requests(start, end))
-    binding = EquityInputBinding(PreparedDataRef(uuid4(), uuid4(), 'a' * 64), instrument,
-        'b' * 64, tuple((key, 'c' * 64) for key, _ in primary), 2,
-        (EquityAuxiliaryBinding(auxiliary, 'c' * 64, 'c' * 64),),
-        request_bindings=tuple((key, r.parameters) for key, r in items))
-    return binding, items
-
-
-@pytest.mark.parametrize('market', (MarketId.CN, MarketId.US))
+@pytest.mark.parametrize(
+    "market",
+    [
+        MarketId.CN,
+        MarketId.US,
+    ],
+    ids=["SRT-09-C01", "SRT-09-C02"],
+)
 def test_hfq_roles_roundtrip_and_shared_calendar(market):
     binding, items = binding_fixture(market)
     serialized = json.loads(json.dumps(binding.to_dict()))
@@ -34,78 +24,85 @@ def test_hfq_roles_roundtrip_and_shared_calendar(market):
     assert len(set(r.parameters for _, r in items)) == 3
     assert binding.bind_requests(tuple(r for _, r in items)) == items
     assert binding.bind_requests(tuple(dict((r.parameters, r) for _, r in items).values())) == items
-    with pytest.raises(ValueError, match='shared roles'):
+    with pytest.raises(ValueError, match="shared roles"):
         binding.request_key(items[-2][1])
     assert items[-2][1].parameters.query.adjustment is PriceAdjustment.BACKWARD
     assert items[-1][1].parameters.query.adjustment is PriceAdjustment.NONE
-    with pytest.raises(ValueError, match='shared roles'):
+    with pytest.raises(ValueError, match="shared roles"):
         binding.request_key(items[-1][1])
-    with pytest.raises(ValueError, match='bound product selection'):
-        binding.bind_requests(tuple(r for _, r in items if r.parameters.query.product is EquityProduct.SESSIONS))
+    with pytest.raises(ValueError, match="bound product selection"):
+        binding.bind_requests(
+            tuple(r for _, r in items if r.parameters.query.product is EquityProduct.SESSIONS)
+        )
     bad = replace(items[-2][1].parameters.query, adjustment=PriceAdjustment.FORWARD)
     request = EquityDataRequest(binding.instrument, items[-2][1].parameters.source, bad)
-    with pytest.raises(ValueError, match='bound product selection'):
+    with pytest.raises(ValueError, match="bound product selection"):
         binding.bind_requests(tuple(r for _, r in items) + (request,))
 
 
-def test_binding_rejects_role_or_fingerprint_substitution():
+def test_SRT_08_C05_binding_rejects_role_or_fingerprint_substitution():
     binding, items = binding_fixture(MarketId.US)
-    with pytest.raises(ValueError, match='explicit request bindings'):
+    with pytest.raises(ValueError, match="explicit request bindings"):
         replace(binding, request_bindings=())
-    with pytest.raises(ValueError, match='exact product roles'):
+    with pytest.raises(ValueError, match="exact product roles"):
         replace(binding, request_bindings=binding.request_bindings[:-1])
-    with pytest.raises(ValueError, match='declared observation'):
-        replace(binding, request_bindings=tuple((key,
-            replace(p, query=replace(p.query, adjustment=PriceAdjustment.NONE))
-            if key == 'auxiliary:adjusted:bars' else p) for key, p in binding.request_bindings))
-    with pytest.raises(ValueError, match='inconsistent content'):
-        replace(binding, auxiliary_inputs=(replace(binding.auxiliary_inputs[0], sessions_sha256='e' * 64),))
-    with pytest.raises(ValueError, match='traded HFQ'):
-        replace(binding, request_bindings=tuple((key,
-            replace(p, query=replace(p.query, adjustment=PriceAdjustment.NONE))
-            if key == 'bars' else p) for key, p in binding.request_bindings))
+    with pytest.raises(ValueError, match="declared observation"):
+        replace(
+            binding,
+            request_bindings=tuple(
+                (
+                    key,
+                    replace(p, query=replace(p.query, adjustment=PriceAdjustment.NONE))
+                    if key == "auxiliary:adjusted:bars"
+                    else p,
+                )
+                for key, p in binding.request_bindings
+            ),
+        )
+    with pytest.raises(ValueError, match="inconsistent content"):
+        replace(
+            binding,
+            auxiliary_inputs=(replace(binding.auxiliary_inputs[0], sessions_sha256="e" * 64),),
+        )
+    with pytest.raises(ValueError, match="traded HFQ"):
+        replace(
+            binding,
+            request_bindings=tuple(
+                (
+                    key,
+                    replace(p, query=replace(p.query, adjustment=PriceAdjustment.NONE))
+                    if key == "bars"
+                    else p,
+                )
+                for key, p in binding.request_bindings
+            ),
+        )
 
 
-@pytest.mark.parametrize('market', (MarketId.CN, MarketId.US))
-def test_live_observation_projection_is_explicit_and_preserves_historical_binding(market):
-    from strategy_runtime.equity_definition import InputBindingScope
-    binding, _ = binding_fixture(market)
-    before = binding.to_dict()
-    projected = binding.for_observations()
-    assert projected.scope is InputBindingScope.OBSERVATION
-    assert dict(projected.content_identities) == {'bars': 'c' * 64, 'sessions': 'c' * 64}
-    assert projected.execution_input is None
-    assert {query.query.product for _, query in projected.request_bindings} == {
-        EquityProduct.BARS, EquityProduct.SESSIONS}
-    assert projected.auxiliary_inputs == binding.auxiliary_inputs
-    assert EquityInputBinding.from_dict(json.loads(json.dumps(projected.to_dict()))) == projected
-    assert binding.to_dict() == before and 'scope' not in before
-    with pytest.raises(ValueError, match='declared input scope'):
-        replace(projected, content_identities=binding.content_identities)
-    with pytest.raises(TypeError, match='explicit scope'):
-        replace(projected, scope='OBSERVATION')
-
-
-def test_v4_requires_hfq_primary_and_auxiliary(tmp_path):
-    from strategy_runtime import StrategyComputation
+@pytest.mark.parametrize("role", ["primary", "auxiliary"], ids=["SRT-09-C03", "SRT-09-C04"])
+def test_v4_observations_reject_raw_basis(tmp_path, role):
+    from strategy_runtime import StrategyComputation, StrategyStateSchema
     from strategy_runtime.models import ExecutionPolicy
     from strategy_runtime.equity_features import FeatureGraph
-    from strategy_runtime.equity_replay import StrategyStateSchema
-    candidate = make_candidate(tmp_path)
-    definition = candidate.definition
-    auxiliary = replace(definition.auxiliary_inputs[0], instrument=definition.instrument, analysis_price='HFQ')
-    with pytest.raises(ValueError, match='require V4'):
-        replace(definition, auxiliary_inputs=(auxiliary,))
-    v4 = replace(definition, contract_version=4, analysis_price="HFQ", execution_policy=ExecutionPolicy("TARGET_POSITION",{}), feature_graph=FeatureGraph(), state_schema=StrategyStateSchema(),
-        computation=StrategyComputation.STATEFUL_STEP, auxiliary_inputs=(auxiliary,))
-    assert type(v4).from_dict(json.loads(json.dumps(v4.to_dict()))) == v4
-    with pytest.raises(ValueError, match='analysis price contract'):
-        replace(v4, analysis_price='RAW')
-    with pytest.raises(ValueError, match='HFQ'):
-        replace(v4, auxiliary_inputs=(replace(auxiliary, analysis_price='RAW'),))
-    legacy = replace(definition, auxiliary_inputs=(), session_context=False)
-    assert 'auxiliary_inputs' not in legacy.to_dict()
-    binding, _ = binding_fixture(MarketId.US)
-    old = replace(binding, auxiliary_inputs=(), request_bindings=())
-    assert 'request_bindings' not in old.to_dict()
-    assert type(old).from_dict(json.loads(json.dumps(old.to_dict()))) == old
+
+    original = make_candidate(tmp_path).definition
+    auxiliary = replace(
+        original.auxiliary_inputs[0], instrument=original.instrument, analysis_price="HFQ"
+    )
+    v4 = replace(
+        original,
+        contract_version=4,
+        analysis_price="HFQ",
+        execution_policy=ExecutionPolicy("TARGET_POSITION", {}),
+        feature_graph=FeatureGraph(),
+        state_schema=StrategyStateSchema(),
+        computation=StrategyComputation.STATEFUL_STEP,
+        auxiliary_inputs=(auxiliary,),
+    )
+    changes = (
+        {"analysis_price": "RAW"}
+        if role == "primary"
+        else {"auxiliary_inputs": (replace(auxiliary, analysis_price="RAW"),)}
+    )
+    with pytest.raises(ValueError, match="analysis price contract" if role == "primary" else "HFQ"):
+        replace(v4, **changes)

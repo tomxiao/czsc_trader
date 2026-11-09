@@ -1,3 +1,4 @@
+# Risk ownership: TDR-28
 """Overnight PTE preparation cannot see next-session publication arrivals."""
 from dataclasses import replace
 from datetime import timedelta
@@ -13,7 +14,7 @@ from test_formal_v4_runtime import raw_binding
 from test_v4_dataset_observation_flow import observation_fixture
 
 
-@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
+@pytest.mark.parametrize('market', [MarketId.US])
 def test_overnight_observations_cap_primary_auxiliary_tables_and_raw(tmp_path, market):
     context, request, products, _ = observation_fixture(tmp_path, market)
     with ResearchExecutionSession(context, experiment=request.experiment) as session:

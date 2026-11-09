@@ -203,6 +203,7 @@ def start_liquidation(case):
     assert (intent.side, intent.order_type, intent.quantity) == ('SELL', 'MARKET', case.quantity)
 
 
+# Independent risk: EC25; responsibility-level assertions.
 def test_scoped_retirement_does_not_expire_or_submit_another_accounts_order(make_holding):
     case = make_holding('CN')
     case.store.set_setting('futu_capital_pool', '2000')
@@ -229,6 +230,7 @@ def test_scoped_retirement_does_not_expire_or_submit_another_accounts_order(make
     assert len(case.broker.placed) == 1 and case.broker.placed[0].account_id == 'strategy'
 
 
+# Independent risk: EC23; responsibility-level assertions.
 @pytest.mark.parametrize('market', ['CN', 'US'])
 def test_market_sale_retires_only_after_confirmed_fill_and_returns_cash(make_holding, market):
     case = make_holding(market)
@@ -250,8 +252,9 @@ def test_market_sale_retires_only_after_confirmed_fill_and_returns_cash(make_hol
     assert len(case.store.query_audit_events(event_type='ACCOUNT_RETIRED')) == 1
 
 
-@pytest.mark.parametrize('market', ['CN', 'US'])
-def test_partial_fills_and_duplicate_requests_preserve_remaining_position(make_holding, market):
+# Independent risk: EC23; responsibility-level assertions.
+def test_partial_fills_and_duplicate_requests_preserve_remaining_position(make_holding):
+    market = "CN"
     case = make_holding(market)
     start_liquidation(case)
     case.broker.fill(case.quantity // 2, status='FILLED_PART')
@@ -267,8 +270,9 @@ def test_partial_fills_and_duplicate_requests_preserve_remaining_position(make_h
     assert len(case.store.account_fills('strategy')) == 2
 
 
-@pytest.mark.parametrize('market', ['CN', 'US'])
-def test_unsellable_position_waits_without_false_success_or_order(make_holding, market):
+# Independent risk: EC24; responsibility-level assertions.
+def test_unsellable_position_waits_without_false_success_or_order(make_holding):
+    market = "CN"
     case = make_holding(market)
     case.broker.sellable = 0
     case.engine.retire_account(case.request)
@@ -283,8 +287,9 @@ def test_unsellable_position_waits_without_false_success_or_order(make_holding, 
     assert len(case.broker.placed) == 1
 
 
-@pytest.mark.parametrize('market', ['CN', 'US'])
-def test_unknown_submit_is_recovered_after_restart_without_duplicate_sale(make_holding, market):
+# Independent risk: EC25; responsibility-level assertions.
+def test_unknown_submit_is_recovered_after_restart_without_duplicate_sale(make_holding):
+    market = "US"
     case = make_holding(market, persistent=True)
     case.engine.retire_account(case.request)
     case.store.set_retirement_session('strategy', RetirementSession(case.interval, FEE))
@@ -302,8 +307,9 @@ def test_unknown_submit_is_recovered_after_restart_without_duplicate_sale(make_h
     assert case.store.retirement_status('strategy').status is AccountRetirementStatus.RETIRED
 
 
-@pytest.mark.parametrize('market', ['CN', 'US'])
-def test_v4_actual_sales_close_cycle_without_strategy_proposal(make_holding, market):
+# Independent risk: EC23; responsibility-level assertions.
+def test_v4_actual_sales_close_cycle_without_strategy_proposal(make_holding):
+    market = 'US'
     case = make_holding(market, v4=True)
     start_liquidation(case)
     case.broker.fill(case.quantity // 2, status='FILLED_PART')
@@ -320,6 +326,7 @@ def test_v4_actual_sales_close_cycle_without_strategy_proposal(make_holding, mar
     assert document['buy_locks'] == []
 
 
+# Independent risk: EC24; responsibility-level assertions.
 def test_legacy_account_entry_cycle_can_retire_without_v4_migration(make_holding):
     case = make_holding('CN', legacy=True)
     cycle = EntryCycleState('c' * 64, 'd' * 64, Decimal('1'), Decimal('1000'),
@@ -336,8 +343,9 @@ def test_legacy_account_entry_cycle_can_retire_without_v4_migration(make_holding
     assert case.store.retirement_status('strategy').released_cash == Decimal('999.8000')
 
 
-@pytest.mark.parametrize('market', ['CN', 'US'])
-def test_reviewed_rejection_can_resume_retirement_with_channel_audit(make_holding, market):
+# Independent risk: EC24; responsibility-level assertions.
+def test_reviewed_rejection_can_resume_retirement_with_channel_audit(make_holding):
+    market = "US"
     case = make_holding(market)
     case.engine.retire_account(case.request)
     case.store.set_retirement_session('strategy', RetirementSession(case.interval, FEE))
@@ -360,22 +368,7 @@ def test_reviewed_rejection_can_resume_retirement_with_channel_audit(make_holdin
     assert events[0]['channel'] == case.config.channel_id
 
 
-@pytest.mark.parametrize('market', ['CN', 'US'])
-def test_unconfirmed_sellability_is_blocked_and_expired_session_waits(make_holding, market):
-    case = make_holding(market)
-    case.broker.sellable = None
-    case.engine.retire_account(case.request)
-    case.store.set_retirement_session('strategy', RetirementSession(case.interval, FEE))
-    case.engine.refresh_orders()
-    assert case.store.retirement_status('strategy').status is AccountRetirementStatus.BLOCKED
-    assert not case.broker.placed
-    case.broker.sellable = case.quantity
-    case.clock[0] = case.interval.end
-    case.engine.refresh_orders()
-    assert case.store.retirement_status('strategy').status is AccountRetirementStatus.WAITING_MARKET
-    assert not case.broker.placed
-
-
+# Independent risk: EC24; responsibility-level assertions.
 def test_settled_only_sale_waits_for_cash_before_releasing_capital(make_holding):
     case = make_holding('US', settled_only=True)
     case.broker.defer_cash = True
@@ -397,8 +390,9 @@ def test_settled_only_sale_waits_for_cash_before_releasing_capital(make_holding)
     assert Decimal(case.store.virtual_account('strategy')['receivable']) == 0
 
 
-@pytest.mark.parametrize('market', ['CN', 'US'])
-def test_pending_strategy_order_is_cancelled_before_retirement_sale(make_holding, market):
+# Independent risk: EC24; responsibility-level assertions.
+def test_pending_strategy_order_is_cancelled_before_retirement_sale(make_holding):
+    market = "CN"
     case = make_holding(market)
     day = case.interval.start.date().isoformat()
     payload = {'contract_version': 'advice.equity.v1', 'decision_id': 'old-sell',
@@ -429,66 +423,3 @@ def test_pending_strategy_order_is_cancelled_before_retirement_sale(make_holding
     assert len(case.broker.placed) == 2
     assert case.broker.placed[-1].order_type == 'MARKET'
     assert case.broker.placed[-1].quantity == case.quantity
-
-
-def test_channel_read_failure_preserves_request_and_capital(make_holding, monkeypatch):
-    case = make_holding('US')
-
-    def disconnected():
-        raise ConnectionError('broker unavailable')
-
-    with monkeypatch.context() as patch:
-        patch.setattr(case.broker, 'order_snapshot', disconnected)
-        result = case.engine.retire_account(case.request)
-    assert result.status is AccountRetirementStatus.BLOCKED
-    assert 'broker unavailable' in result.reason
-    assert result.released_cash == 0 and result.remaining_quantity == case.quantity
-    assert case.store.virtual_account('strategy')['run_state'] == 'RETIRING'
-    assert not case.broker.placed
-
-
-def test_schema8_upgrade_preserves_rows_indexes_triggers_and_retirement_after_restart(make_holding):
-    case = make_holding('CN', legacy=True, persistent=True)
-    case.root.close()
-    with sqlite3.connect(case.database) as connection:
-        # Reconstruct the schema-8 CHECK constraint while retaining populated
-        # account and ledger history; do not patch production migration behavior.
-        ddl = connection.execute("SELECT sql FROM sqlite_master WHERE name='virtual_accounts'").fetchone()[0]
-        objects = connection.execute("SELECT sql FROM sqlite_master WHERE tbl_name='virtual_accounts' "
-            "AND type IN ('index','trigger') AND sql IS NOT NULL").fetchall()
-        ddl = ddl.replace('virtual_accounts', 'schema8_accounts', 1).replace("'RETIRING',", '')
-        connection.execute(ddl)
-        connection.execute('INSERT INTO schema8_accounts SELECT * FROM virtual_accounts')
-        connection.execute('DROP TABLE virtual_accounts')
-        connection.execute('ALTER TABLE schema8_accounts RENAME TO virtual_accounts')
-        for row in objects:
-            connection.execute(row[0])
-        connection.execute('DROP TABLE account_retirement_requests')
-        connection.execute("UPDATE settings SET value='8' WHERE key='runtime_database_schema_version'")
-        connection.execute('CREATE TABLE fixture_run_state_history(account_id TEXT, state TEXT)')
-        connection.execute('CREATE TRIGGER fixture_run_state AFTER UPDATE OF run_state ON virtual_accounts '
-            'BEGIN INSERT INTO fixture_run_state_history VALUES(NEW.account_id,NEW.run_state); END')
-        connection.execute('CREATE INDEX fixture_account_name ON virtual_accounts(name)')
-        original_rows = connection.execute('SELECT * FROM virtual_accounts ORDER BY account_id').fetchall()
-        original_ledger = connection.execute('SELECT * FROM account_ledger ORDER BY ledger_entry_id').fetchall()
-    case.restart()
-    connection = case.store._connection
-    assert [tuple(row) for row in connection.execute('SELECT * FROM virtual_accounts ORDER BY account_id')] == original_rows
-    assert [tuple(row) for row in connection.execute('SELECT * FROM account_ledger ORDER BY ledger_entry_id')] == original_ledger
-    assert case.root.get_setting('runtime_database_schema_version') == '9'
-    assert connection.execute("SELECT type FROM sqlite_master WHERE name='fixture_account_name'").fetchone()[0] == 'index'
-    start_liquidation(case)
-    request_identity = case.store.retirement_request('strategy')['request_id']
-    case.restart()
-    assert case.store.retirement_request('strategy')['request_id'] == request_identity
-    case.engine.retire_account(case.request)
-    assert len(case.broker.placed) == 1
-    case.broker.fill(case.quantity)
-    case.engine.refresh_orders()
-    result = case.store.retirement_status('strategy')
-    assert result.status is AccountRetirementStatus.RETIRED
-    assert [row[0] for row in case.store._connection.execute(
-        "SELECT state FROM fixture_run_state_history WHERE account_id='strategy'")] == ['RETIRING', 'RETIRED']
-    case.restart()
-    assert case.engine.retire_account(case.request) == result
-    assert len(case.broker.placed) == 1

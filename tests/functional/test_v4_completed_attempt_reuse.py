@@ -5,13 +5,14 @@ from decimal import Decimal
 
 import pytest
 
-from dataflows import TimeInterval
+from dataflows import MarketId, TimeInterval
 from execution_channels.futu.broker import BrokerOrder
 from execution_channels.futu.order_reports import apply_order_report
 from paper_trading_engine.account_engine import AccountEngine
 from test_formal_v4_runtime import formal_v4 as formal_v4
 
 
+@pytest.mark.parametrize("formal_v4", [MarketId.US], indirect=True, ids=["E2E-05-US-terminal-attempt"])
 def test_formal_partial_attempt_same_input_is_reused_but_next_interval_advances(formal_v4, monkeypatch):
     client, store, _, interval, candidate, _ = formal_v4
     clock = [interval.start]

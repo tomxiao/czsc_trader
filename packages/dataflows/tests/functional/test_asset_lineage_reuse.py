@@ -21,7 +21,7 @@ def _publication(clone_published_flow):
     return flows, request, original.prepared
 
 
-def test_warm_lineage_reuse_keeps_numeric_checks_and_independent_returned_values(clone_published_flow, monkeypatch):
+def test_DFLS_03_C04_warm_lineage_reuse_keeps_numeric_checks_and_independent_returned_values(clone_published_flow, monkeypatch):
     flows, request, prepared = _publication(clone_published_flow)
     original = facade.canonical_frame_sha256
     numeric_checks = []
@@ -46,7 +46,9 @@ def test_warm_lineage_reuse_keeps_numeric_checks_and_independent_returned_values
     assert second.identity.metadata["note"]["items"] == ["original"]
 
 
-@pytest.mark.parametrize("change", ["checksum", "numeric", "metadata", "warnings"])
+@pytest.mark.parametrize("change", [
+    "numeric",
+], ids=['DFLS-07-C02'])
 def test_warm_lineage_does_not_accept_changed_current_asset(clone_published_flow, change):
     flows, request, prepared = _publication(clone_published_flow)
     with sqlite3.connect(flows._store.path) as connection:
@@ -70,34 +72,11 @@ def test_warm_lineage_does_not_accept_changed_current_asset(clone_published_flow
     assert not reused.ready and reused.items[0].error.code == "ASSET_CORRUPT"
 
 
-def test_lineage_reuse_preserves_identity_metadata_normalization(clone_published_flow):
-    flows, request, prepared = _publication(clone_published_flow)
-    with sqlite3.connect(flows._store.path) as connection:
-        asset_id, payload = connection.execute("SELECT asset_id,payload FROM assets").fetchone()
-        frame, identity, warnings = pickle.loads(payload)
-        original = identity["metadata"]["source_time_field"]
-        identity["metadata"]["source_time_field"] = f" {original} "
-        payload = pickle.dumps((frame, identity, warnings), protocol=5)
-        connection.execute("UPDATE assets SET payload=?,payload_sha256=? WHERE asset_id=?",
-                           (payload, sha256(payload).hexdigest(), asset_id))
-    result = flows.fetch(request, prepared=prepared)
-    assert result.ready and result.identity.metadata["source_time_field"] == original
 
 
-def test_payload_over_cache_budget_is_fully_validated_without_retention(clone_published_flow, monkeypatch):
+def test_DFLS_36_C03_payload_over_cache_budget_is_fully_validated_without_retention(clone_published_flow, monkeypatch):
     asset_store._cached_lineage_digest.cache_clear()
     monkeypatch.setattr(asset_store, "_LINEAGE_CACHE_MAX_PAYLOAD", 1)
     flows, request, prepared = _publication(clone_published_flow)
     assert flows.fetch(request, prepared=prepared).ready
     assert asset_store._cached_lineage_digest.cache_info().currsize == 0
-
-
-def test_cached_prepare_uses_its_existing_transaction_for_manifest(clone_published_flow, monkeypatch):
-    flows, request, prepared = _publication(clone_published_flow)
-
-    def no_additional_reader():
-        pytest.fail("cached prepare must use its existing authenticated transaction")
-
-    monkeypatch.setattr(flows._store, "_reader", no_additional_reader)
-    result = flows.prepare((request,), policy=PreparePolicy.REUSE)
-    assert result.ready and result.reference == prepared

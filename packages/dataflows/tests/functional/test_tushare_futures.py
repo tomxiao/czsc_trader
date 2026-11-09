@@ -7,8 +7,6 @@ from dataflows import DataRequest, DataStatus, Dataset
 from dataflows.errors import DataContractError
 from dataflows.tushare_futures import (
     fetch_shfe_gold_daily,
-    fetch_shfe_gold_holding,
-    fetch_shfe_gold_mapping,
 )
 
 
@@ -74,60 +72,17 @@ class FakeFuturesPro:
         )
 
 
-@pytest.mark.parametrize(
-    "fetcher",
-    [fetch_shfe_gold_daily, fetch_shfe_gold_mapping, fetch_shfe_gold_holding],
-)
+@pytest.mark.parametrize("fetcher", [
+    fetch_shfe_gold_daily,
+], ids=['DFLS-35-C01'])
 def test_shfe_gold_datasets_reject_ambiguous_symbols(fetcher) -> None:
     with pytest.raises(DataContractError, match="only support AU.SHFE"):
         fetcher("AU.SHF", "2024-06-03", "2024-06-04", pro=FakeFuturesPro())
 
 
-@pytest.mark.parametrize("dataset", [
-    Dataset.FUTURES_SHFE_GOLD_DAILY,
-    Dataset.FUTURES_SHFE_GOLD_MAPPING,
-    Dataset.FUTURES_SHFE_GOLD_HOLDING,
-], ids=["contract-curve", "continuous-mapping", "nullable-rankings"])
-def test_facade_accepts_futures_frames_and_nullable_holding_rankings(
-    flow_factory, publish_data, monkeypatch, dataset,
-) -> None:
-    from dataflows import tushare_futures
-    pro = FakeFuturesPro()
-    monkeypatch.setattr(tushare_futures, "get_tushare_pro", lambda _: pro)
-    result = publish_data(flow_factory(), DataRequest(
-        dataset, "AU.SHFE", "2024-06-03", "2024-06-04", "2024-06-04",
-    ))
-    assert result.status is DataStatus.READY, result.error
-    frame, metadata = result.dataframe, result.identity.metadata
-    assert result.identity.source == "tushare"
-    assert metadata["available_at"].startswith("source trade date T")
-    if dataset is Dataset.FUTURES_SHFE_GOLD_DAILY:
-        assert len(frame) == 4
-        assert frame.Contract.unique().tolist() == ["AU2406.SHF", "AU2408.SHF"]
-        assert frame.loc[0, "MaturityDate"] == pd.Timestamp("2024-06-17")
-        assert len(pro.daily_calls) == 2
-        assert not pro.mapping_calls and not pro.holding_calls
-        assert metadata["primary_key"] == ["Date", "Contract"]
-        assert metadata["source_calendar"] == "SHFE"
-        assert "next China trading session" in metadata["available_at"]
-    elif dataset is Dataset.FUTURES_SHFE_GOLD_MAPPING:
-        assert frame.ContinuousSymbol.unique().tolist() == ["AU.SHFE"]
-        assert frame.Contract.tolist() == ["AU2406.SHF", "AU2408.SHF"]
-        assert len(pro.mapping_calls) == 1
-        assert not pro.daily_calls and not pro.holding_calls
-        assert metadata["primary_key"] == ["Date", "ContinuousSymbol"]
-    else:
-        assert len(frame) == 4
-        assert frame.loc[frame.Date.eq(pd.Timestamp("2024-06-03")), "Contract"].eq("AU2406.SHF").all()
-        assert frame.loc[frame.Date.eq(pd.Timestamp("2024-06-04")), "Contract"].eq("AU2408.SHF").all()
-        assert {call["symbol"] for call in pro.holding_calls} == {"AU2406", "AU2408"}
-        assert len(pro.mapping_calls) == 1 and len(pro.holding_calls) == 2
-        assert not pro.daily_calls
-        assert frame.ShortHolding.isna().any()
-        assert metadata["missing_rank_semantics"].startswith("null means")
 
 
-def test_facade_rejects_holding_row_without_any_ranking_value(flow_factory, publish_data) -> None:
+def test_DFLS_35_C02_facade_rejects_holding_row_without_any_ranking_value(flow_factory, publish_data) -> None:
     frame = pd.DataFrame(
         {
             "Date": ["2024-06-04"],

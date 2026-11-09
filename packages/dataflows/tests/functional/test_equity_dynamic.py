@@ -2,7 +2,6 @@
 
 from dataclasses import asdict
 from datetime import date, datetime
-from pathlib import Path
 from urllib.parse import parse_qsl, urlsplit
 from zoneinfo import ZoneInfo
 
@@ -10,7 +9,7 @@ import pandas as pd
 import pytest
 
 from dataflows import (
-    AssetClass, BarFrequency, Dataflows, DataSpace, EquityDataRequest, EquityProduct, EquityQuery,
+    AssetClass, BarFrequency, Dataflows, EquityDataRequest, EquityProduct, EquityQuery,
     InstrumentId, MarketId, PreparePolicy, ProviderBinding, ProviderConfig, SourceRef,
     TimeInterval, TradingSession,
 )
@@ -71,11 +70,13 @@ def setup(market, frequency, defect):
     return bindings, request
 
 
-@pytest.mark.parametrize("market", [MarketId.CN, MarketId.US])
-@pytest.mark.parametrize("frequency", [BarFrequency.DAILY, BarFrequency.M30])
-def test_verified_dynamic_facts_preserve_limits_and_calendar(tmp_path, market, frequency):
+@pytest.mark.parametrize("market,frequency", [
+    (MarketId.CN, BarFrequency.DAILY),
+    (MarketId.US, BarFrequency.M30),
+], ids=['DFLS-20-C01', 'DFLS-20-C02'])
+def test_dynamic_publication_preserves_market_facts(tmp_path, empty_space_factory, market, frequency):
     bindings, request = setup(market, frequency, None)
-    flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path("assets")),
+    flows = Dataflows(base_dir=tmp_path, space=empty_space_factory("assets"),
                       providers=ProviderConfig(bindings={}, equity_bindings=bindings))
     facts = request(EquityProduct.TRADING_FACTS)
     result = flows.prepare((facts,), policy=PreparePolicy.REUSE)
@@ -85,19 +86,22 @@ def test_verified_dynamic_facts_preserve_limits_and_calendar(tmp_path, market, f
     assert set(trading.dataframe) == {"Date", "AvailableDate", "Tradable", "PriceLimitLower", "PriceLimitUpper"}
     if market is MarketId.CN:
         assert trading.identity.metadata["following_session"]["session_date"] == "2026-11-09"
+    else:
+        assert trading.dataframe.PriceLimitLower.isna().all()
+        assert trading.dataframe.PriceLimitUpper.isna().all()
+        assert len(trading.dataframe) == 13
     assert trading.identity.metadata['adjustment'] == 'none'
     assert trading.identity.metadata['price_basis_id']
 
 
-@pytest.mark.parametrize("defect,error", [("gap", IncompleteDataError), ("static", DataContractError),
-    ("late", DataContractError), ("unverified", IncompleteDataError)])
-def test_dynamic_facts_reject_unknown_and_out_of_contract_rows(defect, error):
+@pytest.mark.parametrize("defect,error", [
+    ("static", DataContractError),
+    ("late", DataContractError),
+    ("unverified", IncompleteDataError),
+    ("gap", IncompleteDataError),
+], ids=['DFLS-20-C03', 'DFLS-20-C04', 'DFLS-20-C05', 'DFLS-20-C06'])
+def test_dynamic_adapter_rejects_unverified_or_out_of_contract_facts(defect, error):
     bindings, request = setup(MarketId.CN, BarFrequency.M30, defect)
     req = request(EquityProduct.TRADING_FACTS)
     with pytest.raises(error):
         bindings[req.parameters.provider_key].fetch(req)
-
-
-def test_actions_product_has_been_removed():
-    with pytest.raises(ValueError):
-        EquityProduct('equity.actions')

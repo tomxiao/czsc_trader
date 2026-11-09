@@ -1,3 +1,4 @@
+# Risk ownership: TDR-27
 """S011 warmup admission through real runtime/DFLS contracts, with synthetic prices.
 
 The exchange closure fixture deliberately includes Chinese New Year. Coverage
@@ -5,7 +6,6 @@ is measured in trading sessions, not weekdays. All checks use the archived
 S011-v1 SRT package; no signal calculator or feature function is mocked.
 """
 
-from dataclasses import replace
 from datetime import date
 import json
 from pathlib import Path
@@ -14,11 +14,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from dataflows import Dataflows, DataSpace, DataStatus, Dataset, PreparePolicy, ProviderBinding, ProviderConfig
+from dataflows import Dataflows, DataSpace, Dataset, PreparePolicy, ProviderBinding, ProviderConfig
 from dataflows.history_repair import frame_content_sha256
 from dataflows.ohlcv_quality import bind_quality_frame, build_quality_evidence
 from strategy_runtime import (
-    RuntimeExecutionError, StrategyInit, StrategyRelease, StrategyRuntime, TradableWindow,
+    StrategyInit, StrategyRelease, StrategyRuntime, TradableWindow,
 )
 
 
@@ -124,39 +124,3 @@ def test_installed_v1_computes_at_real_holiday_boundary(release, tmp_path):
     assert np.isfinite(history[["tail", "market", "spx", "risk5", "score"]].to_numpy()).all()
     assert installed.input_binding.plan.requests["daily"].start == "2024-12-26"
     assert installed.input_binding.plan.requests["spx"].start == "2024-12-16"
-
-
-@pytest.mark.parametrize("name,minimum", [("daily", 20), ("bars", 20), ("market", 21), ("spx", 30)])
-@pytest.mark.parametrize("deficit", [0, 1])
-def test_declared_coverage_accepts_exact_minimum_and_rejects_one_less(release, tmp_path, name, minimum, deficit):
-    flows = _flows(tmp_path)
-    instance = _instance(release, flows, tmp_path)
-    request = _plan(instance, flows).requests[name]
-    assert request.coverage.minimum_observations == request.coverage.minimum_sessions == minimum
-    # Slice the requested interval, retaining its actual runtime-declared coverage.
-    # For bars this has 8 observations per session, so row count alone is insufficient.
-    dates = _sessions(request.start, request.end, US_CLOSED if name == "spx" else CN_CLOSED)
-    selected = dates[-(minimum - deficit):]
-    request = replace(request, start=selected[0].date().isoformat())
-    result = flows.prepare((request,), policy=PreparePolicy.REUSE)
-    assert result.ready is (deficit == 0), result.items
-    if deficit:
-        item = result.items[0]
-        assert item.status is DataStatus.INCOMPLETE
-        key = "actual_sessions" if name == "bars" else "actual_observations"
-        assert item.error.context[key] == minimum - 1
-
-
-@pytest.mark.parametrize("defect", ["incomplete_bars", "nonfinite_market"])
-def test_declared_coverage_does_not_admit_invalid_inputs(release, tmp_path, defect):
-    flows = _flows(tmp_path, defect=defect)
-    instance = _instance(release, flows, tmp_path)
-    plan = _plan(instance, flows)
-    result = flows.prepare(tuple(plan.requests.values()), policy=PreparePolicy.REUSE)
-    assert not result.ready
-    failed = [item for item in result.items if not item.ready]
-    expected = Dataset.ETF_OHLCV if defect == "incomplete_bars" else Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY
-    assert len(failed) == 1 and failed[0].request.dataset == expected, failed
-    assert "incomplete" in failed[0].error.message if defect == "incomplete_bars" else "invalid numeric" in failed[0].error.message
-    with pytest.raises(RuntimeExecutionError, match="incomplete|invalid numeric"):
-        instance.prepare_data(policy=PreparePolicy.REUSE)

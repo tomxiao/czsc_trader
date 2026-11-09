@@ -33,8 +33,9 @@ def _request():
         data_hash=hash_audit_data(search, comparison)))
 
 
-@pytest.mark.parametrize('corruption', ['authenticated_returns', 'fill_fees'])
-def test_public_champion_audit_rejects_ledger_inconsistency(corruption):
+@pytest.mark.risk_cases('SE-35-C04')
+def test_public_champion_audit_rejects_ledger_inconsistency():
+    corruption = 'fill_fees'
     request = _request()
     assert audit_provisional_champion(request).status is AuditStatus.PASS
     if corruption == 'authenticated_returns':

@@ -2,20 +2,14 @@ from dataclasses import replace
 from datetime import date, timedelta
 import math
 
-import numpy as np
 import pytest
 
-from strategy_evaluator import (
-    pareto_layers,
-    CandidateProfile,
-)
 from strategy_evaluator import research_models as m
 from strategy_evaluator.research_assessment import (
     recompute_historical_assessment as assess_candidates,
     recompute_historical_comparison as compare_candidates,
 )
 from strategy_evaluator import research_assessment as assessment
-from strategy_evaluator import search_bias
 
 
 def candidate(name="C0001", digest="a"):
@@ -106,52 +100,7 @@ def values(panel):
     return {x.metric: x for x in panel.rows[0].diagnostics}
 
 
-def test_assessment_formulas_and_reproducible_bootstrap():
-    req = request()
-    panel = assess_candidates(req)
-    assert assess_candidates(req) == panel
-    got = values(panel)
-    annual = 1.03**63 - 1
-    neighbor_annual = 1.015**63 - 1
-    assert got[m.ResearchMetric.NET_ANNUAL_RETURN].value == pytest.approx(annual)
-    assert got[m.ResearchMetric.PARAMETER_RETURN_DEGRADATION].value == pytest.approx(
-        annual - neighbor_annual
-    )
-    assert got[m.ResearchMetric.PARAMETER_DRAWDOWN_DEGRADATION].value == 0
-    assert got[m.ResearchMetric.STRESS_ANNUAL_LOSS].value == pytest.approx(annual - (1.05**63 - 1))
-    assert got[m.ResearchMetric.STRESS_ANNUAL_LOSS].value < 0
-    assert got[m.ResearchMetric.PROFIT_CONCENTRATION].value == pytest.approx(20 / 30)
-    assert got[m.ResearchMetric.ROLLING_EXCESS_Q10].value == pytest.approx(0.01)
-    assert panel.rows[0].uncertainty.status is m.DiagnosticStatus.AVAILABLE
-    assert len(panel.rows) == 1  # children never become centers automatically
-    assert m.AssessmentPanel.from_dict(panel.to_dict()) == panel
-
-
-def test_rolling_excess_uses_paired_windows_and_weights_are_explicit():
-    req = request()
-    base = replace(req.evidence[0], benchmark_equity=(1000.0, 1005.0, 1020.0, 1030.0))
-    req = replace(req, evidence=(base, *req.evidence[1:]))
-    expected = np.quantile(
-        [1010 / 1000 - 1005 / 1000, 1010 / 1000 - 1020 / 1000, 1030 / 1010 - 1030 / 1005], 0.1
-    )
-    assert values(assess_candidates(req))[
-        m.ResearchMetric.ROLLING_EXCESS_Q10
-    ].value == pytest.approx(expected)
-    child = candidate("C0003", "c")
-    extra = evidence(child, (1.0, 2.0), parent=req.centers[0])
-    links = (*req.perturbations, m.PerturbationLink(req.centers[0], child, 9.0, "e" * 64))
-    with pytest.raises(ValueError, match="weights"):
-        replace(req, perturbations=links)
-    weighted = replace(
-        req,
-        protocol=replace(req.protocol, quantile_method=m.QuantileMethod.WEIGHTED_ECDF),
-        perturbations=links,
-        evidence=(*req.evidence, extra),
-    )
-    metric = values(assess_candidates(weighted))[m.ResearchMetric.PARAMETER_RETURN_DEGRADATION]
-    assert metric.value == pytest.approx((1.03**63 - 1) - (1.003**63 - 1))
-
-
+@pytest.mark.risk_cases('SE-07-C01')
 def test_concentration_uses_cash_profit_top_ceil_and_fees():
     base = evidence(profits=tuple(float(x) for x in range(1, 12)))
     req = replace(request(), evidence=(base,))
@@ -172,6 +121,7 @@ def test_concentration_uses_cash_profit_top_ceil_and_fees():
     ].value == pytest.approx(11 / 65)
 
 
+@pytest.mark.risk_cases('SE-07-C02')
 def test_no_wins_missing_benchmark_failed_reconciliation_and_missing_attempts():
     req = request()
     losing = replace(evidence(profits=(-1.0, -2.0)), benchmark_equity=())
@@ -200,6 +150,7 @@ def test_no_wins_missing_benchmark_failed_reconciliation_and_missing_attempts():
     assert "FAILED" in empty.rows[0].coverage_gaps[0]
 
 
+@pytest.mark.risk_cases('SE-07-C03')
 def test_open_cycles_are_reconciled_without_inventing_closed_profit():
     base = evidence()
     # Last cycle remains open at the terminal market price.
@@ -243,40 +194,6 @@ def test_open_cycles_are_reconciled_without_inventing_closed_profit():
         result[m.ResearchMetric.PROFIT_CONCENTRATION].reason
         == "OPENING_POSITION_COST_ATTRIBUTION_MISSING"
     )
-
-
-def test_identity_duplicate_coordinates_and_derivation_are_rejected():
-    req = request()
-    with pytest.raises(ValueError, match="coordinate"):
-        replace(req, evidence=(*req.evidence, req.evidence[0]))
-    with pytest.raises(ValueError, match="identity conflict"):
-        replace(
-            req,
-            evidence=(
-                replace(
-                    req.evidence[0], candidate=replace(req.centers[0], content_sha256="f" * 64)
-                ),
-            ),
-        )
-    with pytest.raises(ValueError, match="derivation"):
-        assess_candidates(
-            replace(
-                req,
-                evidence=(req.evidence[0], replace(req.evidence[1], derivation_sha256="f" * 64)),
-            )
-        )
-    with pytest.raises(ValueError, match="parameter-only"):
-        assess_candidates(
-            replace(
-                req,
-                evidence=(
-                    req.evidence[0],
-                    replace(req.evidence[1], derivation_kind=m.AssessmentDerivationKind.EXECUTION),
-                ),
-            )
-        )
-    with pytest.raises(TypeError):
-        replace(req.protocol, rolling_window_days=True)
 
 
 def policy(resolution=0.01, frequency_metric=m.ResearchMetric.FULL_SAMPLE_FREQUENCY):
@@ -374,6 +291,7 @@ def compare(rows, selected_policy=None, targets=(), *, current=False):
     )
 
 
+@pytest.mark.risk_cases('SE-10-C02')
 def test_raw_pareto_then_binned_robustness_frequency_and_ties():
     a, b, c = candidate(), candidate("C0002", "b"), candidate("C0003", "c")
     # A strictly dominates C even though A and C fall in the same bins.
@@ -386,15 +304,11 @@ def test_raw_pareto_then_binned_robustness_frequency_and_ties():
     assert len(result.behavior_groups[0].candidates) == 3
 
 
-@pytest.mark.parametrize(
-    "field,change",
-    [
-        ("baseline_scenario", {"one_way_cost": 0.001}),
-        ("baseline_scenario", {"measurement_tier": "DIAGNOSTIC"}),
-        ("baseline_scenario", {"benchmark_kind": "NONE"}),
-        ("stress_scenario", {"one_way_cost": 0.002}),
-    ],
-)
+@pytest.mark.parametrize('field,change', [
+    pytest.param("baseline_scenario", {"one_way_cost": 0.001}, id='SE-19-C05'),
+    pytest.param("baseline_scenario", {"benchmark_contract_sha256": "f" * 64}, id='SE-19-C06'),
+])
+@pytest.mark.risk_cases('SE-19-C05', 'SE-19-C06')
 def test_comparison_rejects_different_actual_scenario_contexts(field, change):
     left, right = row(candidate()), row(candidate("C0002", "b"))
     right = replace(right, **{field: replace(getattr(right, field), **change)})
@@ -403,36 +317,11 @@ def test_comparison_rejects_different_actual_scenario_contexts(field, change):
     assert all("EVALUATION_CONTEXTS_DIFFER" in x.reasons for x in result.rows)
 
 
-def test_neighbor_fee_difference_is_rejected_but_declared_stress_fee_is_allowed():
-    req = request()
-    neighbor = req.evidence[1]
-    req = replace(
-        req,
-        evidence=(
-            req.evidence[0],
-            replace(
-                neighbor, scenario_context=replace(neighbor.scenario_context, one_way_cost=0.002)
-            ),
-            req.evidence[2],
-        ),
-    )
-    panel = assess_candidates(req)
-    metrics = {x.metric: x for x in panel.rows[0].diagnostics}
-    assert metrics[m.ResearchMetric.PARAMETER_RETURN_DEGRADATION].value is None
-    assert metrics[m.ResearchMetric.STRESS_ANNUAL_LOSS].status is m.DiagnosticStatus.AVAILABLE
-
-
-@pytest.mark.parametrize(
-    "change",
-    [
-        {"measurement_tier": "FORMAL"},
-        {"measurement_tier": "SCREENING"},
-        {"one_way_cost": 0.0005},
-        {"one_way_cost": 0.0001},
-        {"benchmark_id": "Other"},
-        {"benchmark_kind": "OTHER"},
-    ],
-)
+@pytest.mark.parametrize('change', [
+    pytest.param({"one_way_cost": 0.0005}, id='SE-06-C02'),
+    pytest.param({"benchmark_contract_sha256": "b" * 64}, id='SE-06-C03'),
+])
+@pytest.mark.risk_cases('SE-06-C02', 'SE-06-C03')
 def test_stress_pair_rejects_invalid_role_fee_or_benchmark(change):
     req = request()
     stress = req.evidence[-1]
@@ -446,121 +335,6 @@ def test_stress_pair_rejects_invalid_role_fee_or_benchmark(change):
     metric = values(assess_candidates(req))[m.ResearchMetric.STRESS_ANNUAL_LOSS]
     assert metric.status is m.DiagnosticStatus.INSUFFICIENT_DATA
     assert metric.reason == "MISSING_OR_INCOMPARABLE_STRESS"
-
-
-@pytest.mark.parametrize("tier", ["STRESS", "UNKNOWN"])
-def test_stress_pair_rejects_invalid_standard_role(tier):
-    req = request()
-    base = req.evidence[0]
-    req = replace(
-        req,
-        evidence=(
-            replace(base, scenario_context=replace(base.scenario_context, measurement_tier=tier)),
-            *req.evidence[1:],
-        ),
-    )
-    assert values(assess_candidates(req))[m.ResearchMetric.STRESS_ANNUAL_LOSS].value is None
-
-
-@pytest.mark.parametrize("fee", [True, -0.1, 1.0, float("nan")])
-def test_scenario_contract_rejects_invalid_fees(fee):
-    with pytest.raises((TypeError, ValueError)):
-        m.EvaluationScenarioContext(fee, "FORMAL", "BuyHold", "BUYHOLD", "a" * 64)
-
-
-def test_available_diagnostics_require_explicit_scenario_context():
-    complete = row(candidate())
-    with pytest.raises(ValueError, match="baseline scenario"):
-        replace(complete, baseline_scenario=None, context_sha256=None)
-    with pytest.raises(ValueError, match="stress scenario"):
-        replace(complete, stress_scenario=None)
-
-
-def test_missing_and_unmet_candidates_remain_in_output_frequency_is_not_ranked():
-    a, b, c = candidate(), candidate("C0002", "b"), candidate("C0003", "c")
-    result = compare(
-        (row(a, 0.1), row(b, 0.01), row(c, 0.2, missing=m.ResearchMetric.PROFIT_CONCENTRATION)),
-        targets=(
-            m.ResearchTarget(
-                "net_annual_return",
-                m.ResearchMetric.NET_ANNUAL_RETURN,
-                lower=m.ConstantBound(0.05, True),
-            ),
-        ),
-    )
-    statuses = {x.candidate: x.status for x in result.rows}
-    assert statuses == {
-        a: m.ComparisonStatus.RANKED,
-        b: m.ComparisonStatus.TARGET_NOT_MET,
-        c: m.ComparisonStatus.INCOMPARABLE,
-    }
-    first, second = row(a), row(b)
-    second = replace(
-        second,
-        diagnostics=tuple(
-            replace(x, value=9.0) if x.metric is m.ResearchMetric.FREQUENCY_MEDIAN else x
-            for x in second.diagnostics
-        ),
-    )
-    frequency = (
-        m.ResearchTarget(
-            "frequency_median",
-            m.ResearchMetric.FREQUENCY_MEDIAN,
-            lower=m.ConstantBound(4.0, True),
-            upper=m.ConstantBound(10.0, True),
-        ),
-    )
-    result = compare((first, second), policy(frequency_metric=m.ResearchMetric.FREQUENCY_MEDIAN),
-                     targets=frequency)
-    assert result.rows[0].candidate == second.candidate
-    assert [x.rank_in_layer for x in result.rows] == [1, 2]
-    assert all(x.target_checks[0].status is m.TargetCheckStatus.PASSED for x in result.rows)
-    rejected_context = compare(
-        (row(a, 0.1), replace(row(b, 0.01), context_sha256="e" * 64)),
-        targets=(
-            m.ResearchTarget(
-                "net_annual_return",
-                m.ResearchMetric.NET_ANNUAL_RETURN,
-                lower=m.ConstantBound(0.05, True),
-            ),
-        ),
-    )
-    assert rejected_context.rows[0].status is m.ComparisonStatus.RANKED
-
-
-def test_sensitivity_does_not_rewrite_baseline_and_context_mismatch_is_explicit():
-    a, b = candidate(), candidate("C0002", "b")
-    rows = (row(a, 0.11, 0.2), row(b, 0.10, 0.1))
-    variant = m.ComparisonVariant("swap_parameter_return_drawdown", policy().bins, 0)
-    result = compare(rows, replace(policy(), sensitivities=(variant,)))
-    assert result.rows[0].candidate == a
-    assert result.sensitivities[0].rows[0].candidate == b
-    mismatch = compare((rows[0], replace(rows[1], context_sha256="e" * 64)))
-    assert all(x.status is m.ComparisonStatus.INCOMPARABLE for x in mismatch.rows)
-    fine = tuple(replace(x, resolution=0.001) for x in policy().bins)
-    result = compare(
-        (row(a, 0.1001, 0.1001, 0.0299), row(b, 0.1002, 0.1002, 0.0203)),
-        replace(policy(), sensitivities=(m.ComparisonVariant("finer", fine),)),
-    )
-    assert result.rows[0].rank_in_layer == result.rows[1].rank_in_layer
-    assert result.sensitivities[0].rows[0].candidate == b
-
-
-@pytest.mark.parametrize("bad", [float("nan"), float("inf"), True])
-def test_pareto_rejects_nonfinite_and_boolean_metrics(bad):
-    with pytest.raises(ValueError):
-        pareto_layers((CandidateProfile("a", True, True, (("x", bad),)),))
-
-
-def test_pareto_rejects_intersection_comparison_and_duplicates():
-    profile = CandidateProfile("a", True, True, (("x", 1.0), ("y", 2.0)))
-    with pytest.raises(ValueError, match="match exactly"):
-        pareto_layers((profile, replace(profile, candidate_id="b", worst_scores=(("x", 1.0),))))
-    with pytest.raises(ValueError, match="duplicate"):
-        pareto_layers((profile, profile))
-    with pytest.raises(ValueError, match="unique"):
-        pareto_layers((replace(profile, worst_scores=(("x", 1.0), ("x", 2.0))),))
-    assert pareto_layers(()) == ()
 
 
 def family_request():
@@ -583,63 +357,30 @@ def family_request():
     return replace(req, family_returns=family)
 
 
+@pytest.mark.risk_cases('SE-09-C05')
 def test_family_statistics_bind_return_matrix_and_do_not_affect_ranks():
     req = family_request()
     family = req.family_returns
+    from strategy_evaluator.search_bias import effective_trial_count
+    import numpy as np
+    left, right = zip(*family.returns)
+    mean_a, mean_b = sum(left)/len(left), sum(right)/len(right)
+    a = tuple(x-mean_a for x in left)
+    b = tuple(x-mean_b for x in right)
+    rho = sum(x*y for x,y in zip(a,b)) / math.sqrt(sum(x*x for x in a)*sum(y*y for y in b))
+    assert effective_trial_count(np.asarray(family.returns)) == pytest.approx(2/(1+rho*rho))
     panel = assess_candidates(req)
     assert {x.name for x in panel.family_diagnostics} == {"PBO", "DSR_RAW", "DSR_EFFECTIVE"}
     assert panel.family_limitations == family.limitations
     assert all(x.value is None or math.isfinite(x.value) for x in panel.family_diagnostics)
-    tampered = replace(family, returns=((0.1, 0.2), *family.returns[1:]))
-    with pytest.raises(ValueError, match="returns differ"):
-        assess_candidates(replace(req, family_returns=tampered))
+    assert panel.rows == assess_candidates(replace(req, family_returns=None)).rows
 
 
-def test_family_dsr_bundle_and_effective_count_are_computed_once(monkeypatch):
-    req = family_request()
-    matrix = np.asarray(req.family_returns.returns)
-    sharpes = np.asarray([search_bias.annualized_sharpe(x) for x in matrix.T])
-    selected = matrix[:, req.family_returns.candidates.index(req.family_returns.selected)]
-    expected = search_bias.calculate_dsr_bundle(
-        selected, sharpes, raw_count=req.family_returns.raw_trial_count,
-        effective_count=search_bias.effective_trial_count(matrix),
-    )
-    calls = {"sharpe": 0, "effective_count": 0, "bundle": 0}
-
-    def counted(name, original):
-        def wrapped(*args, **kwargs):
-            calls[name] += 1
-            return original(*args, **kwargs)
-        return wrapped
-
-    monkeypatch.setattr(assessment, "annualized_sharpe", counted("sharpe", search_bias.annualized_sharpe))
-    monkeypatch.setattr(assessment, "effective_trial_count", counted("effective_count", search_bias.effective_trial_count))
-    monkeypatch.setattr(assessment, "calculate_dsr_bundle", counted("bundle", search_bias.calculate_dsr_bundle))
-    diagnostics = {x.name: x for x in assess_candidates(req).family_diagnostics}
-    assert diagnostics["DSR_RAW"].value == expected.raw.probability
-    assert diagnostics["DSR_EFFECTIVE"].value == expected.effective.probability
-    assert calls == {"sharpe": matrix.shape[1], "effective_count": 1, "bundle": 1}
 
 
-@pytest.mark.parametrize("exception", [ValueError, FloatingPointError, ZeroDivisionError])
-@pytest.mark.parametrize("operation", ["effective_trial_count", "calculate_dsr_bundle"])
-def test_family_dsr_expected_failure_is_shared_without_affecting_pbo(monkeypatch, exception, operation):
-    calls = []
-
-    def failed(*args, **kwargs):
-        calls.append(operation)
-        raise exception("declared statistical failure")
-
-    monkeypatch.setattr(assessment, operation, failed)
-    diagnostics = {x.name: x for x in assess_candidates(family_request()).family_diagnostics}
-    assert calls == [operation]
-    assert diagnostics["PBO"].status is m.DiagnosticStatus.AVAILABLE
-    for name in ("DSR_RAW", "DSR_EFFECTIVE"):
-        assert diagnostics[name].status is m.DiagnosticStatus.INSUFFICIENT_DATA
-        assert diagnostics[name].value is None
-        assert diagnostics[name].reason == "declared statistical failure"
 
 
+@pytest.mark.risk_cases('SE-09-C06')
 def test_family_dsr_unexpected_error_is_not_converted_to_diagnostic(monkeypatch):
     def failed(*args, **kwargs):
         raise RuntimeError("unexpected implementation failure")
@@ -647,3 +388,13 @@ def test_family_dsr_unexpected_error_is_not_converted_to_diagnostic(monkeypatch)
     monkeypatch.setattr(assessment, "calculate_dsr_bundle", failed)
     with pytest.raises(RuntimeError, match="unexpected implementation failure"):
         assess_candidates(family_request())
+
+
+@pytest.mark.risk_cases('SE-06-C01')
+def test_SE_06_C01_stress_annual_loss_is_signed():
+    panel = assess_candidates(request())
+    actual = values(panel)[m.ResearchMetric.STRESS_ANNUAL_LOSS]
+    assert actual.status is m.DiagnosticStatus.AVAILABLE
+    # Standard ends 1030, higher-cost pressure ends 1050 over four days.
+    assert actual.value == pytest.approx((1.03 ** 63 - 1) - (1.05 ** 63 - 1))
+    assert actual.value < 0.

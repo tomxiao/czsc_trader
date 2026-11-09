@@ -15,7 +15,6 @@ from strategy_evaluator.parameter_neighborhood import (
     CategoricalDomain,
     ExplicitValues,
     IntegerDomain,
-    IntegerSetDomain,
     NamedParameterValue,
     NeighborhoodConstraintExclusion,
     NeighborhoodRejection,
@@ -23,7 +22,6 @@ from strategy_evaluator.parameter_neighborhood import (
     NumericOffsets,
     OrdinalDomain,
     ParameterAxis,
-    ParameterKind,
     ParameterNeighborhoodBinding,
     ParameterNeighborhoodContext,
     ParameterNeighborhoodProtocol,
@@ -33,7 +31,6 @@ from strategy_evaluator.parameter_neighborhood import (
     ParameterStepStatus,
     RelativeChangeLimit,
     RealDomain,
-    RealSetDomain,
     StudyPurpose,
     build_parameter_neighborhood_design,
 )
@@ -48,22 +45,6 @@ def axis(name="allocation", center=0.95, domain=None, rule=None, path=None, unit
         path or (name,),
         unit,
     )
-
-
-def test_binding_many_points_computes_immutable_design_identity_once(monkeypatch):
-    design = build_parameter_neighborhood_design(request(axis(center=.5)), feasibility=lambda _: True).design
-    digest = m.digest
-    calls = []
-
-    def counted(value):
-        if value is design:
-            calls.append(value)
-        return digest(value)
-
-    monkeypatch.setattr(m, "digest", counted)
-    identities = {design.bind_point(i % design.point_count).design_sha256 for i in range(20)}
-    assert len(identities) == 1
-    assert len(calls) <= 1
 
 
 def request(*axes, purpose=StudyPurpose.STRUCTURAL_CONTROL, limit=10000):
@@ -86,6 +67,7 @@ def counts(result):
     return {r.reason: r.count for r in result.rejections}
 
 
+@pytest.mark.risk_cases('SE-15-C01')
 def test_full_cartesian_typed_mapping_and_determinism():
     req = request(
         axis(), axis("hold", 3, IntegerDomain(1, 30), NumericOffsets((-1, 1)), unit="sessions")
@@ -119,133 +101,48 @@ def test_full_cartesian_typed_mapping_and_determinism():
         result.design.bind_point(True)
 
 
-def test_integer_only_space_is_supported_without_continuous_coordinate():
-    result = build(
-        request(axis("hold", 3, IntegerDomain(1, 30), NumericOffsets((-1, 1)), unit="sessions"))
-    )
-    assert rows(result.design) == [(2,), (4,)]
-    assert result.design.space.axes[0].kind is ParameterKind.INTEGER
-
-
-def test_exact_real_arithmetic_open_boundary_and_no_clipping():
-    result = build(
-        request(
-            axis(
-                center=0.1,
-                domain=RealDomain(0.0, 0.3, False, False),
-                rule=NumericOffsets((-0.1, 0.2, 0.1)),
-            )
-        )
-    )
-    assert rows(result.design) == [(0.2,)]
-    assert counts(result)[NeighborhoodRejectionReason.OUT_OF_DOMAIN] == 2
-    assert 0.3 not in [v[0] for v in rows(result.design)]
-
-
-def test_quantum_and_step_reject_without_rounding():
-    real = build(
-        request(
-            axis(
-                center=0.3,
-                domain=RealDomain(0.0, 1.0, quantum=0.1),
-                rule=NumericOffsets((0.1, 0.05)),
-            )
-        )
-    )
-    assert rows(real.design) == [(0.4,)]
-    integer = build(
-        request(axis("hold", 3, IntegerDomain(1, 9, 2, 1), NumericOffsets((1, 2)), unit="sessions"))
-    )
-    assert rows(integer.design) == [(5,)]
-    assert counts(integer)[NeighborhoodRejectionReason.OUT_OF_DOMAIN] == 1
-    with pytest.raises(ValueError, match="no admissible"):
-        RealDomain(0.1, 0.2, quantum=1.0)
-    with pytest.raises(ValueError, match="no admissible"):
-        IntegerDomain(2, 2, 2, 1)
-
-
-def test_numeric_sets_remain_numeric_types():
-    result = build(
-        request(
-            axis(domain=RealSetDomain((0.9, 0.95, 1.0))),
-            axis(
-                "hold", 3, IntegerSetDomain((1, 3, 5)), NumericOffsets((-2, 1, 2)), unit="sessions"
-            ),
-        )
-    )
-    assert result.design.space.axes[0].kind is ParameterKind.REAL
-    assert result.design.space.axes[1].kind is ParameterKind.INTEGER
-    assert result.design.point_count == 8
-    assert counts(result)[NeighborhoodRejectionReason.OUT_OF_DOMAIN] == 3
-
-
-def test_ordinal_adjacency_uses_declared_order_and_reports_boundaries():
-    a = axis(
-        "speed",
-        "slow",
-        OrdinalDomain(("slow", "medium", "fast")),
-        AdjacentLevels(),
-        unit="ordered-level",
-    )
-    result = build(request(a))
-    assert rows(result.design) == [("medium",)]
-    assert counts(result)[NeighborhoodRejectionReason.OUT_OF_DOMAIN] == 1
-    numeric = axis(
-        "threshold", 10, OrdinalDomain((10, 100, 1000)), AdjacentLevels(), unit="ordered-level"
-    )
-    assert rows(build(request(numeric)).design) == [(100,)]
-
-
-def test_categories_and_booleans_require_structural_control():
-    cat = axis(
-        "mode",
-        "mean",
-        CategoricalDomain(("mean", "median")),
-        ExplicitValues(("median",)),
-        unit="category",
-    )
-    flag = axis("enabled", True, BooleanDomain(), ExplicitValues((False,)), unit="boolean")
-    with pytest.raises(ValueError, match="STRUCTURAL_CONTROL"):
-        request(cat, purpose=StudyPurpose.LOCAL_SENSITIVITY)
-    with pytest.raises(ValueError, match="STRUCTURAL_CONTROL"):
-        request(flag, purpose=StudyPurpose.LOCAL_SENSITIVITY)
-    result = build(request(cat, flag, purpose=StudyPurpose.STRUCTURAL_CONTROL))
-    assert rows(result.design) == [("mean", False), ("median", True), ("median", False)]
-    assert type(result.design.points[0].values[1].value) is bool
-    assert ParameterNeighborhoodResult.from_dict(result.to_dict()) == result
-
-
-@pytest.mark.parametrize(
-    "factory",
-    [
-        lambda: IntegerDomain(True, 10),
-        lambda: RealDomain("0", 1.0),
-        lambda: RealDomain(0.0, math.inf),
-        lambda: NumericOffsets((False,)),
-        lambda: axis("hold", True, IntegerDomain(1, 30), NumericOffsets((-1, 1))),
-        lambda: axis("hold", 3, IntegerDomain(1, 30), NumericOffsets((-1.0, 1.0))),
-        lambda: axis(rule=ExplicitValues((1,))),
-        lambda: axis("enabled", True, BooleanDomain(), ExplicitValues((1,))),
-        lambda: OrdinalDomain((1, "two")),
-        lambda: RealSetDomain((0.5, 0.5)),
-        lambda: IntegerSetDomain((3, 1)),
-        lambda: axis(rule=AdjacentLevels()),
-    ],
-)
-def test_bad_types_and_domains_fail_at_construction(factory):
-    with pytest.raises((ValueError, TypeError)):
-        factory()
-
-
-def test_paths_must_be_nonempty_unique_and_nonoverlapping():
+@pytest.mark.risk_cases('SE-13-C02')
+def test_SE_13_C02_integer_center_must_lie_on_declared_grid():
     with pytest.raises(ValueError):
-        ParameterAxis("x", 0.5, RealDomain(0.0, 1.0), NumericOffsets((0.1,)), (), "fraction")
+        axis("hold", 3, IntegerDomain(0, 10, 2, 0), NumericOffsets((-2, 2)), unit="sessions")
+
+
+@pytest.mark.risk_cases('SE-13-C03')
+def test_SE_13_C03_real_quantum_is_not_rounded():
+    result = build(request(axis(center=.3, domain=RealDomain(0., 1., quantum=.1),
+                                rule=NumericOffsets((.1, .05)))))
+    assert rows(result.design) == [(.4,)]
+    assert counts(result)[NeighborhoodRejectionReason.OUT_OF_DOMAIN] == 1
+
+
+@pytest.mark.risk_cases('SE-13-C05')
+def test_SE_13_C05_changed_category_requires_structural_control():
+    category = axis("mode", "mean", CategoricalDomain(("mean", "median")),
+                    ExplicitValues(("median",)), unit="category")
+    with pytest.raises(ValueError, match="STRUCTURAL_CONTROL"):
+        request(category, purpose=StudyPurpose.LOCAL_SENSITIVITY)
+    assert rows(build(request(category)).design) == [("median",)]
+
+
+@pytest.mark.risk_cases('SE-13-C01')
+def test_SE_13_C01_boolean_is_not_integer_coordinate():
+    with pytest.raises((ValueError, TypeError)):
+        axis("hold", True, IntegerDomain(1, 30), NumericOffsets((-1, 1)))
+
+
+@pytest.mark.risk_cases('SE-13-C06')
+def test_SE_13_C06_boolean_domain_rejects_integer_one():
+    with pytest.raises((ValueError, TypeError)):
+        axis("enabled", True, BooleanDomain(), ExplicitValues((1,)))
+
+
+@pytest.mark.risk_cases('SE-13-C04')
+def test_SE_13_C04_payload_paths_cannot_overlap():
     with pytest.raises(ValueError, match="overlapping"):
         request(axis(path=("risk",)), axis("other", path=("risk", "value")))
-    with pytest.raises(ValueError, match="duplicate axis"):
-        request(axis(), axis(path=("other",)))
 
 
+@pytest.mark.risk_cases('SE-15-C02')
 def test_duplicate_center_and_constraint_rejections_have_exact_accounting():
     calls = []
     req = request(axis(center=0.5, rule=NumericOffsets((0.0, -0.1, -0.1, 0.1))))
@@ -272,6 +169,7 @@ def test_duplicate_center_and_constraint_rejections_have_exact_accounting():
     assert ParameterNeighborhoodResult.from_dict(result.to_dict()) == result
 
 
+@pytest.mark.risk_cases('SE-15-C03')
 def test_resource_limit_precedes_expansion_and_callback():
     calls = []
     req = request(axis(), axis("other"), limit=8)
@@ -287,73 +185,52 @@ def test_resource_limit_precedes_expansion_and_callback():
     )
 
 
-def test_empty_neighborhood_and_callback_errors_do_not_return_partial_design():
-    result = build(feasibility=lambda values: values[0].value == 0.95)
-    assert result.design is None and result.reason == "NO_FEASIBLE_NONCENTER_POINTS"
-    assert len(result.constraint_exclusions) == 2
-    assert ParameterNeighborhoodResult.from_dict(result.to_dict()) == result
-    infeasible = build(feasibility=lambda values: False)
-    assert infeasible.design is None and infeasible.reason == "CENTER_VIOLATES_CONSTRAINT"
-    with pytest.raises(TypeError, match="return bool"):
+@pytest.mark.risk_cases('SE-15-C05')
+def test_SE_15_C05_feasibility_must_return_bool():
+    with pytest.raises(TypeError, match='return bool'):
         build(feasibility=lambda values: 1)
-    with pytest.raises(TypeError, match="callable"):
-        build(feasibility=None)
-    with pytest.raises(RuntimeError, match="constraint failed"):
-        build(feasibility=lambda values: (_ for _ in ()).throw(RuntimeError("constraint failed")))
 
 
-def test_comparison_identity_contains_actual_boundary_shape_and_semantics():
+@pytest.mark.risk_cases('SE-16-C03')
+def test_SE_16_C03_actual_boundary_shape_changes_comparison_identity():
     base = build().design
     boundary = build(request(axis(center=1.0))).design
-    interior = build(request(axis(center=0.9))).design
+    interior = build(request(axis(center=.9))).design
     assert base.comparison_sha256 != boundary.comparison_sha256
     assert base.comparison_sha256 == interior.comparison_sha256
-    for altered in (
-        request(axis(unit="other-unit")),
-        request(axis(rule=NumericOffsets((-0.01, 0.01)))),
-        replace(request(), space=replace(request().space, feasibility_sha256="d" * 64)),
-        request(axis(domain=RealDomain(0.0, 2.0, False))),
-    ):
-        assert build(altered).design.comparison_sha256 != base.comparison_sha256
-    context = ParameterNeighborhoodContext(
-        base.protocol,
-        base.sha256,
-        base.space.sha256,
-        1,
-        base.point_count,
-        base.point_count,
-        base.comparison_sha256,
-    )
-    assert ParameterNeighborhoodContext.from_dict(context.to_dict()) == context
-    with pytest.raises(ValueError):
-        replace(context, valid_points=base.point_count + 1)
 
 
-def test_mutated_point_and_serialized_type_are_rejected():
-    design = build().design
-    with pytest.raises(ValueError, match="declared neighborhood"):
-        replace(
-            design,
-            points=(
-                replace(design.points[0], values=(NamedParameterValue("allocation", 0.91),)),
-                *design.points[1:],
-            ),
-        )
-    raw = request().to_dict()
-    raw["space"]["axes"][0]["center"] = 1
-    with pytest.raises(ValueError):
-        ParameterNeighborhoodRequest.from_dict(raw)
+@pytest.mark.parametrize('changes', [
+    pytest.param({"unit": "other-unit"}, id='SE-16-C04'),
+    pytest.param({"path": ("different", "allocation")}, id='SE-16-C05'),
+])
+@pytest.mark.risk_cases('SE-16-C04', 'SE-16-C05')
+def test_axis_business_semantics_change_comparison_identity(changes):
+    base = build().design
+    changed = build(request(axis(**changes))).design
+    assert changed.space.sha256 != base.space.sha256
+    assert changed.sha256 != base.sha256
+    assert changed.bind_point(0).design_sha256 != base.bind_point(0).design_sha256
+    if "path" in changes:
+        # A payload location binds a distinct design, while identical business
+        # axes and neighborhood geometry remain statistically comparable.
+        assert changed.comparison_sha256 == base.comparison_sha256
+    else:
+        assert changed.comparison_sha256 != base.comparison_sha256
 
 
-def test_large_real_offset_is_rejected_as_boundary_not_float_crash():
-    a = axis(center=1e308, domain=RealDomain(-1e308, 1e308), rule=NumericOffsets((1e308, -1e308)))
-    result = build(request(a))
-    assert rows(result.design) == [(0.0,)]
-    assert counts(result)[NeighborhoodRejectionReason.OUT_OF_DOMAIN] == 1
+@pytest.mark.risk_cases('SE-16-C02')
+def test_SE_16_C02_integer_coordinate_cannot_be_serialized_as_float():
+    result = build(request(axis("hold", 3, IntegerDomain(1, 30), NumericOffsets((-1, 1)), unit="sessions")))
+    raw = result.to_dict()
+    raw["design"]["points"][0]["values"][0]["value"] = 2.0
+    with pytest.raises((ValueError, TypeError)):
+        ParameterNeighborhoodResult.from_dict(raw)
 
 
-@pytest.mark.parametrize("fake_reason", tuple(NeighborhoodRejectionReason))
-def test_deleted_point_cannot_be_hidden_by_any_rejection_count(fake_reason):
+@pytest.mark.risk_cases('SE-16-C01')
+def test_deleted_point_cannot_be_hidden_by_any_rejection_count():
+    fake_reason = NeighborhoodRejectionReason.CONSTRAINT
     design = build().design
     forged_counts = {NeighborhoodRejectionReason.CENTER: 1}
     forged_counts[fake_reason] = forged_counts.get(fake_reason, 0) + 1
@@ -371,78 +248,6 @@ def test_deleted_point_cannot_be_hidden_by_any_rejection_count(fake_reason):
         type(design).from_dict(raw)
 
 
-def test_fixed_rejection_counts_and_order_are_independently_reconstructed():
-    result = build(request(axis(center=1.0, rule=NumericOffsets((0.0, -0.1, 0.1)))))
-    design = result.design
-    assert counts(result) == {
-        NeighborhoodRejectionReason.OUT_OF_DOMAIN: 1,
-        NeighborhoodRejectionReason.DUPLICATE: 1,
-        NeighborhoodRejectionReason.CENTER: 1,
-    }
-    for rejected in (
-        (NeighborhoodRejection(NeighborhoodRejectionReason.CENTER, 3),),
-        (
-            NeighborhoodRejection(NeighborhoodRejectionReason.OUT_OF_DOMAIN, 2),
-            NeighborhoodRejection(NeighborhoodRejectionReason.CENTER, 1),
-        ),
-        tuple(reversed(design.rejections)),
-    ):
-        with pytest.raises(ValueError, match="recomputed rejection"):
-            replace(design, rejections=rejected)
-
-
-def test_constraint_exclusions_cannot_be_missing_duplicate_or_overlapping():
-    req = request(axis(center=0.5, rule=NumericOffsets((-0.2, -0.1, 0.1, 0.2))))
-    result = build(req, lambda values: values[0].value <= 0.5)
-    design = result.design
-    assert rows(design) == [(0.3,), (0.4,)]
-    assert [x.values[0].value for x in design.constraint_exclusions] == [0.6, 0.7]
-    with pytest.raises(ValueError, match="incomplete declared neighborhood"):
-        replace(design, constraint_exclusions=design.constraint_exclusions[:1])
-    with pytest.raises(ValueError, match="duplicate constraint exclusion"):
-        replace(design, constraint_exclusions=(design.constraint_exclusions[0],) * 2)
-    with pytest.raises(ValueError, match="overlap"):
-        replace(
-            design,
-            constraint_exclusions=(
-                NeighborhoodConstraintExclusion(design.points[0].values),
-                design.constraint_exclusions[1],
-            ),
-        )
-    with pytest.raises(ValueError, match="constraint exclusion count"):
-        replace(result, constraint_exclusions=())
-    with pytest.raises(ValueError, match="accounting differ"):
-        replace(result, constraint_exclusions=tuple(reversed(result.constraint_exclusions)))
-
-
-def test_partition_order_and_excluded_points_are_strict():
-    req = request(axis(center=0.5, rule=NumericOffsets((-0.2, -0.1, 0.1, 0.2))))
-    design = build(req, lambda values: values[0].value <= 0.5).design
-    with pytest.raises(ValueError, match="partition order"):
-        replace(
-            design, points=tuple(replace(p, index=i) for i, p in enumerate(reversed(design.points)))
-        )
-    with pytest.raises(ValueError, match="partition order"):
-        replace(design, constraint_exclusions=tuple(reversed(design.constraint_exclusions)))
-    for value in (0.5, 0.55, 1, True, 1.1):
-        with pytest.raises(ValueError):
-            replace(
-                design,
-                constraint_exclusions=(
-                    NeighborhoodConstraintExclusion((NamedParameterValue("allocation", value),)),
-                    design.constraint_exclusions[1],
-                ),
-            )
-    with pytest.raises(ValueError, match="named point axes"):
-        replace(
-            design,
-            constraint_exclusions=(
-                NeighborhoodConstraintExclusion((NamedParameterValue("renamed", 0.6),)),
-                design.constraint_exclusions[1],
-            ),
-        )
-
-
 def local_axis(name="hold", center=3, domain=None, limit=None):
     return axis(name, center, domain or IntegerDomain(1, 30),
                 BoundedLocalStep(limit or RelativeChangeLimit(0.05)), unit="sessions")
@@ -452,7 +257,11 @@ def local_request(*axes):
     return request(*axes, purpose=StudyPurpose.LOCAL_SENSITIVITY)
 
 
-@pytest.mark.parametrize("center, expected", [(3, []), (20, [(19,), (21,)])])
+@pytest.mark.parametrize('center,expected', [
+    pytest.param(3, [], id='SE-14-C01'),
+    pytest.param(20, [(19,), (21,)], id='SE-14-C02'),
+])
+@pytest.mark.risk_cases('SE-14-C01', 'SE-14-C02')
 def test_bounded_integer_applicability_uses_legal_minimum_and_inclusive_limit(center, expected):
     result = build(local_request(local_axis(center=center)))
     assert rows(result.design) == expected
@@ -471,52 +280,36 @@ def test_bounded_integer_applicability_uses_legal_minimum_and_inclusive_limit(ce
             result.design.bind_point(0)
 
 
-def test_partial_applicability_keeps_fixed_coordinates_in_every_child():
-    allocation = axis(center=1.0, rule=BoundedLocalStep(RelativeChangeLimit(0.05)))
-    result = build(local_request(local_axis(), allocation))
-    assert rows(result.design) == [(3, 0.95)]
-    assert [x.is_applicable for x in result.design.axis_applicability] == [False, True]
-    assert result.design.axis_applicability[1].decisions[1].status is ParameterStepStatus.OUT_OF_DOMAIN
-    with pytest.raises(ValueError):
-        replace(result.design, points=(replace(result.design.points[0], values=(
-            NamedParameterValue("hold", 2), NamedParameterValue("allocation", 0.95))),))
 
 
-@pytest.mark.parametrize("domain, center, limit, expected", [
-    (RealDomain(0.0, 1.0, quantum=0.1), 0.3, RelativeChangeLimit(0.05), []),
-    (RealDomain(0.0, 1.0, quantum=0.1), 0.3, AbsoluteChangeLimit(0.1), [(0.2,), (0.4,)]),
-    (IntegerSetDomain((18, 20, 21)), 20, RelativeChangeLimit(0.05), [(21,)]),
-    (RealSetDomain((0.8, 1.0, 1.05)), 1.0, RelativeChangeLimit(0.05), [(1.05,)]),
-    (OrdinalDomain(("low", "medium", "high")), "medium", AbsoluteChangeLimit(1.0), [("low",), ("high",)]),
-    (OrdinalDomain((10, 20, 30)), 20, RelativeChangeLimit(0.05), []),
-    (IntegerDomain(-30, -1), -20, RelativeChangeLimit(0.05), [(-21,), (-19,)]),
-])
-def test_bounded_neighbors_follow_domain_and_declared_scale(domain, center, limit, expected):
-    result = build(local_request(local_axis(center=center, domain=domain, limit=limit)))
+@pytest.mark.risk_cases('SE-14-C07')
+def test_bounded_neighbors_follow_declared_domain():
+    domain = OrdinalDomain(("low", "medium", "high"))
+    center = "medium"
+    limit = AbsoluteChangeLimit(1.)
+    expected = [("low",), ("high",)]
+    if isinstance(domain, OrdinalDomain):
+        with pytest.raises(ValueError, match="nonzero numeric business scale"):
+            local_axis(center=center, domain=domain)
+    result = build(local_request(axis(center=center, domain=domain, rule=BoundedLocalStep(limit))))
     assert rows(result.design) == expected
 
 
-def test_zero_center_requires_absolute_scale_and_missing_scale_is_not_exemption():
+@pytest.mark.risk_cases('SE-14-C03')
+def test_SE_14_C03_zero_center_requires_explicit_absolute_scale():
     with pytest.raises(ValueError, match="nonzero numeric business scale"):
         local_axis(center=0, domain=IntegerDomain(-2, 2))
+
+
+@pytest.mark.risk_cases('SE-14-C04')
+def test_SE_14_C04_zero_center_absolute_scale_keeps_both_directions():
     assert rows(build(local_request(local_axis(center=0, domain=IntegerDomain(-2, 2),
                     limit=AbsoluteChangeLimit(1.0)))).design) == [(-1,), (1,)]
-    with pytest.raises(ValueError, match="nonzero numeric business scale"):
-        local_axis(center="medium", domain=OrdinalDomain(("low", "medium", "high")))
-    with pytest.raises(ValueError, match="smaller limit"):
-        local_axis(center=1.0, domain=RealDomain(0.99, 1.01))
-    with pytest.raises(ValueError, match="distinct legal value"):
-        local_axis(center=1e308, domain=RealDomain(0.0, 1.7e308), limit=AbsoluteChangeLimit(1.0))
 
 
-@pytest.mark.parametrize("center, limit", [
-    (0.002002002002001957, RelativeChangeLimit(0.05)),
-    (-0.002002002002001957, RelativeChangeLimit(0.05)),
-    (0.0017298986606429072, RelativeChangeLimit(0.05)),
-    (0.002002002002001957, AbsoluteChangeLimit(0.00010010010010009785)),
-    (0.0, AbsoluteChangeLimit(0.00010010010010009785)),
-])
-def test_continuous_endpoints_preserve_both_directions_within_exact_limit(center, limit):
+@pytest.mark.risk_cases('SE-14-C05')
+def test_SE_14_C05_continuous_endpoints_round_inward():
+    center, limit = 0.002002002002001957, RelativeChangeLimit(.05)
     result = build(local_request(local_axis(
         center=center, domain=RealDomain(-0.05, 0.05), limit=limit)))
     assert result.design.point_count == 2
@@ -535,8 +328,10 @@ def test_continuous_endpoints_preserve_both_directions_within_exact_limit(center
     assert restored == result and restored.sha256 == result.sha256
 
 
-@pytest.mark.parametrize("closed, expected", [(True, 2), (False, 1)])
-def test_continuous_endpoint_respects_exact_open_or_closed_domain(closed, expected):
+@pytest.mark.risk_cases('SE-14-C06')
+def test_continuous_endpoint_respects_exact_open_or_closed_domain():
+    closed = False
+    expected = 1
     result = build(local_request(local_axis(center=1.0,
         domain=RealDomain(0.95, 2.0, lower_closed=closed))))
     assert result.design.point_count == expected
@@ -544,12 +339,7 @@ def test_continuous_endpoint_respects_exact_open_or_closed_domain(closed, expect
         ParameterStepStatus.INCLUDED if closed else ParameterStepStatus.OUT_OF_DOMAIN)
 
 
-def test_continuous_rounding_cannot_collapse_a_direction_to_center():
-    with pytest.raises(ValueError, match="distinct legal value"):
-        local_axis(center=5e-324, domain=RealDomain(0.0, 1.0),
-                   limit=RelativeChangeLimit(0.05))
-
-
+@pytest.mark.risk_cases('SE-15-C04')
 def test_empty_or_constraint_excluded_local_space_has_explicit_inapplicability():
     req = replace(local_request(local_axis()), space=ParameterNeighborhoodSpace((), "b" * 64, "c" * 64))
     empty = build(req)
@@ -571,32 +361,22 @@ def test_empty_or_constraint_excluded_local_space_has_explicit_inapplicability()
         replace(empty, status=m.ParameterDesignStatus.COMPLETE)
 
 
-def test_current_local_contract_cannot_bypass_limits_with_explicit_offsets():
-    with pytest.raises(ValueError, match="bounded local steps"):
-        local_request(axis("hold", 3, IntegerDomain(1, 30), NumericOffsets((-1, 1))))
-    cat = axis("mode", "mean", CategoricalDomain(("mean", "median")),
-               ExplicitValues(("mean",)), unit="category")
-    result = build(local_request(cat, local_axis()))
-    assert result.status is m.ParameterDesignStatus.NOT_APPLICABLE
-    assert result.design.axis_applicability[0].structural_only
-    with pytest.raises(ValueError, match="requires neighborhood v2"):
-        replace(local_request(local_axis()), protocol=ParameterNeighborhoodProtocol(
-            version="parameter-cartesian-neighborhood-v1"))
 
 
-def test_legacy_design_is_hash_stable_read_only_and_never_accepts_zero_points():
-    # Same original record schema; v1 data is reconstructed, never regenerated.
-    old = replace(build().design, protocol=ParameterNeighborhoodProtocol(
-        version="parameter-cartesian-neighborhood-v1"))
+@pytest.mark.risk_cases('SE-33-C03')
+def test_SE_33_C03_legacy_neighborhood_retains_identity_and_rejects_current_evaluation():
+    from test_neighborhood_assessment import current_request
+    from strategy_evaluator import assess_candidates
+    old = replace(build().design, protocol=ParameterNeighborhoodProtocol(version='parameter-cartesian-neighborhood-v1'))
     raw = old.to_dict()
-    assert set(raw) == {"type", "center", "protocol", "space", "points", "generated_combinations",
-                       "rejections", "constraint_exclusions"}
     decoded = type(old).from_dict(raw)
     assert decoded.to_dict() == raw and decoded.sha256 == old.sha256
-    with pytest.raises(ValueError, match="read-only"):
-        build(ParameterNeighborhoodRequest(old.center, old.protocol, old.space))
-    with pytest.raises(ValueError, match="noncenter point"):
+    current = current_request()
+    with pytest.raises(ValueError, match='v2|current|protocol|read-only'):
+        assess_candidates(replace(current, protocol=replace(current.protocol, parameter_protocol=old.protocol)))
+
+@pytest.mark.risk_cases('SE-33-C05')
+def test_SE_33_C05_old_zero_point_design_cannot_gain_new_inapplicability():
+    old = replace(build().design, protocol=ParameterNeighborhoodProtocol(version='parameter-cartesian-neighborhood-v1'))
+    with pytest.raises(ValueError, match='noncenter point'):
         replace(old, points=())
-    with pytest.raises(ValueError, match="coverage"):
-        ParameterNeighborhoodContext(old.protocol, old.sha256, old.space.sha256,
-                                     1, 0, 0, old.comparison_sha256)

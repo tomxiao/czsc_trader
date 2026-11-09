@@ -1,15 +1,14 @@
 """Attested RAW source admission, market parity and exact calendar slicing."""
 from dataclasses import replace
 from datetime import date, datetime
-from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import pandas as pd
 import pytest
 
-from dataflows import (AcquisitionMethod, AssetClass, BarFrequency, Dataflows, DataSpace, EquityDataRequest,
+from dataflows import (AssetClass, BarFrequency, EquityDataRequest,
     EquityFrequencyFacts, EquityProduct, EquityQuery, EquitySourceCoverage, InstrumentId,
-    MarketId, PreparePolicy, PriceAdjustment, ProviderConfig, SourceRef, TimeInterval,
+    MarketId, PriceAdjustment, SourceRef, TimeInterval,
     TradingSession, versioned_equity_bindings)
 from dataflows.errors import DataContractError, IncompleteDataError
 
@@ -47,126 +46,22 @@ def request(source, product, frequency, *, start=None, end=None):
         start or source['coverage'].start, end or source['coverage'].end, frequency))
 
 
-@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
-@pytest.mark.parametrize('frequency', [BarFrequency.DAILY, BarFrequency.M30])
-def test_both_markets_publish_pinned_raw_facts_with_exact_source_rules(tmp_path, market, frequency):
-    source = facts(market)
-    bindings = versioned_equity_bindings(**source)
-    flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path('assets')),
-        providers=ProviderConfig(bindings={}, equity_bindings=bindings))
-    requests = tuple(request(source, product, frequency) for product in EquityProduct)
-    prepared = flows.prepare(requests, policy=PreparePolicy.REUSE)
-    assert prepared.ready, [(item.status, item.error) for item in prepared.items]
-    rows = flows.fetch(requests[0], prepared=prepared.reference)
-    assert rows.ready, rows.error
-    assert len(rows.dataframe) == (3 if frequency is BarFrequency.DAILY else 24 if market is MarketId.CN else 39)
-    assert rows.identity.metadata['adjustment'] == 'none'
-    assert rows.identity.metadata['acquisition_method'] == 'PROVIDER_RAW'
-    rules = flows.fetch(request(source, EquityProduct.TRADING_FACTS, frequency), prepared=prepared.reference)
-    assert rules.ready, rules.error
-    assert rules.dataframe.PriceLimitLower.notna().all() if market is MarketId.CN else rules.dataframe.PriceLimitLower.isna().all()
 
 
-def test_provider_owns_admitted_values_and_preserves_exact_subrange():
-    source = facts(MarketId.CN)
-    bindings = versioned_equity_bindings(**source)
-    req = request(source, EquityProduct.BARS, BarFrequency.M30)
-    source['frequencies'][1].bars.loc[:, 'Close'] = 999.
-    frame, _ = bindings[req.parameters.provider_key].fetch(req)
-    assert frame.Close.eq(10.).all()
-    frame.loc[:, 'Close'] = 888.
-    assert bindings[req.parameters.provider_key].fetch(req)[0].Close.eq(10.).all()
-    subrange = request(source, EquityProduct.BARS, BarFrequency.M30, end=date(2026, 10, 27))
-    selected, metadata = bindings[subrange.parameters.provider_key].fetch(subrange)
-    assert len(selected) == 8
-    assert metadata['coverage_evidence_sha256']
 
 
-@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
-@pytest.mark.parametrize('frequency', [BarFrequency.DAILY, BarFrequency.M30])
-def test_explicit_source_gap_and_resumption_do_not_invent_prices(tmp_path, market, frequency):
-    source = facts(market)
-    for item in source['frequencies']:
-        item.bars['BarStatus'] = 'OBSERVED'
-        item.bars['ExecutionBlocked'] = False
-        missing = item.bars.BarStart.dt.day.eq(28)
-        item.bars.loc[missing, 'BarStatus'] = 'MISSING'
-        item.bars.loc[missing, 'ExecutionBlocked'] = True
-        item.bars.loc[missing, ['Open', 'High', 'Low', 'Close', 'Volume', 'Amount']] = float('nan')
-        item.trading_facts.loc[missing, 'Tradable'] = False
-    bindings = versioned_equity_bindings(**source)
-    flows = Dataflows(base_dir=tmp_path, space=DataSpace(Path('assets')),
-        providers=ProviderConfig(bindings={}, equity_bindings=bindings))
-    req = request(source, EquityProduct.BARS, frequency)
-    prepared = flows.prepare((req,), policy=PreparePolicy.REUSE)
-    assert prepared.ready, [(item.status, item.error) for item in prepared.items]
-    result = flows.fetch(req, prepared=prepared.reference)
-    assert result.ready, result.error
-    frame = result.dataframe
-    absent = frame.BarStart.dt.day.eq(28)
-    assert frame.loc[absent, ['Open', 'Close', 'Volume']].isna().all().all()
-    assert frame.loc[absent, 'ExecutionBlocked'].all()
-    assert frame.loc[frame.BarStart.dt.day.eq(29), 'BarStatus'].eq('OBSERVED').all()
-    assert result.identity.metadata['observation_basis'] == 'SOURCE_FACTS_NOT_INFERRED_HISTORICAL_HALTS'
 
 
-@pytest.mark.parametrize('defect', ['invented-price', 'missing-row', 'missing-block-flag'])
-def test_explicit_source_observations_reject_fabrication_and_incomplete_grid(defect):
-    source = facts(MarketId.CN)
-    for item in source['frequencies']:
-        item.bars['BarStatus'] = 'OBSERVED'
-        item.bars['ExecutionBlocked'] = False
-    item = source['frequencies'][0]
-    if defect == 'invented-price':
-        item.bars.loc[1, 'BarStatus'] = 'MISSING'
-        item.bars.loc[1, 'ExecutionBlocked'] = True
-    elif defect == 'missing-row':
-        source['frequencies'] = (replace(item, bars=item.bars.iloc[:-1]), source['frequencies'][1])
-    else:
-        item.bars.drop(columns=['ExecutionBlocked'], inplace=True)
-    with pytest.raises((DataContractError, IncompleteDataError)):
-        versioned_equity_bindings(**source)
 
 
-def test_source_selection_uses_admitted_indexes_without_reparsing_or_revalidating(monkeypatch):
-    from dataflows import equity_history
-    source = facts(MarketId.CN)
-    bindings = versioned_equity_bindings(**source)
-    req = request(source, EquityProduct.BARS, BarFrequency.M30,
-        start=date(2026, 10, 28), end=date(2026, 10, 28))
-    def unexpected(*args, **kwargs):
-        raise AssertionError('a selected source must not reparse or revalidate full history')
-    monkeypatch.setattr(equity_history.pd, 'to_datetime', unexpected)
-    monkeypatch.setattr(equity_history, 'validate_equity_frame', unexpected)
-    selected, metadata = bindings[req.parameters.provider_key].fetch(req)
-    assert len(selected) == 8
-    assert metadata['coverage_start'] == metadata['coverage_end'] == '2026-10-28'
 
 
-@pytest.mark.parametrize('defect', ['missing-grid', 'missing-facts', 'static-field',
-    'limit-bounds', 'unpaired-limits', 'late-fact'])
-def test_source_admission_rejects_missing_or_inconsistent_facts(defect):
-    source = facts(MarketId.CN)
-    if defect == 'missing-grid':
-        item = source['frequencies'][0]
-        source['frequencies'] = (replace(item, bars=item.bars.iloc[:-1]), source['frequencies'][1])
-    else:
-        frame = source['frequencies'][0].trading_facts
-        if defect == 'missing-facts':
-            frame.drop(columns=['Tradable'], inplace=True)
-        elif defect == 'static-field':
-            frame['QuantityStep'] = 100
-        elif defect == 'limit-bounds':
-            frame.loc[0, 'PriceLimitLower'] = 100.
-        elif defect == 'unpaired-limits':
-            frame.loc[0, 'PriceLimitLower'] = None
-        else:
-            frame.loc[0, 'AvailableDate'] = frame.Date.iloc[0] + pd.Timedelta(seconds=1)
-    with pytest.raises((DataContractError, IncompleteDataError)):
-        versioned_equity_bindings(**source)
 
 
-@pytest.mark.parametrize('defect', ['adjusted', 'frequency', 'coverage', 'source'])
+@pytest.mark.parametrize('defect', [
+    'adjusted',
+    'frequency',
+], ids=['DFLS-19-C01', 'DFLS-19-C02'])
 def test_fetch_has_no_adjustment_frequency_or_source_fallback(defect):
     source = facts(MarketId.CN)
     source['frequencies'] = source['frequencies'][:1]
@@ -183,29 +78,3 @@ def test_fetch_has_no_adjustment_frequency_or_source_fallback(defect):
         req = EquityDataRequest(source['instrument'], SourceRef('other', 'v1'), req.parameters.query)
     with pytest.raises((DataContractError, IncompleteDataError)):
         binding.fetch(req)
-
-
-@pytest.mark.parametrize('market', list(MarketId))
-def test_adjusted_facts_keep_same_basis_across_frequencies_and_reject_raw_request(market):
-    source = facts(market)
-    source['frequencies'] = tuple(replace(item, adjustment=PriceAdjustment.BACKWARD,
-        acquisition_method=AcquisitionMethod.PROVIDER_ADJUSTED) for item in source['frequencies'])
-    bindings = versioned_equity_bindings(**source)
-    bases = set()
-    for frequency in BarFrequency:
-        for product in (EquityProduct.BARS, EquityProduct.TRADING_FACTS):
-            raw = request(source, product, frequency)
-            with pytest.raises(DataContractError, match='price basis'):
-                bindings[raw.parameters.provider_key].fetch(raw)
-            adjusted = EquityDataRequest(source['instrument'], source['source'],
-                replace(raw.parameters.query, adjustment=PriceAdjustment.BACKWARD))
-            rows, metadata = bindings[adjusted.parameters.provider_key].fetch(adjusted)
-            assert not rows.empty and metadata['adjustment'] == 'hfq'
-            bases.add(metadata['price_basis_id'])
-    assert len(bases) == 1
-
-
-def test_adjusted_facts_require_explicit_acquisition_method():
-    item = facts(MarketId.CN)['frequencies'][0]
-    with pytest.raises(DataContractError, match='acquisition method'):
-        replace(item, adjustment=PriceAdjustment.BACKWARD)

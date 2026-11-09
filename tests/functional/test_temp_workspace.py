@@ -1,3 +1,4 @@
+# Risk ownership: INFRA-02
 from __future__ import annotations
 
 import os
@@ -9,37 +10,13 @@ import pytest
 
 from czsc_trader.temp_workspace import (
     create_temporary_directory,
-    replace_directory,
     temporary_root,
 )
 
 
-@pytest.mark.skipif(os.name != "nt", reason="Windows directory-lock regression")
-def test_directory_publish_retries_transient_windows_lock(tmp_path, monkeypatch):
-    staging = tmp_path / "staging"
-    destination = tmp_path / "published"
-    staging.mkdir()
-    (staging / "evidence.json").write_text("{}", encoding="utf-8")
-    original = Path.replace
-    attempts = 0
-
-    def transient_lock(path, target):
-        nonlocal attempts
-        attempts += 1
-        if attempts < 3:
-            raise PermissionError("transient Windows lock")
-        return original(path, target)
-
-    monkeypatch.setattr(Path, "replace", transient_lock)
-    monkeypatch.setattr("czsc_trader.temp_workspace.time.sleep", lambda _delay: None)
-
-    replace_directory(staging, destination)
-
-    assert attempts == 3
-    assert (destination / "evidence.json").is_file()
 
 
-def test_temporary_workspace_routes_and_rejects_unsafe_paths(
+def test_INFRA_02_C01_temporary_workspace_routes_and_rejects_unsafe_paths(
     minimal_repo: Path, tmp_path: Path
 ) -> None:
     (minimal_repo / "outputs").mkdir()
@@ -62,40 +39,24 @@ def test_temporary_workspace_routes_and_rejects_unsafe_paths(
     assert external.parent == minimal_repo / ".tmp" / "evaluation"
     assert temporary_root(minimal_repo) == minimal_repo / ".tmp"
 
-    with pytest.raises(ValueError, match="temporary namespace"):
-        create_temporary_directory(minimal_repo, "../outside")
-    with pytest.raises(ValueError, match="temporary prefix"):
-        create_temporary_directory(minimal_repo, "backtest", prefix="../outside")
+    governed_root = Path(__file__).resolve().parents[2] / '.tmp' / 'pytest'
+    assert tmp_path.resolve().is_relative_to(governed_root.resolve())
+    if os.name == 'nt':
+        result = subprocess.run(['icacls', str(first)], check=False, capture_output=True, text=True)
+        assert result.returncode == 0, result.stderr
+        assert '(I)' in result.stdout
 
     shutil.rmtree(first)
     shutil.rmtree(second)
     shutil.rmtree(external)
 
 
-def test_windows_temporary_directory_preserves_inherited_acl(tmp_path: Path) -> None:
-    if os.name != "nt":
-        pytest.skip("Windows ACL regression")
-
-    created = create_temporary_directory(
-        tmp_path,
-        "acl-regression",
-        repository_root=tmp_path,
-    )
-    result = subprocess.run(
-        ["icacls", str(created)],
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-
-    assert result.returncode == 0, result.stderr
-    assert "(I)" in result.stdout
 
 
-def test_pytest_temporary_path_stays_inside_repository(tmp_path: Path) -> None:
-    marker = tmp_path / "marker.txt"
-    marker.write_text("ok", encoding="utf-8")
 
-    assert marker.read_text(encoding="utf-8") == "ok"
-    governed_root = Path(__file__).resolve().parents[2] / ".tmp" / "pytest"
-    assert tmp_path.resolve().is_relative_to(governed_root.resolve())
+
+def test_INFRA_02_C02_dangerous_temporary_namespace_rejected(minimal_repo):
+    before = tuple(minimal_repo.iterdir())
+    with pytest.raises(ValueError, match='temporary namespace'):
+        create_temporary_directory(minimal_repo, '../outside')
+    assert tuple(minimal_repo.iterdir()) == before

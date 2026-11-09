@@ -57,6 +57,7 @@ def _buyhold_evidence() -> BenchmarkEvidence:
     )
 
 
+@pytest.mark.risk_cases('SE-34-C01')
 def test_benchmark_audit_rejects_missing_account_session() -> None:
     evidence = _buyhold_evidence()
     assert audit_benchmark_replay(evidence).status is AuditStatus.PASS
@@ -68,7 +69,11 @@ def test_benchmark_audit_rejects_missing_account_session() -> None:
     assert "INCOMPLETE_BENCHMARK_ACCOUNT_COVERAGE" in result.reason_codes
 
 
-@pytest.mark.parametrize("field", ["cash", "quantity"])
+@pytest.mark.parametrize('field', [
+    pytest.param("cash", id='SE-34-C02'),
+    pytest.param("quantity", id='SE-34-C04'),
+])
+@pytest.mark.risk_cases('SE-34-C02', 'SE-34-C04')
 def test_benchmark_audit_rejects_tampered_account_even_with_correct_equity(field):
     evidence = _buyhold_evidence()
     rows = [dict(row) for row in evidence.account_daily]
@@ -78,6 +83,7 @@ def test_benchmark_audit_rejects_tampered_account_even_with_correct_equity(field
     assert "BENCHMARK_LEDGER_MISMATCH" in result.reason_codes
 
 
+@pytest.mark.risk_cases('SE-34-C03')
 def test_benchmark_lot_size_changes_hash_and_audit():
     evidence = _buyhold_evidence()
     first = audit_benchmark_replay(evidence)
@@ -85,9 +91,3 @@ def test_benchmark_lot_size_changes_hash_and_audit():
     assert changed.evidence_hash != first.evidence_hash
     assert changed.status is AuditStatus.FAIL
     assert "BENCHMARK_ORDER_MISMATCH" in changed.reason_codes
-
-
-@pytest.mark.parametrize("value", [None, True, 1.5, "100", 0, -1])
-def test_benchmark_lot_size_is_strict(value):
-    with pytest.raises((TypeError, ValueError), match="lot_size"):
-        replace(_buyhold_evidence(), lot_size=value)

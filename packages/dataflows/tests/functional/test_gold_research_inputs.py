@@ -12,7 +12,6 @@ from dataflows.tushare_strategy_data import (
     fetch_fxcm_daily,
     fetch_sge_gold_daily,
     fetch_us_real_yield_daily,
-    fetch_usdcnh_daily,
 )
 
 
@@ -119,24 +118,7 @@ class FakeGoldPro:
         )
 
 
-def test_gold_research_inputs_are_canonical_and_causal() -> None:
-    pro = FakeGoldPro()
-    real_yield, real_meta = fetch_us_real_yield_daily("2026-09-15", "2026-09-15", pro=pro)
-    fx, fx_meta = fetch_usdcnh_daily("2026-09-15", "2026-09-15", pro=pro)
-    gold, gold_meta = fetch_sge_gold_daily("Au99.99", "2026-09-15", "2026-09-15", pro=pro)
-    index, index_meta = fetch_domestic_index_daily("000001.SH", "2026-09-15", "2026-09-15", pro=pro)
-
-    assert real_yield.loc[0, "RealYield10YPercent"] == pytest.approx(1.2)
-    assert "prior China trading day" in real_meta["availability_rule"]
-    assert fx.loc[0, "BidClose"] == pytest.approx(7.11)
-    assert fx_meta["vendor_timezone"] == "GMT"
-    assert gold.loc[0, "PercentChange"] == pytest.approx(0.008333)
-    assert "prior trading day" in gold_meta["availability_rule"]
-    assert index.loc[0, "PercentChange"] == pytest.approx(0.006667)
-    assert index_meta["availability_rule"] == "current session after market close"
-
-
-def test_generic_fxcm_daily_preserves_symbol_and_strict_causality() -> None:
+def test_DFLS_38_C01_generic_fxcm_daily_preserves_symbol_and_strict_causality() -> None:
     frame, metadata = fetch_fxcm_daily("XAUUSD.FXCM", "2026-09-15", "2026-09-15", pro=FakeGoldPro())
 
     assert frame.loc[0, "BidClose"] == pytest.approx(7.11)
@@ -148,50 +130,54 @@ def test_generic_fxcm_daily_preserves_symbol_and_strict_causality() -> None:
     assert "publication timestamp unverified" in metadata["availability_rule"]
 
 
-def test_fxcm_available_timestamp_blocks_next_morning_and_allows_declared_boundary() -> None:
-    from dataflows import DataTemporalContract, DataTemporalRequirement, TemporalAlignment, align_temporal_frame
-    frame, metadata = fetch_fxcm_daily("XAUUSD.FXCM", "2026-09-15", "2026-09-15", pro=FakeGoldPro())
-    contract = DataTemporalContract("Date", "AvailableDate", "FXCM_24X5", metadata["available_at"], "EXACT")
-    aligned = align_temporal_frame(frame, ["2026-09-16 08:45", "2026-09-17 07:59", "2026-09-17 08:00"],
-        contract=contract, requirement=DataTemporalRequirement(TemporalAlignment.LATEST_AVAILABLE, "08:45", warmup_sessions=2))
-    assert aligned.unmatched_prefix_rows == 2
-    assert aligned.dataframe.BidClose.iloc[:2].isna().all()
-    assert aligned.dataframe.BidClose.iloc[2] == pytest.approx(7.11)
-
-
 @pytest.fixture(scope="module")
 def fxcm_source():
     return fetch_fxcm_daily("XAUUSD.FXCM", "2026-09-15", "2026-09-15", pro=FakeGoldPro())
 
 
-@pytest.mark.parametrize("dataset,symbol,defect", [
-    (Dataset.FXCM_DAILY, "XAUUSD.FXCM", "missing"),
-    (Dataset.FXCM_DAILY, "XAUUSD.FXCM", "early"),
-    (Dataset.USDCNH_DAILY, None, "early"),
-], ids=["fxcm-missing", "fxcm-early", "usdcnh-early"])
+@pytest.mark.parametrize(
+    "dataset,symbol,defect",
+    [
+        (Dataset.FXCM_DAILY, "XAUUSD.FXCM", "missing"),
+    ],
+    ids=["DFLS-38-C02"],
+)
 def test_fxcm_facade_rejects_missing_or_early_availability(
-    clone_published_flow, publish_data, fxcm_source, dataset, symbol, defect,
+    clone_published_flow,
+    publish_data,
+    fxcm_source,
+    dataset,
+    symbol,
+    defect,
 ) -> None:
     frame, metadata = fxcm_source
     request = DataRequest(dataset, symbol, "2026-09-15", "2026-09-15", None)
     supplied_frame = frame.copy(deep=True)
-    flows, ready = clone_published_flow(dataset.value, {
-        dataset: lambda _: (supplied_frame, metadata.copy()),
-    }, request)
-    supplied_frame = (frame.drop(columns="AvailableDate") if defect == "missing"
-                      else frame.assign(AvailableDate=pd.Timestamp("2026-09-16 08:00")))
+    flows, ready = clone_published_flow(
+        dataset.value,
+        {
+            dataset: lambda _: (supplied_frame, metadata.copy()),
+        },
+        request,
+    )
+    supplied_frame = (
+        frame.drop(columns="AvailableDate")
+        if defect == "missing"
+        else frame.assign(AvailableDate=pd.Timestamp("2026-09-16 08:00"))
+    )
     failed = publish_data(flows, request)
     assert failed.status is DataStatus.FAILED
     assert failed.error.code == "DATA_CONTRACT_MISMATCH"
     assert failed.error.message == (
-        "provider availability time field is unavailable" if defect == "missing"
+        "provider availability time field is unavailable"
+        if defect == "missing"
         else "FXCM daily availability differs from the conservative session policy"
     )
     old = flows.fetch(request, prepared=ready.prepared)
     assert old.ready and old.identity.content_sha256 == ready.identity.content_sha256
 
 
-def test_monthly_inputs_use_reference_month_end_and_conservative_availability() -> None:
+def test_DFLS_38_C06_monthly_inputs_use_reference_month_end_and_conservative_availability() -> None:
     pro = FakeGoldPro()
     cpi, cpi_meta = fetch_cn_cpi_monthly("2026-09-01", "2026-09-30", pro=pro)
     ppi, ppi_meta = fetch_cn_ppi_monthly("2026-09-01", "2026-09-30", pro=pro)
@@ -208,19 +194,9 @@ def test_monthly_inputs_use_reference_month_end_and_conservative_availability() 
         assert metadata["availability_time_field"] == "AvailableDate"
 
 
-def test_long_vendor_histories_are_split_by_calendar_year() -> None:
-    pro = FakeGoldPro()
-    frame, _ = fetch_us_real_yield_daily("2025-12-31", "2026-01-01", pro=pro)
-
-    assert len(frame) == 2
-    assert [call["start_date"] for call in pro.real_yield_calls] == [
-        "20251231",
-        "20260101",
-    ]
-
-
-def test_facade_rejects_crossed_usdcnh_close_quotes(flow_factory, publish_data) -> None:
+def test_DFLS_38_C03_facade_rejects_crossed_usdcnh_close_quotes(flow_factory, publish_data) -> None:
     from dataflows.contract import FXCM_AVAILABILITY_RULE
+
     frame = pd.DataFrame(
         {
             "Date": ["2026-09-15"],
@@ -236,18 +212,21 @@ def test_facade_rejects_crossed_usdcnh_close_quotes(flow_factory, publish_data) 
         }
     )
     frame["AvailableDate"] = pd.Timestamp("2026-09-17 08:00")
-    metadata = {"vendor": "test", "availability_time_field": "AvailableDate",
-                "availability_timezone": "Asia/Shanghai", "available_at": FXCM_AVAILABILITY_RULE}
-    result = publish_data(flow_factory(
-        {Dataset.USDCNH_DAILY.value: lambda ignored: (frame, metadata)}
-    ),
+    metadata = {
+        "vendor": "test",
+        "availability_time_field": "AvailableDate",
+        "availability_timezone": "Asia/Shanghai",
+        "available_at": FXCM_AVAILABILITY_RULE,
+    }
+    result = publish_data(
+        flow_factory({Dataset.USDCNH_DAILY.value: lambda ignored: (frame, metadata)}),
         DataRequest(
             Dataset.USDCNH_DAILY,
             None,
             "2026-09-15",
             "2026-09-15",
             "2026-09-15",
-        )
+        ),
     )
 
     assert result.status is DataStatus.FAILED
@@ -258,9 +237,15 @@ def test_facade_rejects_crossed_usdcnh_close_quotes(flow_factory, publish_data) 
 
 @pytest.mark.parametrize(
     ("low", "expected_status"),
-    [(245.40, DataStatus.READY), (245.50, DataStatus.FAILED)],
+    [
+        (245.40, DataStatus.READY),
+        (245.50, DataStatus.FAILED),
+    ],
+    ids=["DFLS-38-C04", "DFLS-38-C05"],
 )
-def test_sge_daily_allows_only_one_tick_vendor_rounding(flow_factory, publish_data, low, expected_status) -> None:
+def test_sge_daily_allows_only_one_tick_vendor_rounding(
+    flow_factory, publish_data, low, expected_status
+) -> None:
     frame = pd.DataFrame(
         {
             "Date": ["2014-10-22"],
@@ -272,16 +257,35 @@ def test_sge_daily_allows_only_one_tick_vendor_rounding(flow_factory, publish_da
             "Amount": [5246170684.2],
         }
     )
-    result = publish_data(flow_factory(
-        {Dataset.SGE_GOLD_DAILY.value: lambda ignored: (frame, {"vendor": "test"})}
-    ),
+    result = publish_data(
+        flow_factory({Dataset.SGE_GOLD_DAILY.value: lambda ignored: (frame, {"vendor": "test"})}),
         DataRequest(
             Dataset.SGE_GOLD_DAILY,
             "Au99.99",
             "2014-10-22",
             "2014-10-22",
             "2014-10-22",
-        )
+        ),
     )
 
     assert result.status is expected_status
+
+
+def test_DFLS_34_C13_domestic_index_return_units():
+    frame, meta = fetch_domestic_index_daily(
+        "000001.SH", "2026-09-15", "2026-09-15", pro=FakeGoldPro()
+    )
+    assert frame.PercentChange.tolist() == pytest.approx([0.006667])
+    assert meta["availability_rule"] == "current session after market close"
+
+
+def test_DFLS_38_C07_real_yield_units():
+    frame, meta = fetch_us_real_yield_daily("2026-09-15", "2026-09-15", pro=FakeGoldPro())
+    assert frame.RealYield10YPercent.tolist() == [1.2]
+    assert "prior China trading day" in meta["availability_rule"]
+
+
+def test_DFLS_38_C08_sge_percentage_units():
+    frame, meta = fetch_sge_gold_daily("Au99.99", "2026-09-15", "2026-09-15", pro=FakeGoldPro())
+    assert frame.PercentChange.tolist() == pytest.approx([0.008333])
+    assert "prior trading day" in meta["availability_rule"]

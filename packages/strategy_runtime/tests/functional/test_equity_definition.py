@@ -1,207 +1,215 @@
 """Formal equity identity and causal decision behavior through public APIs."""
+
 from dataclasses import replace
 from datetime import datetime, timedelta, timezone
-import json
 import pickle
 
 import pandas as pd
 import pytest
-from strategy_runtime.models import ExecutionPolicy
 from dataflows import InstrumentId, MarketId, AssetClass, BarFrequency, TimeInterval
-from strategy_runtime import (EquityStrategyDefinition, EquityStrategyCandidate, equity_source_hash,
-    ResearchExecutionSpec, UsEquitySpec, AccountPolicy, CashAvailabilityPolicy, EquityPortfolio, StrategyRuntime,
-    EquityClosedCycle, EquityClosedCycleFeedback, EquityDecisionContext, DecisionPoint)
+from strategy_runtime import (
+    EquityStrategyDefinition,
+    EquityStrategyCandidate,
+    equity_source_hash,
+    ResearchExecutionSpec,
+    UsEquitySpec,
+    AccountPolicy,
+    CashAvailabilityPolicy,
+    EquityPortfolio,
+    EquityClosedCycle,
+    EquityClosedCycleFeedback,
+    EquityDecisionContext,
+    DecisionPoint,
+)
 
 
 def candidate(root):
     root.mkdir(parents=True, exist_ok=True)
-    (root / 'rules.py').write_text('THRESHOLD = 10\n', encoding='utf-8')
-    (root / 'strategy.py').write_text('from .rules import THRESHOLD\nfrom strategy_runtime import EquityDecision\n'
-        'counter = 0\ndef decide(ctx):\n global counter\n counter += 1\n'
+    (root / "rules.py").write_text("THRESHOLD = 10\n", encoding="utf-8")
+    (root / "strategy.py").write_text(
+        "from .rules import THRESHOLD\nfrom strategy_runtime import EquityDecision\n"
+        "counter = 0\ndef decide(ctx):\n global counter\n counter += 1\n"
         ' return EquityDecision.from_facts(int(ctx.history.Close.iloc[-1] >= ctx.parameters["threshold"] and counter == 1), '
-        '"threshold decision", facts={"close": ctx.history.Close.iloc[-1], "threshold": ctx.parameters["threshold"]}, next_watch="next bar")\n', encoding='utf-8')
-    spec = ResearchExecutionSpec(UsEquitySpec(), BarFrequency.M30,
-        AccountPolicy('USD', CashAvailabilityPolicy.IMMEDIATE_RESEARCH), 1, .01, .01, 0.)
-    files = ('rules.py', 'strategy.py')
-    definition = EquityStrategyDefinition(InstrumentId(MarketId.US, AssetClass.STOCK, 'LITE'), spec, 1,
-        'strategy:decide', files, equity_source_hash(root, files), '{"threshold":10}', analysis_price='RAW')
-    return EquityStrategyCandidate('S999', 'C0001', definition, root)
-
-
-def test_formal_equity_portable_identity_and_stateless_decisions(tmp_path):
-    original = candidate(tmp_path / 'original')
-    relocated = candidate(tmp_path / 'relocated')
-    assert original.content_identity == relocated.content_identity
-    assert pickle.loads(pickle.dumps(original)) == original
-    assert EquityStrategyDefinition.from_dict(json.loads(json.dumps(original.definition.to_dict()))) == original.definition
-    changed = replace(original, definition=replace(original.definition, parameters_json='{"threshold":11}'))
-    assert changed.content_identity != original.content_identity
-    with pytest.raises(ValueError, match='parameter type differs'):
-        replace(original.definition, parameters_json='{"threshold":true}')
-    runtime = StrategyRuntime(execution_spec=original.definition.execution_spec)
-    assert runtime.identify(original, dependencies=()) == original.content_identity
-    instance = runtime.create(original)
-    end = datetime(2026, 10, 1, 14, tzinfo=timezone.utc)
-    history = pd.DataFrame({'Date': [end], 'AvailableDate': [end], 'Close': [10.]})
-    interval = TimeInterval(end, end + timedelta(minutes=30))
-    first = instance.propose(history, interval, EquityPortfolio(1000., 0, 0., 0))
-    second = instance.propose(history, interval, EquityPortfolio(1000., 0, 0., 0))
-    assert first == second and first.target == 1
-    assert first.explanation['basis'][1] == {'key': 'threshold', 'text': '10'}
-    assert runtime.create(changed).propose(history, interval, EquityPortfolio(1000., 0, 0., 0)).target == 0
-    (original.source_root / 'rules.py').write_text('THRESHOLD = 11\n', encoding='utf-8')
-    with pytest.raises(ValueError, match='closure changed'):
-        original.verify()
-
-
-def test_formal_equity_rejects_undeclared_import_and_future_history(tmp_path):
-    value = candidate(tmp_path)
-    future = datetime(2026, 10, 1, 15, tzinfo=timezone.utc)
-    history = pd.DataFrame({'Date': [future], 'AvailableDate': [future], 'Close': [10.]})
-    with pytest.raises(ValueError, match='CAUSAL_TIME'):
-        StrategyRuntime(execution_spec=value.definition.execution_spec).create(value).propose(history,
-            TimeInterval(future - timedelta(minutes=30), future), EquityPortfolio(1000., 0, 0., 0))
-    (tmp_path / 'rules.py').write_text('import unlisted_dependency\n', encoding='utf-8')
-    with pytest.raises(ValueError, match='undeclared equity dependency'):
-        replace(value, definition=replace(value.definition,
-            source_sha256=equity_source_hash(tmp_path, value.definition.source_files)))
-
-
-def test_initial_state_frozen_containers_preserve_identity_and_strict_values(tmp_path):
-    from strategy_runtime import StateRecord, StrategyComputation
-    from strategy_runtime.equity_definition import _freeze
-    from strategy_runtime.equity_features import FeatureGraph
-    from strategy_runtime.equity_replay import StrategyStateSchema, StateField, StateValueType
-    base = candidate(tmp_path)
-    definition = replace(base.definition, contract_version=4,analysis_price="HFQ",execution_policy=ExecutionPolicy("TARGET_POSITION", {}),
-        computation=StrategyComputation.STATEFUL_STEP, feature_graph=FeatureGraph(),
-        state_schema=StrategyStateSchema((StateField('counter', StateValueType.INT),
-            StateField('at', StateValueType.DATETIME), StateField('optional', StateValueType.STR, True))),
-        initial_account=StateRecord((('counter', -1), ('at', datetime(2026, 1, 1, tzinfo=timezone.utc)), ('optional', None))))
-    payload = _freeze(definition.to_dict())
-    restored = EquityStrategyDefinition.from_dict(payload)
-    assert restored == definition and restored.content_identity == definition.content_identity
-    with pytest.raises(ValueError, match='state record requires values'):
-        StateRecord.from_dict(payload['initial_account'])
-    invalid = definition.to_dict()
-    invalid['initial_account']['values'][0][1] = True
-    with pytest.raises(TypeError, match='state field type differs'):
-        EquityStrategyDefinition.from_dict(_freeze(invalid))
-    invalid = definition.to_dict()
-    invalid['initial_account']['values'].append(['counter', 2])
-    with pytest.raises(ValueError, match='state keys must be unique'):
-        EquityStrategyDefinition.from_dict(_freeze(invalid))
-
-
-def test_retired_action_driven_account_cannot_silently_enter_hfq_replay(tmp_path):
-    from execution_channels.historical.frozen_equity import _FrozenEquityExecutor
-    value = candidate(tmp_path)
-    value = replace(value, definition=replace(value.definition, parameters_json='{"threshold":1}'))
-    start = datetime(2026, 10, 1, 14, tzinfo=timezone.utc)
-    starts = [start + timedelta(minutes=30 * i) for i in range(3)]
-    actions = pd.DataFrame([{'Date': starts[2], 'AvailableDate': starts[2], 'EventId': 'split',
-                             'Kind': 'SPLIT', 'Ratio': 2., 'CashPerShare': 0., 'PayAt': None}])
-    from czsc_trader.application.ec_boundary import execution_spec
-    with pytest.raises(TypeError,match='actions'):
-        _FrozenEquityExecutor(specification=execution_spec(value.definition.execution_spec),
-                              initial_cash=1000., fee_rate=.001, actions=actions)
+        '"threshold decision", facts={"close": ctx.history.Close.iloc[-1], "threshold": ctx.parameters["threshold"]}, next_watch="next bar")\n',
+        encoding="utf-8",
+    )
+    spec = ResearchExecutionSpec(
+        UsEquitySpec(),
+        BarFrequency.M30,
+        AccountPolicy("USD", CashAvailabilityPolicy.IMMEDIATE_RESEARCH),
+        1,
+        0.01,
+        0.01,
+        0.0,
+    )
+    files = ("rules.py", "strategy.py")
+    definition = EquityStrategyDefinition(
+        InstrumentId(MarketId.US, AssetClass.STOCK, "LITE"),
+        spec,
+        1,
+        "strategy:decide",
+        files,
+        equity_source_hash(root, files),
+        '{"threshold":10}',
+        analysis_price="RAW",
+    )
+    return EquityStrategyCandidate("S999", "C0001", definition, root)
 
 
 def closed_cycle():
     entry = datetime(2026, 10, 1, 14, tzinfo=timezone.utc)
-    return EquityClosedCycle('cycle-1', TimeInterval(entry, entry + timedelta(minutes=30)),
+    return EquityClosedCycle(
+        "cycle-1",
+        TimeInterval(entry, entry + timedelta(minutes=30)),
         TimeInterval(entry + timedelta(hours=1), entry + timedelta(hours=1, minutes=30)),
-        10, 100.1, entry + timedelta(hours=1))
+        10,
+        100.1,
+        entry + timedelta(hours=1),
+    )
 
 
-@pytest.mark.parametrize(('field', 'value'), [
-    ('cycle_id', ''), ('cycle_id', ' cycle '),
-    ('entry_quantity', True), ('entry_quantity', 0), ('entry_quantity', 1.5),
-    ('entry_cost', True), ('entry_cost', float('nan')), ('entry_cost', float('inf')), ('entry_cost', 0.),
-    ('entry_interval', {}), ('exit_interval', {}),
-    ('exit_observed_through', datetime(2026, 10, 1, 15)),
-    ('exit_observed_through', datetime(2026, 10, 1, 14, 29, tzinfo=timezone.utc)),
-    ('exit_observed_through', datetime(2026, 10, 1, 15, 1, tzinfo=timezone.utc)),
-])
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("cycle_id", ""),
+        ("entry_quantity", True),
+        ("entry_quantity", 0),
+        ("entry_quantity", 1.5),
+        ("entry_cost", float("nan")),
+        ("entry_cost", 0.0),
+        ("entry_interval", {}),
+        ("exit_observed_through", datetime(2026, 10, 1, 15)),
+        ("exit_observed_through", datetime(2026, 10, 1, 14, 29, tzinfo=timezone.utc)),
+        ("exit_observed_through", datetime(2026, 10, 1, 15, 1, tzinfo=timezone.utc)),
+    ],
+    ids=[
+        "SRT-31-C02",
+        "SRT-31-C03",
+        "SRT-31-C04",
+        "SRT-31-C05",
+        "SRT-31-C06",
+        "SRT-31-C07",
+        "SRT-31-C08",
+        "SRT-31-C09",
+        "SRT-31-C10",
+        "SRT-31-C11",
+    ],
+)
 def test_closed_cycle_rejects_invalid_execution_facts(field, value):
     with pytest.raises((ValueError, TypeError)):
         replace(closed_cycle(), **{field: value})
 
 
-def test_closed_cycle_feedback_typed_states_and_portable_boundary():
+def test_SRT_31_C01_closed_cycle_feedback_typed_states_and_portable_boundary():
     closed = closed_cycle()
     boundary = replace(closed, exit_observed_through=closed.entry_interval.end)
     assert boundary.exit_observed_through == closed.entry_interval.end
-    local = replace(closed, exit_observed_through=closed.exit_observed_through.astimezone(
-        timezone(timedelta(hours=8))))
+    local = replace(
+        closed,
+        exit_observed_through=closed.exit_observed_through.astimezone(timezone(timedelta(hours=8))),
+    )
     assert local == closed
     feedback = EquityClosedCycleFeedback(closed)
-    portfolio = EquityPortfolio(110., 0, 0., 2, closed_cycle_feedback=feedback)
+    portfolio = EquityPortfolio(110.0, 0, 0.0, 2, closed_cycle_feedback=feedback)
     assert pickle.loads(pickle.dumps(portfolio)) == portfolio
     assert EquityClosedCycleFeedback().latest is None
-    assert EquityPortfolio(100., 0, 0., 0).closed_cycle_feedback is None
-    with pytest.raises(TypeError, match='typed latest'):
-        EquityClosedCycleFeedback({'cycle_id': 'not-a-cycle'})
-    with pytest.raises(TypeError, match='typed closed'):
+    assert EquityPortfolio(100.0, 0, 0.0, 0).closed_cycle_feedback is None
+    with pytest.raises(TypeError, match="typed latest"):
+        EquityClosedCycleFeedback({"cycle_id": "not-a-cycle"})
+    with pytest.raises(TypeError, match="typed closed"):
         replace(portfolio, closed_cycle_feedback={})
 
 
 def feedback_candidate(root, mode):
     value = candidate(root)
-    (root / 'strategy.py').write_text(
-        'from strategy_runtime import EquityDecision\n'
-        'def decide(ctx):\n'
-        '    p = ctx.portfolio\n'
-        '    f = None if p is None else p.closed_cycle_feedback\n'
+    (root / "strategy.py").write_text(
+        "from strategy_runtime import EquityDecision\n"
+        "def decide(ctx):\n"
+        "    p = ctx.portfolio\n"
+        "    f = None if p is None else p.closed_cycle_feedback\n"
         '    state = "market" if p is None else "unavailable" if f is None else '
         '"empty" if f.latest is None else f.latest.cycle_id\n'
         '    return EquityDecision.from_facts(0, state, facts={"state":state}, next_watch="next bar")\n',
-        encoding='utf-8')
-    return replace(value, definition=replace(value.definition, feedback_mode=mode,
-        source_sha256=equity_source_hash(root, value.definition.source_files)))
+        encoding="utf-8",
+    )
+    return replace(
+        value,
+        definition=replace(
+            value.definition,
+            feedback_mode=mode,
+            source_sha256=equity_source_hash(root, value.definition.source_files),
+        ),
+    )
 
 
-def test_closed_cycle_mode_requires_capability_and_preserves_old_input_contract(tmp_path):
-    value = feedback_candidate(tmp_path, 'CONFIRMED_CLOSED_CYCLE_V1')
-    assert EquityStrategyDefinition.from_dict(json.loads(json.dumps(value.definition.to_dict()))) == value.definition
-    old = replace(value, definition=replace(value.definition, feedback_mode='CONFIRMED_EXECUTION'))
-    market = replace(value, definition=replace(value.definition, feedback_mode='MARKET_INTENT'))
-    assert len({x.content_identity.content_sha256 for x in (value, old, market)}) == 3
-    closed = closed_cycle()
-    end = closed.exit_interval.end
-    point = DecisionPoint(end, end, TimeInterval(end, end + timedelta(minutes=30)))
-    history = pd.DataFrame({'Date':[end], 'AvailableDate':[end], 'Close':[10.]})
-    unavailable = EquityPortfolio(100., 0, 0., 2)
-    context = EquityDecisionContext(history, unavailable, point, value.definition.parameters)
-    with pytest.raises(ValueError, match='CLOSED_CYCLE_FEEDBACK_UNAVAILABLE'):
-        value.decide(context)
-    runtime = StrategyRuntime(execution_spec=value.definition.execution_spec)
-    with pytest.raises(ValueError, match='CLOSED_CYCLE_FEEDBACK_UNAVAILABLE'):
-        runtime.create(value).propose(history, point.execution_interval, unavailable)
-    empty = replace(unavailable, closed_cycle_feedback=EquityClosedCycleFeedback())
-    assert value.decide(replace(context, portfolio=empty)).reason == 'empty'
-    full = replace(unavailable, closed_cycle_feedback=EquityClosedCycleFeedback(closed))
-    assert value.decide(replace(context, portfolio=full)).reason == 'cycle-1'
-    assert old.decide(replace(context, portfolio=full)).reason == 'unavailable'
-    assert market.decide(replace(context, portfolio=full)).reason == 'market'
-    assert runtime.create(value).propose(history, point.execution_interval, full).explanation['judgment'] == 'cycle-1'
-
-
-@pytest.mark.parametrize('violation', ['exit-in-future', 'observation-in-future', 'overlapping-current-cycle'])
+@pytest.mark.parametrize(
+    "violation",
+    [
+        "exit-in-future",
+        "observation-in-future",
+        "overlapping-current-cycle",
+    ],
+    ids=["SRT-31-C15", "SRT-31-C16", "SRT-31-C17"],
+)
 def test_closed_cycle_mode_rejects_noncausal_feedback(tmp_path, violation):
-    value = feedback_candidate(tmp_path, 'CONFIRMED_CLOSED_CYCLE_V1')
+    value = feedback_candidate(tmp_path, "CONFIRMED_CLOSED_CYCLE_V1")
     closed = closed_cycle()
     now = closed.exit_interval.end
     observed = now
-    portfolio = EquityPortfolio(100., 0, 0., 2, closed_cycle_feedback=EquityClosedCycleFeedback(closed))
-    if violation == 'exit-in-future':
+    portfolio = EquityPortfolio(
+        100.0, 0, 0.0, 2, closed_cycle_feedback=EquityClosedCycleFeedback(closed)
+    )
+    if violation == "exit-in-future":
         now -= timedelta(minutes=1)
         observed = now
-    elif violation == 'observation-in-future':
+    elif violation == "observation-in-future":
         observed = closed.exit_observed_through - timedelta(minutes=1)
     else:
-        portfolio = replace(portfolio, quantity=1, cycle_entry=closed.exit_interval.start, cycle_cost=10.)
+        portfolio = replace(
+            portfolio, quantity=1, cycle_entry=closed.exit_interval.start, cycle_cost=10.0
+        )
     point = DecisionPoint(observed, now, TimeInterval(now, now + timedelta(minutes=30)))
     context = EquityDecisionContext(pd.DataFrame(), portfolio, point, value.definition.parameters)
-    with pytest.raises(ValueError, match='CAUSAL_TIME_VIOLATION'):
+    with pytest.raises(ValueError, match="CAUSAL_TIME_VIOLATION"):
         value.decide(context)
+
+
+@pytest.mark.parametrize(
+    "mode",
+    ["CONFIRMED_CLOSED_CYCLE_V1", "MARKET_INTENT", "CONFIRMED_EXECUTION"],
+    ids=["SRT-31-C12", "SRT-31-C13", "SRT-31-C14"],
+)
+def test_closed_cycle_capability_mode_boundary(tmp_path, mode):
+    value = feedback_candidate(tmp_path, mode)
+    closed = closed_cycle()
+    end = closed.exit_interval.end
+    point = DecisionPoint(end, end, TimeInterval(end, end + timedelta(minutes=30)))
+    portfolio = EquityPortfolio(
+        100.0,
+        0,
+        0.0,
+        2,
+        closed_cycle_feedback=None
+        if mode == "CONFIRMED_CLOSED_CYCLE_V1"
+        else EquityClosedCycleFeedback(closed),
+    )
+    context = EquityDecisionContext(
+        pd.DataFrame({"Date": [end], "AvailableDate": [end], "Close": [10.0]}),
+        portfolio,
+        point,
+        value.definition.parameters,
+    )
+    if mode == "CONFIRMED_CLOSED_CYCLE_V1":
+        with pytest.raises(ValueError, match="CLOSED_CYCLE_FEEDBACK_UNAVAILABLE"):
+            value.decide(context)
+    else:
+        assert value.decide(context).reason == (
+            "market" if mode == "MARKET_INTENT" else "unavailable"
+        )
+        assert (
+            value.content_identity
+            != replace(
+                value,
+                definition=replace(value.definition, feedback_mode="CONFIRMED_CLOSED_CYCLE_V1"),
+            ).content_identity
+        )

@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -15,6 +16,7 @@ from uuid import uuid4
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
+BUDGET_SECONDS = 200
 TEST_ROOTS = ("tests",) + tuple(f"packages/{name}/tests" for name in (
     "dataflows", "strategy_manager", "strategy_evaluator", "strategy_runtime",
     "strategy_chart", "execution_channels", "paper_trading_engine"))
@@ -104,15 +106,32 @@ def check_coverage(run, names):
     return dict(nodes=sum(observed.values()), failures=failures, skipped=skipped)
 
 
+def check_node_coverage(output):
+    """Read the real Node TAP totals; skipped or cancelled JS is not a pass."""
+    totals = {}
+    for name in ('tests', 'pass', 'fail', 'cancelled', 'skipped', 'todo'):
+        matches = re.findall(rf'^# {name} (\d+)\s*$', output, re.MULTILINE)
+        if len(matches) != 1:
+            raise ValueError(f'Node result summary missing or duplicated: {name}')
+        totals[name] = int(matches[0])
+    if not totals['tests'] or totals['pass'] != totals['tests']:
+        raise ValueError(f'Node tests did not all pass: {totals}')
+    if any(totals[name] for name in ('fail', 'cancelled', 'skipped', 'todo')):
+        raise ValueError(f'Node tests incomplete: {totals}')
+    return totals
+
+
 def run_all(workers):
     began = time.monotonic()
     node = shutil.which('node')
     if node is None:
         raise RuntimeError('Node.js is required for the PTE frontend tests')
-    node_tests = sorted(str(path.relative_to(ROOT)) for path in
-                        (ROOT / 'packages/paper_trading_engine/tests').rglob('*.test.mjs'))
+    node_tests = sorted(str(path.relative_to(ROOT))
+                        for package in ('paper_trading_engine', 'strategy_chart')
+                        for path in (ROOT / 'packages' / package / 'tests').rglob('*')
+                        if path.name.endswith(('.test.mjs', '.test.cjs')))
     if not node_tests:
-        raise RuntimeError('PTE frontend test collection is empty')
+        raise RuntimeError('Frontend test collection is empty')
     run_id = uuid4().hex
     run = ROOT / ".tmp/test-regression" / f"run-{run_id}"
     run.mkdir(parents=True)
@@ -184,6 +203,11 @@ def run_all(workers):
         with (run / f"{name}.log").open("w", encoding="utf-8") as log:
             result = subprocess.run(command, cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT)
         results.append(dict(lane=name, exit_code=result.returncode, seconds=round(time.monotonic()-started, 2)))
+    try:
+        node_coverage = check_node_coverage((run / 'console.log').read_text(encoding='utf-8'))
+    except ValueError as exc:
+        node_coverage = {}
+        coverage_error = '; '.join(x for x in (coverage_error, str(exc)) if x)
     temporary_bytecode = cache / ROOT.relative_to(ROOT.anchor) / '.tmp'
     assert temporary_bytecode.resolve().is_relative_to(cache.resolve())
     if temporary_bytecode.exists():
@@ -192,18 +216,20 @@ def run_all(workers):
     passed = (not coverage_error and not coverage.get("failures") and not coverage.get('skipped')
               and all(r["exit_code"] == 0 for r in results))
     summary = dict(seconds=seconds, max_parallel=workers, files=len(files), coverage=coverage,
+                   node_coverage=node_coverage,
                    environment=dict(host=platform.node(), python=sys.version, logical_cpus=os.cpu_count(),
                                     bytecode_cache='persistent Python source-validated cache; temporary sources pruned',
                                     bytecode_cache_reused=cache_reused,
                                     native_threads=1),
-                   coverage_error=coverage_error, results=results, functional_pass=passed, budget_pass=seconds <= 180)
+                   coverage_error=coverage_error, results=results, functional_pass=passed,
+                   budget_seconds=BUDGET_SECONDS, budget_pass=seconds <= BUDGET_SECONDS)
     (run / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(f"TEST_LOG_ROOT={run}\nTOTAL_SECONDS={seconds}\nCOVERAGE={coverage}", flush=True)
     print(f"FULL_OFFLINE_REGRESSION={'PASS' if passed else 'FAIL'}", flush=True)
-    print(f"EFFICIENCY_ACCEPTANCE={'PASS' if seconds <= 180 else 'FAIL'} BUDGET_SECONDS=180", flush=True)
+    print(f"EFFICIENCY_ACCEPTANCE={'PASS' if seconds <= BUDGET_SECONDS else 'FAIL'} BUDGET_SECONDS={BUDGET_SECONDS}", flush=True)
     if coverage_error:
         print(coverage_error, flush=True)
-    return 1 if not passed else (0 if seconds <= 180 else 2)
+    return 1 if not passed else (0 if seconds <= BUDGET_SECONDS else 2)
 
 
 if __name__ == "__main__":

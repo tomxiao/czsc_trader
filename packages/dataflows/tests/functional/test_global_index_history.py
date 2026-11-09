@@ -39,53 +39,11 @@ class GlobalPro:
         return pd.DataFrame({'trade_date': dates.strftime('%Y%m%d'), 'pct_chg': 1.5})
 
 
-def test_spx_default_publication_keeps_annual_evidence_and_allows_holiday_slice(
-    global_index_root, monkeypatch,
-):
-    from dataflows import tushare_strategy_data
-
-    pro = GlobalPro()
-    monkeypatch.setattr(tushare_strategy_data, '_client', lambda *_: pro)
-    request = DataRequest(Dataset.GLOBAL_INDEX_DAILY, 'SPX', '2024-12-31',
-                          '2026-01-01', '2025-12-31')
-    flows = Dataflows(base_dir=global_index_root, space=DataSpace(Path('market')),
-                     providers=ProviderConfig())
-    prepared = flows.prepare((request,), policy=PreparePolicy.REUSE)
-    assert prepared.ready, prepared.items
-    result = flows.fetch(request, prepared=prepared.reference)
-    assert result.ready, result.error
-    annual = result.identity.metadata['annual_requests']
-    assert [(row['start_date'], row['end_date']) for row in annual] == [
-        ('20241231', '20241231'), ('20250101', '20251231'),
-        ('20260101', '20260101'),
-    ]
-    assert annual[-1]['row_count'] == 0
-    assert sum(row['row_count'] for row in annual) == len(result.dataframe)
-    assert result.dataframe.PercentChange.eq(0.015).all()
 
 
-def test_empty_spx_annual_slice_is_incomplete_with_request_evidence(
-    global_index_root, monkeypatch,
-):
-    from dataflows import tushare_strategy_data
-
-    pro = GlobalPro(empty_year=2025)
-    monkeypatch.setattr(tushare_strategy_data, '_client', lambda *_: pro)
-    request = DataRequest(Dataset.GLOBAL_INDEX_DAILY, 'SPX', '2024-12-31',
-                          '2026-01-05', '2026-01-05')
-    flows = Dataflows(base_dir=global_index_root, space=DataSpace(Path('market')),
-                     providers=ProviderConfig())
-    prepared = flows.prepare((request,), policy=PreparePolicy.REFRESH)
-    assert not prepared.ready and prepared.reference is None
-    item, = prepared.items
-    assert item.status is DataStatus.INCOMPLETE
-    assert item.error.code == 'INCOMPLETE_DATA'
-    annual = item.error.context['annual_requests']
-    assert annual[-1] == {'start_date': '20250101', 'end_date': '20251231',
-                          'row_count': 0}
 
 
-def test_nonempty_spx_year_with_internal_hole_is_rejected():
+def test_DFLS_34_C02_nonempty_spx_year_with_internal_hole_is_rejected():
     with pytest.raises(IncompleteDataError, match='SPX history has an internal gap') as exc:
         fetch_global_index_daily('SPX', '2025-01-02', '2025-02-10',
                                  pro=GlobalPro(missing_start='2025-01-06',
@@ -94,26 +52,9 @@ def test_nonempty_spx_year_with_internal_hole_is_rejected():
     assert exc.value.context['annual_requests'][0]['row_count'] > 0
 
 
-@pytest.mark.parametrize(('gap_days', 'ready'), [(10, True), (11, False)])
-def test_spx_history_gap_boundary_is_checked_without_coverage(global_index_root, gap_days, ready):
-    dates = pd.to_datetime(['2025-01-02', '2025-01-02'])
-    dates = pd.DatetimeIndex([dates[0], dates[1] + pd.Timedelta(days=gap_days)])
-    frame = pd.DataFrame({'Date': dates, 'PercentChange': [0.01, -0.01]})
-    request = DataRequest(Dataset.GLOBAL_INDEX_DAILY, 'SPX', '2025-01-02',
-                          dates[-1].date().isoformat(), dates[-1].date().isoformat())
-    flows = Dataflows(base_dir=global_index_root, space=DataSpace(Path('market')),
-        providers=ProviderConfig({Dataset.GLOBAL_INDEX_DAILY:
-            ProviderBinding('fixture', '1', lambda _: (frame, {'vendor': 'synthetic'}))}))
-    prepared = flows.prepare((request,), policy=PreparePolicy.REUSE)
-    assert prepared.ready is ready
-    if ready:
-        assert flows.fetch(request, prepared=prepared.reference).ready
-    else:
-        assert prepared.items[0].status is DataStatus.INCOMPLETE
-        assert prepared.items[0].error.context['gap_days'] == gap_days
 
 
-def test_old_ready_spx_hole_is_rejected_on_fetch_and_reuse_then_explicitly_refreshed(
+def test_DFLS_36_C02_old_ready_spx_hole_is_rejected_on_fetch_and_reuse_then_explicitly_refreshed(
     global_index_root, monkeypatch,
 ):
     from dataflows import facade

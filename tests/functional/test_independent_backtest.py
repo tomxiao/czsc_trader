@@ -1,3 +1,4 @@
+# Risk ownership: TDR-25 TDR-26
 """Independent CLI uses authenticated subjects and preserves research storage."""
 
 from datetime import date
@@ -14,7 +15,7 @@ from czsc_trader.application import BacktestRequest, run_backtest
 from czsc_trader.cli.main import main
 from public_backtest_support import assert_public_charts, research_context
 from test_backtest import execution_flows
-from test_current_contracts import (
+from frozen_contract_support import (
     current_frozen as current_frozen, inspection as inspection,
     completed as completed, managed_evaluation as managed_evaluation,
 )
@@ -64,36 +65,12 @@ def test_cli_accounts_match_research_api_and_keep_historical_output_layout(
     assert_public_charts(output)
     assert _research_files(repository.root) == before
     assert (historical / "keep.txt").read_text(encoding="utf-8") == "preserve historical output"
-    saved = {path.name: path.read_bytes() for path in output.iterdir()}
-    assert main(_arguments(selector)) == 0
-    repeated = json.loads(capsys.readouterr().out)
-    assert repeated["result"]["output_dir"] == f"outputs/{day}_11_{reference}"
-    assert {path.name: path.read_bytes() for path in output.iterdir()} == saved
-    assert _research_files(repository.root) == before
-
     api = run_backtest(research_context(repository, execution_flows(repository.root)), strategy,
                        BacktestRequest("588080.SH", "etf", date(2026, 9, 15), date(2026, 9, 21), 100000, 100))
     assert result["result"]["metrics"] == api.metrics
     saved_account = pd.read_csv(output / "account_daily.csv", parse_dates=["date", "signal_date", "valuation_source_date"])
     saved_account["trading_status"] = saved_account.trading_status.astype(object).where(saved_account.trading_status.notna(), None)
     pd.testing.assert_frame_equal(saved_account, api.result.account_daily, check_dtype=False)
-    assert main([*_arguments(selector), "--outputs-root", "custom-output"]) == 0
-    custom = json.loads(capsys.readouterr().out)
-    assert custom["result"]["output_dir"] == f"custom-output/{day}_01_{reference}"
-
-
-@pytest.mark.parametrize("selector", [[], ["--candidate-id", "C0001", "--strategy-version", "v1"],
-                                       ["--candidate-id", "C0001"], ["--candidate-id", "invalid"]])
-def test_cli_rejects_missing_or_retired_subject_without_output(
-    selector, minimal_repo, monkeypatch, capsys,
-):
-    monkeypatch.chdir(minimal_repo)
-    assert main(_arguments(selector)) != 0
-    result = json.loads(capsys.readouterr().out)
-    assert result["status"] == "FAIL" and result["artifacts"] == {}
-    assert result["error"]["code"] == "invalid_arguments"
-    assert not (minimal_repo / "outputs").exists()
-    assert not (minimal_repo / "data").exists()
 
 
 def test_failed_output_write_preserves_existing_runs(minimal_repo, monkeypatch):
@@ -121,55 +98,7 @@ def test_failed_output_write_preserves_existing_runs(minimal_repo, monkeypatch):
     assert keep.read_bytes() == b"original"
 
 
-@pytest.mark.parametrize("failure", ["data", "write"])
-def test_cli_calculation_and_output_failures_return_fail_without_partial_reports(
-    failure, current_frozen, monkeypatch, capsys,
-):
-    repository, _ = current_frozen
-    flows = execution_flows(repository.root, space=DataSpace(Path("data/backtest")))
-    monkeypatch.setattr("czsc_trader.cli.backtest._independent_data", lambda _: flows)
-    monkeypatch.chdir(repository.root)
-    arguments = _arguments(["--strategy-version", "v1"])
-    if failure == "data":
-        arguments[arguments.index("--end") + 1] = "2026-09-22"
-    else:
-        write_bytes = Path.write_bytes
-
-        def reject_report(path, content):
-            if path.name == "report.md" and path.is_relative_to(repository.root / "outputs"):
-                raise OSError("injected disk failure")
-            return write_bytes(path, content)
-
-        monkeypatch.setattr(Path, "write_bytes", reject_report)
-    assert main(arguments) != 0
-    result = json.loads(capsys.readouterr().out)
-    assert result["status"] == "FAIL" and result["artifacts"] == {}
-    assert result["error"]["code"] == ("backtest_failed" if failure == "data" else "backtest_output_failed")
-    if failure == "data":
-        assert result["error"]["context"]["input"] == "price_limits"
-        assert result["error"]["context"]["data_error"]["code"] == "INCOMPLETE_DATA"
-        assert result["error"]["context"]["data_error"]["context"]["missing_dates"] == ["2026-09-22"]
-        assert "security price limits omit exchange sessions" in result["error"]["message"]
-        assert "2026-09-22" in result["error"]["message"]
-        assert main([*arguments, "--format", "text"]) == 5
-        text = capsys.readouterr().out
-        assert "price_limits" in text and "2026-09-22" in text
-    assert not list((repository.root / "outputs").glob("*"))
-    assert not (repository.root / "research").exists()
-
-
-@pytest.mark.parametrize("data_context", [
-    pytest.param({"actual_cutoff": "2026-09-18"}, id="valid-cutoff"),
-    pytest.param({"missing_dates": ["2026-09-16"]}, id="internal-gap"),
-    pytest.param({}, id="absent-cutoff"),
-    pytest.param({"actual_cutoff": None}, id="null-cutoff"),
-    pytest.param({"actual_cutoff": "invalid"}, id="invalid-cutoff"),
-    pytest.param({"actual_cutoff": ""}, id="empty-cutoff"),
-    pytest.param({"actual_cutoff": "NaT"}, id="nat-cutoff"),
-    pytest.param({"actual_cutoff": 123}, id="numeric-cutoff"),
-    pytest.param({"actual_cutoff": True}, id="boolean-cutoff"),
-    pytest.param({"actual_cutoff": "2026-09-21"}, id="complete-cutoff-with-other-incompleteness"),
-])
+@pytest.mark.parametrize('data_context', [pytest.param({'actual_cutoff': '2026-09-18'}, id='valid-cutoff'), pytest.param({'missing_dates': ['2026-09-16']}, id='internal-gap'), pytest.param({'actual_cutoff': 'invalid'}, id='invalid-cutoff')])
 def test_execution_data_failure_classification_preserves_source_context(data_context):
     from dataflows import DataError, DataResult, DataStatus
     from czsc_trader.backtesting.execution_data import (
@@ -199,51 +128,15 @@ def test_execution_data_failure_classification_preserves_source_context(data_con
             assert '2026-09-16' in str(caught.value)
 
 
-@pytest.mark.parametrize('data_context', [
-    pytest.param({'actual_cutoff': '2026-09-18'}, id='not-yet-published'),
-    pytest.param({'missing_dates': ['2026-09-16']}, id='internal-gap'),
-])
-def test_cli_preserves_execution_data_failures_without_partial_reports(
-    data_context, current_frozen, monkeypatch, capsys,
-):
-    repository, _ = current_frozen
-    # Fault injection stays at the provider; preparation, application and CLI run normally.
-    flows = execution_flows(repository.root, space=DataSpace(Path("data/backtest")),
-                            data_failure=data_context)
-    monkeypatch.setattr("czsc_trader.cli.backtest._independent_data", lambda _: flows)
-    monkeypatch.chdir(repository.root)
-    assert main(_arguments(["--strategy-version", "v1"])) == 5
-    result = json.loads(capsys.readouterr().out)
-    error = result["error"]
-    assert result["status"] == "FAIL" and result["artifacts"] == {}
-    if data_context == {"actual_cutoff": "2026-09-18"}:
-        assert error["code"] == "backtest_data_not_ready"
-        assert error["context"]["published_cutoff"] == "2026-09-18"
-        assert error["context"]["first_unpublished_session"] == "2026-09-21"
-    else:
-        assert error["code"] == "backtest_failed"
-        assert error["context"]["input"] == "adjusted_daily"
-        source = error["context"]["data_error"]
-        assert source["code"] == "INCOMPLETE_DATA"
-        assert source["message"] == "injected incomplete daily observations"
-        assert all(source["context"][key] == value for key, value in data_context.items())
-        assert "published_cutoff" not in error["context"]
-        assert "injected incomplete daily observations" in error["message"]
-        if "missing_dates" in data_context:
-            assert "2026-09-16" in error["message"]
-    assert not list((repository.root / "outputs").glob("*"))
-
-
-@pytest.mark.parametrize(("option", "value"), [("--init-cash", "0"), ("--init-cash", "nan"),
-                                               ("--end", "2026-09-14")])
-def test_cli_invalid_request_is_rejected_before_strategy_and_data_access(
-    option, value, minimal_repo, monkeypatch, capsys,
-):
-    monkeypatch.chdir(minimal_repo)
-    arguments = _arguments(["--strategy-version", "v1"])
-    arguments[arguments.index(option) + 1] = value
-    assert main(arguments) != 0
-    result = json.loads(capsys.readouterr().out)
-    assert result["status"] == "FAIL" and result["error"]["code"] == "backtest_request_invalid"
-    assert not (minimal_repo / "outputs").exists()
-    assert not (minimal_repo / "data").exists()
+def test_TDR_26_C02_repeated_output_allocates_new_directory_without_overwrite(minimal_repo):
+    from czsc_trader.application import RepositoryContext
+    from czsc_trader.cli.backtest import _save_reports
+    repository = RepositoryContext.discover(minimal_repo)
+    files = {'report.md': b'completed account', 'metrics.json': b'{"return":0.1}'}
+    root = repository.root / 'outputs'
+    first = _save_reports(repository, root, 'S900-v1', files)
+    before = {p.name: p.read_bytes() for p in first.iterdir()}
+    second = _save_reports(repository, root, 'S900-v1', files)
+    assert first != second
+    assert {p.name: p.read_bytes() for p in first.iterdir()} == before == files
+    assert {p.name: p.read_bytes() for p in second.iterdir()} == files

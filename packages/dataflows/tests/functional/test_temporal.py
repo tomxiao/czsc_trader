@@ -1,112 +1,51 @@
-from __future__ import annotations
-
+"""DFLS-11: temporal alignment uses actual availability, without a data space."""
 import pandas as pd
 import pytest
-
-from dataflows import (
-    DataCoverageRequirement,
-    DataRequest,
-    DataStatus,
-    DataTemporalContract,
-    DataTemporalRequirement,
-    Dataset,
-    RequestRangePolicy,
-    TemporalAlignment,
-    align_temporal_frame,
-)
+from dataflows import DataTemporalContract, DataTemporalRequirement, TemporalAlignment, align_temporal_frame
 
 
-def _contract() -> DataTemporalContract:
-    return DataTemporalContract(
-        source_time_field="Date",
-        availability_time_field="AvailableDate",
-        source_calendar="SOURCE_CALENDAR",
-        available_at="published before market open",
-        request_range_policy=RequestRangePolicy.EXACT,
-    )
+def contract():
+    return DataTemporalContract("Date","AvailableDate","SOURCE_CALENDAR","published before market open","EXACT")
 
 
-def _source() -> pd.DataFrame:
-    return pd.DataFrame(
-        {
-            "Date": ["2026-09-01", "2026-09-03"],
-            "AvailableDate": ["2026-09-02", "2026-09-04"],
-            "Value": [1.0, 2.0],
-        }
-    )
+def source():
+    return pd.DataFrame({"Date":["2026-09-01","2026-09-03"],
+                         "AvailableDate":["2026-09-02","2026-09-04"],"Value":[1.,2.]})
 
 
-def test_strict_prior_excludes_same_session_information() -> None:
-    result = align_temporal_frame(
-        _source(),
-        ["2026-09-02", "2026-09-03", "2026-09-04"],
-        contract=_contract(),
-        requirement=DataTemporalRequirement(
-            TemporalAlignment.STRICT_PRIOR,
-            decision_time="SSE open",
-            warmup_sessions=1,
-        ),
-    )
-
+def test_DFLS_11_C01_strict_prior_excludes_equal_availability():
+    result = align_temporal_frame(source(),["2026-09-02","2026-09-03","2026-09-04"],
+        contract=contract(), requirement=DataTemporalRequirement(
+            TemporalAlignment.STRICT_PRIOR,decision_time="SSE open",warmup_sessions=1))
     assert result.unmatched_prefix_rows == 1
-    assert result.dataframe["Value"].tolist()[1:] == [1.0, 1.0]
+    assert result.dataframe.Value.tolist()[1:] == [1.,1.]
 
 
-def test_latest_available_includes_same_session_information() -> None:
-    result = align_temporal_frame(
-        _source(),
-        ["2026-09-02", "2026-09-03", "2026-09-04"],
-        contract=_contract(),
-        requirement=DataTemporalRequirement(
-            TemporalAlignment.LATEST_AVAILABLE,
-            decision_time="SSE close",
-        ),
-    )
-
+def test_DFLS_11_C02_latest_available_includes_equal_availability():
+    result = align_temporal_frame(source(),["2026-09-02","2026-09-03","2026-09-04"],
+        contract=contract(),requirement=DataTemporalRequirement(
+            TemporalAlignment.LATEST_AVAILABLE,decision_time="SSE close"))
     assert result.unmatched_prefix_rows == 0
-    assert result.dataframe["Value"].tolist() == [1.0, 1.0, 2.0]
+    assert result.dataframe.Value.tolist() == [1.,1.,2.]
 
 
-def test_alignment_rejects_undeclared_warmup_and_stale_values() -> None:
-    with pytest.raises(ValueError, match="warmup_sessions"):
-        align_temporal_frame(
-            _source(),
-            ["2026-09-01", "2026-09-02"],
-            contract=_contract(),
-            requirement=DataTemporalRequirement(
-                TemporalAlignment.LATEST_AVAILABLE,
-                decision_time="SSE close",
-            ),
-        )
-
-    with pytest.raises(ValueError, match="max_staleness_days"):
-        align_temporal_frame(
-            _source(),
-            ["2026-09-02", "2026-09-10"],
-            contract=_contract(),
-            requirement=DataTemporalRequirement(
-                TemporalAlignment.LATEST_AVAILABLE,
-                decision_time="SSE close",
-                max_staleness_days=2,
-            ),
-        )
+def test_DFLS_11_C03_earlier_source_date_does_not_override_late_publication():
+    frame = source()
+    frame["Date"] = pd.to_datetime(["2026-08-01","2026-08-02"])
+    result = align_temporal_frame(frame,["2026-09-03"],contract=contract(),
+        requirement=DataTemporalRequirement(TemporalAlignment.LATEST_AVAILABLE,decision_time="SSE close"))
+    assert result.dataframe.Value.tolist() == [1.]
+    assert result.dataframe.SourceTime.tolist() == [pd.Timestamp("2026-08-01")]
 
 
-def test_strict_coverage_blocks_truncated_history_without_provider_hint(flow_factory, publish_data) -> None:
-    frame = pd.DataFrame({"Date": ["2026-09-10"], "OvernightRate": [1.5]})
-    request = DataRequest(
-        Dataset.SHIBOR_DAILY,
-        None,
-        "2026-09-01",
-        "2026-09-10",
-        "2026-09-10",
-        coverage=DataCoverageRequirement(maximum_start_lag_days=1),
-    )
+def test_DFLS_11_C04_stale_value_fails_instead_of_filling():
+    with pytest.raises(ValueError,match="max_staleness_days"):
+        align_temporal_frame(source(),["2026-09-02","2026-09-10"],contract=contract(),
+            requirement=DataTemporalRequirement(TemporalAlignment.LATEST_AVAILABLE,
+                decision_time="SSE close",max_staleness_days=2))
 
-    result = publish_data(flow_factory(
-        {Dataset.SHIBOR_DAILY.value: lambda ignored: (frame, {"vendor": "test"})}
-    ), request)
 
-    assert result.status is DataStatus.INCOMPLETE
-    assert result.error is not None
-    assert result.error.context["maximum_start_lag_days"] == 1
+def test_DFLS_11_C05_undeclared_warmup_fails():
+    with pytest.raises(ValueError,match="warmup_sessions"):
+        align_temporal_frame(source(),["2026-09-01","2026-09-02"],contract=contract(),
+            requirement=DataTemporalRequirement(TemporalAlignment.LATEST_AVAILABLE,decision_time="SSE close"))

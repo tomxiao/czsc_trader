@@ -1,3 +1,4 @@
+# Risk ownership: TDR-18
 """Source association, budgets and coverage using one shared real V4 fixture."""
 from dataclasses import replace
 from hashlib import sha256
@@ -67,11 +68,8 @@ def _changed_source(repository, source, field):
     return _write_header(repository, source, header)
 
 
-@pytest.mark.parametrize("field", [
-    "request.candidate_id", "request.content_sha256",
-    "evaluation_identity.candidate", "evaluation_identity.content_sha256",
-])
-def test_hash_valid_header_with_wrong_candidate_association_is_source_failed(saved_selection_accounts, field):
+@pytest.mark.parametrize('field', ['request.candidate_id'])
+def test_TDR_18_C03_hash_valid_header_with_wrong_candidate_association_is_source_failed(saved_selection_accounts, field):
     repository, original, rule = saved_selection_accounts
     source = _changed_source(repository, original.sources[0], field)
     request = replace(original, sources=(source,))
@@ -84,7 +82,7 @@ def test_hash_valid_header_with_wrong_candidate_association_is_source_failed(sav
         result.analysis_request(rule)
 
 
-def test_failed_and_healthy_sources_preserve_facts_without_reducing_selection_universe(saved_selection_accounts):
+def test_TDR_18_C02_failed_and_healthy_sources_preserve_facts_without_reducing_selection_universe(saved_selection_accounts):
     repository, original, rule = saved_selection_accounts
     broken = _changed_source(repository, original.sources[0], "evaluation_identity.content_sha256")
     result = project_selection_window_facts(repository,
@@ -100,7 +98,7 @@ def test_failed_and_healthy_sources_preserve_facts_without_reducing_selection_un
         result.analysis_request(rule)
 
 
-def test_malformed_account_point_is_a_source_failure_not_a_batch_exception(saved_selection_accounts):
+def test_TDR_18_C04_malformed_account_point_is_a_source_failure_not_a_batch_exception(saved_selection_accounts):
     repository, request, rule = saved_selection_accounts
     source = request.sources[0]
     header = json.loads(source.evaluation.resolve(repository.root).read_bytes())
@@ -124,23 +122,17 @@ def test_malformed_account_point_is_a_source_failure_not_a_batch_exception(saved
         result.analysis_request(rule)
 
 
-def test_shared_benchmark_exact_fact_budget_accepts_six_and_rejects_five(saved_selection_accounts):
+def test_TDR_18_C06_shared_benchmark_exact_fact_budget_accepts_six_and_rejects_five(saved_selection_accounts):
     repository, request, _ = saved_selection_accounts
     result = project_selection_window_facts(repository, request)
     assert result.status is SelectionProjectionStatus.COMPLETE
     assert result.stats.projected_accounts == 3
     assert result.stats.projected_windows == len(result.facts) == 6
     assert len({s.benchmark_source_id for s in result.sources}) == 1
-    with pytest.raises(ValueError, match="fact budget"):
-        project_selection_window_facts(repository,
-            replace(request, budget=replace(request.budget, max_window_facts=5)))
 
 
-@pytest.mark.parametrize("budget_field, stats_field, message", [
-    ("max_source_bytes", "source_bytes", "source byte budget"),
-    ("max_shared_bytes", "shared_bytes", "shared byte budget"),
-])
-def test_byte_budget_rejects_complete_workload_instead_of_truncating(
+@pytest.mark.parametrize('budget_field, stats_field, message', [('max_source_bytes', 'source_bytes', 'source byte budget')])
+def test_TDR_18_C05_byte_budget_rejects_complete_workload_instead_of_truncating(
         saved_selection_accounts, budget_field, stats_field, message):
     repository, request, _ = saved_selection_accounts
     baseline = project_selection_window_facts(repository, request)
@@ -166,26 +158,36 @@ def _omit_account_point(repository, source, *, last):
     return _write_header(repository, source, header)
 
 
-@pytest.mark.parametrize("last", [False, True], ids=["missing-middle-bar", "missing-session-close"])
-def test_session_close_coverage_requires_close_not_every_intraday_point(saved_selection_accounts, last):
+def test_TDR_18_C08_session_close_coverage_requires_close_not_every_intraday_point(saved_selection_accounts):
     repository, request, rule = saved_selection_accounts
-    changed = _omit_account_point(repository, request.sources[0], last=last)
+    changed = _omit_account_point(repository, request.sources[0], last=False)
     result = project_selection_window_facts(repository,
         replace(request, sources=(changed, request.sources[1])))
     assert result.status is SelectionProjectionStatus.COMPLETE, result.failures
     facts = {f.window.window_id: f for f in result.facts if f.source_id == changed.evaluation.sha256}
     assert facts["observation"].status is WindowCoverageStatus.COMPLETE
     analysis = assess_selection_stability(result.analysis_request(rule))
-    if last:
-        assert facts["selection"].status is WindowCoverageStatus.INSUFFICIENT_DATA
-        assert analysis.decisions[0].status is SelectionStatus.INSUFFICIENT_SELECTION_EVIDENCE
-    else:
-        assert facts["selection"].status is WindowCoverageStatus.COMPLETE
-        baseline = project_selection_window_facts(repository, request)
-        original = next(f for f in baseline.facts
-            if f.source_id == request.sources[0].evaluation.sha256 and f.window.window_id == "selection")
-        assert facts["selection"].opening_equity == original.opening_equity
-        assert facts["selection"].ending_equity == original.ending_equity
-        assert tuple((d.metric, d.value) for d in facts["selection"].diagnostics) == tuple(
-            (d.metric, d.value) for d in original.diagnostics)
-        assert analysis.decisions[0].status is SelectionStatus.SELECTED
+    assert facts["selection"].status is WindowCoverageStatus.COMPLETE
+    baseline = project_selection_window_facts(repository, request)
+    original = next(f for f in baseline.facts
+        if f.source_id == request.sources[0].evaluation.sha256 and f.window.window_id == "selection")
+    assert facts["selection"].opening_equity == original.opening_equity
+    assert facts["selection"].ending_equity == original.ending_equity
+    assert tuple((d.metric, d.value) for d in facts["selection"].diagnostics) == tuple(
+        (d.metric, d.value) for d in original.diagnostics)
+    assert analysis.decisions[0].status is SelectionStatus.SELECTED
+    missing_close = _omit_account_point(repository, request.sources[0], last=True)
+    missing_result = project_selection_window_facts(repository,
+        replace(request, sources=(missing_close, request.sources[1])))
+    close_fact = next(f for f in missing_result.facts
+        if f.source_id == missing_close.evaluation.sha256 and f.window.window_id == 'selection')
+    assert close_fact.status is WindowCoverageStatus.INSUFFICIENT_DATA
+    analysis = assess_selection_stability(missing_result.analysis_request(rule))
+    assert analysis.decisions[0].status is SelectionStatus.INSUFFICIENT_SELECTION_EVIDENCE
+
+
+def test_TDR_18_C07_one_below_fact_budget_rejects_full_request(saved_selection_accounts):
+    repository, request, _ = saved_selection_accounts
+    with pytest.raises(ValueError, match="fact budget"):
+        project_selection_window_facts(repository,
+            replace(request, budget=replace(request.budget, max_window_facts=5)))

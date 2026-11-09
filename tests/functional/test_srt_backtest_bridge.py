@@ -1,3 +1,4 @@
+# Risk ownership: TDR-25
 """Historical diagnostics and tradable targets through the public SRT/TXE bridge."""
 from datetime import timedelta
 
@@ -54,8 +55,19 @@ def test_srt_history_allows_unavailable_diagnostics_during_warmup(candidate_payl
     assert len(result.decisions) == 2
     assert result.account_daily['equity'].eq(request.initial_cash).all()
 
-
-def test_srt_history_rejects_unavailable_target_position(candidate_payload, tmp_path, monkeypatch):
-    context, request = _history_request(candidate_payload, tmp_path, monkeypatch, invalid_target=True)
+    # Diagnostic warmup values may be absent. Turning the tradable target into
+    # a missing value is a different condition in this same prepared history.
+    from copy import deepcopy
+    from shutil import copytree
+    payload, source = candidate_payload
+    payload = deepcopy(payload)
+    changed_source = copytree(source, tmp_path / 'invalid-target-source/strategy_runtime')
+    path = changed_source / 'strategies/candidate_fixture.py'
+    path.write_text(path.read_text(encoding='utf-8').replace(
+        '        return pd.DataFrame(', '        target.iloc[-1] = float("nan")\n        return pd.DataFrame('),
+        encoding='utf-8', newline='\n')
+    payload['runtime']['source_sha256'] = implementation_sha256(payload['runtime']['source_files'], source_root=changed_source)
+    from dataclasses import replace
+    changed = replace(request, strategy=replace(request.strategy, payload=payload, source_root=changed_source))
     with pytest.raises(RuntimeContractError, match='target positions'):
-        _evaluate(context, request)
+        _evaluate(context, changed)

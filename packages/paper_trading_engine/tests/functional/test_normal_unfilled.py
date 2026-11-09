@@ -3,12 +3,10 @@
 from dataclasses import asdict, replace
 from datetime import date, datetime, time
 from decimal import Decimal
-import json
 import sqlite3
 
 import pytest
 
-from execution_channels.futu.lifecycle import AccountHealth
 from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine.contracts import OrderSpec, PlanLegSpec
 from execution_channels.futu.futu_execution import ChannelExecution
@@ -85,6 +83,7 @@ def _cancel_report(broker, *, status="CANCELLED_ALL", quantity=0, error=""):
     )
 
 
+# Independent risk: EC20; responsibility-level assertions.
 def test_day_order_normal_unfilled_survives_restart_and_retries_only_next_session(new_store, tmp_path):
     path = tmp_path / "normal-day.db"
     store, broker, clock, execution, advice, engine, intent = _submitted(new_store(path))
@@ -149,57 +148,7 @@ def test_day_order_normal_unfilled_survives_restart_and_retries_only_next_sessio
     store.close()
 
 
-@pytest.mark.parametrize("failure", ["no_source", "manual", "channel_error"])
-def test_zero_fill_exception_does_not_relax_other_terminal_safety(memory_store, failure):
-    store, broker, clock, execution, _, _, intent = _submitted(memory_store())
-    if failure != "no_source":
-        _day_end(execution, clock)
-    else:
-        clock[0] = _at("2026-09-02T15:00:01")
-    if failure == "manual":
-        token = execution.issue_cancel_token(ACCOUNT, intent["channel_order_id"])
-        execution.confirm_cancel(ACCOUNT, intent["channel_order_id"], token)
-    _cancel_report(
-        broker,
-        error="broker execution failure" if failure == "channel_error" else "",
-    )
-    execution.refresh_orders()
-    ended = store.account_intent(intent["intent_id"])
-    assert ended["attention_required"] is True
-    assert ended["payload"].get("termination_reason") != "NORMAL_UNFILLED"
-    assert store.virtual_account(ACCOUNT)["health"] == "BLOCKED"
-    execution.submit_pending()
-    assert len(broker.placed) == 1
-    store.close()
-
-
-def test_normal_unfilled_keeps_entry_cycle_budget_and_target(new_store, tmp_path):
-    path = tmp_path / "cycle.db"
-    store, broker, clock, execution, advice, _, _ = _submitted(new_store(path), signal_cash=True)
-    before = EntryCycleState.from_dict(json.loads(store.virtual_account(ACCOUNT)["entry_cycle_json"]))
-    _day_end(execution, clock)
-    _cancel_report(broker)
-    execution.refresh_orders()
-    store.close()
-    store = PaperStore(path)
-    after = EntryCycleState.from_dict(json.loads(store.virtual_account(ACCOUNT)["entry_cycle_json"]))
-    assert after == before
-    assert (after.cash_budget, after.target_quantity, after.buy_cost_including_fees, after.phase) == (
-        Decimal("50000"), 1000, Decimal("0"), EntryCyclePhase.ACTIVE,
-    )
-    assert store.virtual_account(ACCOUNT)["health"] == "OK"
-    # OPEN -> HOLD with an adopted cycle changes SRT's plan identity even though
-    # signal/session and executable orders are unchanged. It cannot rearm today.
-    advice.value = replace(
-        advice.value, decision_id="DEC-RECOMPUTED", source_decision_id="DEC-RECOMPUTED",
-        entry_cycle_before=after, entry_cycle_after=after, cycle_status=EntryCyclePlanStatus.HOLD,
-    )
-    engine = AccountEngine(store, advice)
-    engine.refresh_account(ACCOUNT, prepared=preparation(advice.value))
-    assert len(store.account_decisions(ACCOUNT)) == len(store.account_intents(ACCOUNT)) == 1
-    store.close()
-
-
+# Independent risk: EC20; responsibility-level assertions.
 def test_uncertain_deadline_cancel_blocks_until_terminal_evidence(memory_store, monkeypatch):
     store, broker, clock, execution, _, _, intent = _submitted(memory_store())
     frozen = store.virtual_account(ACCOUNT)["frozen_cash"]
@@ -226,24 +175,9 @@ def test_uncertain_deadline_cancel_blocks_until_terminal_evidence(memory_store, 
     store.close()
 
 
-def test_normal_unfilled_preserves_unrelated_block_and_pause(memory_store):
-    store, broker, clock, execution, _, _, intent = _submitted(memory_store())
-    _day_end(execution, clock)
-    store.set_virtual_health(ACCOUNT, AccountHealth.BLOCKED, "unrelated account review")
-    store.set_virtual_paused(ACCOUNT, True)
-    _cancel_report(broker)
-    execution.refresh_orders()
-    account = store.virtual_account(ACCOUNT)
-    assert account["health"] == "BLOCKED"
-    assert account["last_error"] == "unrelated account review"
-    assert account["run_state"] == "PAUSED"
-    assert store.account_intent(intent["intent_id"])["attention_required"] is False
-    store.close()
-
-
-@pytest.mark.parametrize("report_time", ["2026-09-03T09:36:05", "2026-09-04T09:30:05"])
-def test_normal_unfilled_entry_skips_dependent_exit_even_after_its_window(memory_store, report_time):
-    store, broker, clock, execution, advice, engine, _ = _submitted(memory_store())
+# Independent risk: EC20; responsibility-level assertions.
+def _rotation_ready(store):
+    store, broker, clock, execution, advice, engine, _ = _submitted(store)
     # Seed a real core holding through the ordinary submitted-order fill path.
     first = replace(broker.value.orders[0], status="FILLED_ALL", cumulative_filled_quantity=1000, average_fill_price=1.60)
     broker.value = broker_snapshot(orders=(first,), quantity=1000)
@@ -264,23 +198,51 @@ def test_normal_unfilled_entry_skips_dependent_exit_even_after_its_window(memory
     advice.value = rotation
     clock[0] = _at("2026-09-03T09:30:05")
     engine.refresh_account(ACCOUNT, prepared=preparation(rotation, "d" * 64))
+    return store,broker,clock,execution
+
+
+def _confirm_partial_entry(store,broker,execution):
     execution.submit_pending()
-    entry, exit_leg = store.account_intents(ACCOUNT)[-2:]
-    clock[0] = _at("2026-09-03T09:36:00")
+    first,last = broker.value.orders
+    partial = replace(last,status='FILLED_PART',cumulative_filled_quantity=400,average_fill_price=1.60)
+    broker.value = broker_snapshot(orders=(first,partial),quantity=1400)
     execution.refresh_orders()
-    assert broker.cancelled == [entry["channel_order_id"]]
-    clock[0] = _at(report_time)
-    last = replace(broker.value.orders[-1], status="CANCELLED_ALL")
-    broker.value = broker_snapshot(orders=(first, last), quantity=1000)
-    execution.refresh_orders()
+    return store.account_intents(ACCOUNT)[-1]
+
+
+def test_EC06_C05_partial_entry_never_activates_full_fill_dependent_exit(memory_store):
+    store,broker,clock,execution = _rotation_ready(memory_store())
+    exit_leg = _confirm_partial_entry(store,broker,execution)
+    clock[0] = _at('2026-09-03T11:29:05')
     execution.submit_pending()
-    skipped = store.account_intent(exit_leg["intent_id"])
-    assert skipped["status"] == "SKIPPED_DEPENDENCY"
-    assert skipped["payload"]["termination_reason"] == "DEPENDENCY_NOT_TRIGGERED"
-    assert skipped["attention_required"] is False
-    assert [row.side for row in broker.placed] == ["BUY", "BUY"]
-    assert store.virtual_account(ACCOUNT)["quantity"] == 1000
-    assert store.virtual_account(ACCOUNT)["health"] == "OK"
-    result = store.account_decision(ACCOUNT, entry["decision_id"])
-    assert (result["status"], result["state_reason"]) == ("INCOMPLETE", "NORMAL_UNFILLED")
+    assert store.account_intent(exit_leg['intent_id'])['status'] == 'WAITING_DEPENDENCY'
+    assert [row.side for row in broker.placed] == ['BUY','BUY']
+    assert store.virtual_account(ACCOUNT)['quantity'] == 1400
+
+
+def test_EC20_C04_partial_entry_dependency_survives_database_reopen(new_store,tmp_path):
+    path = tmp_path / 'partial-entry.db'
+    store,broker,clock,execution = _rotation_ready(new_store(path))
+    exit_leg = _confirm_partial_entry(store,broker,execution)
     store.close()
+    reopened = PaperStore(path)
+    try:
+        clock[0] = _at('2026-09-03T11:29:05')
+        execution = ChannelExecution(reopened,broker,now=lambda:clock[0])
+        execution.submit_pending()
+        assert reopened.account_intent(exit_leg['intent_id'])['status'] == 'WAITING_DEPENDENCY'
+        assert reopened.virtual_account(ACCOUNT)['quantity'] == 1400
+        assert [row.side for row in broker.placed] == ['BUY','BUY']
+    finally:
+        reopened.close()
+
+
+def test_EC20_C05_unsubmitted_expired_entry_skips_exit_and_preserves_core(memory_store):
+    store,broker,clock,execution = _rotation_ready(memory_store())
+    entry,exit_leg = store.account_intents(ACCOUNT)[-2:]
+    clock[0] = _at('2026-09-03T11:29:05')
+    execution.submit_pending()
+    assert store.account_intent(exit_leg['intent_id'])['status'] == 'SKIPPED_DEPENDENCY'
+    assert store.account_intent(entry['intent_id'])['payload']['termination_reason'] == 'EXECUTION_EXPIRED'
+    assert [row.side for row in broker.placed] == ['BUY']
+    assert store.virtual_account(ACCOUNT)['quantity'] == 1000

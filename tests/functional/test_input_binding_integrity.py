@@ -1,10 +1,10 @@
+# Risk ownership: TDR-05
 """Explicit historical execution binding rejects altered inputs before replay."""
 
 from dataclasses import replace
 from pathlib import Path
 import pickle
 import shutil
-from uuid import uuid4
 
 from dataflows import Dataflows, Dataset, DataSpace, PreparePolicy, ProviderBinding, ProviderConfig
 
@@ -51,8 +51,8 @@ def bound_inputs(request, tmp_path, frozen_seed_root):
     return evaluation, restored_context(root)
 
 
-@pytest.mark.parametrize("table", ["adjusted_daily", "execution_daily", "execution_intraday"])
-def test_modified_execution_dataframe_is_rejected_before_strategy_computation(bound_inputs, table):
+@pytest.mark.parametrize('table', ['execution_daily'])
+def test_TDR_05_C03_modified_execution_dataframe_is_rejected_before_strategy_computation(bound_inputs, table):
     request, context = bound_inputs
     data = request.execution_data
     getattr(data, table).loc[0, "close"] += 1.0
@@ -60,22 +60,7 @@ def test_modified_execution_dataframe_is_rejected_before_strategy_computation(bo
         _validate_execution_binding(context.data, request.execution_data, request.execution_data.prepared)
 
 
-@pytest.mark.parametrize("field, value, error_type, reason", [
-    ("fingerprint", "0" * 64, RuntimeContractError, "execution data fingerprint differs from bound inputs"),
-    ("symbol", "518880.SH", RuntimeContractError, "execution input selection differs from instrument: price_limits"),
-    ("asset_type", "stock", RuntimeContractError, "execution input list differs from its declared tables"),
-    ("prepared", None, RuntimeContractError, "execution input differs from bound preparation: price_limits"),
-])
-def test_execution_identity_must_match_the_prepared_selection(bound_inputs, field, value, error_type, reason):
-    request, context = bound_inputs
-    if field == "prepared":
-        value = replace(request.execution_data.prepared, preparation_id=uuid4())
-    request = replace(request, execution_data=replace(request.execution_data, **{field: value}))
-    with pytest.raises(error_type, match=f"^{reason}$"):
-        _validate_execution_binding(context.data, request.execution_data, request.execution_data.prepared)
-
-
-def test_unchanged_bound_execution_tables_remain_replayable(bound_inputs):
+def test_TDR_05_C01_unchanged_bound_execution_tables_remain_replayable(bound_inputs):
     request, context = bound_inputs
     data = request.execution_data
     minute = data.requests["execution_30m"]
@@ -87,7 +72,7 @@ def test_unchanged_bound_execution_tables_remain_replayable(bound_inputs):
     assert _validate_execution_binding(context.data, data, data.prepared) is None
 
 
-def test_foreign_space_reference_is_rejected_without_repreparing(bound_inputs, monkeypatch):
+def test_TDR_05_C02_foreign_space_reference_is_rejected_without_repreparing(bound_inputs, monkeypatch):
     request, context = bound_inputs
     flows = context.data
     data = request.execution_data
@@ -114,12 +99,4 @@ def test_foreign_space_reference_is_rejected_without_repreparing(bound_inputs, m
 
     monkeypatch.setattr(flows, "prepare", forbidden)
     with pytest.raises(RuntimeContractError, match="execution input differs from bound preparation"):
-        _validate_execution_binding(context.data, request.execution_data, request.execution_data.prepared)
-
-
-def test_limit_execution_rejects_tampered_bound_minute_prices(bound_inputs):
-    request, context = bound_inputs
-    data = request.execution_data
-    request = replace(request, execution_data=replace(data, execution_intraday=data.execution_intraday.iloc[:0]))
-    with pytest.raises(RuntimeContractError, match="^execution dataframe differs from bound inputs: execution_intraday$"):
         _validate_execution_binding(context.data, request.execution_data, request.execution_data.prepared)

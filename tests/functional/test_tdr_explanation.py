@@ -1,3 +1,4 @@
+# Risk ownership: TDR-26
 """Recorded strategy explanations survive public backtest and chart projection."""
 import ast
 import json
@@ -10,7 +11,7 @@ from strategy_runtime import implementation_sha256, ObservationUnavailable
 from czsc_trader.application import BacktestRequest, run_backtest
 from public_backtest_support import research_context, chart_payload, render_output
 from test_backtest import execution_flows
-from test_current_contracts import current_frozen as current_frozen, inspection as inspection, completed as completed, managed_evaluation as managed_evaluation
+from frozen_contract_support import current_frozen as current_frozen, inspection as inspection, completed as completed, managed_evaluation as managed_evaluation
 
 
 def frozen_observation_revision(current_frozen, author):
@@ -57,7 +58,7 @@ def observation_definition(self):
         (SignalStateDefinition('decision', 'Decision', 'obs_decision',
             (SignalStateOption('recorded', 'Recorded'),)),),
         SignalExplanationDefinition('decision', (
-            SignalExplanationCase('recorded', text('Synthetic recorded judgment'),
+            SignalExplanationCase('recorded', text('</script><script>alert(1)</script>'),
                 (SignalBasisDefinition('score', SignalText(('Recorded score ', SeriesValueRef('score')))),),
                 text('Observe the next actual condition'), text('Synthetic explanation, not investment evidence')),
         ))))
@@ -70,17 +71,19 @@ def observation_history(self, inputs, context, history):
     payload['runtime']['source_sha256'] = implementation_sha256(tuple(payload['runtime']['source_files']), source_root=source)
 
 
-@pytest.mark.parametrize('failure', [False, True])
-def test_recorded_explanation_and_failure_survive_backtest(current_frozen, monkeypatch, failure):
+def test_recorded_explanation_and_failure_survive_backtest(current_frozen, monkeypatch):
     repository, version = frozen_observation_revision(current_frozen, _author_explanation)
     context = research_context(repository, execution_flows(repository.root))
-    if failure:
-        from strategy_runtime import observation as recorder
-        original = recorder.observe_strategy_proposal
-        def unavailable(definition, proposal, *, plan_identity, action):
-            original(definition, proposal, plan_identity=plan_identity, action=action)
-            return ObservationUnavailable('Injected observation-only failure', 'strategy_observation.v4')
-        monkeypatch.setattr(recorder, 'observe_strategy_proposal', unavailable)
+    from strategy_runtime import observation as recorder
+    original = recorder.observe_strategy_proposal
+    calls = []
+    def unavailable_after_first(definition, proposal, *, plan_identity, action):
+        recorded = original(definition, proposal, plan_identity=plan_identity, action=action)
+        calls.append(recorded)
+        if len(calls) == 1:
+            return recorded
+        return ObservationUnavailable('Injected observation-only failure', 'strategy_observation.v4')
+    monkeypatch.setattr(recorder, 'observe_strategy_proposal', unavailable_after_first)
     result = run_backtest(context, version, BacktestRequest(
         '588080.SH', 'etf', date(2026,9,15), date(2026,9,21), 100000, 100))
     assert result.manifest['audit']['status'] == 'PASS'
@@ -89,18 +92,16 @@ def test_recorded_explanation_and_failure_survive_backtest(current_frozen, monke
     chart = chart_payload(html)
     recorded = json.loads((output / 'observations.json').read_text(encoding='utf-8'))
     projected = [row['observation'] for row in chart['observations']]
-    if failure:
-        assert [row['recorded_plan'] for row in projected] == recorded
-    else:
-        assert projected == recorded
+    assert len(projected) > 1
+    assert projected[0] == recorded[0]
+    assert [row['recorded_plan'] for row in projected[1:]] == recorded[1:]
     assert html.index('aria-label="回测绩效指标"') < html.index('aria-label="策略运行复盘"')
     assert '<script src=' not in html
-    if failure:
-        assert all(row['status'] == 'UNAVAILABLE' and 'series' not in row and 'signal_panel' not in row for row in projected)
-        assert all(ObservationUnavailable.from_dict(row['observation']).contract_version == 'strategy_observation.v4' for row in recorded)
-    else:
-        assert all(row['contract_version'] == 'strategy_observation.v4' for row in recorded)
-        assert recorded[0]['signal_panel']['explanation']['judgment'] == 'Synthetic recorded judgment'
+    assert '</script><script>alert(1)</script>' not in html
+    assert projected[0]['contract_version'] == 'strategy_observation.v4'
+    assert recorded[0]['signal_panel']['explanation']['judgment'] == '</script><script>alert(1)</script>'
+    assert all(row['status'] == 'UNAVAILABLE' and 'series' not in row and 'signal_panel' not in row for row in projected[1:])
+    assert all(ObservationUnavailable.from_dict(row['observation']).message == 'Injected observation-only failure' for row in recorded[1:])
     # Corrupted recorded identity must fail even for an unavailable observation.
     first = result.result.observations[0]
     bad = replace(first, strategy=replace(first.strategy, release_hash='f' * 64))

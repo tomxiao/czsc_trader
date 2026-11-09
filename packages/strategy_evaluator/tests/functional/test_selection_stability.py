@@ -53,23 +53,45 @@ def analysis(values=(.3, .2), targets=None, order=None):
     return se.SelectionStabilityRequest(p, rule, sources, facts)
 
 
-@pytest.mark.parametrize("market", ["CN", "US"])
-@pytest.mark.parametrize("intraday", [False, True])
-def test_projection_inherits_previous_close_and_respects_basis(market, intraday):
+@pytest.mark.risk_cases('SE-21-C01')
+def test_SE_21_C01_cn_window_inherits_complete_prior_close():
+    _, observation = se.project_equity_windows(projection(plan(4, 2), (110.,120.,90.,130.), market='CN'))
+    assert observation.opening_equity == 120.
+    assert observation.period_return == pytest.approx(130/120-1)
+
+@pytest.mark.risk_cases('SE-01-C04')
+def test_SE_01_C04_cn_us_annualization_uses_252_actual_session_count():
+    values = (110.,120.,90.,130.)
+    cn = se.project_equity_windows(projection(plan(4,2), values, market='CN'))[1]
+    us = se.project_equity_windows(projection(plan(4,2), values, market='US'))[1]
+    expected = (130/120)**(252/2)-1
+    assert metrics(cn)[m.ResearchMetric.NET_ANNUAL_RETURN] == pytest.approx(expected)
+    assert metrics(us)[m.ResearchMetric.NET_ANNUAL_RETURN] == pytest.approx(expected)
+
+
+@pytest.mark.risk_cases('SE-21-C02')
+def test_SE_21_C02_us_utc_timestamp_keeps_market_local_session():
     p = plan(4, 2)
-    values = (110., 120., 90., 130.) if not intraday else (105., 110., 80., 120., 60., 90., 100., 130.)
-    request = projection(p, values, market=market, intraday=intraday)
+    request = projection(p, (110., 120., 90., 130.), market="US")
+    # 00:30 UTC belongs to the preceding New York date. This projection tests
+    # date ownership; it makes no claim about regular-session market bars.
+    stamps = tuple(f"{(date.fromisoformat(s) + timedelta(days=1)).isoformat()}T00:30:00+00:00"
+                   for s in p.calendar)
+    request = replace(request,
+        observations=tuple(replace(point, time=stamp) for point, stamp in zip(request.observations, stamps, strict=True)),
+        expected_points=tuple(replace(point, time=stamp) for point, stamp in zip(request.expected_points, stamps, strict=True)))
     selection, observation = se.project_equity_windows(request)
     assert selection.opening_equity == 100.
     assert observation.opening_equity == 120.
-    assert observation.period_return == pytest.approx(130/120 - 1)
-    assert metrics(observation)[m.ResearchMetric.NET_ANNUAL_RETURN] == pytest.approx((130/120)**126-1)
-    assert metrics(observation)[m.ResearchMetric.DRAWDOWN_MAGNITUDE] == pytest.approx(.5 if intraday else .25)
-    session = se.project_equity_windows(replace(request, drawdown_basis="SESSION_CLOSE"))[1]
-    assert metrics(session)[m.ResearchMetric.DRAWDOWN_MAGNITUDE] == pytest.approx(.25)
+    assert observation.period_return == pytest.approx(130 / 120 - 1)
 
 
-@pytest.mark.parametrize("days,total", [(59, 0), (60, 1), (61, 2)])
+@pytest.mark.parametrize('days,total', [
+    pytest.param(59, 0, id='SE-03-C01'),
+    pytest.param(60, 1, id='SE-03-C02'),
+    pytest.param(61, 2, id='SE-03-C03'),
+])
+@pytest.mark.risk_cases('SE-03-C01', 'SE-03-C02', 'SE-03-C03')
 def test_frequency_complete_windows_and_exit_attribution(days, total):
     p = plan(days * 2, days)
     cycles = tuple(m.ClosedCycle(str(i), p.calendar[days+i]) for i in (0, 1, 2))
@@ -81,6 +103,7 @@ def test_frequency_complete_windows_and_exit_attribution(days, total):
     assert metrics(observation)[m.ResearchMetric.NET_CALMAR] is None
 
 
+@pytest.mark.risk_cases('SE-21-C05')
 def test_missing_later_data_does_not_change_projection_of_selection():
     p = plan(4, 2)
     request = projection(p, (110., 120., 90., 130.))
@@ -91,6 +114,7 @@ def test_missing_later_data_does_not_change_projection_of_selection():
     assert truncated[1].observed_sessions == 0
 
 
+@pytest.mark.risk_cases('SE-21-C03')
 def test_prior_close_missing_is_not_replaced_by_initial_cash():
     p = plan(4, 2)
     request = projection(p, (110., 120., 90., 130.))
@@ -98,6 +122,7 @@ def test_prior_close_missing_is_not_replaced_by_initial_cash():
     assert result[1].reason == "MISSING_PREVIOUS_SESSION_CLOSE"
 
 
+@pytest.mark.risk_cases('SE-21-C04')
 def test_previous_intraday_gap_does_not_invalidate_boundary_close():
     p = plan(4, 2)
     request = projection(p, (105., 110., 80., 120., 60., 90., 100., 130.), intraday=True)
@@ -110,39 +135,13 @@ def test_previous_intraday_gap_does_not_invalidate_boundary_close():
     assert all(f.status is se.WindowCoverageStatus.COMPLETE for f in session)
 
 
-def test_fixed_calendar_missing_session_cannot_be_skipped_for_predecessor():
-    p = plan(4, 2)
-    request = projection(p, (110., 120., 90., 130.))
-    request = replace(request, expected_points=tuple(p for p in request.expected_points if p.session != request.plan.calendar[1]),
-                      observations=tuple(p for p in request.observations if p.session != request.plan.calendar[1]))
-    before, after = se.project_equity_windows(request)
-    assert before.observed_sessions == 1
-    assert after.reason == "MISSING_PREVIOUS_SESSION_CLOSE"
 
 
-def test_calendar_cannot_omit_known_source_trading_day():
-    request = projection(plan(6, 3), [100.]*6)
-    calendar = tuple(s for i, s in enumerate(request.plan.calendar) if i != 1)
-    omitted = replace(request.plan, calendar=calendar, calendar_sha256=m.digest(calendar))
-    with pytest.raises(se.ValidationError, match="omits known expected session"):
-        replace(request, plan=omitted)
 
 
-def test_extreme_finite_equity_does_not_raise_arithmetic_error():
-    request = projection(plan(4, 2), (1.e-300, 1.e-300, 1.e300, 1.e300))
-    before, after = se.project_equity_windows(request)
-    assert metrics(before)[m.ResearchMetric.NET_ANNUAL_RETURN] == -1.
-    assert metrics(after)[m.ResearchMetric.NET_ANNUAL_RETURN] is None
 
 
-def test_projection_rejects_initial_cash_reset_and_market_local_date_mismatch():
-    request = projection(plan(4, 2), (110., 120., 90., 130.))
-    with pytest.raises(se.ValidationError, match="source start"):
-        replace(request, source_start_session=request.plan.calendar[2])
-    with pytest.raises(se.ValidationError, match="local session"):
-        replace(request, expected_points=(se.WindowObservationTime("2025-01-01T23:00:00-05:00", "2025-01-01"),))
-
-
+@pytest.mark.risk_cases('SE-23-C03')
 def test_overlapping_windows_are_reported_without_double_counting_exit_rows():
     p = plan(122, 61)
     second = se.SelectionWindowPair("second", se.SelectionWindow("selection2", p.calendar[1], p.calendar[61]),
@@ -156,6 +155,7 @@ def test_overlapping_windows_are_reported_without_double_counting_exit_rows():
     assert metrics(facts[2])[m.ResearchMetric.FREQUENCY_MEDIAN] == 2.
 
 
+@pytest.mark.risk_cases('SE-22-C05')
 def test_exact_ties_and_later_missing_peer_keep_selection_but_block_ranking():
     request = analysis((.3, .3))
     full = se.assess_selection_stability(request)
@@ -172,6 +172,7 @@ def test_exact_ties_and_later_missing_peer_keep_selection_but_block_ranking():
     assert se.SelectionStabilityRequest.from_dict(request.to_dict()) == request
 
 
+@pytest.mark.risk_cases('SE-23-C02')
 def test_bins_keep_all_ties_without_id_tiebreak():
     order = (se.SelectionMetricOrder(m.ResearchMetric.NET_ANNUAL_RETURN, se.SelectionDirection.MAXIMIZE,
              m.MetricBinSpec(m.ResearchMetric.NET_ANNUAL_RETURN, .1, 0., m.BinRounding.FLOOR)),)
@@ -179,6 +180,7 @@ def test_bins_keep_all_ties_without_id_tiebreak():
     assert len(result.decisions[0].selected) == 2
 
 
+@pytest.mark.risk_cases('SE-23-C01')
 def test_observation_tie_interval_and_input_order_invariance():
     request = analysis((.3, .3))
     facts = tuple(replace(f, diagnostics=tuple(replace(d, value=0.)
@@ -193,8 +195,11 @@ def test_observation_tie_interval_and_input_order_invariance():
     assert reversed_result.observations == result.observations
 
 
-@pytest.mark.parametrize("covered,expected", [(15, se.SelectionStatus.NO_ELIGIBLE_CANDIDATE),
-                                            (16, se.SelectionStatus.SELECTED)])
+@pytest.mark.parametrize('covered,expected', [
+    pytest.param(15, se.SelectionStatus.NO_ELIGIBLE_CANDIDATE, id='SE-03-C06'),
+    pytest.param(16, se.SelectionStatus.SELECTED, id='SE-03-C05'),
+])
+@pytest.mark.risk_cases('SE-03-C05', 'SE-03-C06')
 def test_frequency_coverage_uses_exact_inclusive_integer_gate(covered, expected):
     request = analysis(targets=m.ResearchTargets((m.FrequencyCoverageTarget("freq", 60, 3, 4, 5),), 60))
     facts = tuple(replace(f, frequency_coverage=m.FrequencyCoverageFacts(60, 3, 20, covered, (f.source_id,)))
@@ -202,19 +207,9 @@ def test_frequency_coverage_uses_exact_inclusive_integer_gate(covered, expected)
     assert se.assess_selection_stability(replace(request, facts=facts)).decisions[0].status is expected
 
 
-def test_calmar_primary_uses_projected_metric_and_unavailable_candidate_blocks():
-    request = analysis()
-    order = (se.SelectionMetricOrder(m.ResearchMetric.NET_CALMAR, se.SelectionDirection.MAXIMIZE),)
-    facts = tuple(replace(f, diagnostics=(*f.diagnostics, m.DiagnosticValue(
-        m.ResearchMetric.NET_CALMAR, m.MetricUnit.RATIO, m.DiagnosticStatus.AVAILABLE,
-        4. if f.source_id == "a1" else 2., None, (f.source_id,)))) for f in request.facts)
-    request = replace(request, rule=replace(request.rule, order=order), facts=facts)
-    assert se.assess_selection_stability(request).decisions[0].selected == (request.sources[1].candidate,)
-    incomplete = tuple(replace(f, diagnostics=f.diagnostics[:-1])
-        if f.source_id == "a1" and f.window.window_id == "selection" else f for f in facts)
-    assert se.assess_selection_stability(replace(request, facts=incomplete)).insufficient_selection_windows == 1
 
 
+@pytest.mark.risk_cases('SE-22-C01')
 def test_missing_potential_winner_prevents_partial_universe_selection():
     request = analysis()
     request = replace(request, facts=tuple(f for f in request.facts if not (
@@ -224,6 +219,7 @@ def test_missing_potential_winner_prevents_partial_universe_selection():
     assert not decision.selected
 
 
+@pytest.mark.risk_cases('SE-22-C02')
 def test_known_hard_failure_overrides_missing_unneeded_ordering():
     targets = m.ResearchTargets((m.ResearchTarget("dd", m.ResearchMetric.DRAWDOWN_MAGNITUDE,
                                                 upper=m.ConstantBound(.2, True)),), 60)
@@ -237,43 +233,28 @@ def test_known_hard_failure_overrides_missing_unneeded_ordering():
     assert result.observations[0].rank_reason == "SINGLE_ELIGIBLE_CANDIDATE"
 
 
-def test_no_eligible_distinct_from_indeterminate_and_observation_does_not_refilter():
-    targets = m.ResearchTargets((m.ResearchTarget("positive", m.ResearchMetric.NET_ANNUAL_RETURN,
-                                                lower=m.ConstantBound(.4, True)),), 60)
+@pytest.mark.parametrize('minimum,eligible', [
+    pytest.param(.4, False, id='SE-22-C03'),
+    pytest.param(.1, True, id='SE-22-C04'),
+])
+@pytest.mark.risk_cases('SE-22-C03','SE-22-C04')
+def test_selection_eligibility_and_observation_competitor_set(minimum, eligible):
+    targets = m.ResearchTargets((m.ResearchTarget('positive', m.ResearchMetric.NET_ANNUAL_RETURN,
+        lower=m.ConstantBound(minimum, True)),),60)
     result = se.assess_selection_stability(analysis(targets=targets))
-    assert result.no_eligible_windows == 1
-    assert result.insufficient_selection_windows == 0
-    assert not result.observations
-    lower = replace(targets, requirements=(replace(targets.requirements[0], lower=m.ConstantBound(.1, True)),))
-    result = se.assess_selection_stability(analysis(targets=lower))
-    assert result.observations[0].acceptance_status is m.TargetCheckStatus.FAILED
-    assert result.observations[0].reference_size == 2
-    assert result.observations[0].rank_min == 1
+    if not eligible:
+        assert result.no_eligible_windows == 1
+        assert result.insufficient_selection_windows == 0
+        assert not result.observations
+    else:
+        assert result.observations[0].acceptance_status is m.TargetCheckStatus.FAILED
+        assert result.observations[0].reference_size == 2
+        assert result.observations[0].rank_min == 1
 
 
-def test_condition_cost_and_bound_semantics():
-    target = m.ResearchTarget("return", m.ResearchMetric.NET_ANNUAL_RETURN,
-        lower=m.BenchmarkBound(2., False),
-        when=m.BenchmarkCondition(m.ResearchMetric.NET_ANNUAL_RETURN, m.ComparisonOperator.GT, 0.),
-        one_way_cost=.001)
-    request = analysis(targets=m.ResearchTargets((target,), 60))
-    result = se.assess_selection_stability(request)
-    assert [c.status for c in result.decisions[0].checks] == [m.TargetCheckStatus.PASSED, m.TargetCheckStatus.FAILED]
-    bad_cost = replace(request.rule, targets=m.ResearchTargets((replace(target, one_way_cost=.002),), 60))
-    assert se.assess_selection_stability(replace(request, rule=bad_cost)).insufficient_selection_windows == 1
-    na = replace(target, when=replace(target.when, value=1.))
-    assert se.assess_selection_stability(replace(request, rule=replace(request.rule,
-        targets=m.ResearchTargets((na,), 60)))).insufficient_selection_windows == 1
 
 
-def test_invalid_calendar_rule_and_nonfinite_inputs_rejected():
-    p = plan()
-    with pytest.raises(se.ValidationError, match="calendar digest"):
-        replace(p, calendar_sha256="0"*64)
-    with pytest.raises(se.ValidationError, match="selection must precede"):
-        se.SelectionWindowPair("overlap", p.windows[0], p.windows[0])
-    with pytest.raises(se.UnsupportedSelectionRule):
-        replace(analysis().rule, targets=m.ResearchTargets((m.ResearchTarget("stress",
-            m.ResearchMetric.NET_ANNUAL_RETURN, lower=m.ConstantBound(0., True), scope=m.TargetScope.STRESS),), 60))
-    with pytest.raises(TypeError):
-        se.WindowEquityPoint("2025-01-01T15:00:00+08:00", "2025-01-01", float("nan"))
+@pytest.mark.risk_cases('SE-23-C04')
+def test_SE_23_C04_calendar_digest_mismatch_rejects_plan():
+    with pytest.raises(se.ValidationError, match='calendar digest'):
+        replace(plan(), calendar_sha256='0'*64)

@@ -1,3 +1,4 @@
+# Risk ownership: TDR-04
 from __future__ import annotations
 
 from copy import deepcopy
@@ -186,8 +187,6 @@ def _install_candidate_dataflows(monkeypatch, flow, daily, *, base_dir=None, spa
     return flows
 
 
-
-
 def _execution_data(flows, root, sessions):
     from czsc_trader.backtesting.execution_data import _prepare_backtest_execution_data
     return _prepare_backtest_execution_data(
@@ -195,8 +194,6 @@ def _execution_data(flows, root, sessions):
         start=sessions[1].date(), end=sessions[-1].date(), dataflows=flows,
         intraday_frequencies=("30m",),
     )
-
-
 
 
 def _execute(
@@ -238,21 +235,13 @@ def _execute(
     return history, replay_sessions(strategy, ObservationExecutor(strategy.definition, channel))
 
 
-
-
-
-
-
-
-
-
 @pytest.fixture
 def managed_evaluation(request, tmp_path, frozen_seed_root, monkeypatch):
-    from test_research_contract_upgrade import managed_evaluation as prepare_managed
+    from managed_evaluation_support import managed_evaluation as prepare_managed
     return prepare_managed.__wrapped__(request, tmp_path, frozen_seed_root, monkeypatch)
 
 
-def test_retired_candidate_backtest_rejected_before_execution(managed_evaluation, monkeypatch):
+def test_TDR_04_C02_retired_candidate_backtest_rejected_before_execution(managed_evaluation, monkeypatch):
     from czsc_trader.application import run_backtest, BacktestRequest
     from czsc_trader.application import backtest_service
     context, request = managed_evaluation

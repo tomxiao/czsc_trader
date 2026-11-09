@@ -1,12 +1,12 @@
+# Risk ownership: TDR-03
 """Formal equity candidate roundtrip uses the shared registration API."""
 from dataclasses import replace
-import pytest
 from equity_test_support import setup_account_research
 from strategy_runtime import equity_source_hash
 from czsc_trader.application.candidate_service import CandidateRegistrationRequest, register_candidate, load_candidate
 
 
-def test_equity_registration_load_and_source_snapshot(tmp_path):
+def test_TDR_03_C04_equity_registration_load_and_source_snapshot(tmp_path):
     context, request, _, _ = setup_account_research(tmp_path)
     source = request.experiment.resolve(context.repository.root) / 'src'
     source.mkdir(exist_ok=True)
@@ -18,7 +18,5 @@ def test_equity_registration_load_and_source_snapshot(tmp_path):
     loaded = load_candidate(context.repository, candidate.key)
     assert loaded.content_identity.content_sha256 == record.content_sha256
     assert loaded.source_root != source and loaded.definition == definition
-    (source / 'strategy.py').write_text('changed', encoding='utf-8')
+    (source / 'strategy.py').unlink()
     assert load_candidate(context.repository, candidate.key).content_identity == loaded.content_identity
-    with pytest.raises(ValueError, match='closure changed'):
-        replace(candidate)

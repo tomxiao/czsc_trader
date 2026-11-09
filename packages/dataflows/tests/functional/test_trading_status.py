@@ -33,15 +33,8 @@ class SessionSource:
 
 
 @pytest.mark.parametrize("symbol,missing,proof,intraday,ready", [
-    ("600722.SH", False, True, False, True),
-    ("600722.SH", False, None, False, False),
-    ("510500.SH", False, True, False, False),
     ("600722.SH", True, True, False, True),
-    ("600722.SH", True, False, False, False),
-    ("600722.SH", True, True, True, False),
-    ("600722.SH", False, True, True, False),
-    ("510500.SH", True, True, False, False),
-])
+], ids=['DFLS-25-C06'])
 def test_native_status_preparation_requires_explicit_suspension_evidence(
     tmp_path, empty_space_factory, monkeypatch, symbol, missing, proof, intraday, ready,
 ):

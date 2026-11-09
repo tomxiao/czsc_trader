@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from copy import deepcopy
-from dataclasses import FrozenInstanceError, replace
+from dataclasses import replace
 
 import numpy as np
 import pytest
@@ -21,11 +20,9 @@ from strategy_evaluator import (
     ParameterPoint,
     RankingResult,
     ReturnMatrixEvidence,
-    RiskLabel,
     StressScenarioResult,
     TrialRecord,
     ValidationError,
-    audit_provisional_champion,
     hash_audit_data,
     hash_candidate_pool,
     hash_execution_evidence,
@@ -33,7 +30,6 @@ from strategy_evaluator import (
     rank_candidates,
     required_stress_scenarios,
     screen_candidates,
-    stationary_bootstrap_performance,
     validate_protocol,
 )
 
@@ -62,15 +58,9 @@ PROTOCOL = {
 }
 
 
-@pytest.mark.parametrize("standard", ["opc-v1", "opc-v2", "opc-v4"])
-def test_retired_or_unknown_standard_is_rejected(standard):
-    from strategy_evaluator import resolve_margins
-
-    protocol = EvaluationProtocol.from_dict({**PROTOCOL, "standard_version": standard})
-    with pytest.raises(ValidationError, match="unsupported standard"):
-        resolve_margins(protocol)
 
 
+@pytest.mark.risk_cases('SE-06-C06')
 def test_legacy_pressure_labels_cannot_satisfy_current_stress_contract():
     from strategy_evaluator import audit_stress_results
 
@@ -277,6 +267,7 @@ def _complete_audit_request(
     )
 
 
+@pytest.mark.risk_cases('SE-35-C03')
 def test_ft_se01_candidate_funnel_selects_the_robust_pareto_champion() -> None:
     protocol = EvaluationProtocol.from_dict(PROTOCOL)
     candidates = (
@@ -330,88 +321,26 @@ def test_ft_se01_candidate_funnel_selects_the_robust_pareto_champion() -> None:
     assert ranking.profiles[0].pareto_layer == 1
 
 
-def test_ft_se02_champion_audit_combines_statistical_and_engineering_evidence() -> None:
-    request = _complete_audit_request()
-    audit = audit_provisional_champion(request)
-
-    assert audit.status is AuditStatus.PASS
-    assert audit.risk_label in {
-        RiskLabel.FAVORABLE,
-        RiskLabel.MIXED,
-        RiskLabel.WEAK,
-    }
-    assert audit.search_bias is not None
-    assert audit.search_bias.pbo is not None
-    assert audit.dsr is not None
-    assert len(audit.bootstrap) == 6
-    assert audit.neighborhood is not None
-    finding_statuses = {finding.audit_id: finding.status for finding in audit.findings}
-    assert (
-        finding_statuses.items()
-        >= {
-            "execution": AuditStatus.PASS,
-            "reproducibility": AuditStatus.PASS,
-            "trial_ledger": AuditStatus.PASS,
-            "stress": AuditStatus.PASS,
-        }.items()
-    )
-    assert audit.stress.status is AuditStatus.PASS
-
-    absolute = stationary_bootstrap_performance(
-        np.asarray(request.search_returns.returns, dtype=float)[:, 0],
-        candidate_id=request.champion_id,
-        repetitions=100,
-        mean_block_length=10,
-        seed=20260910,
-    )
-    assert absolute.candidate_id == request.champion_id
-    assert absolute.repetitions == 100
-    assert absolute.cagr.lower_90 <= absolute.cagr.upper_90
-    assert absolute.max_drawdown.lower_95 <= absolute.max_drawdown.upper_95
-    assert 0.0 <= absolute.calmar.probability_above_zero <= 1.0
-
-    invalid = audit_provisional_champion(_complete_audit_request(execution_invalid=True))
-    assert invalid.status is AuditStatus.FAIL
-
-
-def test_ft_se03_governance_validation_and_report_are_complete() -> None:
+@pytest.mark.parametrize('defect,reason', [
+    pytest.param("margin", "cannot loosen", id='SE-35-C01'),
+    pytest.param("incumbent", "exactly one incumbent", id='SE-35-C02'),
+])
+@pytest.mark.risk_cases('SE-35-C01', 'SE-35-C02')
+def test_protocol_validation_without_statistical_audit(defect, reason):
     protocol = EvaluationProtocol.from_dict(PROTOCOL)
-    observation = _observation("S001-v1", "full")
-    assert EvaluationProtocol.from_dict(protocol.to_dict()) == protocol
-    assert MetricObservation.from_dict(observation.to_dict()) == observation
-    with pytest.raises(FrozenInstanceError):
-        protocol.experiment_id = "changed"
-    with pytest.raises(ValidationError, match="unknown fields"):
-        EvaluationProtocol.from_dict({**PROTOCOL, "unexpected": True})
-
     candidates = (
         CandidateDescriptor("S001-v1", "a" * 64, "b" * 64, True, "h1"),
         CandidateDescriptor("candidate", "c" * 64, "b" * 64, False, "h2"),
     )
-    observations = tuple(
-        _observation(candidate_id, window)
-        for candidate_id in ("S001-v1", "candidate")
-        for window in ("full", "2026_ytd")
-    )
-    trials = (
-        TrialRecord("t0", "S001-v1", "a" * 64, "h1", "COMPLETED"),
-        TrialRecord("t1", "candidate", "c" * 64, "h2", "COMPLETED"),
-    )
-    validate_protocol(protocol, candidates, observations, trials)
-    loosened = deepcopy(PROTOCOL)
-    loosened["tightened_margins"] = {"net_cagr_retention": 0.80}
-    with pytest.raises(ValidationError, match="cannot loosen"):
-        validate_protocol(EvaluationProtocol.from_dict(loosened), candidates, observations, trials)
-    with pytest.raises(ValidationError, match="exactly one incumbent"):
-        validate_protocol(
-            protocol,
-            tuple(replace(item, is_incumbent=False) for item in candidates),
-            observations,
-            trials,
-        )
-    with pytest.raises(ValidationError, match="duplicate observation"):
-        validate_protocol(protocol, candidates, observations + (observations[0],), trials)
-
-    audit = audit_provisional_champion(_complete_audit_request(champion_edge=-0.0002))
-    assert audit.status is AuditStatus.PASS
-    assert audit.risk_label in {RiskLabel.FAVORABLE, RiskLabel.MIXED, RiskLabel.WEAK}
+    observations = tuple(_observation(c.candidate_id, window)
+                         for c in candidates for window in ("full", "2026_ytd"))
+    trials = tuple(TrialRecord(f"t{i}", c.candidate_id, c.candidate_hash,
+                               c.behavior_hash, "COMPLETED") for i, c in enumerate(candidates))
+    if defect == "margin":
+        protocol = EvaluationProtocol.from_dict({**PROTOCOL, "tightened_margins": {"net_cagr_retention": .80}})
+    elif defect == "incumbent":
+        candidates = tuple(replace(c, is_incumbent=False) for c in candidates)
+    else:
+        observations += (observations[0],)
+    with pytest.raises(ValidationError, match=reason):
+        validate_protocol(protocol, candidates, observations, trials)

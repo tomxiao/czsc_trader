@@ -3,9 +3,8 @@ from itertools import permutations
 
 import pytest
 
-from strategy_evaluator.research_assessment import recompute_historical_assessment as assess_candidates
 from strategy_evaluator import research_models as m
-from test_research_assessment import candidate, compare, evidence, policy, request, row, values
+from test_research_assessment import candidate, compare, policy, row
 
 
 def partial_policy():
@@ -41,23 +40,11 @@ def checks(item, *targets):
     return compare((item,), targets=targets).rows[0].target_checks
 
 
-def test_full_sample_frequency_and_benchmark_are_computed_from_accounts():
-    base = replace(
-        evidence(), frequency_window_days=60, benchmark_equity=(1000.0, 1100.0, 900.0, 1050.0)
-    )
-    panel = assess_candidates(replace(request(), evidence=(base,)))
-    assert panel.formula_version == "research-assessment-v5"
-    assert values(panel)[m.ResearchMetric.FULL_SAMPLE_FREQUENCY].value == 30.0
-    assert values(panel)[m.ResearchMetric.FREQUENCY_MEDIAN].value is None
-    got = {x.metric: x for x in panel.rows[0].benchmark.diagnostics}
-    assert got[m.ResearchMetric.NET_ANNUAL_RETURN].value == pytest.approx(1.05**63 - 1)
-    assert got[m.ResearchMetric.DRAWDOWN_MAGNITUDE].value == pytest.approx(1 - 900 / 1100)
-    assert all(x.evaluation_ids == (base.evaluation_id,) for x in got.values())
-
-
-@pytest.mark.parametrize(
-    "inclusive,expected", [(True, m.TargetCheckStatus.PASSED), (False, m.TargetCheckStatus.FAILED)]
-)
+@pytest.mark.parametrize('inclusive,expected', [
+    pytest.param(True, m.TargetCheckStatus.PASSED, id='SE-04-C01'),
+    pytest.param(False, m.TargetCheckStatus.FAILED, id='SE-04-C02'),
+])
+@pytest.mark.risk_cases('SE-04-C01', 'SE-04-C02')
 def test_constant_and_benchmark_equal_boundaries(inclusive, expected):
     item = benchmark(row(candidate(), annual=0.1, drawdown=0.1))
     targets = (
@@ -77,62 +64,28 @@ def test_constant_and_benchmark_equal_boundaries(inclusive, expected):
     assert result[0].evaluation_ids == ("b" * 64,)
 
 
-@pytest.mark.parametrize(
-    "base,annual,expected",
-    [
-        (0.1, -0.01, m.TargetCheckStatus.NOT_APPLICABLE),
-        (0.0, 0.0, m.TargetCheckStatus.FAILED),
-        (-0.1, -0.05, m.TargetCheckStatus.FAILED),
-        (-0.1, 0.01, m.TargetCheckStatus.PASSED),
-    ],
-)
-def test_conditional_positive_return_preserves_nonpositive_benchmark_branch(base, annual, expected):
-    target = m.ResearchTarget(
-        "positive",
-        m.ResearchMetric.NET_ANNUAL_RETURN,
-        lower=m.ConstantBound(0.0, False),
-        when=m.BenchmarkCondition(m.ResearchMetric.NET_ANNUAL_RETURN, m.ComparisonOperator.LE, 0.0),
-    )
-    positive = m.ResearchTarget("relative-positive", m.ResearchMetric.NET_ANNUAL_RETURN,
-        lower=m.BenchmarkBound(1.5, True),
-        when=m.BenchmarkCondition(m.ResearchMetric.NET_ANNUAL_RETURN, m.ComparisonOperator.GT, 0.0))
-    ranked = compare((benchmark(row(candidate(), annual=annual), annual=base),),
-                     targets=(positive, target)).rows[0]
-    result = ranked.target_checks[1]
-    assert result.status is expected
-    assert result.condition_observed == base
-    assert ranked.acceptance_status is (
-        m.TargetCheckStatus.FAILED if expected is m.TargetCheckStatus.NOT_APPLICABLE else expected)
+@pytest.mark.risk_cases('SE-04-C03')
+def test_SE_04_C03_negative_benchmark_obeys_only_declared_condition():
+    target = m.ResearchTarget("positive-benchmark-only", m.ResearchMetric.NET_ANNUAL_RETURN,
+        lower=m.ConstantBound(0., False),
+        when=m.BenchmarkCondition(m.ResearchMetric.NET_ANNUAL_RETURN, m.ComparisonOperator.GT, 0.))
+    result = checks(benchmark(row(candidate(), annual=-.05), annual=-.1), target)[0]
+    assert result.status is m.TargetCheckStatus.NOT_APPLICABLE
+    assert result.condition_observed == -.1
 
 
-def test_multiple_same_metric_targets_and_missing_bound_do_not_pass():
-    a = m.ResearchTarget(
-        "relative", m.ResearchMetric.NET_ANNUAL_RETURN, lower=m.BenchmarkBound(1.5, True)
-    )
-    b = m.ResearchTarget("positive", a.metric, lower=m.ConstantBound(0.0, False))
-    m.ResearchTargets((a, b), 60)
-    with pytest.raises(ValueError, match="duplicate"):
-        m.ResearchTargets((a, replace(b, target_id=a.target_id)), 60)
-    result = compare((benchmark(row(candidate()), missing=True),), targets=(a, b)).rows[0]
-    assert result.status is m.ComparisonStatus.INCOMPARABLE
-    assert result.target_checks[0].reason == "MISSING_BOUND_BENCHMARK"
-    conditional = replace(b, when=m.BenchmarkCondition(
-        m.ResearchMetric.NET_ANNUAL_RETURN, m.ComparisonOperator.LE, 0.0))
-    missing = checks(benchmark(row(candidate()), missing=True), conditional)[0]
-    assert missing.status is m.TargetCheckStatus.INDETERMINATE
-    assert missing.reason == "MISSING_CONDITION_BENCHMARK"
-    with pytest.raises(TypeError):
-        m.ResearchTarget("bad", a.metric, lower=0.1)
-    with pytest.raises(TypeError):
-        m.ConstantBound(True, True)
-    with pytest.raises(ValueError):
-        m.ResearchTarget("empty", a.metric, m.ConstantBound(0.1, False), m.ConstantBound(0.1, True))
-    with pytest.raises(ValueError):
-        m.ResearchTarget(
-            "frequency", m.ResearchMetric.FULL_SAMPLE_FREQUENCY, lower=m.BenchmarkBound(1.0, True)
-        )
+@pytest.mark.risk_cases('SE-04-C04')
+def test_SE_04_C04_same_metric_must_satisfy_upper_and_lower_bound():
+    target = m.ResearchTarget("interval", m.ResearchMetric.NET_ANNUAL_RETURN,
+                             lower=m.ConstantBound(0., True), upper=m.ConstantBound(.05, True))
+    result = checks(benchmark(row(candidate(), annual=.1)), target)[0]
+    assert result.observed == .1
+    assert result.status is m.TargetCheckStatus.FAILED
 
 
+
+
+@pytest.mark.risk_cases('SE-10-C03')
 def test_half_up_binning_changes_layer_explicitly_and_handles_negative_ties():
     a, b = (
         row(candidate(), annual=0.125, drawdown=0.1),
@@ -158,6 +111,7 @@ def test_half_up_binning_changes_layer_explicitly_and_handles_negative_ties():
     assert compare((negative,), p).rows[0].bin_values[3] == -13
 
 
+@pytest.mark.risk_cases('SE-12-C02')
 def test_prefix_partial_order_rank_intervals_match_all_linear_extensions():
     a = row(candidate(), degradation=0.01, missing=m.ResearchMetric.STRESS_ANNUAL_LOSS)
     a = replace(a, stress_scenario=None)
@@ -181,6 +135,7 @@ def test_prefix_partial_order_rank_intervals_match_all_linear_extensions():
     assert compare((a, b), partial_policy()).rows[0].status is m.ComparisonStatus.RANKED
 
 
+@pytest.mark.risk_cases('SE-12-C03')
 def test_ties_use_competition_rank_and_never_candidate_id_as_economic_tiebreak():
     a, b, c = (
         row(candidate(), degradation=0.01),

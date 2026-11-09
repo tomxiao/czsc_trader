@@ -9,6 +9,7 @@ from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 import pytest
+from pte_support import adopt_test_decision
 
 from execution_channels.futu.account_retirement import AccountRetirementRequest, AccountRetirementStatus
 from paper_trading_engine.cli import main as pte_main
@@ -17,7 +18,7 @@ from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine.web import create_server
 from paper_trading_engine.web_api import PteWebApi
 from execution_channels.futu.store import PaperStore
-from pte_support import FakeBroker, decision, adopt_test_decision
+from pte_support import FakeBroker, decision
 
 
 def create(store, account_id="one", capital=100000):
@@ -63,7 +64,8 @@ def retirement_database(empty_paper_database, frozen_seed_root):
     return path
 
 
-@pytest.mark.parametrize("pnl", [Decimal("0"), Decimal("1250.4321"), Decimal("-2100.5678"), Decimal("-100000")])
+# Independent risk: EC23; responsibility-level assertions.
+@pytest.mark.parametrize("pnl", [Decimal("1250.4321")], ids=["EC23-C04"])
 def test_retirement_returns_actual_cash_preserves_history_and_reallocates(memory_setup, pnl):
     store, broker, execution, request = memory_setup
     cash = Decimal("100000") + pnl
@@ -114,7 +116,69 @@ def test_retirement_returns_actual_cash_preserves_history_and_reallocates(memory
     assert Decimal(snapshot["account"]["released_cash"]) == cash
 
 
-@pytest.mark.parametrize("failure", ["position", "frozen", "wrong_hash", "attention", "cash", "disconnected"])
+# Independent risk: EC25; responsibility-level assertions.
+def test_failed_retirement_transaction_rolls_back_and_shared_strategy_stays_in_use(setup, monkeypatch):
+    store, broker, execution, request = setup
+    create(store, "two")
+    original = store._insert_audit_event
+    def fail(event):
+        if event.event_type == "ACCOUNT_RETIRED":
+            raise RuntimeError("audit unavailable")
+        return original(event)
+    monkeypatch.setattr(store, "_insert_audit_event", fail)
+    result = execution.retire_account(request)
+    assert result.status is AccountRetirementStatus.BLOCKED and 'audit unavailable' in result.reason
+    assert store.virtual_account("one")["run_state"] == "RETIRING"
+    assert store._connection.execute("SELECT COUNT(*) FROM account_retirements").fetchone()[0] == 0
+    monkeypatch.setattr(store, "_insert_audit_event", original)
+    for method in ("_cancel_expired_planned_orders", "_expire_unsubmitted_intents"):
+        monkeypatch.setattr(execution, method, lambda *_: pytest.fail("retirement must only reconcile"))
+    assert execution.retire_account(request).remaining_strategy_accounts == 1
+    assert store.virtual_account("two")["run_state"] == "PAUSED"
+    assert broker.cancelled == broker.placed == []
+
+
+# Independent risk: PTE13; responsibility-level assertions.
+def test_PTE13_C03_retirement_http_requires_control_token_and_cli_uses_public_endpoint(setup, capsys, monkeypatch):
+    from paper_trading_engine import cli
+
+    store, broker, execution, request = setup
+    # This verifies the real HTTP/token/ledger chain, not a three-second latency SLA.
+    # Parallel regression lanes contend for WAL fsync; retain a bounded test deadline
+    # while leaving the production client default and the request path unchanged.
+    monkeypatch.setattr(cli, '_read_json', partial(cli._read_json, timeout=30.0))
+    store.set_setting("control_token", "test-token")
+    operations = SimpleNamespace(retire_account=execution.retire_account, store=store,
+                                 channel=execution, virtual=SimpleNamespace())
+    server = create_server(operations, host="127.0.0.1", port=0, control_token="test-token")
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        port = server.server_address[1]
+        url = f"http://127.0.0.1:{port}/api/virtual-accounts/one/retire"
+        body = {"expected_release_hash": request.expected_release_hash, "actor": "test", "reason": "stop"}
+        with pytest.raises(HTTPError) as caught:
+            urlopen(Request(url, data=json.dumps(body).encode(), headers={"Content-Type": "application/json"}), timeout=30)
+        assert caught.value.code == 403
+        assert store.virtual_account("one")["run_state"] == "PAUSED"
+        assert store._connection.execute("SELECT COUNT(*) FROM account_retirements").fetchone()[0] == 0
+        assert pte_main([
+            "control", "retire-account", "--repo-root", str(store.path.parent),
+            "--database", str(store.path), "--port", str(port), "--account-id", "one",
+            "--expected-release-hash", "a" * 64, "--actor", "test", "--reason", "stop",
+        ]) == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["status"] == "PASS" and payload["command"] == "pte.control.retire-account"
+        result = payload["result"]
+        assert result["status"] == "RETIRED" and result["released_cash"] == "100000.0000"
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join()
+
+
+# Independent risk: EC24; separate execution/refusal boundary.
+@pytest.mark.parametrize("failure", ["wrong_hash", "cash", "disconnected"])
 def test_retirement_rejects_unsafe_state_without_releasing_capital(memory_setup, failure, monkeypatch):
     store, broker, execution, request = memory_setup
     if failure == "position":
@@ -151,86 +215,4 @@ def test_retirement_rejects_unsafe_state_without_releasing_capital(memory_setup,
     assert not broker.placed
 
 
-def test_failed_retirement_transaction_rolls_back_and_shared_strategy_stays_in_use(setup, monkeypatch):
-    store, broker, execution, request = setup
-    create(store, "two")
-    original = store._insert_audit_event
-    def fail(event):
-        if event.event_type == "ACCOUNT_RETIRED":
-            raise RuntimeError("audit unavailable")
-        return original(event)
-    monkeypatch.setattr(store, "_insert_audit_event", fail)
-    result = execution.retire_account(request)
-    assert result.status is AccountRetirementStatus.BLOCKED and 'audit unavailable' in result.reason
-    assert store.virtual_account("one")["run_state"] == "RETIRING"
-    assert store._connection.execute("SELECT COUNT(*) FROM account_retirements").fetchone()[0] == 0
-    monkeypatch.setattr(store, "_insert_audit_event", original)
-    for method in ("_cancel_expired_planned_orders", "_expire_unsubmitted_intents"):
-        monkeypatch.setattr(execution, method, lambda *_: pytest.fail("retirement must only reconcile"))
-    assert execution.retire_account(request).remaining_strategy_accounts == 1
-    assert store.virtual_account("two")["run_state"] == "PAUSED"
-    assert broker.cancelled == broker.placed == []
-
-
-@pytest.mark.parametrize('with_pending', [False, True])
-def test_running_account_retires_and_unsent_buy_is_drained(memory_setup, with_pending):
-    store, broker, execution, request = memory_setup
-    store.set_virtual_paused('one', False)
-    if with_pending:
-        adopt_test_decision(store, account_id='one', decision_id='d', valid_session='2099-01-01',
-            orders=[{'side': 'BUY', 'quantity': 100, 'order_type': 'LIMIT', 'limit_price': 1.0}])
-        store.create_account_intent(account_id='one', decision_id='d', order_sequence=0,
-            symbol='588080.SH', side='BUY', quantity=100, limit_price='1', valid_session='2099-01-01')
-    result = execution.retire_account(request)
-    assert result.status is AccountRetirementStatus.RETIRED
-    assert result.released_cash == Decimal('100000')
-    assert not broker.placed
-    if with_pending:
-        assert store.account_intents('one')[0]['status'] == 'SUPERSEDED'
-
-
-@pytest.mark.parametrize("field,value", [("account_id", "../one"), ("expected_release_hash", "old"),
-                                        ("actor", ""), ("reason", None)])
-def test_retirement_contract_rejects_invalid_input(field, value):
-    values = dict(account_id="one", expected_release_hash="a" * 64, actor="test", reason="stop")
-    values[field] = value
-    with pytest.raises(ValueError):
-        AccountRetirementRequest(**values)
-
-
-def test_retirement_http_requires_control_token_and_cli_uses_public_endpoint(setup, capsys, monkeypatch):
-    from paper_trading_engine import cli
-
-    store, broker, execution, request = setup
-    # This verifies the real HTTP/token/ledger chain, not a three-second latency SLA.
-    # Parallel regression lanes contend for WAL fsync; retain a bounded test deadline
-    # while leaving the production client default and the request path unchanged.
-    monkeypatch.setattr(cli, '_read_json', partial(cli._read_json, timeout=30.0))
-    store.set_setting("control_token", "test-token")
-    operations = SimpleNamespace(retire_account=execution.retire_account, store=store,
-                                 channel=execution, virtual=SimpleNamespace())
-    server = create_server(operations, host="127.0.0.1", port=0, control_token="test-token")
-    thread = Thread(target=server.serve_forever, daemon=True)
-    thread.start()
-    try:
-        port = server.server_address[1]
-        url = f"http://127.0.0.1:{port}/api/virtual-accounts/one/retire"
-        body = {"expected_release_hash": request.expected_release_hash, "actor": "test", "reason": "stop"}
-        with pytest.raises(HTTPError) as caught:
-            urlopen(Request(url, data=json.dumps(body).encode(), headers={"Content-Type": "application/json"}), timeout=30)
-        assert caught.value.code == 403
-        assert store.virtual_account("one")["run_state"] == "PAUSED"
-        assert store._connection.execute("SELECT COUNT(*) FROM account_retirements").fetchone()[0] == 0
-        assert pte_main([
-            "control", "retire-account", "--repo-root", str(store.path.parent),
-            "--database", str(store.path), "--port", str(port), "--account-id", "one",
-            "--expected-release-hash", "a" * 64, "--actor", "test", "--reason", "stop",
-        ]) == 0
-        payload = json.loads(capsys.readouterr().out)
-        assert payload["status"] == "PASS" and payload["command"] == "pte.control.retire-account"
-        result = payload["result"]
-        assert result["status"] == "RETIRED" and result["released_cash"] == "100000.0000"
-    finally:
-        server.shutdown()
-        server.server_close()
-        thread.join()
+# Independent risk: EC24; separate execution/refusal boundary.

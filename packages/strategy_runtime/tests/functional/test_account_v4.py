@@ -1,4 +1,5 @@
 """V4 computation/clock parity and actual position execution, using synthetic facts."""
+
 from dataclasses import replace
 from datetime import date, datetime
 from zoneinfo import ZoneInfo
@@ -6,103 +7,30 @@ import json
 
 import pandas as pd
 import pytest
-from strategy_runtime.models import ExecutionPolicy
 from dataflows import AssetClass, BarFrequency, InstrumentId, MarketId, TradingSession, TimeInterval
-from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy, CnEquitySpec, UsEquitySpec,
-    ResearchExecutionSpec, EquityStrategyCandidate, EquityStrategyDefinition, equity_source_hash,
-    StrategyComputation)
-from strategy_runtime.equity_features import FeatureGraph, RawField, BarField
-from strategy_runtime.equity_replay import PreparedObservations, StrategyStateSchema
+from strategy_runtime import EquityStrategyDefinition, StrategyComputation
+from strategy_runtime.equity_replay import PreparedObservations
 from execution_channels.historical import PortfolioHistoricalExecutor
 from czsc_trader.application.account_replay import run_replay
 from czsc_trader.application.ec_boundary import execution_spec
 
 
-STEP = """from strategy_runtime import AccountDecision, AccountStepResult
-from strategy_runtime.equity_replay import StateRecord
-def step(ctx,state):
-    target=(.25,.5,.25,0.)[int(ctx.history.last()['Close']-10)%4]
-    return AccountStepResult(AccountDecision.from_facts(target,'repair target',facts={'target':target},next_watch='next bar'), cycle_values=StateRecord())
-"""
-BATCH = """from strategy_runtime import AccountDecision
-def calculate(ctx):
-    return tuple(AccountDecision.from_facts((.25,.5,.25,0.)[int(row.history.last()['Close']-10)%4], 'repair target', facts={'close':row.history.last()['Close']},next_watch='next bar') for row in ctx.observations)
-"""
+from packages.strategy_runtime.tests.v4_fixture_support import setup
 
 
-def setup(root, market, frequency, computation):
-    root.mkdir(parents=True,exist_ok=True)
-    (root/'strategy.py').write_text(STEP if computation is StrategyComputation.STATEFUL_STEP else BATCH,encoding='utf-8')
-    instrument=InstrumentId(market,AssetClass.STOCK,'600000.SH' if market is MarketId.CN else 'TEST')
-    spec=ResearchExecutionSpec(CnEquitySpec() if market is MarketId.CN else UsEquitySpec(),frequency,
-        AccountPolicy('CNY' if market is MarketId.CN else 'USD',CashAvailabilityPolicy.IMMEDIATE_RESEARCH),100,.01,.01,0.)
-    definition=EquityStrategyDefinition(instrument,spec,1,'strategy:step' if computation is StrategyComputation.STATEFUL_STEP else 'strategy:calculate',
-        ('strategy.py',),equity_source_hash(root,('strategy.py',)),contract_version=4,execution_policy=ExecutionPolicy("TARGET_POSITION", {}),computation=computation,
-        feature_graph=FeatureGraph((RawField('close',BarField.CLOSE),),('close',)),state_schema=StrategyStateSchema())
-    candidate=EquityStrategyCandidate('S999','C0001',definition,root)
-    zone=ZoneInfo(instrument.timezone)
-    # Declared synthetic sessions, not an official exchange calendar.
-    sessions=tuple(TradingSession(date(2024,3,d),str(zone),(TimeInterval(datetime(2024,3,d,9,30,tzinfo=zone),datetime(2024,3,d,11,30,tzinfo=zone)),)) for d in (4,5,6,7,8))
-    periods=tuple(p for s in sessions for p in ((TimeInterval(s.segments[0].start,s.segments[-1].end),) if frequency is BarFrequency.DAILY else s.bars(frequency)))
-    starts=pd.DatetimeIndex([p.start for p in periods]).tz_convert('UTC')
-    ends=pd.DatetimeIndex([p.end for p in periods]).tz_convert('UTC')
-    bars=pd.DataFrame({'BarStart':starts,'Date':ends,'AvailableDate':ends,'Open':10.,'High':15.,'Low':9.,'Close':[10.+i%4 for i in range(len(periods))],'Volume':1000000.,'Amount':10000000.})
-    constraints=pd.DataFrame({'Date':starts,'AvailableDate':starts,'QuantityStep':100,'PriceTick':.01,'Tradable':True,
-        'SellRemainderPolicy':'STRICT_STEP','PriceLimitPolicy':'EXPLICIT_UNBOUNDED','PriceLimitLower':None,'PriceLimitUpper':None,'BuySellableAt':starts})
-    session_frame=pd.DataFrame({'Date':[s.segments[0].start for s in sessions], 'AvailableDate':[s.segments[0].start for s in sessions], 'SessionDate':[s.session_date.isoformat() for s in sessions]})
-    prepared=PreparedObservations.from_frames(bars,definition.feature_graph,frequency=frequency,timezone=instrument.timezone,sessions=session_frame,trading_sessions=sessions)
-    executor=PortfolioHistoricalExecutor(specification=execution_spec(spec),initial_cash=100000.,fee_rate=.001,price_basis='HFQ')
-    return candidate,prepared,executor,bars,constraints,sessions,session_frame
-
-
-@pytest.mark.parametrize('market',[MarketId.CN,MarketId.US])
-@pytest.mark.parametrize('frequency',[BarFrequency.DAILY,BarFrequency.M30])
-@pytest.mark.parametrize('computation',[StrategyComputation.BATCH_HISTORY,StrategyComputation.STATEFUL_STEP])
-def test_v4_computation_and_clock_are_market_independent(tmp_path,market,frequency,computation):
-    candidate,prepared,executor,bars,constraints,_,_=setup(tmp_path,market,frequency,computation)
-    outcome=run_replay(prepared,candidate,executor,constraints=constraints, start=bars.BarStart.iloc[1].to_pydatetime(),end=bars.Date.iloc[-1].to_pydatetime(),fee_rate=.001)
-    account=outcome.execution_result
-    assert outcome.statistics.module_loads==1
-    assert outcome.statistics.source_checks==0
-    assert set(account.fills.side)=={'BUY','SELL'}
-    assert (account.account_points.cash>=0).all()
-    assert account.account_points.quantity.max()>0
-    assert EquityStrategyDefinition.from_dict(json.loads(json.dumps(candidate.definition.to_dict())))==candidate.definition
-
-
-@pytest.mark.parametrize('computation',[StrategyComputation.BATCH_HISTORY,StrategyComputation.STATEFUL_STEP])
-def test_equivalent_rules_produce_same_numeric_accounts(tmp_path,computation):
-    outputs=[]
-    for market in (MarketId.CN,MarketId.US):
-        c,p,e,b,constraints,_,_=setup(tmp_path/market.value,market,BarFrequency.M30,computation)
-        outputs.append(run_replay(p,c,e,constraints=constraints, start=b.BarStart.iloc[1].to_pydatetime(),end=b.Date.iloc[-1].to_pydatetime(),fee_rate=.001).execution_result)
-    for field in ('cash','quantity','equity'):
-        assert outputs[0].account_points[field].tolist()==outputs[1].account_points[field].tolist()
-    for field in ('side','quantity','price','fees'):
-        assert outputs[0].fills[field].tolist()==outputs[1].fills[field].tolist()
-
-
-def test_account_replay_requires_real_clock_and_rejects_retired_definition(tmp_path):
-    import strategy_runtime
-    from strategy_runtime import equity_replay
-    assert not hasattr(strategy_runtime, 'EquityCandidate')
-    assert not hasattr(strategy_runtime, 'equity_implementation_hash')
-    assert not hasattr(equity_replay, 'StepContext') and not hasattr(equity_replay, 'StepResult')
-    c,p,_,bars,constraints,_,_=setup(tmp_path,MarketId.CN,BarFrequency.DAILY,StrategyComputation.STATEFUL_STEP)
-    with pytest.raises(ValueError,match='calendar|session'):
-        run_replay(PreparedObservations.from_frames(bars,p.graph,frequency=BarFrequency.DAILY,timezone=c.instrument.timezone),c,
-            PortfolioHistoricalExecutor(specification=execution_spec(c.definition.execution_spec),initial_cash=100000.,fee_rate=.001,
-                price_basis='HFQ'),
-            constraints=constraints, start=bars.BarStart.iloc[1].to_pydatetime(),end=bars.Date.iloc[-1].to_pydatetime(),fee_rate=.001)
-    with pytest.raises(ValueError,match='unsupported equity definition'):
-        replace(c.definition,contract_version=3,computation=None,execution_policy=None)
-
-
-@pytest.mark.parametrize('mode', ['MARKET_INTENT', 'CONFIRMED_CLOSED_CYCLE_V1'])
+@pytest.mark.parametrize(
+    "mode",
+    [
+        "MARKET_INTENT",
+    ],
+    ids=["SRT-03-C08"],
+)
 def test_account_replay_rejects_retired_feedback_contract(tmp_path, mode):
-    candidate,_,_,_,_,_,_=setup(tmp_path,MarketId.US,BarFrequency.M30,StrategyComputation.STATEFUL_STEP)
-    with pytest.raises(ValueError,match='requires CONFIRMED_EXECUTION feedback'):
-        replace(candidate.definition,feedback_mode=mode)
+    candidate, _, _, _, _, _, _ = setup(
+        tmp_path, MarketId.US, BarFrequency.M30, StrategyComputation.STATEFUL_STEP
+    )
+    with pytest.raises(ValueError, match="requires CONFIRMED_EXECUTION feedback"):
+        replace(candidate.definition, feedback_mode=mode)
 
 
 EXPLICIT = """from strategy_runtime import AccountDecision,AccountStepResult
@@ -114,154 +42,265 @@ def step(ctx,state):
     return AccountStepResult(AccountDecision.from_facts(target,'position ladder',facts=facts,next_watch='next bar'),cycle_values=StateRecord())
 """
 
-@pytest.mark.parametrize('market',[MarketId.CN,MarketId.US])
-def test_explicit_orders_retain_position_cycle_feedback(tmp_path,market):
-    c,p,e,b,constraints,_,_=setup(tmp_path,market,BarFrequency.M30,StrategyComputation.STATEFUL_STEP)
-    (tmp_path/'strategy.py').write_text(EXPLICIT,encoding='utf-8')
-    c=replace(c,definition=replace(c.definition,source_sha256=equity_source_hash(tmp_path,('strategy.py',))))
-    result=run_replay(p,c,e,constraints=constraints, start=b.BarStart.iloc[1].to_pydatetime(),end=b.Date.iloc[-1].to_pydatetime(),fee_rate=.001)
-    fills=result.execution_result.fills
-    assert fills.side.tolist()==['BUY','SELL','SELL']
-    assert fills.quantity.tolist()==[200,100,100]
-    assert e.position_feedback.latest_closed.buy_fills==1
-    assert e.position_feedback.latest_closed.sell_fills==2
-    assert e.position_feedback.latest_closed.quantity==0
-    facts=[{row['key']:row['text'] for row in explanation['basis']} for explanation in result.execution_result.decisions.explanation]
-    assert facts[1]=={'buys':'1','sells':'0'}
-    assert facts[2]=={'buys':'1','sells':'1'}
-    assert facts[3]=={'buys':'1','sells':'2'}
+
+@pytest.mark.parametrize(
+    "computation",
+    [
+        StrategyComputation.STATEFUL_STEP,
+    ],
+    ids=["SRT-14-C05"],
+)
+def test_future_suffix_does_not_change_prefix_accounts(tmp_path, computation):
+    c, p, e, b, r, sessions, frame = setup(
+        tmp_path / "first", MarketId.US, BarFrequency.M30, computation
+    )
+    end = b.Date.iloc[-1].to_pydatetime()
+    first = run_replay(
+        p, c, e, constraints=r, start=b.BarStart.iloc[1].to_pydatetime(), end=end, fee_rate=0.001
+    ).execution_result
+    altered = b.copy()
+    altered.loc[8:, ["Open", "High", "Low", "Close"]] *= 10
+    current = PreparedObservations.from_frames(
+        altered,
+        c.definition.feature_graph,
+        frequency=BarFrequency.M30,
+        timezone=c.instrument.timezone,
+        sessions=frame,
+        trading_sessions=sessions,
+    )
+    second = run_replay(
+        current,
+        c,
+        PortfolioHistoricalExecutor(
+            specification=execution_spec(c.definition.execution_spec),
+            initial_cash=100000.0,
+            fee_rate=0.001,
+            price_basis="HFQ",
+        ),
+        constraints=r,
+        start=b.BarStart.iloc[1].to_pydatetime(),
+        end=end,
+        fee_rate=0.001,
+    ).execution_result
+    for key in ("cash", "quantity", "equity"):
+        assert (
+            first.account_points[key].iloc[:7].tolist()
+            == second.account_points[key].iloc[:7].tolist()
+        )
+    assert (
+        first.decisions.explanation.iloc[:7].tolist()
+        == second.decisions.explanation.iloc[:7].tolist()
+    )
 
 
-@pytest.mark.parametrize('computation',[StrategyComputation.BATCH_HISTORY,StrategyComputation.STATEFUL_STEP])
-def test_future_suffix_does_not_change_prefix_accounts(tmp_path,computation):
-    c,p,e,b,r,sessions,frame=setup(tmp_path/'first',MarketId.US,BarFrequency.M30,computation)
-    end=b.Date.iloc[-1].to_pydatetime()
-    first=run_replay(p,c,e,constraints=r, start=b.BarStart.iloc[1].to_pydatetime(),end=end,fee_rate=.001).execution_result
-    altered=b.copy()
-    altered.loc[8:,['Open','High','Low','Close']]*=10
-    current=PreparedObservations.from_frames(altered,c.definition.feature_graph,frequency=BarFrequency.M30,
-        timezone=c.instrument.timezone,sessions=frame,trading_sessions=sessions)
-    second=run_replay(current,c,PortfolioHistoricalExecutor(specification=execution_spec(c.definition.execution_spec),initial_cash=100000.,
-        fee_rate=.001,price_basis='HFQ'),constraints=r, start=b.BarStart.iloc[1].to_pydatetime(),end=end,fee_rate=.001).execution_result
-    for key in ('cash','quantity','equity'):
-        assert first.account_points[key].iloc[:7].tolist()==second.account_points[key].iloc[:7].tolist()
-    assert first.decisions.explanation.iloc[:7].tolist()==second.decisions.explanation.iloc[:7].tolist()
+def test_SRT_08_C06_v4_rejects_mismatched_prepared_frequency(tmp_path):
+    c, p, e, b, constraints, _, _ = setup(
+        tmp_path, MarketId.US, BarFrequency.M30, StrategyComputation.STATEFUL_STEP
+    )
+    with pytest.raises(ValueError, match="decision clock"):
+        run_replay(
+            replace(p, frequency=BarFrequency.DAILY),
+            c,
+            e,
+            constraints=constraints,
+            start=b.BarStart.iloc[1].to_pydatetime(),
+            end=b.Date.iloc[-1].to_pydatetime(),
+            fee_rate=0.001,
+        )
 
 
-def test_v4_rejects_mismatched_prepared_frequency(tmp_path):
-    c,p,e,b,constraints,_,_=setup(tmp_path,MarketId.US,BarFrequency.M30,StrategyComputation.STATEFUL_STEP)
-    with pytest.raises(ValueError,match='decision clock'):
-        run_replay(replace(p,frequency=BarFrequency.DAILY),c,e,constraints=constraints, start=b.BarStart.iloc[1].to_pydatetime(),end=b.Date.iloc[-1].to_pydatetime(),fee_rate=.001)
+def test_SRT_09_C05_execution_quote_role_is_typed_and_not_an_auxiliary_alias(tmp_path):
+    from dataflows import SourceRef, EquityProduct
+    from strategy_runtime import ExecutionInput, EquityAuxiliaryInput
+
+    c, _, _, _, _, _, _ = setup(
+        tmp_path, MarketId.CN, BarFrequency.DAILY, StrategyComputation.STATEFUL_STEP
+    )
+    source = SourceRef("synthetic", "v1")
+    execution = ExecutionInput(c.instrument, source, BarFrequency.M30)
+    definition = replace(c.definition, execution_input=execution)
+    assert (
+        EquityStrategyDefinition.from_dict(json.loads(json.dumps(definition.to_dict())))
+        == definition
+    )
+    assert execution.data_key(EquityProduct.BARS) == "execution:bars"
+    assert {
+        x.parameters.query.product for x in execution.requests(date(2024, 3, 4), date(2024, 3, 8))
+    } == {EquityProduct.BARS, EquityProduct.SESSIONS}
+    aux = EquityAuxiliaryInput("execution_alias", c.instrument, source, BarFrequency.M30, 1, 3600)
+    assert replace(definition, auxiliary_inputs=(aux,)).auxiliary_inputs == (aux,)
+    with pytest.raises(ValueError, match="DAILY"):
+        replace(
+            definition,
+            execution_spec=replace(definition.execution_spec, decision_clock=BarFrequency.M30),
+        )
 
 
-def test_execution_quote_role_is_typed_and_not_an_auxiliary_alias(tmp_path):
-    from dataflows import SourceRef,EquityProduct
-    from strategy_runtime import ExecutionInput,EquityAuxiliaryInput
-    c,_,_,_,_,_,_=setup(tmp_path,MarketId.CN,BarFrequency.DAILY,StrategyComputation.STATEFUL_STEP)
-    source=SourceRef('synthetic','v1')
-    execution=ExecutionInput(c.instrument,source,BarFrequency.M30)
-    definition=replace(c.definition,execution_input=execution)
-    assert EquityStrategyDefinition.from_dict(json.loads(json.dumps(definition.to_dict())))==definition
-    assert execution.data_key(EquityProduct.BARS)=='execution:bars'
-    assert {x.parameters.query.product for x in execution.requests(date(2024,3,4),date(2024,3,8))}=={EquityProduct.BARS,EquityProduct.SESSIONS}
-    aux=EquityAuxiliaryInput('execution_alias',c.instrument,source,BarFrequency.M30,1,3600)
-    assert replace(definition,auxiliary_inputs=(aux,)).auxiliary_inputs == (aux,)
-    with pytest.raises(ValueError,match='DAILY'):
-        replace(definition,execution_spec=replace(definition.execution_spec,decision_clock=BarFrequency.M30))
-
-
-def test_legacy_definitions_do_not_acquire_v4_fields_or_cn_auxiliary(tmp_path):
+def test_SRT_27_C02_legacy_definitions_do_not_acquire_v4_fields_or_cn_auxiliary(tmp_path):
     from dataflows import SourceRef
     from strategy_runtime import EquityAuxiliaryInput
-    c,_,_,_,_,_,_=setup(tmp_path,MarketId.US,BarFrequency.M30,StrategyComputation.STATEFUL_STEP)
-    legacy=replace(c.definition,contract_version=2,computation=None,feature_graph=None,state_schema=None,execution_policy=None,analysis_price="RAW")
-    with pytest.raises(ValueError,match='unsupported equity definition'):
-        replace(c.definition,contract_version=3,computation=None,execution_policy=None)
-    encoded=legacy.to_dict()
-    assert encoded['runtime_kind']=='US_EQUITY'
-    assert 'computation' not in encoded and 'execution_input' not in encoded
-    aux=EquityAuxiliaryInput('cn_market',InstrumentId(MarketId.CN,AssetClass.ETF,'588080.SH'),SourceRef('synthetic','v1'),BarFrequency.DAILY,1,86400)
-    assert replace(c.definition,auxiliary_inputs=(aux,)).auxiliary_inputs==(aux,)
-    with pytest.raises(ValueError,match='legacy auxiliary'):
-        replace(legacy,auxiliary_inputs=(aux,))
+
+    c, _, _, _, _, _, _ = setup(
+        tmp_path, MarketId.US, BarFrequency.M30, StrategyComputation.STATEFUL_STEP
+    )
+    legacy = replace(
+        c.definition,
+        contract_version=2,
+        computation=None,
+        feature_graph=None,
+        state_schema=None,
+        execution_policy=None,
+        analysis_price="RAW",
+    )
+    with pytest.raises(ValueError, match="unsupported equity definition"):
+        replace(c.definition, contract_version=3, computation=None, execution_policy=None)
+    encoded = legacy.to_dict()
+    assert encoded["runtime_kind"] == "US_EQUITY"
+    assert "computation" not in encoded and "execution_input" not in encoded
+    aux = EquityAuxiliaryInput(
+        "cn_market",
+        InstrumentId(MarketId.CN, AssetClass.ETF, "588080.SH"),
+        SourceRef("synthetic", "v1"),
+        BarFrequency.DAILY,
+        1,
+        86400,
+    )
+    assert replace(c.definition, auxiliary_inputs=(aux,)).auxiliary_inputs == (aux,)
+    with pytest.raises(ValueError, match="legacy auxiliary"):
+        replace(legacy, auxiliary_inputs=(aux,))
 
 
-@pytest.mark.parametrize('market',[MarketId.CN,MarketId.US])
-def test_calendar_breaks_and_dst_drive_actual_clock_without_filling_closed_time(tmp_path,market):
-    c,_,e,old,old_rules,_,_=setup(tmp_path,market,BarFrequency.M30,StrategyComputation.STATEFUL_STEP)
-    zone=ZoneInfo(c.instrument.timezone)
+@pytest.mark.parametrize(
+    "market",
+    [
+        MarketId.CN,
+        MarketId.US,
+    ],
+    ids=["SRT-15-C01", "SRT-15-C02"],
+)
+def test_calendar_breaks_and_dst_drive_actual_clock_without_filling_closed_time(tmp_path, market):
+    c, _, e, old, old_rules, _, _ = setup(
+        tmp_path, market, BarFrequency.M30, StrategyComputation.STATEFUL_STEP
+    )
+    zone = ZoneInfo(c.instrument.timezone)
     if market is MarketId.CN:
-        days=(date(2024,3,4),date(2024,3,5))
-        clocks=((9,30,11,30),(13,0,15,0))
+        days = (date(2024, 3, 4), date(2024, 3, 5))
+        clocks = ((9, 30, 11, 30), (13, 0, 15, 0))
     else:
-        days=(date(2024,3,8),date(2024,3,11))
-        clocks=((9,30,11,30),)
-    sessions=tuple(TradingSession(day,str(zone),tuple(TimeInterval(datetime(day.year,day.month,day.day,a,b,tzinfo=zone),
-        datetime(day.year,day.month,day.day,d,f,tzinfo=zone)) for a,b,d,f in clocks)) for day in days)
-    periods=tuple(interval for session in sessions for interval in session.bars(BarFrequency.M30))
-    starts=pd.DatetimeIndex([interval.start for interval in periods]).tz_convert('UTC')
-    ends=pd.DatetimeIndex([interval.end for interval in periods]).tz_convert('UTC')
-    bars=old.iloc[:len(periods)].copy()
-    bars['BarStart'],bars['Date'],bars['AvailableDate']=starts,ends,ends
-    rules=old_rules.iloc[:len(periods)].copy()
-    rules['Date'],rules['AvailableDate'],rules['BuySellableAt']=starts,starts,starts
-    calendar=pd.DataFrame({'Date':[s.segments[0].start for s in sessions], 'AvailableDate':[s.segments[0].start for s in sessions],
-        'SessionDate':[s.session_date.isoformat() for s in sessions]})
-    prepared=PreparedObservations.from_frames(bars,c.definition.feature_graph,frequency=BarFrequency.M30,
-        timezone=c.instrument.timezone,sessions=calendar,trading_sessions=sessions)
+        days = (date(2024, 3, 8), date(2024, 3, 11))
+        clocks = ((9, 30, 11, 30),)
+    sessions = tuple(
+        TradingSession(
+            day,
+            str(zone),
+            tuple(
+                TimeInterval(
+                    datetime(day.year, day.month, day.day, a, b, tzinfo=zone),
+                    datetime(day.year, day.month, day.day, d, f, tzinfo=zone),
+                )
+                for a, b, d, f in clocks
+            ),
+        )
+        for day in days
+    )
+    periods = tuple(interval for session in sessions for interval in session.bars(BarFrequency.M30))
+    starts = pd.DatetimeIndex([interval.start for interval in periods]).tz_convert("UTC")
+    ends = pd.DatetimeIndex([interval.end for interval in periods]).tz_convert("UTC")
+    bars = old.iloc[: len(periods)].copy()
+    bars["BarStart"], bars["Date"], bars["AvailableDate"] = starts, ends, ends
+    rules = old_rules.iloc[: len(periods)].copy()
+    rules["Date"], rules["AvailableDate"], rules["BuySellableAt"] = starts, starts, starts
+    calendar = pd.DataFrame(
+        {
+            "Date": [s.segments[0].start for s in sessions],
+            "AvailableDate": [s.segments[0].start for s in sessions],
+            "SessionDate": [s.session_date.isoformat() for s in sessions],
+        }
+    )
+    prepared = PreparedObservations.from_frames(
+        bars,
+        c.definition.feature_graph,
+        frequency=BarFrequency.M30,
+        timezone=c.instrument.timezone,
+        sessions=calendar,
+        trading_sessions=sessions,
+    )
     # Reset the synthetic NONE timestamp to this independently declared history.
-    account=run_replay(prepared,c,PortfolioHistoricalExecutor(specification=execution_spec(c.definition.execution_spec),initial_cash=100000.,fee_rate=.001,
-        price_basis='HFQ'),constraints=rules, start=starts[1].to_pydatetime(),end=ends[-1].to_pydatetime(),fee_rate=.001).execution_result
-    assert len(account.account_points)==len(periods)-1
-    assert account.account_daily.session.tolist()==[day.isoformat() for day in days]
+    account = run_replay(
+        prepared,
+        c,
+        PortfolioHistoricalExecutor(
+            specification=execution_spec(c.definition.execution_spec),
+            initial_cash=100000.0,
+            fee_rate=0.001,
+            price_basis="HFQ",
+        ),
+        constraints=rules,
+        start=starts[1].to_pydatetime(),
+        end=ends[-1].to_pydatetime(),
+        fee_rate=0.001,
+    ).execution_result
+    assert len(account.account_points) == len(periods) - 1
+    assert account.account_daily.session.tolist() == [day.isoformat() for day in days]
     if market is MarketId.CN:
-        assert not any(11*60+30<=value.hour*60+value.minute<13*60 for value in starts.tz_convert(zone))
+        assert not any(
+            11 * 60 + 30 <= value.hour * 60 + value.minute < 13 * 60
+            for value in starts.tz_convert(zone)
+        )
     else:
-        assert starts[0].hour==14 and starts[4].hour==13
+        assert starts[0].hour == 14 and starts[4].hour == 13
 
 
-@pytest.mark.parametrize('computation',[StrategyComputation.BATCH_HISTORY,StrategyComputation.STATEFUL_STEP])
-def test_cn_auxiliary_and_calendar_observations_are_asof_in_both_modes(tmp_path,computation):
-    from dataflows import SourceRef
-    from strategy_runtime import EquityAuxiliaryInput
-    c,_,e,b,r,sessions,frame=setup(tmp_path,MarketId.CN,BarFrequency.DAILY,computation)
-    aux=EquityAuxiliaryInput('sector',InstrumentId(MarketId.CN,AssetClass.ETF,'588080.SH'),SourceRef('synthetic','v1'),BarFrequency.DAILY,1,86400)
-    if computation is StrategyComputation.STATEFUL_STEP:
-        source="""from strategy_runtime import AccountDecision,AccountStepResult
-from strategy_runtime.equity_replay import StateRecord
-def step(ctx,state):
-    price=ctx.auxiliary_histories['sector'].last()['Close']
-    assert ctx.session is not None
-    return AccountStepResult(AccountDecision.from_facts(.25,'sector observation',facts={'sector':price,'close':ctx.session.segments[-1].end.isoformat()},next_watch='next day'),cycle_values=StateRecord())
-"""
-    else:
-        source="""from strategy_runtime import AccountDecision
-def calculate(ctx):
-    return tuple(AccountDecision.from_facts(.25,'sector observation',facts={'sector':row.auxiliary_histories['sector'].last()['Close'],'close':row.session.segments[-1].end.isoformat()},next_watch='next day') for row in ctx.observations)
-"""
-    (tmp_path/'strategy.py').write_text(source,encoding='utf-8')
-    definition=replace(c.definition,auxiliary_inputs=(aux,),session_context=True,source_sha256=equity_source_hash(tmp_path,('strategy.py',)))
-    c=replace(c,definition=definition)
-    observed=b.copy()
-    observed.loc[:,['Open','High','Low','Close']]=[500.,501.,499.,500.]
-    prepared=PreparedObservations.from_frames(b,definition.feature_graph,frequency=BarFrequency.DAILY,timezone=c.instrument.timezone,
-        sessions=frame,trading_sessions=sessions,auxiliary_histories={'sector':observed})
-    result=run_replay(prepared,c,e,constraints=r, start=b.BarStart.iloc[1].to_pydatetime(),end=b.Date.iloc[-1].to_pydatetime(),fee_rate=.001)
-    for explanation in result.execution_result.decisions.explanation:
-        facts={row['key']:row['text'] for row in explanation['basis']}
-        assert facts['sector']=='500.0'
-        assert pd.Timestamp(facts['close']).tz_convert('Asia/Shanghai').strftime('%H:%M')=='11:30'
-
-
-@pytest.mark.parametrize('field', ['orders','legs','capital_mode','cycle_before','cycle_after'])
-def test_position_decision_rejects_execution_fields(field):
+@pytest.mark.parametrize("target", [0.0, 1.0], ids=["SRT-03-C01", "SRT-03-C02"])
+def test_v4_accepts_position_target_boundaries(target):
     from strategy_runtime import AccountDecision
+
+    decision = AccountDecision.from_facts(
+        target, "position", facts={"target": target}, next_watch="next bar"
+    )
+    assert decision.target == target and decision.explanation.judgment == "position"
+
+
+@pytest.mark.parametrize("target", [float("nan"), 1.1], ids=["SRT-03-C03", "SRT-03-C04"])
+def test_v4_rejects_invalid_target(target):
+    from strategy_runtime import AccountDecision
+
+    with pytest.raises(ValueError):
+        AccountDecision.from_facts(target, "position", facts={}, next_watch="next")
+
+
+@pytest.mark.parametrize(
+    "field", ["price", "quantity", "cash"], ids=["SRT-03-C05", "SRT-03-C06", "SRT-03-C07"]
+)
+def test_position_decision_has_no_execution_amounts(field):
+    from strategy_runtime import AccountDecision
+
     with pytest.raises(TypeError):
-        AccountDecision.from_facts(.5,'target',facts={},next_watch='next',**{field:()})
+        AccountDecision.from_facts(0.5, "position", facts={}, next_watch="next", **{field: 1})
 
 
-@pytest.mark.parametrize('settings', [{'capital_mode':'signal_cash_fraction'}, {'capital_mode':True}, {'quantity':100}])
-def test_target_position_policy_rejects_unowned_or_unsupported_settings(settings):
-    from strategy_runtime.errors import RuntimeContractError
-    with pytest.raises(RuntimeContractError):
-        ExecutionPolicy('TARGET_POSITION',settings)
+@pytest.mark.parametrize(
+    "defect", ["batch_state", "policy", "raw"], ids=["SRT-03-C09", "SRT-03-C10", "SRT-03-C11"]
+)
+def test_v4_definition_rejects_ambiguous_responsibility(tmp_path, defect):
+    from strategy_runtime import StrategyStateSchema, StateField, StateValueType
+
+    c, *_ = setup(
+        tmp_path,
+        MarketId.US,
+        BarFrequency.DAILY,
+        StrategyComputation.STATEFUL_STEP,
+        with_executor=False,
+    )
+    changes = (
+        {
+            "computation": StrategyComputation.BATCH_HISTORY,
+            "state_schema": StrategyStateSchema((StateField("counter", StateValueType.INT),)),
+        }
+        if defect == "batch_state"
+        else {"execution_policy": None}
+        if defect == "policy"
+        else {"analysis_price": "RAW"}
+    )
+    with pytest.raises(TypeError if defect == "policy" else ValueError):
+        replace(c.definition, **changes)

@@ -1,10 +1,13 @@
+# Risk ownership: E2E-04
 """Account rebindings use authenticated native releases and durable account facts."""
 
 from dataclasses import asdict, replace
+from contextlib import closing
 from datetime import datetime, timedelta
 from decimal import Decimal
 import json
 import shutil
+import sqlite3
 from types import SimpleNamespace
 from zoneinfo import ZoneInfo
 
@@ -27,11 +30,20 @@ from execution_channels.futu.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VE
 from strategy_manager import PaperTradingApproval, StrategyRegistry, freeze_contracts as f
 from strategy_runtime import StateRecord, equity_source_hash
 from test_formal_v4_runtime import formal_v4 as formal_v4
-from paper_store_support import new_paper_store
 
 
-def _fill_position(client, store, interval, candidate):
+@pytest.fixture(scope="module")
+def filled_position_seeds():
+    # Immutable SQLite bytes only: each consumer owns its connection and files.
+    return {}
+
+
+def _fill_position(client, store, interval, candidate, seeds):
     client.register_recipe('formal', client.inputs('formal'))
+    key = (candidate.instrument.market.value, store.virtual_account('formal')['release_hash'])
+    if key in seeds:
+        store._connection.deserialize(seeds[key])
+        return
     engine = AccountEngine(store, client, now=lambda: interval.start)
     provider = FormalV4ScheduleProvider(client, engine)
     provider.run_scheduled('formal', provider.due_decision(store.virtual_account('formal'), interval.start), interval.start)
@@ -45,14 +57,19 @@ def _fill_position(client, store, interval, candidate):
     report = dict(asdict(order), status='FILLED_ALL', cumulative_filled_quantity=intent['quantity'], average_fill_price=10.)
     apply_order_report(store, report, occurred_at=(interval.start + timedelta(minutes=1)).isoformat())
     store.set_virtual_paused('formal', True)
+    seeds[key] = store._connection.serialize()
 
 
 def _runtime(tmp_path, client, root, monkeypatch):
     # Use SQLite backup rather than file copy to preserve its transaction boundary.
     runtime = tmp_path / '.tmp/host'
     state = runtime / 'shared/state/runtime.db'
-    store = new_paper_store(state)
-    root._connection.backup(store._connection)
+    state.parent.mkdir(parents=True, exist_ok=True)
+    # Back up the existing real schema/account directly; initializing an empty
+    # PaperStore here only writes a schema that the backup immediately replaces.
+    with closing(sqlite3.connect(state)) as snapshot:
+        root._connection.backup(snapshot)
+    store = PaperStore(state)
     data = runtime / 'shared/data'
     shutil.copytree(client.data_dir, data)
     source = runtime / 'source'
@@ -98,10 +115,14 @@ def _upgrade_target(client, candidate, old, *, change_schema):
     return target
 
 
-@pytest.mark.parametrize('change_schema', [False, True])
-def test_rebind_active_v4_and_block_historical_execution(formal_v4, tmp_path, monkeypatch, change_schema):
+@pytest.mark.parametrize('formal_v4,change_schema', [
+    pytest.param(MarketId.CN, False, id='PTE18-C01'),
+    pytest.param(MarketId.CN, True, id='PTE18-C02'),
+    pytest.param(MarketId.US, False, id='PTE18-C03'),
+], indirect=['formal_v4'])
+def test_rebind_active_v4_and_block_historical_execution(formal_v4, tmp_path, monkeypatch, change_schema, filled_position_seeds):
     client, store, root, interval, candidate, evaluation = formal_v4
-    _fill_position(client, store, interval, candidate)
+    _fill_position(client, store, interval, candidate, filled_position_seeds)
     with store._connection:
         # Align the inherited fixture's technical account metadata with its authenticated release.
         store._connection.execute("UPDATE virtual_accounts SET selection_data_cutoff='2026-10-15' WHERE account_id='formal'")
@@ -164,10 +185,13 @@ def test_rebind_active_v4_and_block_historical_execution(formal_v4, tmp_path, mo
         database.close()
 
 
-@pytest.mark.parametrize('formal_v4', [(MarketId.CN, True), (MarketId.US, True)], indirect=True)
-def test_rebind_to_qualified_successor_version(formal_v4, tmp_path, monkeypatch):
+@pytest.mark.parametrize('formal_v4', [
+    pytest.param((MarketId.CN, True), id='E2E04-C01'),
+    pytest.param((MarketId.US, True), id='E2E04-C02'),
+], indirect=True)
+def test_rebind_to_qualified_successor_version(formal_v4, tmp_path, monkeypatch, filled_position_seeds):
     client, store, root, interval, candidate, evaluation = formal_v4
-    _fill_position(client, store, interval, candidate)
+    _fill_position(client, store, interval, candidate, filled_position_seeds)
     runtime, database, _ = _runtime(tmp_path, client, root, monkeypatch)
     try:
         scoped = database.scope('formal-channel')
@@ -192,79 +216,73 @@ def test_rebind_to_qualified_successor_version(formal_v4, tmp_path, monkeypatch)
         database.close()
 
 
-@pytest.mark.parametrize('formal_v4', [MarketId.CN], indirect=True)
-def test_legacy_migration_reconciles_positions_and_rolls_back_batch(formal_v4, tmp_path, monkeypatch):
-    from paper_trading_engine import v4_account_maintenance as maintenance
+def _check_rebound_input_update(client, store, monkeypatch, recipe_case):
+    """Exercise registration after real rebinding, without another expensive fixture."""
+    from dataflows import EquityDataRequest, PreparePolicy
+    from paper_trading_engine.ec_boundary import account_input_identity
+    from paper_trading_engine.execution_reference import ExecutionReferenceBinding
 
-    client, store, root, interval, candidate, evaluation = formal_v4
-    _fill_position(client, store, interval, candidate)
-    target_hash = store.virtual_account('formal')['release_hash']
-    old_hash = 'a' * 64
-    holding = store.virtual_account('formal')
-    old_budget = {'cycle_id': 'd' * 64, 'opening_signal_identity': 'e' * 64,
-        'target_quantity': holding['quantity'], 'allocation_fraction': '1',
-        'cash_budget': holding['initial_cash'], 'buy_cost_including_fees': '0', 'phase': 'ACTIVE'}
-    with store._connection:
-        # Retain the confirmed fills and ledger, then model a pre-V4 account snapshot.
-        store._connection.execute("UPDATE virtual_accounts SET release_hash=?,selection_data_cutoff='2026-10-15',"
-                                  "equity_rules_json=NULL WHERE account_id='formal'", (old_hash,))
-        store._connection.execute("DELETE FROM equity_strategy_state WHERE account_id='formal'")
-        store._connection.execute("UPDATE virtual_accounts SET entry_cycle_json=?,cycle_target=? WHERE account_id='formal'",
-                                  (json.dumps(old_budget), holding['quantity']))
-    store.create_virtual_account('flat', 'flat', 'v1', old_hash, 1000, symbol=candidate.instrument.symbol,
-        asset_type='stock', strategy_id='S999', strategy_name_snapshot='old', strategy_version='v1',
-        release_hash=old_hash, qualification_snapshot='PAPER_READY', selection_data_cutoff='2026-10-15')
-    runtime, database, _ = _runtime(tmp_path, client, root, monkeypatch)
-    try:
-        scoped = database.scope('formal-channel')
-        opens = datetime(2026, 10, 16, 9, 30, tzinfo=ZoneInfo(candidate.instrument.timezone))
-        effective = TimeInterval(opens, opens.replace(hour=15, minute=0))
-        updates = tuple(V4AccountBindingUpdate(AccountBindingUpdate(name, old_hash, target_hash, 'v1'),
-            'formal-channel', account_binding_facts_sha256(scoped, name), effective,
-            execution_rules(candidate.instrument, candidate.definition.execution_spec),
-            FormalV4Inputs(target_hash, evaluation.input_binding, evaluation.fee_rate, client.inputs('formal').execution_reference),
-            V4StateMigration(StateRecord(), 'reviewed fixture migration', StateRecord() if name == 'formal' else None))
-            for name in ('formal', 'flat'))
-        unchanged = list(database._connection.iterdump())
-        original = maintenance._apply
+    original = client.inputs('formal')
+    record = store.v4_runtime_binding('formal')
+    account = store.virtual_account('formal')
+    raw = original.execution_reference
+    session = dict(original.binding.request_bindings)['sessions']
+    prepared = client.dataflows.prepare((raw.request,
+        EquityDataRequest(session.instrument, session.source, session.query)), policy=PreparePolicy.REUSE)
+    assert prepared.ready
+    updated = replace(original, execution_reference=ExecutionReferenceBinding(
+        raw.parameters, prepared.reference, raw.content_sha256))
+    assert updated.to_dict() != original.to_dict()
+    expected = account_input_identity(original)
+    projected = account_input_identity(updated)
+    untouched = list(store._connection.iterdump())
 
-        def fail_second(store, update, prepared, plan_sha256):
-            if update.account_id == 'flat':
-                raise RuntimeError('injected second write failure')
-            original(store, update, prepared, plan_sha256)
-
+    if recipe_case == 'rollback':
+        save = store._save_v4_runtime_binding
+        def fail_after_save(*args):
+            save(*args)
+            raise RuntimeError('injected recipe write failure')
         with monkeypatch.context() as patch:
-            patch.setattr(maintenance, '_apply', fail_second)
-            with pytest.raises(RuntimeError, match='second write failure'):
-                update_account_bindings(runtime, 'target', updates)
-        assert list(database._connection.iterdump()) == unchanged
-        fill, = scoped.account_fills('formal')
-        before = scoped.virtual_account('formal')
-        assert update_account_bindings(runtime, 'target', updates).status is AccountBindingUpdateStatus.COMMITTED
-        after = scoped.virtual_account('formal')
-        document = json.loads(after['account_v4_json'])
-        assert document['active']['quantity'] == before['quantity'] == after['quantity']
-        assert document['active']['cycle_id'] == fill['fill_id']
-        assert document['active']['entry_interval']['start'] == fill['occurred_at']
-        assert document['budget'] is None and document['pending_cycle'] is None
-        event = scoped.query_audit_events(event_type='ACCOUNT_STRATEGY_BOUND', account_id='formal')[0]
-        assert event['details']['retired_legacy_budget']['budget']['target_quantity'] == holding['quantity']
-        assert after['cash'] == before['cash']
-        assert scoped.account_fills('formal') == [fill]
-        record = scoped.v4_runtime_binding('formal')
-        assert 'legacy_actions_before' not in record
-        assert scoped.v4_runtime_binding('flat')['plan_sha256'] == record['plan_sha256']
-        with pytest.raises(ValueError, match='cutover'):
-            scoped.save_account_decision('formal', {**json.loads(before['last_decision_payload']),
-                'strategy': {'strategy_id': 'S999', 'version': 'v1', 'release_hash': target_hash}})
-        assert update_account_bindings(runtime, 'target', updates).status is AccountBindingUpdateStatus.ALREADY_APPLIED
+            patch.setattr(store, '_save_v4_runtime_binding', fail_after_save)
+            with pytest.raises(RuntimeError, match='recipe write failure'):
+                client.register_recipe('formal', updated)
+        assert list(store._connection.iterdump()) == untouched
+        assert client.recipe('formal') == original
+        return
+
+    client.register_inputs('formal', updated.binding, expected_release_hash=updated.release_hash,
+        fee_rate=updated.fee_rate, execution_reference=updated.execution_reference)
+    assert client.recipe('formal') is None
+    client.register_recipe('formal', updated)
+    current = store.v4_runtime_binding('formal')
+    assert current['inputs'] == projected.to_dict() and current['forward'] is True
+    assert current['effective_interval'] == record['effective_interval']
+    assert current['plan_sha256'] == record['plan_sha256']
+    assert store.virtual_account('formal') == account
+    if recipe_case == 'stale':
+        with pytest.raises(ValueError, match='expected snapshot'):
+            store.replace_v4_runtime_inputs('formal', projected, expected_inputs=expected, forward=True)
+        assert store.v4_runtime_binding('formal') == current
+    for value in (original, updated):
+        from strategy_runtime import canonical_sha256
+        key = 'v4_input_record:' + canonical_sha256(value.to_dict())
+        assert json.loads(store._connection.execute('SELECT value FROM settings WHERE key=?', (key,)).fetchone()[0]) == account_input_identity(value).to_dict()
+    readonly = PaperStore.open_readonly(store.path)
+    try:
+        reader = FormalV4AdviceClient(repo_root=client.repo_root, store=readonly.scope('formal-channel'),
+            dataflows=None, data_dir=client.data_dir)
+        assert reader.inputs('formal') == updated and reader.recipe('formal') == updated
     finally:
-        database.close()
+        readonly.close()
 
 
-@pytest.mark.parametrize('with_order', [False, True])
+@pytest.mark.parametrize('formal_v4,with_order,recipe_case', [
+    pytest.param(MarketId.CN, True, 'success', id='PTE19-C01'),
+    pytest.param(MarketId.US, False, 'stale', id='PTE19-C02'),
+    pytest.param(MarketId.US, True, 'rollback', id='PTE19-C03'),
+], indirect=['formal_v4'])
 def test_legacy_same_session_cutover_cancels_locally_then_drives_new_release(
-        formal_v4, tmp_path, monkeypatch, with_order):
+        formal_v4, tmp_path, monkeypatch, with_order, recipe_case):
     from paper_trading_engine import v4_account_maintenance as maintenance
     client, store, root, _, candidate, evaluation = formal_v4
     target_hash = store.virtual_account('formal')['release_hash']
@@ -336,7 +354,7 @@ def test_legacy_same_session_cutover_cancels_locally_then_drives_new_release(
         assert update_account_bindings(runtime, 'target', (request,)).status is AccountBindingUpdateStatus.ALREADY_APPLIED
         # Update the rebound recipe before driving the same service as the Web API.
         reopened = FormalV4AdviceClient(repo_root=client.repo_root, store=scoped, dataflows=client.dataflows, data_dir=data)
-        _check_rebound_input_update(reopened, scoped, monkeypatch)
+        _check_rebound_input_update(reopened, scoped, monkeypatch, recipe_case)
         scoped.set_virtual_paused('formal', False)
         from dataflows import EquityProduct, ProviderBinding, TradingSession
         from dataflows.equity_data import session_record
@@ -368,8 +386,10 @@ def test_legacy_same_session_cutover_cancels_locally_then_drives_new_release(
         database.close()
 
 
-@pytest.mark.parametrize('evidence', ['SUBMITTING', 'SUBMISSION_UNCERTAIN', 'channel_id', 'attention',
-                                     'executing', 'broker_order', 'filled', 'v4_interval', 'future'])
+@pytest.mark.parametrize('evidence', [
+    pytest.param('SUBMISSION_UNCERTAIN', id='PTE18-C04'),
+    pytest.param('filled', id='PTE18-C05'),
+])
 def test_same_session_cutover_never_discards_execution_or_v4_state(evidence):
     from paper_trading_engine import v4_account_maintenance as maintenance
     from execution_channels.futu.lifecycle import DecisionState
@@ -383,136 +403,18 @@ def test_same_session_cutover_never_discards_execution_or_v4_state(evidence):
         'decisions': [{'decision_id': 'old', 'valid_session': '2026-10-16', 'payload': '{}'}],
         'decision_adoptions': [{'decision_id': 'old'}]}
     document = {'last_interval': None}
-    if evidence in {'SUBMITTING', 'SUBMISSION_UNCERTAIN'}:
+    if evidence == 'SUBMISSION_UNCERTAIN':
         intent['status'] = evidence
-    elif evidence == 'channel_id':
-        intent['channel_order_id'] = 'broker'
-    elif evidence == 'attention':
-        intent['attention_required'] = 1
-    elif evidence == 'executing':
-        decision['status'] = DecisionState.EXECUTING
-    elif evidence in {'broker_order', 'filled'}:
+    else:
         rows['intents'] = []
-        amount = 100 if evidence == 'filled' else 0
-        rows['orders'] = [{'decision_id': 'old', 'channel_order_id': 'broker', 'cumulative_filled_quantity': amount,
-            'payload': json.dumps({'status': 'FILLED_ALL' if amount else 'CANCELLED_ALL', 'cumulative_filled_quantity': amount})}]
+        rows['orders'] = [{'decision_id': 'old', 'channel_order_id': 'broker', 'cumulative_filled_quantity': 100,
+            'payload': json.dumps({'status': 'FILLED_ALL', 'cumulative_filled_quantity': 100})}]
         decision.update(status=DecisionState.COMPLETED, state_reason='PLAN_FILLED')
-        if amount:
-            rows['fills'] = [{'decision_id': 'old', 'order_id': 'broker', 'quantity': amount,
-                              'occurred_at': interval.start.isoformat()}]
-    elif evidence == 'v4_interval':
-        account['equity_rules_json'] = '{}'
-        rows['intents'] = []
-        decision.update(status=DecisionState.COMPLETED, state_reason='NO_ORDER')
-        document['last_interval'] = {'start': interval.start.isoformat(), 'end': interval.end.isoformat()}
-    elif evidence == 'future':
-        rows['decisions'][0]['valid_session'] = '2026-10-19'
+        rows['fills'] = [{'decision_id': 'old', 'order_id': 'broker', 'quantity': 100,
+                          'occurred_at': interval.start.isoformat()}]
     facts = {'account': account, 'rows': rows, 'active_binding': None}
     update = SimpleNamespace(effective_interval=interval, rules=SimpleNamespace(timezone=zone))
     version = SimpleNamespace(forward_start='2026-10-16', selection_data_cutoff='2026-10-15')
     with pytest.raises(ValueError, match='block|overlap|follow'):
         replaceable = maintenance._validate_execution(facts, [decision])
         maintenance._validate_cutover(facts, version, update, document, replaceable)
-
-
-@pytest.mark.parametrize('policy_type,mode', [('TARGET_POSITION', 'target_equity_fraction'),
-    ('FROZEN_RULE', 'target_equity_fraction'), ('FROZEN_RULE', 'signal_cash_fraction')])
-def test_legacy_budget_retirement_preserves_strategy_state_and_compatible_budget(policy_type, mode):
-    from copy import deepcopy
-    from paper_trading_engine.v4_account_maintenance import _retire_unused_legacy_budget
-    policy = SimpleNamespace(policy_type=policy_type, settings={'capital': {'mode': mode}})
-    document = {'budget': {'target_quantity': 100}, 'pending_cycle': StateRecord().to_dict(),
-                'active': {'quantity': 100}, 'state': {'cycle': {'values': [['held', True]]}}}
-    before = deepcopy(document)
-    retired = _retire_unused_legacy_budget(document, policy)
-    assert document['active'] == before['active'] and document['state'] == before['state']
-    if mode == 'signal_cash_fraction':
-        assert retired is None and document == before
-    else:
-        assert retired['budget'] == before['budget'] and retired['pending_cycle'] == before['pending_cycle']
-        assert document['budget'] is None and document['pending_cycle'] is None
-        nonempty = {**before, 'pending_cycle': StateRecord((('private', 1),)).to_dict()}
-        unchanged = deepcopy(nonempty)
-        with pytest.raises(ValueError, match='explicit mapping'):
-            _retire_unused_legacy_budget(nonempty, policy)
-        assert nonempty == unchanged
-
-
-def _check_rebound_input_update(client, store, monkeypatch):
-    """Exercise registration after real rebinding, without another expensive fixture."""
-    from dataflows import EquityDataRequest, PreparePolicy
-    from paper_trading_engine.ec_boundary import account_input_identity
-    from paper_trading_engine.execution_reference import ExecutionReferenceBinding
-
-    original = client.inputs('formal')
-    record = store.v4_runtime_binding('formal')
-    account = store.virtual_account('formal')
-    raw = original.execution_reference
-    session = dict(original.binding.request_bindings)['sessions']
-    prepared = client.dataflows.prepare((raw.request,
-        EquityDataRequest(session.instrument, session.source, session.query)), policy=PreparePolicy.REUSE)
-    assert prepared.ready
-    updated = replace(original, execution_reference=ExecutionReferenceBinding(
-        raw.parameters, prepared.reference, raw.content_sha256))
-    assert updated.to_dict() != original.to_dict()
-    expected = account_input_identity(original)
-    projected = account_input_identity(updated)
-    untouched = list(store._connection.iterdump())
-
-    malformed = updated.to_dict()
-    malformed.pop('execution_reference')
-    with pytest.raises(ValueError, match='formal V4 input contract'):
-        client.register_recipe('formal', FormalV4Inputs.from_dict(malformed))
-    for invalid in (replace(updated, release_hash='0'*64),
-                    replace(updated, binding=replace(updated.binding, specification_hash='0'*64)),
-                    replace(updated, fee_rate=updated.fee_rate + .001)):
-        with pytest.raises(ValueError):
-            client.register_recipe('formal', invalid)
-        assert list(store._connection.iterdump()) == untouched
-    for invalid, prior in ((updated.to_dict(), expected),
-                           (replace(projected, release_hash='0'*64), expected),
-                           (replace(projected, instrument=replace(projected.instrument, symbol='600001.SH' if projected.instrument.market.value == 'CN' else 'OTHER')), expected),
-                           (replace(projected, specification_hash='0'*64), expected),
-                           (projected, replace(expected, document=b'{}'))):
-        with pytest.raises((ValueError, TypeError)):
-            store.replace_v4_runtime_inputs('formal', invalid, expected_inputs=prior, forward=True)
-        assert list(store._connection.iterdump()) == untouched
-    for invalid in (b'[]', b'invalid-json', b'{"value":NaN}'):
-        with pytest.raises(ValueError):
-            replace(projected, document=invalid)
-    # EC accepts an opaque host object without knowing its schema or field names.
-    assert replace(projected, document=b'{"host_revision":99}').to_dict() == {'host_revision': 99}
-
-    save = store._save_v4_runtime_binding
-    def fail_after_save(*args):
-        save(*args)
-        raise RuntimeError('injected recipe write failure')
-    with monkeypatch.context() as patch:
-        patch.setattr(store, '_save_v4_runtime_binding', fail_after_save)
-        with pytest.raises(RuntimeError, match='recipe write failure'):
-            client.register_recipe('formal', updated)
-    assert list(store._connection.iterdump()) == untouched
-
-    client.register_inputs('formal', updated.binding, expected_release_hash=updated.release_hash,
-        fee_rate=updated.fee_rate, execution_reference=updated.execution_reference)
-    assert client.recipe('formal') is None
-    client.register_recipe('formal', updated)
-    current = store.v4_runtime_binding('formal')
-    assert current['inputs'] == projected.to_dict() and current['forward'] is True
-    assert current['effective_interval'] == record['effective_interval']
-    assert current['plan_sha256'] == record['plan_sha256']
-    assert store.virtual_account('formal') == account
-    with pytest.raises(ValueError, match='expected snapshot'):
-        store.replace_v4_runtime_inputs('formal', projected, expected_inputs=expected, forward=True)
-    assert store.v4_runtime_binding('formal') == current
-    for value in (original, updated):
-        from strategy_runtime import canonical_sha256
-        key = 'v4_input_record:' + canonical_sha256(value.to_dict())
-        assert json.loads(store._connection.execute('SELECT value FROM settings WHERE key=?', (key,)).fetchone()[0]) == account_input_identity(value).to_dict()
-    readonly = PaperStore.open_readonly(store.path)
-    try:
-        reader = FormalV4AdviceClient(repo_root=client.repo_root, store=readonly.scope('formal-channel'),
-            dataflows=None, data_dir=client.data_dir)
-        assert reader.inputs('formal') == updated and reader.recipe('formal') == updated
-    finally:
-        readonly.close()

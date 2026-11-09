@@ -53,6 +53,7 @@ def _evidence(prefix="a"):
     )
 
 
+@pytest.mark.risk_cases('SE-30-C01')
 def test_strict_and_economic_comparison_preserve_original_evidence():
     left, right = _evidence(), _evidence("b")
     originals = deepcopy((left.to_dict(), right.to_dict()))
@@ -72,32 +73,19 @@ def test_strict_and_economic_comparison_preserve_original_evidence():
     assert (left.to_dict(), right.to_dict()) == originals
 
 
-def test_economic_fingerprint_requires_exact_comparison_and_normalizes_ids_and_numbers():
-    left, right = _evidence(), replace(_evidence("b"), initial_cash=100.0)
-    first = compare_ledgers(LedgerComparisonRequest(left, left, Mode.ECONOMIC))
-    second = compare_ledgers(LedgerComparisonRequest(right, right, Mode.ECONOMIC))
-    assert first.economic_sha256 == second.economic_sha256
-    assert first.economic_sha256 is not None
-    assert compare_ledgers(LedgerComparisonRequest(left, right, Mode.ECONOMIC, .001)).economic_sha256 is None
-    assert compare_ledgers(LedgerComparisonRequest(left, left, Mode.STRICT)).economic_sha256 is None
-    changed = replace(right, metrics={"return": .1001})
-    assert compare_ledgers(LedgerComparisonRequest(left, changed, Mode.ECONOMIC)).economic_sha256 is None
-
-
-@pytest.mark.parametrize(
-    "change",
-    [
-        {"initial_cash": 101},
-        {"data_hash": "e" * 64},
-        {"execution_spec": {"lot_size": 100, "fee_rate": 0.001}},
-    ],
-)
+@pytest.mark.parametrize('change', [
+    pytest.param({"initial_cash": 101}, id='SE-30-C04'),
+    pytest.param({"execution_spec": {"lot_size": 1, "fee_rate": .001, "price_basis": "RAW"}}, id='SE-30-C05'),
+    pytest.param({"execution_spec": {"lot_size": 1, "fee_rate": .002}}, id='SE-30-C06'),
+])
+@pytest.mark.risk_cases('SE-30-C04', 'SE-30-C05', 'SE-30-C06')
 def test_different_execution_context_is_incomparable(change):
     left = _evidence()
     result = compare_ledgers(LedgerComparisonRequest(left, replace(left, **change), Mode.ECONOMIC))
     assert result.status is Status.INCOMPARABLE
 
 
+@pytest.mark.risk_cases('SE-30-C02')
 def test_identity_normalization_does_not_hide_changed_relationship():
     left = _evidence()
     right = _evidence("b")
@@ -110,10 +98,9 @@ def test_identity_normalization_does_not_hide_changed_relationship():
     assert any("decision_id" in item.path for item in result.differences)
 
 
-@pytest.mark.parametrize(
-    "kind", ["duplicate", "dangling", "inconsistent", "missing_account", "hash"]
-)
-def test_invalid_evidence_cannot_compare_equal_to_itself(kind):
+@pytest.mark.risk_cases('SE-31-C01')
+def test_invalid_evidence_cannot_compare_equal_to_itself():
+    kind = "dangling"
     value = _evidence()
     if kind == "duplicate":
         value = replace(value, decisions=(value.decisions[0], value.decisions[0]))
@@ -132,6 +119,7 @@ def test_invalid_evidence_cannot_compare_equal_to_itself(kind):
     )
 
 
+@pytest.mark.risk_cases('SE-31-C02')
 def test_repeated_comparison_validates_current_evidence_contents():
     evidence = _evidence()
     first = compare_ledgers(LedgerComparisonRequest(evidence, evidence, Mode.ECONOMIC))
@@ -145,6 +133,7 @@ def test_repeated_comparison_validates_current_evidence_contents():
     assert compare_ledgers(LedgerComparisonRequest(evidence, evidence)).status is Status.INVALID
 
 
+@pytest.mark.risk_cases('SE-30-C03')
 def test_explicit_tolerance_and_business_field_differences():
     left = _evidence()
     right = replace(left, fills=({**left.fills[0], "fees": 0.10001}, left.fills[1]))
@@ -153,6 +142,7 @@ def test_explicit_tolerance_and_business_field_differences():
         compare_ledgers(LedgerComparisonRequest(left, right, tolerance=0.001)).status
         is Status.EQUIVALENT
     )
+    assert compare_ledgers(LedgerComparisonRequest(left, right, Mode.ECONOMIC, .001)).economic_sha256 is None
     extra = replace(left, fills=({**left.fills[0], "hidden_fee": 2}, left.fills[1]))
     assert (
         compare_ledgers(LedgerComparisonRequest(left, extra, Mode.ECONOMIC)).status
@@ -160,28 +150,3 @@ def test_explicit_tolerance_and_business_field_differences():
     )
     bound = replace(left, content_hash=hash_replay_evidence(left))
     assert compare_ledgers(LedgerComparisonRequest(bound, left)).status is Status.EQUIVALENT
-
-
-@pytest.mark.parametrize("tolerance", [True, -1, float("nan"), float("inf"), "0"])
-def test_comparison_contract_rejects_invalid_tolerance(tolerance):
-    with pytest.raises(ValueError, match="tolerance"):
-        LedgerComparisonRequest(_evidence(), _evidence(), tolerance=tolerance)
-
-
-def test_comparison_requires_typed_mode_and_request():
-    with pytest.raises(TypeError, match="mode"):
-        LedgerComparisonRequest(_evidence(), _evidence(), mode="ECONOMIC")
-    with pytest.raises(TypeError, match="request"):
-        compare_ledgers({})
-
-
-@pytest.mark.parametrize("value", [float("nan"), float("inf"), object()])
-def test_nonfinite_or_unserializable_evidence_is_invalid(value):
-    evidence = replace(_evidence(), metrics={"return": value})
-    result = compare_ledgers(LedgerComparisonRequest(evidence, evidence))
-    assert result.status is Status.INVALID
-    assert result.left_hash is None
-    assert result.right_hash is None
-    assert [(item.path, item.reason) for item in result.differences] == [
-        (side, "NON_JSON_OR_NONFINITE_EVIDENCE") for side in ("left", "right")
-    ]

@@ -1,3 +1,4 @@
+# Risk ownership: TDR-20
 """Inspection contract boundaries and assertions shared by the real US closure."""
 from dataclasses import replace
 from datetime import date, datetime, timezone
@@ -37,7 +38,7 @@ def seed_registered_frozen_candidate(research,evaluation):
     StrategyRegistry(research.repository.research_registry_root).register_candidate(record,evidence_root=root)
 
 
-def test_equity_inspection_requires_complete_auxiliary_identity():
+def test_TDR_20_C03_equity_inspection_requires_complete_auxiliary_identity():
     from dataflows import (AssetClass, BarFrequency, EquityDataRequest, EquityProduct, EquityQuery,
         InstrumentId, MarketId, PreparedDataRef, PriceAdjustment, SourceRef, TimeInterval)
     from strategy_runtime import EquityAuxiliaryBinding, EquityAuxiliaryInput, EquityInputBinding, InputBindingScope

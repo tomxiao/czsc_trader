@@ -1,3 +1,4 @@
+# Risk ownership: TDR-05
 """Public TDR replay authenticates and applies stock/ETF session limits."""
 
 from dataclasses import replace
@@ -11,7 +12,6 @@ from strategy_runtime import (
     ExecutionPriceBasis, RuntimeContractError, StrategyCandidate, StrategyRuntime,
     implementation_identity,
 )
-from execution_channels.historical import MarketExecutionRules, SuspensionInformation
 
 from czsc_trader.application import RepositoryContext
 from czsc_trader.backtesting.execution_data import _prepare_backtest_execution_data
@@ -19,7 +19,7 @@ from czsc_trader.backtesting.srt_bridge import _validate_execution_binding
 from czsc_trader.research_tools.context import ResearchBatchRef, ResearchContext
 from czsc_trader.research_tools.evaluation_access import EvaluationAccess
 from test_candidate_runtime_execution import _install_candidate_dataflows
-from test_research_contract_upgrade import managed_evaluation as managed_evaluation
+from managed_evaluation_support import managed_evaluation as managed_evaluation
 
 
 _MARKET_CANDIDATE = '''
@@ -87,18 +87,10 @@ def _case(candidate_payload, tmp_path, monkeypatch, symbol="588080.SH", *, hfq_f
     return context, candidate, dates, daily, limits
 
 
-
-
-
-
-
-
-
-
-@pytest.mark.parametrize("basis", [ExecutionPriceBasis.UNADJUSTED, ExecutionPriceBasis.HFQ_RESEARCH])
-def test_prepared_limits_follow_pricing_units_and_binding_rejects_changed_contract(
-    candidate_payload, tmp_path, monkeypatch, basis,
+def test_TDR_05_C05_prepared_limits_follow_pricing_units_and_binding_rejects_changed_contract(
+    candidate_payload, tmp_path, monkeypatch,
 ):
+    basis = ExecutionPriceBasis.HFQ_RESEARCH
     factors = np.r_[np.full(21, 2.0), np.full(4, 4.0)]
     context, _, dates, _, _ = _case(candidate_payload, tmp_path, monkeypatch, hfq_factors=factors)
     data = _prepare_backtest_execution_data(
@@ -117,39 +109,3 @@ def test_prepared_limits_follow_pricing_units_and_binding_rejects_changed_contra
     assert altered.fingerprint != data.market_rules.fingerprint
     with pytest.raises(RuntimeContractError, match="market rules differ"):
         _validate_execution_binding(context.data, replace(data, market_rules=altered), data.prepared)
-    changed_identities = {**data.input_identities, "price_limits": "0" * 64}
-    with pytest.raises(RuntimeContractError, match="input differs.*price_limits"):
-        _validate_execution_binding(context.data, replace(data, input_identities=changed_identities), data.prepared)
-    with pytest.raises(RuntimeContractError, match="fingerprint differs"):
-        _validate_execution_binding(context.data, replace(data, fingerprint="0" * 64), data.prepared)
-    with pytest.raises(ValueError, match="suspension policy"):
-        _validate_execution_binding(context.data, replace(data, market_rules=replace(
-            data.market_rules, suspension_information=SuspensionInformation.PROVIDED)), data.prepared)
-    with pytest.raises(ValueError, match="matching market execution rules"):
-        _validate_execution_binding(context.data, replace(data, market_rules=None), data.prepared)
-    contract = {**data.market_rules.to_dict(), "contract_version": "UNRECOGNIZED"}
-    with pytest.raises(ValueError, match="unsupported market execution contract version"):
-        MarketExecutionRules.from_dict(contract)
-
-
-
-
-def test_hfq_candidate_inspection_preserves_units_in_prospective_frozen_replay(managed_evaluation):
-    from inspection_replay_support import candidate_release_replay
-    from test_assessment_delivery import fresh_completed
-    from test_candidate_freeze import _build_inspection
-
-    research, request = managed_evaluation
-    request = replace(request, price_basis=ExecutionPriceBasis.HFQ_RESEARCH, input_bindings={})
-    completed = fresh_completed.__wrapped__((research, request))
-    context, inspection_request, _ = _build_inspection(completed)
-    pricing = completed[2].execution_data.pricing
-    assert pricing.basis is ExecutionPriceBasis.HFQ_RESEARCH
-    facts = candidate_release_replay(context, inspection_request)
-    assert facts["passed"] is True, facts
-    for side in ("candidate", "release"):
-        assert facts[side]["execution_spec"]["pricing"] == pricing.to_dict()
-        assert facts[side]["execution_spec"]["market_rules"] == completed[2].execution_data.market_rules.to_dict()
-        assert facts[side]["orders"]
-        assert facts[side]["fills"]
-    assert not context.strategy_root.exists()

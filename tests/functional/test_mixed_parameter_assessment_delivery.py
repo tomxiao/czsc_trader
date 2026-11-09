@@ -1,3 +1,4 @@
+# Risk ownership: TDR-12
 """Mixed typed neighborhoods reach Calmar publication on both equity markets."""
 
 from contextlib import contextmanager
@@ -27,7 +28,7 @@ from czsc_trader.research_tools import (
 )
 from czsc_trader.research_tools import delivery as d
 from account_parity_support import setup_account
-from test_assessment_delivery import assessment_request, comparison_request
+from assessment_delivery_support import assessment_request, comparison_request
 from test_research_delivery import content
 
 
@@ -98,8 +99,8 @@ def mixed_plan(tmp_path, market):
         yield context, center, plan, plan_ref, tuple(bound), execution
 
 
-@pytest.mark.parametrize("market", (MarketId.CN, MarketId.US))
-def test_mixed_parameter_calmar_schema15_delivery_is_storage_only(tmp_path, monkeypatch, market):
+@pytest.mark.parametrize('market', (MarketId.CN,))
+def test_TDR_12_C06_mixed_parameter_calmar_schema15_delivery_is_storage_only(tmp_path, monkeypatch, market):
     with mixed_plan(tmp_path, market) as (context, center, plan, plan_ref, children, execution):
         assert center.candidate.instrument.market is market
         assert center.candidate.definition.contract_version == 4

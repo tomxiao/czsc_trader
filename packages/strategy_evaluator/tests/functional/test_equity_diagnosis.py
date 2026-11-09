@@ -3,24 +3,21 @@ from datetime import date
 
 import pytest
 
-from strategy_evaluator.equity import audit_equity_account
 from strategy_evaluator.equity_diagnosis import diagnose_equity_accounts
-from test_equity_assessment import ledger
 
 
-def test_contiguous_hfq_fills_follow_account_revisions_and_session_slice():
-    value = ledger(days=2)
-    audit_equity_account(**value, decision_contract="FORMAL_V4")
-    assert value["price_basis"] == "HFQ"
-    assert value["fills"][0]["interval_end"] == value["account_points"][0]["time"]
-    assert value["fills"][1]["interval_end"] == value["account_points"][2]["time"]
-    result = diagnose_equity_accounts(value, "a" * 64, date(2026, 10, 1), date(2026, 10, 2), symbol="TEST")
+
+
+@pytest.mark.risk_cases('SE-32-C03')
+def test_SE_32_C03_same_bar_scaling_is_one_position_cycle():
+    from test_equity_v4 import ledger as scaling_ledger
+    value = {**scaling_ledger(), "account_contract": 4}
+    result = diagnose_equity_accounts(value, "a" * 64, date(2026, 10, 8), date(2026, 10, 8), symbol="TEST")
     assert result.status == "COMPUTED"
-    for index, row in enumerate(result.pnl_breakdown[0].daily):
-        assert (row.entry, row.holding, row.exit, row.fees) == pytest.approx((-20., 20., 22., 0.))
-        assert row.residual == pytest.approx(0.)
-        assert row.cycle_id == value["trades"][index]["cycle_id"]
-    sliced = diagnose_equity_accounts(value, "a" * 64, date(2026, 10, 2), date(2026, 10, 2), symbol="TEST")
-    assert sliced.pnl_breakdown[0].daily[0].opening_equity == 10022.
-    assert sliced.pnl_breakdown[0].daily[0].closing_equity == 10044.
-    assert sliced.pnl_breakdown[0].daily == result.pnl_breakdown[0].daily[1:]
+    assert len(value["trades"]) == 1
+    daily = result.pnl_breakdown[0].daily
+    assert len(daily) == 1
+    assert daily[0].equity_change == pytest.approx(-6.)
+    assert daily[0].fees == pytest.approx(-6.)
+    assert daily[0].entry + daily[0].holding + daily[0].exit == pytest.approx(0.)
+    assert daily[0].residual == pytest.approx(0.)

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from test_current_contracts import current_frozen as current_frozen, inspection as inspection, completed as completed, managed_evaluation as managed_evaluation
+from frozen_contract_support import current_frozen as current_frozen
 
 import pytest
 from strategy_runtime import RuntimeCompatibilityError

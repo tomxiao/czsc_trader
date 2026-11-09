@@ -51,7 +51,11 @@ def _business_files(root):
             for path in root.rglob("*") if path.suffix in {".json", ".jsonl"}}
 
 
-@pytest.mark.parametrize("operation", ["create", "update"])
+@pytest.mark.parametrize('operation', [
+    pytest.param("create", id='SM-12-C01'),
+    pytest.param("update", id='SM-12-C02'),
+])
+@pytest.mark.risk_cases('SM-12-C01', 'SM-12-C02')
 def test_public_registry_writers_exclude_competing_process_and_release_after_failure(
     tmp_path, monkeypatch, operation,
 ):
@@ -102,7 +106,8 @@ def test_public_registry_writers_exclude_competing_process_and_release_after_fai
     )
 
 
-def test_public_family_registration_preserves_external_change_before_registry_commit(tmp_path, monkeypatch):
+@pytest.mark.risk_cases('SM-12-C03')
+def test_SM_12_C03_family_registration_preserves_external_change_before_commit(tmp_path, monkeypatch):
     from strategy_manager import registry as registry_module
 
     registry = StrategyRegistry(tmp_path)

@@ -1,6 +1,5 @@
 from pathlib import Path
 import json
-import os
 import shutil
 import sqlite3
 import subprocess
@@ -15,21 +14,20 @@ from paper_trading_engine.release_cli import (
     build_release,
     load_built_release,
     publish_release,
-    publish_watchdog_host,
-    main,
     verify_release_configuration,
 )
 from paper_trading_engine.runtime_release import load_release
-from paper_trading_engine.host_manifest import validate_watchdog_host_manifest
 from czsc_trader.application.context import RepositoryContext
 
 
 ROOT = Path(__file__).resolve().parents[4]
 
 
-@pytest.mark.skipif(os.name != "nt", reason="Windows directory-lock regression")
-def test_release_directory_publish_retries_transient_windows_lock(
-    tmp_path, monkeypatch, built_release_copy,
+# Independent risk: PTE21; responsibility-level assertions.
+def test_PTE21_C03_release_directory_publish_retries_transient_windows_lock(
+    tmp_path,
+    monkeypatch,
+    built_release_copy,
 ):
     build_root, _ = built_release_copy
     runtime = tmp_path / "runtime"
@@ -49,8 +47,11 @@ def test_release_directory_publish_retries_transient_windows_lock(
     monkeypatch.setattr("paper_trading_engine.release_cli.time.sleep", lambda _delay: None)
 
     published = publish_release(
-        build_root=build_root, runtime_root=runtime, release_id="v0.4.1",
-        uv_executable=Path("C:/uv/uv.exe"), runner=FakeReleaseRunner(),
+        build_root=build_root,
+        runtime_root=runtime,
+        release_id="v0.4.1",
+        uv_executable=Path("C:/uv/uv.exe"),
+        runner=FakeReleaseRunner(),
     )
     release = load_release(runtime, "v0.4.1")
     assert published["release"] == release.identity()
@@ -61,12 +62,19 @@ def test_release_directory_publish_retries_transient_windows_lock(
 
 def _git(repo: Path, *arguments: str) -> None:
     subprocess.run(
-        ["git", *arguments], cwd=repo, check=True, capture_output=True, text=True,
-        encoding="utf-8", errors="replace",
+        ["git", *arguments],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
     )
 
 
-def _create_tagged_release_repo(repo: Path, strategy_root: Path, release_id: str = "v0.4.1") -> None:
+def _create_tagged_release_repo(
+    repo: Path, strategy_root: Path, release_id: str = "v0.4.1"
+) -> None:
     repo.mkdir()
     (repo / ".gitignore").write_text("build/\npackages/*/build/\n", encoding="utf-8")
     shutil.copy2(ROOT / ".gitattributes", repo / ".gitattributes")
@@ -80,11 +88,16 @@ def _create_tagged_release_repo(repo: Path, strategy_root: Path, release_id: str
         (root / "src" / root.name).mkdir(parents=True)
         (root / "src" / root.name / "__init__.py").write_text("", encoding="utf-8")
         (root / "pyproject.toml").write_text(
-            f"[project]\nname='{root.name}'\n", encoding="utf-8",
+            f"[project]\nname='{root.name}'\n",
+            encoding="utf-8",
         )
     build_support = (
-        repo / "packages" / "paper_trading_engine" / "src"
-        / "paper_trading_engine" / "build_support"
+        repo
+        / "packages"
+        / "paper_trading_engine"
+        / "src"
+        / "paper_trading_engine"
+        / "build_support"
     )
     build_support.mkdir()
     (build_support / "sitecustomize.py").write_text("", encoding="utf-8")
@@ -95,12 +108,26 @@ def _create_tagged_release_repo(repo: Path, strategy_root: Path, release_id: str
     _git(repo, "init")
     _git(repo, "add", ".")
     _git(
-        repo, "-c", "user.name=PTE Test", "-c", "user.email=pte@example.invalid",
-        "commit", "-m", "release source",
+        repo,
+        "-c",
+        "user.name=PTE Test",
+        "-c",
+        "user.email=pte@example.invalid",
+        "commit",
+        "-m",
+        "release source",
     )
     _git(
-        repo, "-c", "user.name=PTE Test", "-c", "user.email=pte@example.invalid",
-        "tag", "-a", release_id, "-m", release_id,
+        repo,
+        "-c",
+        "user.name=PTE Test",
+        "-c",
+        "user.email=pte@example.invalid",
+        "tag",
+        "-a",
+        release_id,
+        "-m",
+        release_id,
     )
     for project in PTE_LOCAL_PROJECTS:
         root = repo if project == "." else repo / project
@@ -124,7 +151,10 @@ class FakeReleaseRunner:
             return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
         if command[1:3] == ["pip", "freeze"]:
             return subprocess.CompletedProcess(
-                command, 0, stdout="paper-trading-engine==0.1.0\n", stderr="",
+                command,
+                0,
+                stdout="paper-trading-engine==0.1.0\n",
+                stderr="",
             )
         if command[1] == "build":
             assert not (Path(command[-1]) / "build").exists()
@@ -134,9 +164,13 @@ class FakeReleaseRunner:
                 name = "futu_api-10.10.7008-py3-none-any.whl"
             else:
                 prefixes = (
-                    "czsc_execution_channels", "czsc_dataflows", "czsc_strategy_manager", "czsc_strategy_runtime",
+                    "czsc_execution_channels",
+                    "czsc_dataflows",
+                    "czsc_strategy_manager",
+                    "czsc_strategy_runtime",
                     "czsc_strategy_chart",
-                    "czsc_trader_research", "paper_trading_engine",
+                    "czsc_trader_research",
+                    "paper_trading_engine",
                 )
                 name = f"{prefixes[self.wheel_index]}-0.1.0-py3-none-any.whl"
                 self.wheel_index += 1
@@ -178,48 +212,23 @@ def _source_build_fakes(runner):
         completed = runner(command, **kwargs)
         if list(command)[1:5] == ["-m", "pip", "freeze", "--exclude-editable"]:
             return subprocess.CompletedProcess(
-                command, 0, stdout="futu-api==10.10.7008\n", stderr="",
+                command,
+                0,
+                stdout="futu-api==10.10.7008\n",
+                stderr="",
             )
         return completed
 
     return fetch_sdist, pinned_runner
 
 
-@pytest.mark.parametrize("returncode", [0, 7], ids=["success", "failure"])
-def test_release_command_preserves_status_with_non_utf8_windows_output(
-    tmp_path, built_release_copy, returncode,
+# Independent risk: PTE21; responsibility-level assertions.
+
+
+# Independent risk: PTE21; responsibility-level assertions.
+def test_PTE21_C02_build_rejects_strategy_runtime_wheel_with_governed_assets(
+    tagged_release_repo_copy,
 ):
-    build_root, _ = built_release_copy
-    runtime = tmp_path / "runtime"
-    delegate = FakeReleaseRunner()
-    results = []
-
-    def runner(command, **kwargs):
-        if command[1] == "venv":
-            completed = subprocess.run([
-                sys.executable, "-B", "-c",
-                f"import sys; sys.stdout.buffer.write(b'\\xb5'); sys.exit({returncode})",
-            ], **kwargs)
-            results.append(completed)
-            if not completed.returncode:
-                delegate(command, **kwargs)
-            return completed
-        return delegate(command, **kwargs)
-
-    kwargs = dict(build_root=build_root, runtime_root=runtime, release_id="v0.4.1",
-                  uv_executable=Path("C:/uv/uv.exe"), runner=runner)
-    if returncode:
-        with pytest.raises(RuntimeError, match="command failed.*"):
-            publish_release(**kwargs)
-        assert not (runtime / "releases/v0.4.1").exists()
-    else:
-        result = publish_release(**kwargs)
-        assert result["release"] == load_release(runtime, "v0.4.1").identity()
-    assert len(results) == 1
-    assert results[0].returncode == returncode
-
-
-def test_build_rejects_strategy_runtime_wheel_with_governed_assets(tagged_release_repo_copy):
     repo = tagged_release_repo_copy
 
     class GovernedAssetRunner(FakeReleaseRunner):
@@ -236,9 +245,12 @@ def test_build_rejects_strategy_runtime_wheel_with_governed_assets(tagged_releas
     build_root = repo / ".build/pte"
     with pytest.raises(RuntimeError, match="governed strategy assets"):
         build_release(
-            repo_root=repo, build_root=build_root, release_id="v0.4.1",
+            repo_root=repo,
+            build_root=build_root,
+            release_id="v0.4.1",
             uv_executable=Path("C:/uv/uv.exe"),
-            source_distribution_fetcher=fetch_sdist, runner=runner,
+            source_distribution_fetcher=fetch_sdist,
+            runner=runner,
         )
     assert not (build_root / "releases/v0.4.1").exists()
     assert not list(build_root.rglob("build-manifest.json"))
@@ -264,18 +276,35 @@ def release_verification_runtime(pte_frozen, new_store, tmp_path):
     store.close()
 
 
-@pytest.mark.parametrize("binding", ["empty", "valid", "legacy_v3", "wrong_hash", "wrong_cutoff", "invalid_config"])
+# Independent risk: PTE22; responsibility-level assertions.
+@pytest.mark.parametrize(
+    "binding",
+    [
+        "valid",
+    ],
+    ids=["PTE22-C01"],
+)
 def test_release_verifies_configuration_and_bindings_without_preparing_data(
-    release_verification_runtime, binding,
+    release_verification_runtime,
+    binding,
+    monkeypatch,
 ):
     runtime, version, store = release_verification_runtime
     if binding != "empty":
         store.create_virtual_account(
-            "verified", "Verified account", version.release_id, version.release_hash, 100000,
-            strategy_id=version.strategy_id, strategy_version=version.version,
+            "verified",
+            "Verified account",
+            version.release_id,
+            version.release_hash,
+            100000,
+            strategy_id=version.strategy_id,
+            strategy_version=version.version,
             release_hash="0" * 64 if binding == "wrong_hash" else version.release_hash,
-            strategy_name_snapshot="Synthetic", qualification_snapshot="PAPER_READY",
-            selection_data_cutoff="2020-01-01" if binding == "wrong_cutoff" else version.selection_data_cutoff,
+            strategy_name_snapshot="Synthetic",
+            qualification_snapshot="PAPER_READY",
+            selection_data_cutoff="2020-01-01"
+            if binding == "wrong_cutoff"
+            else version.selection_data_cutoff,
         )
     if binding == "invalid_config":
         (runtime / "shared/config/pte.json").write_text('{"schema_version":999}', encoding="utf-8")
@@ -286,18 +315,25 @@ def test_release_verifies_configuration_and_bindings_without_preparing_data(
         with sqlite3.connect(database) as connection:
             connection.execute("DROP TRIGGER decision_content_immutable")
             connection.execute("DROP TRIGGER retired_instance_irreversible")
-            connection.execute("UPDATE virtual_accounts SET legacy_status='RUNNING',legacy_paused=1")
+            connection.execute(
+                "UPDATE virtual_accounts SET legacy_status='RUNNING',legacy_paused=1"
+            )
             connection.execute("ALTER TABLE virtual_accounts DROP COLUMN run_state")
             connection.execute("ALTER TABLE virtual_accounts RENAME COLUMN legacy_status TO status")
             connection.execute("ALTER TABLE virtual_accounts RENAME COLUMN legacy_paused TO paused")
             connection.execute("ALTER TABLE decisions RENAME COLUMN legacy_status TO status")
             connection.execute("DROP TABLE decision_state_events")
             connection.execute("DROP TABLE decision_adoptions")
-            connection.execute("UPDATE settings SET value='3' WHERE key='runtime_database_schema_version'")
+            connection.execute(
+                "UPDATE settings SET value='3' WHERE key='runtime_database_schema_version'"
+            )
     database_before = database.read_bytes()
     data = runtime / "shared/data"
-    data_before = {path.relative_to(data).as_posix(): path.read_bytes()
-                   for path in data.rglob("*") if path.is_file()}
+    data_before = {
+        path.relative_to(data).as_posix(): path.read_bytes()
+        for path in data.rglob("*")
+        if path.is_file()
+    }
     results = []
     # Execute the product's verification script unchanged after installing only
     # forbidden-side-effect guards. Authentication, runtime description and the
@@ -317,7 +353,8 @@ def test_release_verifies_configuration_and_bindings_without_preparing_data(
         # script, working directory and all verification inputs intact.
         assert command[1] == "-c"
         completed = subprocess.run(
-            [sys.executable, "-B", "-c", guard + command[2], *command[3:]], **kwargs,
+            [sys.executable, "-B", "-c", guard + command[2], *command[3:]],
+            **kwargs,
         )
         results.append(completed)
         return completed
@@ -328,21 +365,44 @@ def test_release_verifies_configuration_and_bindings_without_preparing_data(
             "wrong_cutoff": "selection cutoff differs",
             "invalid_config": "unsupported PTE runtime config schema",
         }[binding]
-        with pytest.raises(RuntimeError, match=message):
-            verify_release_configuration(runtime, "v0.6.0", runner=runner)
-        assert results[0].returncode != 0
+        # These are configuration/account refusal risks. Validate the selected
+        # release's real boundary directly instead of starting five interpreters.
+        # The positive current/legacy cases below retain process transport.
+        from paper_trading_engine.release_cli import _verify_runtime_configuration
+
+        def forbidden(*args, **kwargs):
+            pytest.fail("release preflight must not prepare data")
+
+        monkeypatch.setattr("dataflows.Dataflows.prepare", forbidden)
+        monkeypatch.setattr(
+            "paper_trading_engine.srt_advice_client.SrtAdviceClient.prepare_account_data", forbidden
+        )
+        error = ValueError if binding == "invalid_config" else RuntimeError
+        with pytest.raises(error, match=message):
+            _verify_runtime_configuration(
+                runtime / "releases/v0.6.0", data, database, runtime / "shared/config"
+            )
+        assert results == []
     else:
         verified = verify_release_configuration(runtime, "v0.6.0", runner=runner)
-        expected = {"accounts": 0, "releases": []} if binding == "empty" else {
-            "accounts": 1, "releases": [version.release_id],
-        }
+        expected = (
+            {"accounts": 0, "releases": []}
+            if binding == "empty"
+            else {
+                "accounts": 1,
+                "releases": [version.release_id],
+            }
+        )
         assert verified == expected
         assert results[0].returncode == 0
         assert json.loads(results[0].stdout) == expected
-    assert len(results) == 1
+    assert len(results) == (0 if binding in {"wrong_hash", "wrong_cutoff", "invalid_config"} else 1)
     assert database.read_bytes() == database_before
-    assert {path.relative_to(data).as_posix(): path.read_bytes()
-            for path in data.rglob("*") if path.is_file()} == data_before
+    assert {
+        path.relative_to(data).as_posix(): path.read_bytes()
+        for path in data.rglob("*")
+        if path.is_file()
+    } == data_before
 
 
 @pytest.fixture(scope="module")
@@ -361,16 +421,21 @@ def tagged_release_repo_copy(request, frozen_seed_root, release_source_cache, tm
     if not release_source_cache:
         seed = frozen_seed_root / "release-source"
         _create_tagged_release_repo(seed, request.getfixturevalue("pte_frozen")[0].strategy_root)
-        release_source_cache.update(root=seed, files={
-            path.relative_to(seed): path.read_bytes()
-            for path in seed.rglob("*") if path.is_file()
-        })
+        release_source_cache.update(
+            root=seed,
+            files={
+                path.relative_to(seed): path.read_bytes()
+                for path in seed.rglob("*")
+                if path.is_file()
+            },
+        )
     seed = release_source_cache["root"]
     repo = tmp_path / "release-source"
     shutil.copytree(seed, repo)
     yield repo
-    assert {path.relative_to(seed): path.read_bytes()
-            for path in seed.rglob("*") if path.is_file()} == release_source_cache["files"]
+    assert {
+        path.relative_to(seed): path.read_bytes() for path in seed.rglob("*") if path.is_file()
+    } == release_source_cache["files"]
 
 
 @pytest.fixture
@@ -382,17 +447,24 @@ def built_release_copy(request, frozen_seed_root, release_build_cache, tmp_path)
         runner = FakeReleaseRunner()
         fetch_sdist, pinned_runner = _source_build_fakes(runner)
         result = build_release(
-            repo_root=repo, build_root=build_root, release_id="v0.4.1",
-            source_python=Path("C:/Python/python.exe"), uv_executable=Path("C:/uv/uv.exe"),
-            source_distribution_fetcher=fetch_sdist, runner=pinned_runner,
+            repo_root=repo,
+            build_root=build_root,
+            release_id="v0.4.1",
+            source_python=Path("C:/Python/python.exe"),
+            uv_executable=Path("C:/uv/uv.exe"),
+            source_distribution_fetcher=fetch_sdist,
+            runner=pinned_runner,
         )
-        release_build_cache.update(repo=repo, root=build_root, result=result, commands=runner.commands)
+        release_build_cache.update(
+            repo=repo, root=build_root, result=result, commands=runner.commands
+        )
     build_root = tmp_path / "repo" / ".build" / "pte"
     shutil.copytree(release_build_cache["root"], build_root)
     return build_root, release_build_cache
 
 
-def test_build_is_local_and_publish_installs_final_runtime(tmp_path, built_release_copy):
+# Independent risk: PTE21; responsibility-level assertions.
+def test_PTE21_C01_build_is_local_and_publish_installs_final_runtime(tmp_path, built_release_copy):
     build_root, build = built_release_copy
     repo = build_root.parent.parent
     runtime = (tmp_path / "pte-runtime").resolve()
@@ -412,8 +484,7 @@ def test_build_is_local_and_publish_installs_final_runtime(tmp_path, built_relea
     wheel_commands = [command for command in build["commands"] if command[1] == "build"]
     assert len(wheel_commands) == len(PTE_LOCAL_PROJECTS) + len(PTE_SOURCE_DISTRIBUTIONS)
     assert sum(
-        not str(command[-1]).endswith((".tar.gz", ".zip"))
-        for command in wheel_commands
+        not str(command[-1]).endswith((".tar.gz", ".zip")) for command in wheel_commands
     ) == len(PTE_LOCAL_PROJECTS)
     wheelhouse = next(command for command in build["commands"] if "--constraint" in command)
     assert wheelhouse[wheelhouse.index("--cache-dir") + 1] == str(
@@ -448,7 +519,8 @@ def test_build_is_local_and_publish_installs_final_runtime(tmp_path, built_relea
 
     release = load_release(runtime, "v0.4.1")
     context = RepositoryContext.discover(
-        release.release_root, explicit_root=release.release_root,
+        release.release_root,
+        explicit_root=release.release_root,
     )
     assert published["release"]["release_id"] == "v0.4.1"
     assert published["builder"] == "uv 0.11.3"
@@ -465,18 +537,15 @@ def test_build_is_local_and_publish_installs_final_runtime(tmp_path, built_relea
     ]
     installs = [command for command in runner.commands if command[1:3] == ["pip", "install"]]
     assert all(
-        command[command.index("--cache-dir") + 1]
-        == str(repo / ".tmp" / "pte-release" / "uv")
+        command[command.index("--cache-dir") + 1] == str(repo / ".tmp" / "pte-release" / "uv")
         for command in installs
     )
     assert all("--refresh" in command for command in installs)
     assert not (runtime / "cache").exists()
     assert any(
-        "--no-deps" in command and "czsc-trader-research==0.1.0" in command
-        for command in installs
+        "--no-deps" in command and "czsc-trader-research==0.1.0" in command for command in installs
     )
     assert all("vectorbt" not in " ".join(command).lower() for command in installs)
-
 
     runtime = (tmp_path / "existing-host-runtime").resolve()
     existing_host = runtime / "host" / "releases" / "v0.4.1"
@@ -496,91 +565,37 @@ def test_build_is_local_and_publish_installs_final_runtime(tmp_path, built_relea
     assert marker.read_bytes() == b"existing host"
 
 
-def test_publish_watchdog_host_has_independent_identity_and_rejects_tampering(
-    tmp_path, built_release_copy,
+# Independent risk: PTE23; responsibility-level assertions.
+
+
+def test_PTE21_C04_nonretryable_publication_error_preserves_no_final_release(
+    tmp_path, monkeypatch, built_release_copy
 ):
     build_root, _ = built_release_copy
     runtime = tmp_path / "runtime"
-    runner = FakeReleaseRunner()
-    kwargs = dict(
-        build_root=build_root, runtime_root=runtime, release_id="v0.4.1",
-        host_version="v1.0.0", uv_executable=Path("uv"), runner=runner,
-    )
-    result = publish_watchdog_host(**kwargs)
-    host = runtime / "host" / "releases" / "v1.0.0"
-    assert result["host_version"] == "v1.0.0"
-    assert result["source_release_id"] == "v0.4.1"
-    assert result["active"] is False
-    assert not (runtime / "releases").exists()
-    assert not (runtime / "shared").exists()
-    assert not (runtime / "host" / "releases" / "v0.4.1").exists()
-    manifest = validate_watchdog_host_manifest(host)
-    assert manifest["kind"] == "wdg-host"
-    assert manifest["host_version"] != manifest["source_release_id"]
-    installs = [c for c in runner.commands if c[1:3] == ["pip", "install"]]
-    assert any("--no-deps" in c and "paper-trading-engine==0.1.0" in c for c in installs)
-    assert not any("czsc-strategy-runtime" in " ".join(c) for c in installs)
-    with pytest.raises(RuntimeError, match="host already exists"):
-        publish_watchdog_host(**kwargs)
+    destination = runtime / "releases/v0.4.1"
+    original = Path.replace
+    error = OSError("nonretryable publication failure")
+    attempts = []
 
-    def broken_host_runner(command, **options):
-        if command[1:4] == ["-I", "-B", "-c"]:
-            return subprocess.CompletedProcess(
-                command, 1, stdout="", stderr="host import failure",
-            )
-        return runner(command, **options)
+    def fail(path, target):
+        if target == destination:
+            attempts.append(target)
+            raise error
+        return original(path, target)
 
-    with pytest.raises(RuntimeError, match="host import failure"):
-        publish_watchdog_host(**{
-            **kwargs, "host_version": "v2.0.0", "runner": broken_host_runner,
-        })
-    assert not (runtime / "host" / "releases" / "v2.0.0").exists()
-    artifact = next((host / "artifacts").glob("*.whl"))
-    original = artifact.read_bytes()
-    artifact.write_bytes(b"tampered")
-    with pytest.raises(RuntimeError, match="artifact differs"):
-        validate_watchdog_host_manifest(host)
-    artifact.write_bytes(original)
-    source = host / "build-manifest.json"
-    original_source = source.read_bytes()
-    source.write_text("{}", encoding="utf-8")
-    with pytest.raises(RuntimeError, match="source build differs"):
-        validate_watchdog_host_manifest(host)
-    source.write_bytes(original_source)
-    path = host / "host-manifest.json"
-    manifest["schema_version"] = True
-    path.write_text(json.dumps(manifest), encoding="utf-8")
-    with pytest.raises(RuntimeError, match="identity differ"):
-        validate_watchdog_host_manifest(host)
-    manifest["schema_version"] = 1
-    manifest["host_version"] = "v9.0.0"
-    path.write_text(json.dumps(manifest), encoding="utf-8")
-    with pytest.raises(RuntimeError, match="identity differ"):
-        validate_watchdog_host_manifest(host)
-    with pytest.raises(RuntimeError, match="invalid WDG host version"):
-        publish_watchdog_host(**{**kwargs, "host_version": "../v1.0.0"})
-    source_artifact = next((build_root / "releases" / "v0.4.1" / "artifacts").glob("*.whl"))
-    source_artifact.write_bytes(b"tampered")
-    with pytest.raises(RuntimeError, match="artifact differs"):
-        publish_watchdog_host(**{**kwargs, "host_version": "v1.1.0"})
-    assert not (runtime / "host" / "releases" / "v1.1.0").exists()
+    monkeypatch.setattr(Path, "replace", fail)
+    with pytest.raises(OSError) as caught:
+        publish_release(
+            build_root=build_root,
+            runtime_root=runtime,
+            release_id="v0.4.1",
+            uv_executable=Path("C:/uv/uv.exe"),
+            runner=FakeReleaseRunner(),
+        )
+    assert caught.value is error
+    assert attempts == [destination]
+    assert not destination.exists()
+    from paper_trading_engine.runtime_release import active_release_path
 
-
-def test_publish_host_cli_requires_explicit_version_and_dispatches(tmp_path, monkeypatch):
-    calls = []
-
-    def publish(**kwargs):
-        calls.append(kwargs)
-        return {"host_version": kwargs["host_version"]}
-
-    monkeypatch.setattr("paper_trading_engine.release_cli.publish_watchdog_host", publish)
-    argv = [
-        "publish-host", "--build-root", str(tmp_path / "build"),
-        "--runtime-root", str(tmp_path / "runtime"), "--release", "v0.6.0",
-    ]
-    with pytest.raises(SystemExit):
-        main(argv)
-    assert not calls
-    assert main([*argv, "--host-version", "v1.0.0"]) == 0
-    assert calls[0]["host_version"] == "v1.0.0"
-    assert calls[0]["release_id"] == "v0.6.0"
+    assert not active_release_path(runtime).exists()

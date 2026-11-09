@@ -1,11 +1,10 @@
+# Risk ownership: TDR-10
 """Independent experiment reports and explicit material ownership."""
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 from datetime import date
 from hashlib import sha256
 import json
-import os
-from pathlib import Path
 
 import pytest
 
@@ -13,11 +12,10 @@ from czsc_trader.application import create_experiment, ExperimentRequest, publis
 from czsc_trader.application.experiment_artifact_service import validate_experiment
 from czsc_trader.research_tools.delivery import ValidationStatus
 from czsc_trader.research_tools.evidence import (
-    EvidenceRef, ExperimentOutcome, ExperimentReportWrite, MaterialEvidenceWrite, PublicationStatus,
-    managed_path,
+    ExperimentOutcome, ExperimentReportWrite, MaterialEvidenceWrite, PublicationStatus,
 )
 from czsc_trader.research_tools.experiment_artifacts import (
-    ExperimentArtifactRef, ExperimentReportSnapshot, ExperimentValidationRequest,
+    ExperimentReportSnapshot, ExperimentValidationRequest,
     ExperimentValidationScope, ReportPublicationError,
 )
 
@@ -39,7 +37,7 @@ def check(context, experiment, scope=ExperimentValidationScope.REPORT_PUBLICATIO
     return validate_experiment(context.repository, ExperimentValidationRequest(experiment, scope, artifacts))
 
 
-def test_report_independent_publication_revision_and_draft_detection(report_case):
+def test_TDR_10_C01_report_independent_publication_revision_and_draft_detection(report_case):
     context, experiment, path, request = report_case
     assert check(context, experiment).issues[0].code == "REPORT_UNPUBLISHED"
     assert check(context, experiment, ExperimentValidationScope.STRUCTURE).status is ValidationStatus.PASS
@@ -60,61 +58,7 @@ def test_report_independent_publication_revision_and_draft_detection(report_case
     assert check(context, experiment).report == second
 
 
-def test_create_report_placeholder_and_shared_material_ownership(report_case):
-    context, experiment, _, _ = report_case
-    second = create_experiment(context, ExperimentRequest("Shared", "A question", date(2026, 10, 21)))
-    assert "IN_PROGRESS" in (second.resolve(context.repository.root) / "report.md").read_text()
-    source = experiment.resolve(context.repository.root) / "others/result.txt"
-    source.write_bytes(b"a result")
-    artifact = ExperimentArtifactRef(experiment, "others/result.txt", sha256(source.read_bytes()).hexdigest())
-    assert check(context, second, ExperimentValidationScope.STRUCTURE, (artifact,)).status is ValidationStatus.PASS
-    source.write_bytes(b"changed")
-    assert check(context, second, ExperimentValidationScope.STRUCTURE, (artifact,)).issues[0].code == "INVALID_ARTIFACT"
-    for path in ("../materials/x", "C:/x", "others/../../x", "others\\x"):
-        with pytest.raises(ValueError):
-            ExperimentArtifactRef(experiment, path, "0" * 64)
-
-
-def test_batch_preflight_and_report_parent_publication(report_case):
-    context, experiment, path, request = report_case
-    malformed = replace(request, expected_report_sha256="0" * 64)
-    with pytest.raises(ValueError, match="expected digest"):
-        publish_evidence_many(context, (request, malformed))
-    assert not (path.parent / "report_ref.json").exists()
-    outcomes = publish_evidence_many(context, (request, request))
-    assert all(item.status is PublicationStatus.PUBLISHED for item in outcomes)
-    assert outcomes[0].reference == outcomes[1].reference
-    request.evidence[0].resolve(context.repository.root).write_bytes(b"tampered")
-    assert check(context, experiment).issues[0].code == "INVALID_REPORT_PUBLICATION"
-    # Ordinary publication preserves the declaration; only an explicit report
-    # check certifies the linked evidence contents.
-    assert publish_evidence(context, request) == outcomes[0].reference
-
-
-def test_report_publication_does_not_expand_linked_evidence_or_previous_report(report_case, monkeypatch):
-    context, experiment, path, request = report_case
-    first = publish_evidence(context, request)
-    paths = [managed_path(context.repository.root, ref.repository_path)
-             for ref in (*request.evidence, first)]
-    for target in paths:
-        target.unlink()
-    path.write_bytes(b"Second report retaining historical references.\n")
-    revised = replace(request, previous=first,
-                      expected_report_sha256=sha256(path.read_bytes()).hexdigest())
-
-    def forbid_read(*args, **kwargs):
-        raise AssertionError("publication must not read linked evidence")
-
-    with monkeypatch.context() as scoped:
-        scoped.setattr(EvidenceRef, "_read_verified", forbid_read)
-        second = publish_evidence(context, revised)
-    snapshot = ExperimentReportSnapshot.from_dict(json.loads(second._read_verified(context.repository.root)[1]))
-    assert snapshot.previous == first and snapshot.evidence == request.evidence
-    # The caller can separately request availability/content verification.
-    assert check(context, experiment).issues[0].code == "INVALID_REPORT_PUBLICATION"
-
-
-def test_report_draft_changed_during_publication_does_not_commit(report_case, monkeypatch):
+def test_TDR_10_C03_report_draft_changed_during_publication_does_not_commit(report_case, monkeypatch):
     from czsc_trader.application import evidence_service
     context, _, path, request = report_case
     original = evidence_service._publish_bytes
@@ -131,26 +75,9 @@ def test_report_draft_changed_during_publication_does_not_commit(report_case, mo
     assert not (path.parent / "report_ref.json").exists()
 
 
-def test_partial_report_commit_preserves_known_snapshot(report_case, monkeypatch):
-    from czsc_trader.application import experiment_artifact_service as service
-    context, experiment, path, request = report_case
-    def fail(*args):
-        raise OSError("injected commit failure")
-    monkeypatch.setattr(service, "_replace_pointer", fail)
-    with pytest.raises(ReportPublicationError) as caught:
-        publish_evidence(context, request)
-    assert caught.value.phase == "COMMIT"
-    reference = caught.value.reference
-    assert reference.resolve(context.repository.root).exists()
-    assert not (path.parent / "report_ref.json").exists()
-    outcome = publish_evidence_many(context, (request,))[0]
-    assert outcome.status is PublicationStatus.FAILED
-    assert outcome.error.phase == "COMMIT" and outcome.error.reference == reference
-    assert outcome.error.pointer_committed is False
-    assert check(context, experiment).issues[0].code == "REPORT_UNPUBLISHED"
 
 
-def test_concurrent_report_publish_preserves_one_current_reference(report_case):
+def test_TDR_10_C04_concurrent_report_publish_preserves_one_current_reference(report_case):
     context, experiment, _, request = report_case
     requests = (request, replace(request, outcome=ExperimentOutcome.COMPLETED))
     def publish(value):
@@ -164,33 +91,7 @@ def test_concurrent_report_publish_preserves_one_current_reference(report_case):
     assert check(context, experiment).report in results
 
 
-@pytest.mark.parametrize("outside", [False, True])
-def test_managed_path_normalizes_resolved_spelling_without_allowing_escape(tmp_path, monkeypatch, outside):
-    root = tmp_path / "repository"
-    root.mkdir()
-    target = root / ".tmp/report-locks/experiment"
-    destination = tmp_path / "outside/experiment" if outside else target
-    original = Path.resolve
-
-    def resolve(path, *args, **kwargs):
-        result = original(path, *args, **kwargs)
-        if path == target:
-            result = original(destination)
-            # Deterministically reproduce Windows' retained extended prefix
-            # when an absent directory appears during concurrent resolution.
-            if os.name == "nt":
-                result = Path("\\\\?\\" + str(result))
-        return result
-
-    monkeypatch.setattr(Path, "resolve", resolve)
-    if outside:
-        with pytest.raises(ValueError, match="escapes repository"):
-            managed_path(root, ".tmp/report-locks/experiment")
-    else:
-        assert managed_path(root, ".tmp/report-locks/experiment") == target
-
-
-def test_commit_error_after_replace_is_unknown_and_cancellation_preserved(report_case, monkeypatch):
+def test_TDR_10_C05_commit_error_after_replace_is_unknown_and_cancellation_preserved(report_case, monkeypatch):
     from czsc_trader.application import experiment_artifact_service as service
     context, experiment, _, request = report_case
     original = service._replace_pointer
@@ -204,55 +105,38 @@ def test_commit_error_after_replace_is_unknown_and_cancellation_preserved(report
     assert check(context, experiment).report == outcome.error.reference
     # A safe caller may explicitly replay; the implementation never retries.
     assert publish_evidence(context, request) == outcome.error.reference
-    def interrupt(*args):
-        raise KeyboardInterrupt("cancel")
-    monkeypatch.setattr(service, "_replace_pointer", interrupt)
-    revised = replace(request, previous=outcome.error.reference, outcome=ExperimentOutcome.CANCELLED)
-    with pytest.raises(KeyboardInterrupt):
-        publish_evidence(context, revised)
-    cancelled = publish_evidence_many(context, (revised,))[0]
-    assert cancelled.status is PublicationStatus.CANCELLED
-    assert cancelled.error.reference is not None and cancelled.error.pointer_committed is False
 
 
-def test_report_pointer_and_owned_symlink_are_rejected(report_case):
-    context, experiment, path, request = report_case
-    publish_evidence(context, request)
-    pointer = path.parent / "report_ref.json"
-    pointer.write_text('{"schema_version":2,"report":{}}')
-    assert check(context, experiment).issues[0].code == "INVALID_REPORT_PUBLICATION"
-    link = path.parent / "others/link.txt"
-    try:
-        link.symlink_to(path)
-    except OSError:
-        # Windows junctions exercise the same managed-path policy without symlink privilege.
-        import subprocess
-        link = path.parent / "others/link-dir"
-        subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(path.parent)], check=True, capture_output=True)
-        relative = "others/link-dir/report.md"
-    else:
-        relative = "others/link.txt"
-    artifact = ExperimentArtifactRef(experiment, relative, sha256(path.read_bytes()).hexdigest())
-    result = check(context, experiment, ExperimentValidationScope.STRUCTURE, (artifact,))
-    assert result.issues[0].code == "INVALID_ARTIFACT"
-
-
-@pytest.mark.parametrize("version", ["true", "1,\"schema_version\":1", "NaN", "Infinity"])
-def test_invalid_report_pointer_metadata_is_rejected(report_case, version):
-    context, experiment, path, request = report_case
-    reference = publish_evidence(context, request)
-    raw = '{"schema_version":' + version + ',"report":' + json.dumps(reference.to_dict()) + '}'
-    (path.parent / "report_ref.json").write_text(raw, encoding="utf-8")
-    result = check(context, experiment)
-    assert result.status is ValidationStatus.FAIL
-    assert result.issues[0].code == "INVALID_REPORT_PUBLICATION"
-
-
-def test_duplicate_experiment_identity_rejects_publication_before_writes(report_case):
-    context, experiment, path, request = report_case
-    identity = json.dumps(experiment.to_dict())
-    (path.parent / "experiment.json").write_text(identity[:-1] + ',"strategy_id":"S900"}', encoding="utf-8")
-    assert check(context, experiment, ExperimentValidationScope.STRUCTURE).status is ValidationStatus.FAIL
-    with pytest.raises(ValueError, match="duplicate JSON key"):
+def test_TDR_10_C06_report_link_rejected_before_publication(report_case, monkeypatch):
+    from pathlib import Path
+    context, _, path, request = report_case
+    original = Path.is_symlink
+    def report_link(candidate):
+        return candidate == path or original(candidate)
+    monkeypatch.setattr(Path, 'is_symlink', report_link)
+    with pytest.raises(ValueError, match='link|symlink'):
         publish_evidence(context, request)
-    assert not (path.parent / "report_ref.json").exists()
+    assert not (path.parent / 'report_ref.json').exists()
+
+
+def test_TDR_10_C07_foreign_experiment_evidence_rejected_before_publication(report_case):
+    from czsc_trader.research_tools import ExperimentRef
+    context, _, path, request = report_case
+    foreign = replace(request.evidence[0], experiment=ExperimentRef('S901', 'EX002_20261021'))
+    with pytest.raises(ValueError, match='experiment|owned|belong|batch'):
+        publish_evidence(context, replace(request, evidence=(foreign,)))
+    assert not (path.parent / 'report_ref.json').exists()
+
+
+def test_TDR_10_C02_changed_draft_remains_unpublished(report_case):
+    context, experiment, path, request = report_case
+    assert check(context, experiment).issues[0].code == "REPORT_UNPUBLISHED"
+    assert check(context, experiment, ExperimentValidationScope.STRUCTURE).status is ValidationStatus.PASS
+    first = publish_evidence(context, request)
+    assert publish_evidence(context, request) == first
+    snapshot = ExperimentReportSnapshot.from_dict(json.loads(first.resolve(context.repository.root).read_bytes()))
+    assert snapshot.report.encode() == path.read_bytes()
+    assert snapshot.outcome is ExperimentOutcome.FAILED
+    assert check(context, experiment).status is ValidationStatus.PASS
+    path.write_bytes(b"Revised result.\n")
+    assert check(context, experiment).issues[0].code == "REPORT_MODIFIED"

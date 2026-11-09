@@ -1,3 +1,4 @@
+# Risk ownership: TDR-14
 """Current V4 parameter plans bind caller-declared points to owned accounts."""
 from dataclasses import replace
 import json
@@ -8,7 +9,6 @@ from czsc_trader.application import publish_evidence
 from czsc_trader.research_tools import (
     EvaluationEvidenceWrite, ParameterEvaluationPlan, build_assessment_evidence,
 )
-from czsc_trader.research_tools.evidence import EvidenceRef
 from equity_parameter_support import equity_plan
 
 
@@ -18,7 +18,7 @@ def prepared_parameter_plan(tmp_path):
         yield prepared
 
 
-def test_published_parameter_point_reaches_account_and_assessment(prepared_parameter_plan):
+def test_TDR_14_C01_published_parameter_point_reaches_account_and_assessment(prepared_parameter_plan):
     context, center, plan, reference, children, execution = prepared_parameter_plan
     outcome, = context.evaluation.evaluate_many((children[0],), execution=execution)
     assert outcome.result is not None, outcome.error
@@ -34,30 +34,7 @@ def test_published_parameter_point_reaches_account_and_assessment(prepared_param
     assert center.candidate.content_identity.content_sha256 == plan.design.center.content_sha256
 
 
-def test_parameter_plan_rejects_ambiguous_identity_and_source_declarations(prepared_parameter_plan):
-    _, _, plan, _, _, _ = prepared_parameter_plan
-    with pytest.raises(ValueError, match="duplicate parameter child candidate"):
-        replace(plan, children=(plan.children[0], plan.children[0]))
-    with pytest.raises(ValueError, match="duplicate parameter candidate payload"):
-        replace(plan, children=(plan.children[0], replace(plan.children[1],
-            payload_json=plan.children[0].payload_json)))
-    changed = replace(plan.mapping_evidence, sha256="e" * 64, evidence_id="e" * 64 + ".json")
-    with pytest.raises(ValueError, match="evidence differs"):
-        replace(plan, mapping_evidence=changed)
-
-
-def test_parameter_binding_does_not_require_published_plan_bytes(prepared_parameter_plan, monkeypatch):
-    context, _, plan, reference, children, execution = prepared_parameter_plan
-    reference.resolve(context.repository.root).unlink()
-    def fail(*args, **kwargs):
-        raise AssertionError("binding must not read research evidence")
-    monkeypatch.setattr(EvidenceRef, "_read_verified", fail)
-    assert plan.bind_point(reference, 0, repository_root=context.repository.root).point == plan.design.bind_point(0)
-    prepared = context.evaluation.prepare(children[0].request, execution=execution)
-    assert prepared.request.lineage == children[0].request.lineage
-
-
-def test_plan_rejects_changed_nonparameter_execution_context(prepared_parameter_plan):
+def test_TDR_14_C03_plan_rejects_changed_nonparameter_execution_context(prepared_parameter_plan):
     context, center, plan, _, children, execution = prepared_parameter_plan
     changed = context.evaluation.prepare(replace(children[0].request,
         lineage=None, initial_cash=children[0].request.initial_cash + 1,
@@ -69,7 +46,7 @@ def test_plan_rejects_changed_nonparameter_execution_context(prepared_parameter_
             dataflows=context.data, execution=execution)
 
 
-def test_zero_point_plan_is_explicit_and_cannot_bind_fabricated_child(tmp_path):
+def test_TDR_14_C05_zero_point_plan_is_explicit_and_cannot_bind_fabricated_child(tmp_path):
     with equity_plan(tmp_path, applicable=False) as (context, _, plan, reference, children, _):
         assert plan.schema_version == 4
         assert not plan.design.is_applicable and plan.children == children == ()

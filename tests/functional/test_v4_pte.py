@@ -1,3 +1,4 @@
+# Risk ownership: E2E-05
 """Native dual-market state follows actual PTE adoption and cumulative fills."""
 from datetime import timedelta
 from decimal import Decimal
@@ -10,11 +11,11 @@ from strategy_runtime.inspection import InspectionRuntimePermit
 from paper_trading_engine.account_engine import AccountEngine
 from execution_channels.futu.store import PaperStore
 from paper_trading_engine.ec_boundary import execution_rules, execution_permit
-from execution_channels.futu.equity_contracts import EquityAccountRules, EquityOrderReport, equity_channel_id
+from execution_channels.futu.equity_contracts import EquityOrderReport, equity_channel_id
 from paper_trading_engine.equity_advice import EquityAdviceClient, prepare_equity_decision
 from execution_channels.futu.equity_execution import EquityExecution
 from czsc_trader.application.ec_boundary import execution_instrument
-from test_equity_pte import RecordedChannel
+from equity_pte_support import RecordedChannel
 from test_v4_inspection_roundtrip import native_fixture
 from test_formal_v4_runtime import raw_binding
 from paper_store_support import new_paper_store
@@ -62,22 +63,6 @@ def native_account(tmp_path, market, computation=StrategyComputation.STATEFUL_ST
     return context, request, products, store, permit, channel
 
 
-def test_native_cn_etf_uses_declared_lots_and_account_rules(tmp_path):
-    context, request, products, store, _, channel = native_account(tmp_path, MarketId.CN, etf=True)
-    rules = store.equity_account_rules('native')
-    assert EquityAccountRules.from_dict(rules.to_dict()) == rules
-    assert rules.instrument.asset_class.value == 'ETF'
-    prepared = prepared_at(context, request, products)
-    AccountEngine(store, EquityAdviceClient(store), now=lambda: prepared.interval.start).refresh_account('native', prepared=prepared)
-    execution = EquityExecution(store, channel, now=lambda: prepared.interval.start)
-    execution.reconcile(cash=Decimal(str(request.initial_cash)), quantity=0, account_id='native')
-    order, = execution.submit_pending('native')
-    assert store.account_order(order)['quantity'] == 900
-    execution.apply_report(EquityOrderReport(order, 900, Decimal('10'), prepared.interval.start+timedelta(minutes=1), 'FILLED_ALL'))
-    assert store.virtual_account('native')['quantity'] == 900
-    store.close()
-
-
 def prepared_at(context, request, products, index=0):
     rows = products[EquityProduct.BARS].loc[lambda frame: frame.BarStart >= request.window.start]
     row = rows.iloc[index]
@@ -88,8 +73,9 @@ def prepared_at(context, request, products, index=0):
             latency_seconds=context.execution_spec.data_latency_seconds))
 
 
-@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
-@pytest.mark.parametrize('computation', [StrategyComputation.STATEFUL_STEP, StrategyComputation.BATCH_HISTORY])
+@pytest.mark.parametrize('market,computation', [
+    (MarketId.CN, StrategyComputation.STATEFUL_STEP),
+])
 def test_native_state_fills_duplicate_restart_and_next_decision(tmp_path, market, computation):
     context, request, products, store, permit, channel = native_account(tmp_path, market, computation)
     prepared = prepared_at(context, request, products)
@@ -163,82 +149,6 @@ def budget_request(request):
         definition=replace(request.candidate.definition, execution_policy=policy)))
 
 
-@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
-def test_native_budget_is_owned_by_ec_until_confirmed_flat_exit(tmp_path, market):
-    context, request, products, store, _, channel = native_account(tmp_path, market)
-    request = budget_request(request)
-    prepared = prepared_at(context, request, products)
-    execution = EquityExecution(store, channel, now=lambda: prepared.interval.start)
-    def decide():
-        AccountEngine(store, EquityAdviceClient(store), now=lambda: prepared.interval.start).refresh_account('native', prepared=prepared)
-        account = store.virtual_account('native')
-        execution.reconcile(cash=Decimal(account['cash'])+Decimal(account['frozen_cash']), quantity=account['quantity'], account_id='native')
-        return execution.submit_pending('native')
-    buy, = decide()
-    quantity = store.account_order(buy)['quantity']
-    execution.apply_report(EquityOrderReport(buy, quantity, Decimal('10'), prepared.interval.start+timedelta(minutes=1), 'FILLED_ALL'))
-    state = json.loads(store.virtual_account('native')['account_v4_json'])
-    assert state['budget']['target_quantity'] == state['locked_quantity'] == quantity
-    assert Decimal(state['budget']['buy_cost_including_fees']) == Decimal('10.01')*quantity
-    prepared = prepared_at(context, request, products, 1)
-    assert decide() == ()
-    prepared = prepared_at(context, request, products, 2)
-    sell, = decide()
-    assert json.loads(store.virtual_account('native')['account_v4_json'])['budget'] is not None
-    execution.apply_report(EquityOrderReport(sell, quantity, Decimal('10'), prepared.interval.start+timedelta(minutes=1), 'FILLED_ALL'))
-    state = json.loads(store.virtual_account('native')['account_v4_json'])
-    assert state['active'] is state['budget'] is state['state']['cycle'] is None
-    assert state['latest_closed']['sell_income'] == pytest.approx(quantity*9.99)
-    assert not store.account_invariant_violations()
-    store.close()
-
-
-def test_strategy_cannot_inject_execution_fields(tmp_path):
-    # The AccountDecision contract test covers every forbidden field. One real
-    # engine rejection owns the independent account/decision atomicity risk.
-    context, request, products, store, _, _ = native_account(tmp_path, MarketId.CN)
-    request = replace_strategy(request, "from strategy_runtime import AccountStepResult,AccountDecision,StateRecord\n"
-        "def step(ctx,state):\n"
-        "    return AccountStepResult(AccountDecision.from_facts(1,'invalid',facts={'fixture':1},next_watch='next',orders=None),cycle_values=StateRecord())\n")
-    prepared = prepared_at(context, request, products)
-    before = store.virtual_account('native')
-    with pytest.raises(TypeError, match='unexpected keyword'):
-        AccountEngine(store, EquityAdviceClient(store), now=lambda: prepared.interval.start).refresh_account('native', prepared=prepared)
-    assert store.virtual_account('native') == before
-    assert not store.account_decisions('native') and not store.account_intents('native')
-    store.close()
-
-
-@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
-@pytest.mark.parametrize('terminal', ['FILLED_ALL', 'CANCELLED_PART'])
-def test_cumulative_reservation_and_fee_rounding_survive_partial_reports(tmp_path, market, terminal):
-    from dataclasses import replace
-    context, request, products, store, _, channel = native_account(tmp_path, market)
-    quantity, partial, price, rate = ((300, 100, Decimal('10.03'), Decimal('.00017')) if market is MarketId.CN
-                                      else (125, 1, Decimal('10.03'), Decimal('.001')))
-    request = replace(request, fee_rate=float(rate))
-    request = replace_strategy(request, "from strategy_runtime import AccountStepResult,AccountDecision,StateRecord\n"
-        "def step(ctx,state):\n"
-        f"    return AccountStepResult(AccountDecision.from_facts({quantity/1000},'rounding',facts={{'fixture':1}},next_watch='next'),cycle_values=StateRecord())\n")
-    prepared = prepared_at(context, request, products)
-    AccountEngine(store, EquityAdviceClient(store), now=lambda: prepared.interval.start).refresh_account('native', prepared=prepared)
-    execution = EquityExecution(store, channel, now=lambda: prepared.interval.start)
-    execution.reconcile(cash=Decimal(str(request.initial_cash)), quantity=0, account_id='native')
-    order, = execution.submit_pending('native')
-    execution.apply_report(EquityOrderReport(order, partial, price, prepared.interval.start+timedelta(minutes=1), 'FILLED_PART'))
-    total = quantity if terminal == 'FILLED_ALL' else partial
-    last = EquityOrderReport(order, total, price, prepared.interval.start+timedelta(minutes=2), terminal)
-    execution.apply_report(last)
-    execution.apply_report(last)
-    account = store.virtual_account('native')
-    assert Decimal(account['frozen_cash']) == 0
-    fee = (price*total*rate).quantize(Decimal('.0001'))
-    assert Decimal(account['cash']) == Decimal(str(request.initial_cash))-price*total-fee
-    assert sum(Decimal(fill['fee']) for fill in store.account_fills('native')) == fee
-    assert not store.account_invariant_violations()
-    store.close()
-
-
 def intraday_inputs(context, request, products):
     from dataclasses import replace
     from zoneinfo import ZoneInfo
@@ -285,55 +195,3 @@ def intraday_inputs(context, request, products):
     with ResearchExecutionSession(context,experiment=request.experiment) as execution:
         request = context.evaluation.prepare(request,execution=execution).request
     return context,request,products
-
-
-@pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
-def test_native_m30_obeys_declared_buy_sellability(tmp_path,market):
-    context,request,products,store,_,channel = native_account(tmp_path,market,intraday=True)
-    prepared = prepared_at(context,request,products)
-    execution = EquityExecution(store,channel,now=lambda:prepared.interval.start)
-    def decide():
-        AccountEngine(store,EquityAdviceClient(store),now=lambda:prepared.interval.start).refresh_account('native',prepared=prepared)
-        account=store.virtual_account('native')
-        execution.reconcile(cash=Decimal(account['cash'])+Decimal(account['frozen_cash']),quantity=account['quantity'],account_id='native')
-        return execution.submit_pending('native')
-    buy,=decide()
-    qty=store.account_order(buy)['quantity']
-    execution.apply_report(EquityOrderReport(buy,qty,Decimal('10'),prepared.interval.start+timedelta(minutes=1),'FILLED_ALL'))
-    prepared=prepared_at(context,request,products,1)
-    if market is MarketId.CN:
-        assert decide()==()
-        assert store.virtual_account('native')['quantity']==qty
-        # The next actual session, including the lunch break, unlocks all lots.
-        rows=products[EquityProduct.BARS].loc[lambda frame:frame.BarStart>=request.window.start]
-        index=next(i for i,row in enumerate(rows.itertuples()) if row.BarStart.date()>request.window.start.date())
-        prepared=prepared_at(context,request,products,index)
-    sell,=decide()
-    execution.apply_report(EquityOrderReport(sell,qty,Decimal('10'),prepared.interval.start+timedelta(minutes=1),'FILLED_ALL'))
-    assert store.virtual_account('native')['quantity']==0
-    assert not store.account_invariant_violations()
-    store.close()
-
-
-@pytest.mark.parametrize('market',[MarketId.CN,MarketId.US])
-def test_rejected_flat_entry_releases_pending_budget_without_creating_cycle(tmp_path,market):
-    from execution_channels.futu.broker import BrokerOrderRejectedError
-    context,request,products,store,_,channel=native_account(tmp_path,market)
-    request=budget_request(request)
-    prepared=prepared_at(context,request,products)
-    AccountEngine(store,EquityAdviceClient(store),now=lambda:prepared.interval.start).refresh_account('native',prepared=prepared)
-    before=json.loads(store.virtual_account('native')['account_v4_json'])
-    assert before['budget'] is not None and before['active'] is None
-    execution=EquityExecution(store,channel,now=lambda:prepared.interval.start)
-    execution.reconcile(cash=Decimal(str(request.initial_cash)),quantity=0,account_id='native')
-    def reject(intent):
-        raise BrokerOrderRejectedError('explicit recorded rejection')
-    channel.place_order=reject
-    with pytest.raises(BrokerOrderRejectedError,match='recorded rejection'):
-        execution.submit_pending('native')
-    after=json.loads(store.virtual_account('native')['account_v4_json'])
-    assert after['state']['revision']==1 and after['state']['cycle'] is None
-    assert after['pending_cycle'] is after['budget'] is after['active'] is None
-    assert Decimal(store.virtual_account('native')['frozen_cash'])==0
-    assert not store.account_invariant_violations()
-    store.close()

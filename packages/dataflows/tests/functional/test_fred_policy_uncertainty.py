@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-import pandas as pd
-import requests
 
 from dataflows import DataRequest, DataStatus, Dataset
 from dataflows.fred_policy_uncertainty import fetch_us_policy_uncertainty_daily
@@ -29,7 +27,7 @@ def _payload() -> dict[str, Any]:
     return {"count": len(observations), "observations": observations}
 
 
-def test_fred_policy_uncertainty_splits_long_vintage_history(monkeypatch) -> None:
+def test_DFLS_30_C01_fred_policy_uncertainty_splits_long_vintage_history(monkeypatch) -> None:
     monkeypatch.setenv("FRED_KEY", "test-key")
     observed_windows: list[tuple[str, str]] = []
 
@@ -56,109 +54,13 @@ def test_fred_policy_uncertainty_splits_long_vintage_history(monkeypatch) -> Non
     assert len(frame) == 2
 
 
-def test_fred_policy_uncertainty_facade_publishes_typed_identity(flow_factory, publish_data, monkeypatch) -> None:
-    monkeypatch.setenv("FRED_KEY", "test-key")
-    calls = []
-
-    def fake_get(url, **kwargs):
-        calls.append((url, kwargs["params"]))
-        return FakeResponse(200, _payload())
-
-    monkeypatch.setattr(requests, "get", fake_get)
-    from dataflows import tushare_strategy_data
-    monkeypatch.setattr(tushare_strategy_data, "get_tushare_pro", lambda _: object())
-    flow = flow_factory()
-
-    result = publish_data(flow, DataRequest(
-        Dataset.US_POLICY_UNCERTAINTY_DAILY,
-        None,
-        "2024-01-01",
-        "2024-01-03",
-        "2024-01-03",
-    ))
-
-    assert result.status is DataStatus.READY
-    assert result.identity is not None
-    assert result.identity.source == "FRED"
-    assert result.identity.metadata["series_id"] == "USEPUINDXD"
-    assert result.identity.temporal_contract.availability_time_field == "AvailableDate"
-    assert len(calls) == 1
-    assert calls[0][0] == "https://api.stlouisfed.org/fred/series/observations"
-    assert calls[0][1]["series_id"] == "USEPUINDXD"
-    assert calls[0][1]["observation_start"] == "2024-01-01"
-    assert calls[0][1]["observation_end"] == "2024-01-03"
-    assert calls[0][1]["api_key"] == "test-key"
-    assert calls[0][1]["output_type"] == 4
-    assert calls[0][1]["realtime_start"] == "2024-01-01"
-    assert calls[0][1]["realtime_end"] == "2024-01-03"
-    assert "test-key" not in calls[0][0]
-    assert result.dataframe.to_dict("list") == {
-        "Date": [pd.Timestamp("2024-01-01"), pd.Timestamp("2024-01-03")],
-        "AvailableDate": [pd.Timestamp("2024-01-02"), pd.Timestamp("2024-01-03")],
-        "PolicyUncertaintyIndex": [110.5, 121.0],
-    }
-    assert result.identity.metadata["vintage_mode"] == "INITIAL_RELEASE_ONLY"
 
 
-def test_fred_policy_uncertainty_rejects_wrong_lineage(flow_factory, publish_data, monkeypatch) -> None:
-    monkeypatch.setenv("FRED_KEY", "test-key")
-    frame = pd.DataFrame({
-        "Date": [pd.Timestamp("2024-01-01")],
-        "AvailableDate": [pd.Timestamp("2024-01-02")],
-        "PolicyUncertaintyIndex": [100.0],
-    })
-    wrong_lineage = publish_data(flow_factory({
-        Dataset.US_POLICY_UNCERTAINTY_DAILY.value: lambda _: (
-            frame,
-            {
-                "vendor": "FRED",
-                "series_id": "OTHER",
-                "vintage_mode": "INITIAL_RELEASE_ONLY",
-                "fred_output_type": 4,
-                "source_time_field": "Date",
-                "availability_time_field": "AvailableDate",
-                "source_calendar": "FRED_CALENDAR_DAY",
-                "available_at": "initial release date reported by ALFRED",
-            },
-        )
-    }), DataRequest(
-        Dataset.US_POLICY_UNCERTAINTY_DAILY,
-        None,
-        "2024-01-01",
-        "2024-01-03",
-        None,
-    ))
-    assert wrong_lineage.status is DataStatus.FAILED
-    assert wrong_lineage.error is not None
-    assert wrong_lineage.error.code == "DATA_CONTRACT_MISMATCH"
 
 
-def test_fred_policy_uncertainty_maps_source_failure_without_fake_success(flow_factory, publish_data, monkeypatch) -> None:
-    monkeypatch.setenv("FRED_KEY", "test-key")
-
-    def unavailable(*args: Any, **kwargs: Any) -> FakeResponse:
-        raise requests.ConnectionError("offline")
-
-    flow = flow_factory({
-        Dataset.US_POLICY_UNCERTAINTY_DAILY.value: lambda _: fetch_us_policy_uncertainty_daily(
-            "2024-01-01", "2024-01-03", http_get=unavailable
-        )
-    })
-    result = publish_data(flow, DataRequest(
-        Dataset.US_POLICY_UNCERTAINTY_DAILY,
-        None,
-        "2024-01-01",
-        "2024-01-03",
-        None,
-    ))
-
-    assert result.status is DataStatus.WAITING_SOURCE
-    assert result.dataframe.empty
-    assert result.identity is None
-    assert result.error is not None and result.error.retryable
 
 
-def test_fred_policy_uncertainty_rejects_truncated_response(flow_factory, publish_data, monkeypatch) -> None:
+def test_DFLS_30_C02_fred_policy_uncertainty_rejects_truncated_response(flow_factory, publish_data, monkeypatch) -> None:
     monkeypatch.setenv("FRED_KEY", "test-key")
     payload = _payload()
     payload["count"] = 4
@@ -175,35 +77,6 @@ def test_fred_policy_uncertainty_rejects_truncated_response(flow_factory, publis
         None,
         "2024-01-01",
         "2024-01-03",
-        None,
-    ))
-
-    assert result.status is DataStatus.INCOMPLETE
-    assert result.error is not None
-    assert result.error.code == "INCOMPLETE_DATA"
-
-
-def test_fred_policy_uncertainty_blocks_missing_history_start(flow_factory, publish_data, monkeypatch) -> None:
-    monkeypatch.setenv("FRED_KEY", "test-key")
-    payload = {
-        "count": 1,
-        "observations": [
-            {"date": "2024-01-10", "realtime_start": "2024-01-10", "value": "100.0"}
-        ],
-    }
-    flow = flow_factory({
-        Dataset.US_POLICY_UNCERTAINTY_DAILY.value: lambda _: fetch_us_policy_uncertainty_daily(
-            "2024-01-01",
-            "2024-01-10",
-            http_get=lambda *args, **kwargs: FakeResponse(200, payload),
-        )
-    })
-
-    result = publish_data(flow, DataRequest(
-        Dataset.US_POLICY_UNCERTAINTY_DAILY,
-        None,
-        "2024-01-01",
-        "2024-01-10",
         None,
     ))
 

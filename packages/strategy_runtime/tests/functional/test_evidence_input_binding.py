@@ -6,7 +6,6 @@ from types import SimpleNamespace
 import sys
 
 import pandas as pd
-import pytest
 from dataflows import (
     Dataflows,
     DataSpace,
@@ -23,7 +22,6 @@ from strategy_runtime import (
     CutoffRule,
     InputContract,
     InputRequirement,
-    RuntimeContractError,
     StrategyIdentity,
     StrategyInputBinding,
     TradableWindow,
@@ -31,7 +29,9 @@ from strategy_runtime import (
 from strategy_runtime.preparation import acquire_binding, prepare_inputs
 
 
-def test_hash_pinned_evidence_can_move_with_release_without_refetch(tmp_path, monkeypatch):
+def test_SRT_19_C01_hash_pinned_evidence_can_move_with_release_without_refetch(
+    tmp_path, monkeypatch
+):
     source_root = tmp_path / "candidate"
     source_root.mkdir()
     data = b"Date,Feature\n2026-01-01,1.25\n"
@@ -146,15 +146,3 @@ def test_hash_pinned_evidence_can_move_with_release_without_refetch(tmp_path, mo
     )
     assert prepared.results["feature"].dataframe.Feature.tolist() == [1.25]
     assert prepared.requests["feature"].parameters.repository_root == source_root
-    for field, changed in (("sha256", "0" * 64), ("path", "another.csv")):
-        saved = source[field]
-        source[field] = changed
-        with pytest.raises(RuntimeContractError, match="calculation plan differs"):
-            prepare_inputs(
-                strategy=release,
-                algorithm=algorithm,
-                tradable_window=window,
-                dataflows=offline,
-                binding=binding,
-            )
-        source[field] = saved

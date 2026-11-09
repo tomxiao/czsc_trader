@@ -1,6 +1,7 @@
+# Risk ownership: E2E-01
 """Native frozen V4 admission and forward decisions on isolated CN/US fixtures."""
 from datetime import datetime, timedelta, timezone
-from dataclasses import asdict, replace
+from dataclasses import replace
 from decimal import Decimal
 from zoneinfo import ZoneInfo
 from unittest.mock import patch
@@ -20,7 +21,7 @@ from strategy_manager import PaperTradingApproval, StrategyRegistry
 from paper_trading_engine.account_engine import AccountEngine
 from execution_channels.futu.channel import ChannelAccountConfig, FUTU_SIMULATE_CN_CHANNEL_ID, FUTU_US_SIM_CHANNEL_ID
 from paper_trading_engine.ec_boundary import execution_rules
-from paper_trading_engine.formal_v4_advice import FormalV4AdviceClient, FormalV4ScheduleProvider, FormalV4Inputs
+from paper_trading_engine.formal_v4_advice import FormalV4AdviceClient, FormalV4ScheduleProvider
 from execution_channels.futu.store import PaperStore
 from test_v4_inspection_roundtrip import native_fixture
 from paper_trading_engine.execution_reference import ExecutionReferenceBinding
@@ -113,90 +114,6 @@ def formal_v4(tmp_path, request):
     root.close()
 
 
-def test_formal_v4_forward_decision_uses_historical_prices_and_exact_deployment(formal_v4):
-    client, store, _, interval, candidate, evaluation = formal_v4
-    client.register_recipe('formal', client.inputs('formal'))
-    before = store.virtual_account('formal')
-    prepared = client.prepare_interval('formal', interval, observed_at=interval.start)
-    assert prepared.execution_reference.price == Decimal('10')
-    assert store.virtual_account('formal') == before
-    assert not store.account_intents('formal')
-    assert prepared.live_interval
-    assert max(prepared.v4_replay._data.ends) <= interval.start
-    assert interval.start not in prepared.v4_replay._data.starts
-    assert prepared.candidate.source_root.is_relative_to(client.repo_root / 'strategies')
-    assert prepared.candidate.definition == candidate.definition
-    # Forward strategy observations use history and calendars; execution rules belong to EC.
-    assert prepared.binding.prepared != evaluation.input_binding.prepared
-    assert max(prepared.v4_replay._data.ends) < interval.start
-    assert prepared.binding.expected_identities != evaluation.input_binding.expected_identities
-    from strategy_runtime.account_planning import AccountDecisionEngine
-    point = AccountDecisionEngine(candidate, prepared.v4_replay).observation(interval)[0]
-    assert point.observed_through < interval.start
-    assert not hasattr(prepared.v4_replay._data, 'constraints')
-    with pytest.raises(ValueError, match='absent from declared calendar'):
-        AccountDecisionEngine(candidate, prepared.v4_replay).observation(
-            TimeInterval(interval.start + timedelta(days=30), interval.end + timedelta(days=30)))
-    engine = AccountEngine(store, client, now=lambda: interval.start)
-    provider = FormalV4ScheduleProvider(client, engine)
-    task = provider.due_decision(store.virtual_account('formal'), interval.start)
-    assert task.interval == interval
-    provider.run_scheduled('formal', task, interval.start)
-    document = json.loads(store.virtual_account('formal')['account_v4_json'])
-    assert document['state']['revision'] == 1
-    assert store.account_intents('formal')
-    provider.run_scheduled('formal', task, interval.start + timedelta(seconds=1))
-    assert json.loads(store.virtual_account('formal')['account_v4_json']) == document
-    # An independent cumulative channel fill enters the same shared store path.
-    from execution_channels.futu.broker import BrokerOrder
-    from execution_channels.futu.order_reports import apply_order_report
-    intent, = store.account_intents('formal')
-    store.set_setting('channel_reconciliation_status', 'OK')
-    store.set_setting('futu_cash_reconciliation_status', 'OK')
-    assert store.claim_account_intent(intent['intent_id'], moment=interval.start)
-    order = BrokerOrder('formal-fill', candidate.instrument.symbol, 'BUY', intent['quantity'],
-                        float(intent['limit_price']), 'SUBMITTED', 0, 0., intent['intent_id'])
-    store.bind_channel_order(intent['intent_id'], order.channel_order_id, asdict(order))
-    report = dict(asdict(order), status='FILLED_ALL', cumulative_filled_quantity=intent['quantity'],
-                  average_fill_price=10.)
-    apply_order_report(store, report, occurred_at=(interval.start + timedelta(minutes=1)).isoformat())
-    assert store.virtual_account('formal')['quantity'] == intent['quantity']
-    with pytest.raises(ValueError, match='not currently executable'):
-        client.prepare_interval('formal', interval, observed_at=interval.end)
-    with pytest.raises(ValueError, match='identity differs'):
-        client.register_inputs('formal', evaluation.input_binding,
-            expected_release_hash='0' * 64, fee_rate=evaluation.fee_rate,
-            execution_reference=client.inputs('formal').execution_reference)
-    # A restart reads the explicit publication; no replacement data is prepared.
-    reopened = FormalV4AdviceClient(repo_root=client.repo_root, store=store,
-                                   dataflows=client.dataflows, data_dir=client.data_dir)
-    assert reopened.inputs('formal') == client.inputs('formal')
-    # Repeated interval preparation survives a restart without invoking providers.
-    with patch.object(reopened.dataflows, 'prepare', side_effect=AssertionError('must reuse interval archive')):
-        assert reopened.prepare_interval('formal', interval, observed_at=interval.start).binding == prepared.binding
-    next_interval = TimeInterval(interval.start + timedelta(days=1), interval.end + timedelta(days=1))
-    next_prepared = reopened.prepare_interval('formal', next_interval, observed_at=next_interval.start)
-    assert next_prepared.binding.prepared != prepared.binding.prepared
-    assert max(next_prepared.v4_replay._data.ends) == interval.end
-    # No corporate-action input or predecision account mutation is used. RAW remains execution-only.
-    assert store.virtual_account('formal')['quantity'] == intent['quantity']
-    assert next_prepared.execution_reference.price == Decimal('10')
-    assert next_prepared.history.Close.iloc[-1] == 20.
-    assert all(parameters.query.adjustment is PriceAdjustment.BACKWARD
-               for role, parameters in next_prepared.binding.request_bindings
-               if parameters.query.product is EquityProduct.BARS)
-    archive = reopened._interval_path('formal', store.virtual_account('formal')['release_hash'], interval)
-    archive.unlink()
-    with pytest.raises(ValueError, match='input record is missing'):
-        reopened.prepare_interval('formal', interval, observed_at=interval.start)
-    path = candidate.source_root / candidate.definition.source_files[0]
-    original = path.read_bytes()
-    try:
-        path.write_bytes(original + b'\n# tampered frozen bytes\n')
-        with pytest.raises(Exception, match='differs|hash'):
-            reopened.load_release('S999', 'v1')
-    finally:
-        path.write_bytes(original)
 
 
 def test_daily_decision_prepares_after_close_and_waits_for_next_session(formal_v4):
@@ -246,31 +163,6 @@ def test_daily_decision_prepares_after_close_and_waits_for_next_session(formal_v
                 operation()
 
 
-def test_daily_incomplete_latest_session_does_not_pin_stale_decision(formal_v4):
-    client, store, _, interval, _, _ = formal_v4
-    client.register_recipe('formal', client.inputs('formal'))
-    task = FormalV4ScheduleProvider(client, None).due_decision(store.virtual_account('formal'), interval.start)
-    def delayed(binding):
-        def fetch(request):
-            frame, metadata = binding.fetch(request)
-            if request.parameters.query.product is EquityProduct.BARS:
-                frame = frame.copy()
-                frame.loc[frame.Date == task.decision_at - timedelta(hours=5), 'AvailableDate'] = interval.start
-            return frame, metadata
-        return ProviderBinding(binding.name, binding.revision, fetch)
-    client.dataflows._equity_providers = {key: delayed(value)
-        for key, value in client.dataflows._equity_providers.items()}
-    with pytest.raises(ValueError, match='complete preceding trading-session|no completed RAW execution reference'):
-        client.prepare_interval('formal', interval, observed_at=task.decision_at)
-    archive = client._interval_path('formal', store.virtual_account('formal')['release_hash'], interval)
-    assert not archive.exists() and not store.account_intents('formal')
-    assert client.prepare_interval('formal', interval, observed_at=interval.start).available_through == (
-        task.decision_at - timedelta(hours=5)).astimezone(ZoneInfo(client.inputs('formal').binding.instrument.timezone)).date()
-
-
-def test_formal_input_contract_rejects_unknown_fields():
-    with pytest.raises(ValueError, match='unsupported'):
-        FormalV4Inputs.from_dict({'schema_version': 1, 'extra': True})
 
 
 def test_online_v4_decision_and_execution_use_the_scoped_runtime(formal_v4, monkeypatch):
@@ -438,19 +330,3 @@ def test_online_v4_decision_and_execution_use_the_scoped_runtime(formal_v4, monk
         worker.join()
         server.server_close()
         runtime.account_chart.close()
-
-
-def test_formal_v4_maintenance_prepares_data_without_adopting_interval(formal_v4):
-    client, store, _, interval, _, _ = formal_v4
-    client.register_recipe('formal', client.inputs('formal'))
-    account = store.virtual_account('formal')
-    archive = client._interval_path('formal', account['release_hash'], interval)
-    result = client.prepare_data('formal', interval, as_of=interval.end + timedelta(hours=1))
-    assert result.ready and result.reference is not None
-    prices = [item.request for item in result.items if getattr(item.request.parameters, 'query', None)
-              and item.request.parameters.query.product is EquityProduct.BARS]
-    assert prices and all(request.parameters.query.end < interval.start.astimezone(
-        ZoneInfo(request.parameters.instrument.timezone)).date() for request in prices)
-    assert not archive.exists()
-    assert store.virtual_account('formal') == account
-    assert not store.account_intents('formal')

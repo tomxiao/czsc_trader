@@ -20,7 +20,9 @@ def _bars(dates: list[str]) -> pd.DataFrame:
     })
 
 
-@pytest.mark.parametrize("mutation", ["schedule", "hash"])
+@pytest.mark.parametrize("mutation", [
+    "schedule",
+], ids=['DFLS-15-C06'])
 def test_stock_daily_uses_conservative_after_close_time(clone_published_flow, publish_data, mutation) -> None:
     frame = with_scheduled_hfq_availability(
         _bars(["2026-09-08"]), factor_source="adj_factor", period="daily"

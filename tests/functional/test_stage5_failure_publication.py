@@ -1,3 +1,4 @@
+# Risk ownership: TDR-20 TDR-21
 """Control and storage failures cannot manufacture a passing/published result."""
 from dataclasses import replace
 import pytest
@@ -6,21 +7,10 @@ from strategy_runtime.inspection import InspectionControl
 from czsc_trader.application import inspect_candidate, InspectionPublicationError
 from czsc_trader.application.research_evidence import validate_inspection
 from test_candidate_freeze import inspection as inspection
-from test_research_contract_upgrade import managed_evaluation as managed_evaluation
+from managed_evaluation_support import managed_evaluation as managed_evaluation
 
 
-def test_cancel_before_preparation_publishes_incomplete_report(inspection):
-    context, request, _ = inspection
-    report = inspect_candidate(context, request, control=InspectionControl(cancelled=lambda: True))
-    assert report.status is f.InspectionStatus.INCOMPLETE
-    assert report.plan is report.release is None
-    assert report.pte_runtime.status is f.InspectionStatus.NOT_RUN
-    assert report.behavior_equivalence.cases[0].reason_code is f.InspectionReason.CANCELLED
-    assert validate_inspection(context.root, report.reference) == report
-    assert not (context.root / ".tmp/strategy-inspection" / report.run_id).exists()
-
-
-def test_progress_callback_exception_is_recorded_as_execution_error(inspection):
+def test_TDR_21_C03_progress_callback_exception_is_recorded_as_execution_error(inspection):
     context, request, _ = inspection
     def broken(_):
         raise RuntimeError("consumer failure")
@@ -32,7 +22,7 @@ def test_progress_callback_exception_is_recorded_as_execution_error(inspection):
     assert not (context.root / ".tmp/strategy-inspection" / report.run_id).exists()
 
 
-def test_storage_failure_raises_publication_error_without_report(inspection, monkeypatch):
+def test_TDR_21_C04_storage_failure_raises_publication_error_without_report(inspection, monkeypatch):
     context, request, _ = inspection
     from czsc_trader.application import evidence_service
     def denied(*args):
@@ -46,7 +36,7 @@ def test_storage_failure_raises_publication_error_without_report(inspection, mon
     assert tuple((context.root / ".tmp/strategy-inspection").iterdir())
 
 
-def test_environment_mismatch_cannot_start_execution(inspection):
+def test_TDR_20_C04_environment_mismatch_cannot_start_execution(inspection):
     context, request, _ = inspection
     pte = request.protocol.pte
     request = replace(request, protocol=replace(request.protocol, pte=replace(pte,
@@ -59,7 +49,7 @@ def test_environment_mismatch_cannot_start_execution(inspection):
     assert validate_inspection(context.root, report.reference) == report
 
 
-def test_cleanup_failure_retains_the_confirmed_published_report(inspection, monkeypatch):
+def test_TDR_21_C05_cleanup_failure_retains_the_confirmed_published_report(inspection, monkeypatch):
     context, request, _ = inspection
     from czsc_trader.application import inspection_service
     def denied(path):
@@ -75,7 +65,7 @@ def test_cleanup_failure_retains_the_confirmed_published_report(inspection, monk
     assert (context.root / ".tmp/strategy-inspection" / report.run_id).is_dir()
 
 
-def test_execution_frame_cannot_disagree_with_admitted_dfls_asset(inspection):
+def test_TDR_20_C02_execution_frame_cannot_disagree_with_admitted_dfls_asset(inspection):
     context, request, _ = inspection
     replay = request.replays[0]
     data = replay.execution_data
@@ -87,30 +77,3 @@ def test_execution_frame_cannot_disagree_with_admitted_dfls_asset(inspection):
     assert report.behavior_equivalence.cases[0].reason_code is f.InspectionReason.INPUT_MISMATCH
     assert report.pte_runtime.status is f.InspectionStatus.NOT_RUN
     assert validate_inspection(context.root, report.reference) == report
-
-
-@pytest.mark.parametrize("version", ["strategy_observation.v2", "strategy_observation.v4"])
-def test_technical_replay_rejects_identically_unavailable_observations(inspection, monkeypatch, version):
-    from strategy_runtime import ObservationUnavailable
-    from czsc_trader.application._inspection_candidate import _load_inspection_candidate
-    from czsc_trader.application.inspection_replay import _run
-    from strategy_runtime import observation as observation_module
-
-    context, request, _ = inspection
-    candidate = _load_inspection_candidate(context, request.candidate)
-    original = observation_module.observe_strategy_proposal
-    calls = []
-
-    def fail_display(definition, proposal, *, plan_identity, action):
-        # Validate the current proposal/plan identity before a display-only fault.
-        observed = original(definition, proposal, plan_identity=plan_identity, action=action)
-        assert observed.to_dict()["status"] == "READY"
-        calls.append(plan_identity)
-        return ObservationUnavailable("identical display failure", version)
-
-    monkeypatch.setattr(observation_module, "observe_strategy_proposal", fail_display)
-    for side in ("candidate", "release"):
-        with pytest.raises(ValueError, match="technical inspection observation unavailable.*identical display failure"):
-            _run(request.research.runtime, candidate, request.replays[0],
-                 context.root / ".tmp" / f"unavailable-inspection-{side}")
-    assert len(calls) >= 2

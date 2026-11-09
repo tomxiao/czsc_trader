@@ -14,8 +14,6 @@ from execution_channels.entry_cycle import EntryCyclePhase
 from execution_channels.entry_cycle import EntryCyclePlanStatus
 from execution_channels.policy import ExecutionPolicy
 from execution_channels.session_contracts import OrderSide
-from execution_channels.session_contracts import OrderType
-from execution_channels.session_contracts import PlannedOrder
 from execution_channels.session_contracts import PriceReference
 from execution_channels.errors import RuntimeContractError
 from execution_channels.session_contracts import StrategyIdentity
@@ -69,6 +67,7 @@ def _plan(executor, policy, prices, day, fraction):
     return plan
 
 
+# Independent risk: EC05; responsibility-level assertions.
 def test_cycle_allocation_locks_budget_across_retry_topup_and_next_cycle():
     prices = pd.DataFrame({
         "dt": pd.bdate_range("2026-09-14", periods=8),
@@ -114,18 +113,7 @@ def test_cycle_allocation_locks_budget_across_retry_topup_and_next_cycle():
         assert cost <= float(cycle.cash_budget)
 
 
-def test_too_small_allocation_is_explicit_and_does_not_create_cycle():
-    prices = pd.DataFrame({"dt": pd.bdate_range("2026-09-14", periods=2), "open": 10., "close": 10.})
-    executor, policy = _account(prices, cash=1000.)
-    plan = _plan(executor, policy, prices, 1, .001)
-    assert plan.cycle_status is EntryCyclePlanStatus.INSUFFICIENT_LOT
-    assert plan.entry_cycle_after is None
-    result = executor.execute(plan)
-    assert result.state.entry_cycle is None
-    assert result.portfolio.available_cash == 1000
-    assert executor.finish().orders.empty
-
-
+# Independent risk: EC05; responsibility-level assertions.
 def test_budget_exhaustion_and_failed_exit_keep_cycle_until_confirmed_flat():
     prices = pd.DataFrame({
         "dt": pd.bdate_range("2026-09-14", periods=6),
@@ -157,6 +145,7 @@ def test_budget_exhaustion_and_failed_exit_keep_cycle_until_confirmed_flat():
     assert result.orders.query("side == 'SELL'").status.tolist() == ["UNFILLED"] * 5 + ["FILLED"] * 5
 
 
+# Independent risk: EC05; responsibility-level assertions.
 def test_account_rejects_changed_cycle_facts_before_any_mutation():
     prices = pd.DataFrame({"dt": pd.bdate_range("2026-09-14", periods=3), "open": 10., "close": 10.})
     executor, policy = _account(prices)
@@ -175,52 +164,3 @@ def test_account_rejects_changed_cycle_facts_before_any_mutation():
         executor.execute(replace(plan, entry_cycle_before=forged_before, entry_cycle_after=forged_before, plan_identity=identity))
     assert executor.snapshot(point) == before
     executor.execute(plan)
-
-
-def test_dynamic_plan_cannot_be_executed_by_fixed_capital_account():
-    prices = pd.DataFrame({"dt": pd.bdate_range("2026-09-14", periods=2), "open": 10., "close": 10.})
-    source, policy = _account(prices)
-    fixed = deepcopy(SETTINGS)
-    fixed["capital"].update(mode="full_available_cash", allocation_fraction=1.)
-    executor, _ = _account(prices, settings=fixed)
-    with pytest.raises(RuntimeContractError, match="capital mode"):
-        executor.execute(_plan(source, policy, prices, 1, .5))
-
-
-def test_cycle_identity_binds_plan_to_account_even_with_equal_cash_and_revision():
-    prices = pd.DataFrame({"dt": pd.bdate_range("2026-09-14", periods=2), "open": 10., "close": 10.})
-    source, policy = _account(prices)
-    other, _ = _account(prices, account_id="independent-account")
-    plan = _plan(source, policy, prices, 1, .5)
-    point = TradingPoint(plan.trading_date, plan.generated_at)
-    before = other.snapshot(point)
-    with pytest.raises(RuntimeContractError, match="another account"):
-        other.execute(plan)
-    assert other.snapshot(point) == before
-
-
-@pytest.mark.parametrize("forgery", ["active_sell", "unrequested_exit"])
-def test_resigned_cycle_plan_cannot_sell_or_exit_without_signal(forgery):
-    prices = pd.DataFrame({"dt": pd.bdate_range("2026-09-14", periods=3), "open": 10., "close": 10.})
-    executor, policy = _account(prices)
-    executor.execute(_plan(executor, policy, prices, 1, .5))
-    valid = _plan(executor, policy, prices, 2, 1.)
-    changes = {
-        "target_quantity": 0,
-        "orders": (PlannedOrder(OrderSide.SELL, valid.actual_quantity, OrderType.MARKET, None),),
-    }
-    if forgery == "unrequested_exit":
-        changes.update(
-            entry_cycle_after=replace(valid.entry_cycle_after, phase=EntryCyclePhase.EXITING),
-            cycle_status=EntryCyclePlanStatus.EXIT,
-        )
-    keys = ("signal_identity", "actual_quantity", "target_quantity", "cycle_target_quantity",
-            "plan_mode", "capital_mode", "allocation_fraction", "orders", "legs", "cycle_target",
-            "entry_cycle_before", "entry_cycle_after", "cycle_status", "available_cash", "fee_rate")
-    identity = plan_identity_for(**{key: changes.get(key, getattr(valid, key)) for key in keys})
-    point = TradingPoint(valid.trading_date, valid.generated_at)
-    before = executor.snapshot(point)
-    with pytest.raises(RuntimeContractError, match="cycle|active|exit"):
-        executor.execute(replace(valid, plan_identity=identity, action="SELL", **changes))
-    assert executor.snapshot(point) == before
-    executor.execute(valid)

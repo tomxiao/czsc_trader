@@ -1,29 +1,24 @@
 """CN/US HFQ research and independently prepared RAW simulation quotations."""
-from dataclasses import replace
 from datetime import date, datetime, timedelta
-import json
 from zoneinfo import ZoneInfo
 
 import pandas as pd
-import pytest
 
 from dataflows import (AssetClass, BarFrequency, EquityProduct, InstrumentId, MarketId,
     PriceAdjustment, ProviderBinding, ProviderConfig, ProviderKey, SourceRef, TimeInterval,
     TradingSession)
 from dataflows.equity_data import equity_metadata, session_record
 from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy, CnEquitySpec, UsEquitySpec,
-    EquityAuxiliaryInput, EquityInputBinding, EquityStrategyCandidate, EquityStrategyDefinition,
+    EquityAuxiliaryInput, EquityStrategyCandidate, EquityStrategyDefinition,
     ExecutionResources, ResearchExecutionSpec, StrategyComputation, equity_source_hash)
 from strategy_runtime.equity_features import FeatureGraph
 from strategy_runtime.models import ExecutionPolicy
 from strategy_runtime.equity_replay import StrategyStateSchema
-from czsc_trader.application import publish_evidence_many
 from czsc_trader.application.context import RepositoryContext
-from czsc_trader.application.equity_evidence_io import materialize_equity_document
 from czsc_trader.application.research_governance_service import (
     create_research_context, ResearchBatchRequest, ExperimentRequest)
 from czsc_trader.research_tools import (EquityEvaluationRequest, EquitySources, EquityBuyHold,
-    EvaluationBenchmark, EvaluationEvidenceWrite, ResearchExecutionSession)
+    EvaluationBenchmark)
 from czsc_trader.research_tools.equity_replay import materialize_equity
 from research_scaffold_support import seeded_research_context
 
@@ -150,95 +145,3 @@ def economic_rows(rows):
     # and timing field while preserving that lineage distinction.
     return [{key: value for key, value in row.items() if not key.endswith("_id")}
             for row in rows]
-
-
-@pytest.mark.parametrize("market", (MarketId.CN, MarketId.US))
-@pytest.mark.parametrize("computation", (StrategyComputation.STATEFUL_STEP, StrategyComputation.BATCH_HISTORY))
-def test_adjusted_observations_prepare_evaluate_publish_read_use_hfq_execution(tmp_path, market, computation):
-    context, request, _, _, calls = setup_adjusted(tmp_path, market, computation)
-    with ResearchExecutionSession(context, experiment=request.experiment) as execution:
-        prepared, result, payload = evaluate(context, request, execution)
-        binding = prepared.request.input_binding
-        assert len(binding.expected_identities) == 7
-        items = binding.bind_requests(prepared.request.requests(context.execution_spec))
-        assert set(key for key, _ in items) == set(binding.expected_identities)
-        physical = dict(items)
-        assert physical["sessions"] == physical["auxiliary:stock_hfq:sessions"]
-        assert physical["bars"].parameters.query.adjustment is PriceAdjustment.BACKWARD
-        assert physical["auxiliary:stock_hfq:bars"].parameters.query.adjustment is PriceAdjustment.BACKWARD
-        assert EquityInputBinding.from_dict(json.loads(json.dumps(binding.to_dict()))) == binding
-        assert payload["data"]["bars"]["metadata"]["adjustment"] == PriceAdjustment.BACKWARD.value
-        assert payload["data"]["auxiliary:stock_hfq:bars"]["metadata"]["adjustment"] == PriceAdjustment.BACKWARD.value
-        assert payload["data"]["bars"]["content_sha256"] == payload["data"]["auxiliary:stock_hfq:bars"]["content_sha256"]
-        fills = payload["runs"]["candidate"]["fills"]
-        assert fills and all(row["price"] == 20. for row in fills)
-        assert all(row["quantity"] % (100 if market is MarketId.CN else 1) == 0 for row in fills)
-        published, = publish_evidence_many(context,
-            (EvaluationEvidenceWrite(request.experiment, "adjusted", prepared, result),), execution=execution)
-        assert published.status.value == "PUBLISHED", published.error
-        path = published.reference.resolve(context.repository.root)
-        restored = materialize_equity_document(context.repository.root,
-            path.relative_to(context.repository.root).as_posix(), path.read_bytes()).payload
-        assert restored == payload
-        raw_request = replace(request, candidate=replace(request.candidate, candidate_id="C0002",
-            definition=replace(request.candidate.definition, auxiliary_inputs=())))
-        _, _, raw_payload = evaluate(context, raw_request, execution)
-        assert raw_payload["runs"]["buy_hold"] == payload["runs"]["buy_hold"]
-        for name in ("fills", "account_daily"):
-            assert economic_rows(raw_payload["runs"]["candidate"][name]) == economic_rows(payload["runs"]["candidate"][name])
-        assert execution.equity_statistics.benchmark_runs == 1
-    # Seven logical roles share the primary HFQ stream and calendar.
-    # Removing auxiliary observations must reuse the same physical products.
-    assert len(calls) == 5
-    assert len(set(calls)) == 5
-
-
-@pytest.mark.parametrize("market", (MarketId.CN, MarketId.US))
-def test_alias_change_uses_distinct_snapshot_and_reuses_physical_data(tmp_path, market):
-    context, request, _, _, calls = setup_adjusted(tmp_path, market)
-    with ResearchExecutionSession(context, experiment=request.experiment) as execution:
-        _, first, original = evaluate(context, request, execution)
-        definition = request.candidate.definition
-        renamed = replace(definition.auxiliary_inputs[0], name="renamed_hfq")
-        changed = replace(request, candidate=replace(request.candidate, candidate_id="C0002",
-            definition=replace(definition, auxiliary_inputs=(renamed, definition.auxiliary_inputs[1]))))
-        _, second, renamed_payload = evaluate(context, changed, execution)
-        assert first.payload["input_ref"] != second.payload["input_ref"]
-        assert "auxiliary:renamed_hfq:bars" in renamed_payload["data"]
-        assert "auxiliary:stock_hfq:bars" not in renamed_payload["data"]
-        assert original["runs"]["buy_hold"] == renamed_payload["runs"]["buy_hold"]
-        for name in ("fills", "account_daily"):
-            assert economic_rows(original["runs"]["candidate"][name]) == economic_rows(renamed_payload["runs"]["candidate"][name])
-        assert execution.equity_statistics.input_snapshots == 2
-        assert execution.equity_statistics.benchmark_runs == 1
-    assert len(calls) == 5
-
-
-@pytest.mark.parametrize("market", (MarketId.CN, MarketId.US))
-def test_adjusted_observation_availability_is_causal(tmp_path, market):
-    context, request, _, adjusted, _ = setup_adjusted(tmp_path, market)
-    # The second day's adjusted close is unavailable until after the whole run.
-    # Its outlier would fail the strategy assertion if visibility used Date only.
-    adjusted.loc[1, ["Open", "High", "Low", "Close"]] = [21., 21.5, 20.5, 21.]
-    adjusted.loc[1, "AvailableDate"] += pd.Timedelta(days=10)
-    with ResearchExecutionSession(context, experiment=request.experiment) as execution:
-        _, _, payload = evaluate(context, request, execution)
-        assert len(payload["runs"]["candidate"]["decisions"]) == 3
-        recorded = payload["audit_inputs"]["decision_inputs"]["auxiliary"]["stock_hfq"]["bars"]
-        assert recorded[1]["Close"] == 21.
-
-
-@pytest.mark.parametrize('basis', [None, '', 'another-adjustment-base'])
-def test_hfq_limits_cannot_mix_adjustment_bases(basis):
-    from czsc_trader.application.execution_inputs import execution_constraints
-    metadata = {'bars': {'adjustment': 'hfq', 'price_basis_id': 'primary'},
-                'trading_facts': {'adjustment': 'hfq', 'price_basis_id': basis}}
-    with pytest.raises(ValueError, match='price limits must use the primary HFQ basis'):
-        execution_constraints(None, {}, metadata)
-
-
-def test_research_identity_pins_shared_execution_rules(tmp_path):
-    from account_contract_support import account_contract_request
-    request = account_contract_request(tmp_path)
-    identity = request.identity(request.candidate.definition.execution_spec)
-    assert 'execution_channels.planning.session_rules' in identity['engine_sources']

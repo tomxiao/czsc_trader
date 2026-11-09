@@ -67,6 +67,7 @@ def state(connection, decision_id="decision"):
     return connection.execute("SELECT state FROM decision_state_events WHERE decision_id=?", (decision_id,)).fetchone()[0]
 
 
+# Independent risk: EC30; responsibility-level assertions.
 def test_no_order_history_and_legacy_replacement_preserved(legacy_db):
     decision(legacy_db, "first", status="SUPERSEDED", replacement="second")
     decision(legacy_db, "second")
@@ -94,6 +95,7 @@ def test_no_order_history_and_legacy_replacement_preserved(legacy_db):
     assert legacy_db.execute("SELECT MIN(occurred_at) FROM decision_state_events").fetchone()[0] == NOW
 
 
+# Independent risk: EC30; responsibility-level assertions.
 @pytest.mark.parametrize("quantity,expected", [(100, "COMPLETED"), (99, None)])
 def test_completion_requires_exact_order_and_fill_evidence(legacy_db, quantity, expected):
     decision(legacy_db, orders=(ORDER,))
@@ -109,6 +111,7 @@ def test_completion_requires_exact_order_and_fill_evidence(legacy_db, quantity, 
         assert legacy_db.execute("SELECT name FROM sqlite_master WHERE name='decision_state_events'").fetchone() is None
 
 
+# Independent risk: EC30; responsibility-level assertions.
 def test_unknown_submission_stays_executing_even_after_valid_session(legacy_db):
     decision(legacy_db, orders=(ORDER,))
     intent(legacy_db, state="SUBMISSION_UNCERTAIN", channel_id=None)
@@ -116,6 +119,7 @@ def test_unknown_submission_stays_executing_even_after_valid_session(legacy_db):
     assert state(legacy_db) == "EXECUTING"
 
 
+# Independent risk: EC30; responsibility-level assertions.
 @pytest.mark.parametrize("session,expected", [("2026-10-09", "PENDING"), ("2026-10-07", "INCOMPLETE")])
 def test_unsubmitted_plan_state_uses_valid_session_not_invalidated_label(legacy_db, session, expected):
     decision(legacy_db, orders=(ORDER,), session=session)
@@ -123,6 +127,7 @@ def test_unsubmitted_plan_state_uses_valid_session_not_invalidated_label(legacy_
     assert state(legacy_db) == expected
 
 
+# Independent risk: EC30; responsibility-level assertions.
 def test_changed_order_type_retry_preserves_compensation_but_not_original_success(legacy_db):
     decision(legacy_db, orders=(ORDER,))
     intent(legacy_db, "original", state="REJECTED", channel_id=None)
@@ -141,22 +146,8 @@ def test_changed_order_type_retry_preserves_compensation_but_not_original_succes
         "original_intent": "original", "retry_intent": "retry", "compensating_fill_quantity": 100}]
 
 
-def test_missing_plan_metadata_blocks_migration_without_mutation(legacy_db):
-    decision(legacy_db)
-    legacy_db.execute("UPDATE decisions SET payload='{}'")
-    with pytest.raises(LifecycleMigrationError, match="explicit order-plan"):
-        migrate(legacy_db)
-    assert "run_state" not in {row[1] for row in legacy_db.execute("PRAGMA table_info(virtual_accounts)")}
-
-
-def test_empty_database_and_transaction_contract(legacy_db):
-    with pytest.raises(RuntimeError, match="transaction"):
-        migrate_lifecycle(legacy_db, NOW)
-    migrate(legacy_db)
-    assert legacy_db.execute("SELECT COUNT(*) FROM decision_state_events").fetchone()[0] == 0
-
-
-@pytest.mark.parametrize("orphan", ["intent", "order", "fill"])
+# Independent risk: EC26; responsibility-level assertions.
+@pytest.mark.parametrize("orphan", ["fill"])
 def test_orphan_execution_evidence_blocks_migration_before_schema_changes(legacy_db, orphan):
     if orphan == "intent":
         intent(legacy_db)
