@@ -362,9 +362,10 @@ test('account execution drawer displays authoritative effects across both market
     desired_quantity:100,planned_quantity:37,actual_quantity:37,cash:'63',available_cash:'0',receivable:'0',valuation_price:'1',equity:'100',
     valuation_at:'2026-11-06T20:00:00Z',as_of:'2026-11-08T01:00:00Z',planning_status:'BLOCKED',constraint_reasons:['INSUFFICIENT_CASH'],orders:[]};
   for(const [market,currency] of [['CN','CNY'],['US','USD']]){
-    state.accountSnapshot={scope:{account_id:'demo',market,currency},account:{name:'账户'},decision:{decision_id:'D',status:'INCOMPLETE',state_reason:'PLANNING_BLOCKED',target_quantity:9999,execution_effect:{...effect}}};
+    state.accountSnapshot={scope:{account_id:'demo',market,currency},account:{name:'账户'},decision:{decision_id:'D',signal_date:'2026-11-06',valid_session:'2026-11-09',status:'INCOMPLETE',state_reason:'PLANNING_BLOCKED',target_quantity:9999,execution_effect:{...effect}}};
     bindAccountEvents('demo','RUNNING');
     const summary=accountMarkup(state.accountSnapshot,[]);
+    assert.match(summary,/最近决策 · 信号日 2026-11-06 · 有效日 2026-11-09/);
     assert.match(summary,/目标 100.00% · 实际 37.00% · 本次规划受阻/);
     assert.doesNotMatch(summary,/无需下单|9,999 股/);
     for(const selector of ['#decisionDetails','#accountDetails']){
