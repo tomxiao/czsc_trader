@@ -14,7 +14,7 @@ from strategy_runtime import (
 )
 
 
-FORWARD_CHART_CONTRACT_VERSION = "pte_forward_chart.v3"
+FORWARD_CHART_CONTRACT_VERSION = "pte_forward_chart.v4"
 
 
 @dataclass(frozen=True, slots=True)
@@ -127,6 +127,8 @@ def render_forward_chart_html(value: object, *, inline_assets: bool = False) -> 
     strategy_name = str(strategy.get("name", "")).strip()
     if not release_id or not strategy_name:
         raise ValueError("PTE forward chart strategy title is incomplete")
+    if strategy.get("currency") not in ("CNY", "USD"):
+        raise ValueError("PTE forward chart requires an explicit channel currency")
     window = context["window"]
     start = window["forward_observation_start"]
     events = context["execution"]["decisions"]

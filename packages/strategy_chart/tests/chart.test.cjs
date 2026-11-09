@@ -45,7 +45,7 @@ function context(){
 }
 test('MU first paper signal shows the recorded no-order decision and explanation on its signal date',()=>{
  const f=fixture(),c=context();
- c.mode='PAPER';c.strategy={symbol:'MU',account_id:'s018-v1',release_id:'S018-v1'};
+ c.mode='PAPER';c.strategy={symbol:'MU',account_id:'s018-v1',release_id:'S018-v1',currency:'USD'};
  c.window={selection_data_cutoff:'2026-10-30',forward_observation_start:'2026-11-06'};
  c.market_data.bars=['2026-11-05','2026-11-06','2026-11-09'].map(date=>({date,open:10,high:11,low:9,close:10}));
  c.observations=[];c.execution.fills=[];
@@ -66,6 +66,19 @@ test('snapshot interpretation is text only and explanation preserves judgment',(
  const f=fixture();f.mount(f.root,context());const reading=f.root.querySelector('.signal-reading');
  assert.match(reading.textContent,/等待条件满足/);assert.match(reading.textContent,/<img src=x/);assert.equal(reading.querySelector('img'),null);
  reading.querySelector('button').fire('click');assert.match(reading.textContent,/当前判断等待条件满足/);assert.match(reading.textContent,/怎么看这个判断解释文本/);assert.match(reading.textContent,/接下来关注等待下一次信号/);
+});
+test('paper fill price, amount and fees all use the bound channel currency',()=>{
+ for(const [currency,unit] of [['CNY','元'],['USD','美元']]){
+  const f=fixture(),c=context();c.mode='PAPER';c.strategy.currency=currency;
+  f.window.location={hash:'#2026-01-10'};f.mount(f.root,c);
+  const rendered=f.svg.textContent;
+  assert.ok(rendered.includes('价格 1.000 '+unit+'（不复权）'));
+  assert.ok(rendered.includes('金额 100.00 '+unit));
+  assert.ok(rendered.includes('费用 0.10 '+unit));
+  if(currency==='USD')assert.doesNotMatch(rendered,/\d 元/);
+ }
+ const f=fixture(),c=context();c.mode='PAPER';
+ assert.throws(()=>f.mount(f.root,c),/explicit channel currency/);
 });
 test('chart keyboard selection clears prior judgment and preserves non-trading event precision and fee',()=>{
  const f=fixture();f.mount(f.root,context());assert.equal(f.root.querySelector('#forward-event-date'),null);f.svg.fire('keydown',{key:'End'});

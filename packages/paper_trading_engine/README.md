@@ -395,7 +395,7 @@ PTE前瞻观察图由三类事实组成：SRT随决策记录的观察快照、PT
 
 账户快照 `account.forward_observation_start` 与图表状态 `forward_observation_start` 返回账户最早的正式决策信号日，包含无需下单的决策。尚无决策时返回 `null`。重绑保留账户已有信号历史。`selection_data_cutoff` 仍表示选型截止，`metrics.observation_start/end` 仍表示日终估值窗口。
 
-图表载荷 `pte_forward_chart.v3` 按信号日归档决策，保留生成时间和生效日；成交按市场实际成交日归档。V4 已保存的 `strategy_output.explanation` 投影为决策解释，可在没有数值观察时展示。嵌入图展示摘要且不出现局部滚动条，展开大图定位到当前选中日期。版本升级后后台按新契约重建图表缓存。
+图表载荷 `pte_forward_chart.v4` 按信号日归档决策，保留生成时间和生效日。成交按市场实际成交日归档，价格、金额和费用使用绑定渠道的币种。V4 已保存的 `strategy_output.explanation` 投影为决策解释，可在没有数值观察时展示。嵌入图展示摘要且不出现局部滚动条，展开大图定位到当前选中日期。版本升级后后台按新契约重建图表缓存。
 
 账户页首行展示总资产、可用现金、冻结资金、持仓、累计收益率。冻结资金和累计收益率分别取自快照 `account.frozen_cash` 和 `metrics.current_total_return`。累计收益率为当前总资产除以初始资金减一，退役后以已回收资金作为期末资产。
 独立行情只用于展示，不能反向改变策略计算。

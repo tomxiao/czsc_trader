@@ -28,7 +28,7 @@ from execution_channels.futu.trading_window import SHANGHAI
 ACCOUNT_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 INPUT_LIMIT = 5 * 1024 * 1024
 OUTPUT_LIMIT = 20 * 1024 * 1024
-CACHE_RENDER_REVISION = "pte-forward-chart-v14"
+CACHE_RENDER_REVISION = "pte-forward-chart-v15"
 
 
 def _path_comparison_key(path: Path) -> str:
@@ -387,7 +387,8 @@ class AccountChartService:
         missing_observation_count = len(decision_rows) - len(decisions)
         observation_start = min((row["signal_date"] for row in decision_rows), default=None)
         intents = [self._intent(row) for row in intent_rows]
-        formal_zone = (ZoneInfo(channel_profile(account["channel_id"]).timezone)
+        profile = channel_profile(account["channel_id"])
+        formal_zone = (ZoneInfo(profile.timezone)
                        if account.get("equity_rules_json") is not None else None)
         fills = [
             {
@@ -427,6 +428,7 @@ class AccountChartService:
                 "release_hash": account["release_hash"],
                 "name": account["strategy_name_snapshot"],
                 "symbol": account["symbol"],
+                "currency": profile.currency,
             },
             "window": {
                 "selection_data_cutoff": cutoff,

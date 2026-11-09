@@ -1,5 +1,6 @@
 window.mountStrategyChart=function mountStrategyChart(root,context){
   if(!(root instanceof HTMLElement)||!context||!['BACKTEST','PAPER'].includes(context.mode)||!context.strategy||!context.window||!context.market_data||!context.execution||![context.market_data.bars,context.observations,context.execution.decisions,context.execution.fills,context.execution.snapshots].every(Array.isArray))throw new TypeError('strategy chart requires a container and typed chart context');
+  if(context.mode==='PAPER'&&!['CNY','USD'].includes(context.strategy.currency))throw new TypeError('PTE chart requires an explicit channel currency');
   if(root.dataset.strategyChartMounted)throw new Error('strategy chart is already mounted');
   root.dataset.strategyChartMounted='true';root.classList.add('strategy-chart');
   const lifecycle=new AbortController();let destroyed=false;
@@ -48,11 +49,12 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   const fillTime=item=>item.time_precision==='SESSION'||/^\d{4}-\d{2}-\d{2}$/.test(item.occurred_at||'')?`${fillDate(item)}（交易日，未记录时刻）`:localTime(item.occurred_at);
   const statusLabel=value=>({PENDING:'待执行',EXECUTING:'执行中',COMPLETED:'已完成',SUPERSEDED:'已替代',CANCELLED:'已取消',INCOMPLETE:'未完成'}[value]||value);
   const quantity=value=>value==null?'未记录':`${Number(value).toLocaleString('zh-CN')} 股`;
-  const money=value=>value==null?'未记录':`${Number(value).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})} 元`;
+  const fillCurrency=isPaper&&context.strategy.currency==='USD'?'美元':'元';
+  const money=value=>value==null?'未记录':`${Number(value).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})} ${fillCurrency}`;
   const decisionDate=item=>isPaper?item.signal_date:localTime(item.generated_at).slice(0,10);
   const dayDecisions=date=>decisions.filter(item=>decisionDate(item)===date);
   const dayFills=date=>fills.filter(item=>fillDate(item)===date);
-  const fillSummary=item=>`${fillTime(item)} · 成交：${String(item.side).toUpperCase()==='BUY'?'买入':'卖出'} ${quantity(item.quantity)}，价格 ${fmt(item.price)} 元（不复权），金额 ${money(Number(item.quantity)*Number(item.price))}，费用 ${money(item.fee)}`;
+  const fillSummary=item=>`${fillTime(item)} · 成交：${String(item.side).toUpperCase()==='BUY'?'买入':'卖出'} ${quantity(item.quantity)}，价格 ${fmt(item.price)} ${fillCurrency}（不复权），金额 ${money(Number(item.quantity)*Number(item.price))}，费用 ${money(item.fee)}`;
   const eventDates=[...new Set([...bars.map(item=>item.date),...decisions.map(decisionDate),...fills.map(fillDate)])].sort();
   const requestedDate=window.location?.hash?.slice(1);
   if(isPaper&&eventDates.includes(requestedDate))state.selected=requestedDate;

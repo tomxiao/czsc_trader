@@ -22,7 +22,7 @@ def test_mu_no_order_decision_drives_chart_start_and_saved_explanation(tmp_path)
                                            "strategy_output": {"explanation": explanation}}}
     account = {"account_id": "s018-v1", "symbol": "MU", "asset_type": "stock", "strategy_id": "S018",
                "strategy_version": "v1", "strategy_name_snapshot": "MU", "release_hash": "a" * 64,
-               "selection_data_cutoff": "2026-10-30"}
+               "selection_data_cutoff": "2026-10-30", "channel_id": "futu_US_sim_channel"}
     store = SimpleNamespace(account_decisions=lambda _: [row], account_intents=lambda _: [],
                             account_fills=lambda _: [], account_snapshots=lambda _: [],
                             virtual_account=lambda _: account)
@@ -34,6 +34,7 @@ def test_mu_no_order_decision_drives_chart_start_and_saved_explanation(tmp_path)
         result = service._request(account)
         assert result["window"]["forward_observation_start"] == "2026-11-06"
         assert result["window"]["selection_data_cutoff"] == "2026-10-30"
+        assert result["strategy"]["currency"] == "USD"
         assert result["observations"] == []
         decision, = result["execution"]["decisions"]
         assert decision["explanation"] == explanation
@@ -54,7 +55,7 @@ def test_mu_no_order_decision_drives_chart_start_and_saved_explanation(tmp_path)
 
 def _context() -> dict[str, object]:
     return {
-        "contract_version": "pte_forward_chart.v3",
+        "contract_version": "pte_forward_chart.v4",
         "strategy": {
             "account_id": "s007-v1",
             "strategy_id": "S007",
@@ -63,6 +64,7 @@ def _context() -> dict[str, object]:
             "release_hash": "a" * 64,
             "name": "多源机会风险门控",
             "symbol": "588080.SH",
+            "currency": "CNY",
         },
         "window": {"selection_data_cutoff": "2026-09-02", "context_sessions": 60,
                    "forward_observation_start": "2026-09-03"},
@@ -115,6 +117,14 @@ def test_forward_chart_rejects_foreign_observation(field,value):
     context = _context()
     context['observations'][0][field] = value
     with pytest.raises(ValueError, match='differs'):
+        render_forward_chart_html(context)
+
+
+def test_forward_chart_requires_channel_currency():
+    context = _context()
+    assert '"currency":"CNY"' in render_forward_chart_html(context)
+    del context["strategy"]["currency"]
+    with pytest.raises(ValueError, match="explicit channel currency"):
         render_forward_chart_html(context)
 
 

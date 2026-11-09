@@ -45,6 +45,8 @@ interface StrategyChartContext {
   strategy: {
     symbol: string; release_id?: string; reference_id?: string;
     name?: string; account_id?: string;
+    /** Required in PAPER mode and supplied by the bound execution channel. */
+    currency?: 'CNY' | 'USD';
   };
   window: {start?: string; end?: string; selection_data_cutoff?: string; forward_observation_start?: string | null};
   market_data: {
