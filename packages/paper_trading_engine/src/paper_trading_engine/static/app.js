@@ -122,6 +122,25 @@ export function decisionDetailsMarkup(decision,currency='CNY'){
     ['判断',explanation?.judgment],['依据',explanation?.basis?.map(item=>item.text).join('；')],['后续观察',explanation?.next_watch],
   ])+executionEffectMarkup(d,currency);
 }
+function eventReason(detail){
+  const reason=detail.message||detail.error||detail.reason;
+  const prefix='forward V4 input preparation is incomplete: ';
+  if(typeof reason!=='string'||!reason.startsWith(prefix))return reason;
+  const errors=reason.slice(prefix.length).split(/; (?=DataError\()/);
+  const causes=errors.map(error=>{
+    if(!error.startsWith("DataError(code='INCOMPLETE_DATA', "))return error;
+    const symbol=error.match(/'symbol': '([^']+)'/)?.[1];
+    if(error.includes("message='OHLCV observations omit expected trading sessions'")){
+      const dates=error.match(/'missing_dates': \[([^\]]*)\]/)?.[1].match(/\b\d{4}-\d{2}-\d{2}\b/g)||[];
+      const firstDates=dates.slice(0,3).join('、');
+      const period=dates.length>3?`${firstDates} 等 ${dates.length} 个交易日`:firstDates||'部分交易日';
+      return `${symbol?`${symbol} `:''}缺少 ${period} 的行情`;
+    }
+    if(error.includes("message='equity bars differ from the independent session grid'"))return `${symbol?`${symbol} 的`:''}行情与交易日历不一致`;
+    return error;
+  });
+  return causes.some((cause,index)=>cause!==errors[index])?`本周期决策未生成。${causes.join('；')}。`:reason;
+}
 export function auditSummary(event){
   const detail=event?.details||event?.payload||{};
   if(detail.termination_reason==='NORMAL_UNFILLED')return '限价买单正常结束，零成交';
@@ -133,8 +152,8 @@ export function auditSummary(event){
   if(event?.event_type==='BROKER_FEE_RECONCILED')return `估算费用 ${money(detail.modeled_fee)}，Futu实际费用 ${money(detail.actual_fee)}，账务调整 ${money(detail.adjustment)}`;
   if(event?.event_type==='EXTERNAL_CALL_SUCCEEDED')return `${detail.service||'外部服务'} · ${detail.operation||'调用'}成功`;
   if(event?.event_type==='EXTERNAL_CALL_FAILED')return `${detail.service||'外部服务'} · ${detail.operation||'调用'}失败`;
-  if(typeof (detail.message||detail.error||detail.reason)==='string')return detail.message||detail.error||detail.reason;
-  return auditOutcomeLabel(event?.outcome);
+  const reason=eventReason(detail);
+  return typeof reason==='string'?reason:auditOutcomeLabel(event?.outcome);
 }
 const state = {accounts:[],loader:new ScopedLoader(),lastSuccess:null,renderedScope:null,fingerprint:null,system:null,systemFingerprint:null,chart:null,navigation:null};
 const marketLabels = {CN:'A 股',US:'美股'};
@@ -195,7 +214,7 @@ function showAuditDetail(event,trigger){
   const details=event.details||event.payload||{};
   openDetail('事件详情',`<div class="detail-heading"><span class="event-severity" data-severity="${esc(event.severity)}">${esc(auditSeverityLabel(event.severity))}</span><h3>${esc(eventTitle(event))}</h3><p>${esc(auditSummary(event))}</p></div>`
     +detailFacts([['状态',auditOutcomeLabel(event.outcome)],['影响对象',auditScopeLabel(event,state.accounts)],
-      ['时间（北京）',formatBeijingTime(event.occurred_at||event.created_at)],['原因',details.message||details.error||details.reason],
+      ['时间（北京）',formatBeijingTime(event.occurred_at||event.created_at)],['原因',eventReason(details)],
       ['渠道账户',event.channel_account_id],['决策 ID',event.decision_id],['订单 ID',event.order_id],['事件 ID',event.event_id]])
     +(event.correlation_id?`<button class="button secondary" data-detail-correlation="${esc(event.correlation_id)}">查看关联事件</button>`:'')
     +renderEventDetails(event),trigger);
@@ -212,7 +231,7 @@ function bindEventRows(container, events){
 }
 function renderSystemEvents(s){
   const alerts=[...(s.alerts||[]).map(item=>typeof item==='string'?{code:item}:item),...(s.scheduler_failures||[]).map(item=>({...item,code:'SCHEDULER_OPERATION_FAILED'}))];
-  const active=alerts.length?alerts.map(item=>`<div class="active-alert"><strong>${esc(statusLabel(item.code))}</strong>${detailFacts([['影响对象',item.account_id||item.channel_account_id||item.operation],['原因',item.message||item.error],['发生次数',item.failure_count],['最近发生',item.last_at&&formatBeijingTime(item.last_at)],['下次重试',item.next_retry&&formatBeijingTime(item.next_retry)],['关联意图',item.intent_id]])}${renderEventDetails(item)}</div>`).join(''):'<div class="empty">当前没有活动告警</div>';
+  const active=alerts.length?alerts.map(item=>`<div class="active-alert"><strong>${esc(statusLabel(item.code))}</strong>${detailFacts([['影响对象',item.account_id||item.channel_account_id||item.operation],['原因',eventReason(item)],['发生次数',item.failure_count],['最近发生',item.last_at&&formatBeijingTime(item.last_at)],['下次重试',item.next_retry&&formatBeijingTime(item.next_retry)],['关联意图',item.intent_id]])}${renderEventDetails(item)}</div>`).join(''):'<div class="empty">当前没有活动告警</div>';
   const events=s.events||[];
   openDetail(`${marketName(state.market)} · 运行状态与告警`,`<section><h3>活动告警</h3>${active}</section><section><h3>最近事件</h3>${events.length?events.map(eventRow).join(''):'<div class="empty">暂无系统事件</div>'}</section>`,document.querySelector('#systemStatus'));
   bindEventRows(document.querySelector('#systemEventsContent'),events);

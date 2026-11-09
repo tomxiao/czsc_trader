@@ -346,6 +346,36 @@ test('account view separates history and preserves explicit reading state', () =
   assert.match(accountMarkup(snapshot,[]),/data-account-panel="records" hidden/);
 });
 
+test('scheduler alerts and audit events explain missing market data and preserve raw errors', () => {
+  const source=readFileSync(new URL('../../src/paper_trading_engine/static/app.js',import.meta.url),'utf8')
+    .replace(/^import .*;\r?\n/gm,'').replace(/\bexport /g,'').replace("if(typeof document!=='undefined')boot();",'');
+  const content={innerHTML:'',querySelectorAll:()=>[]};
+  const nodes={
+    '#systemEventsContent':content,'#systemEventsDialog':{open:true},'#systemEventsTitle':{},
+    '#closeSystemEvents':{focus(){}},
+  };
+  const context={document:{querySelector:selector=>nodes[selector]},AbortController};
+  runInNewContext(source+'\nglobalThis.subject={renderSystemEvents,showAuditDetail};',context);
+  const prefix='forward V4 input preparation is incomplete: ';
+  const missing="DataError(code='INCOMPLETE_DATA', message='OHLCV observations omit expected trading sessions', retryable=True, context=mappingproxy({'dataset': 'etf.ohlcv', 'symbol': '588080.SH', 'missing_dates': ['2026-11-09']}))";
+  const calendar="DataError(code='INCOMPLETE_DATA', message='equity bars differ from the independent session grid', retryable=True, context=mappingproxy({'dataset': 'equity.bars', 'symbol': '159326.SZ'}))";
+  const error=prefix+missing;
+  const summary='本周期决策未生成。588080.SH 缺少 2026-11-09 的行情。';
+  const event={event_type:'SCHEDULER_OPERATION_FAILED',details:{error}};
+  const {renderSystemEvents,showAuditDetail}=context.subject;
+  renderSystemEvents({scheduler_failures:[{operation:'account_strategy_cycle:s001-v1',error,next_retry:'2026-11-09T20:18:07+08:00'}],events:[event]});
+  assert.ok(content.innerHTML.includes(`<dt>原因</dt><dd>${summary}</dd>`));
+  assert.match(content.innerHTML,/<dt>下次重试<\/dt><dd>2026-11-09 20:18:07<\/dd>/);
+  assert.match(content.innerHTML,/<summary>原始事件字段<\/summary><pre>.*?DataError/s);
+  assert.equal(auditSummary(event),summary);
+  assert.equal(auditSummary({details:{error:prefix+missing+'; '+calendar}}),
+    '本周期决策未生成。588080.SH 缺少 2026-11-09 的行情；159326.SZ 的行情与交易日历不一致。');
+  assert.equal(auditSummary({details:{error:'接口连接超时'}}),'接口连接超时');
+  showAuditDetail(event);
+  assert.ok(content.innerHTML.includes(`<dt>原因</dt><dd>${summary}</dd>`));
+  assert.match(content.innerHTML,/<summary>原始事件字段<\/summary><pre>.*?DataError/s);
+});
+
 test('account execution drawer displays authoritative effects across both markets without inferring achievement', () => {
   const source=readFileSync(new URL('../../src/paper_trading_engine/static/app.js',import.meta.url),'utf8')
     .replace(/^import .*;\r?\n/gm,'').replace(/\bexport /g,'').replace("if(typeof document!=='undefined')boot();",'');
