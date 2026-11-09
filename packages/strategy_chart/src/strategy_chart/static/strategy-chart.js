@@ -18,13 +18,14 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   const css=name=>{if(!colors.has(name))colors.set(name,getComputedStyle(root).getPropertyValue(name).trim());return colors.get(name);};
   const state={range:'all',layers:{signal:true,fill:true,position:true},selected:null,signalView:null};
   const bars=context.market_data.bars;
-  const observations=context.observations;
   const decisions=[...context.execution.decisions].sort((a,b)=>Date.parse(a.generated_at)-Date.parse(b.generated_at));
+  const superseded=new Set(decisions.filter(item=>item.status==='SUPERSEDED').map(item=>item.decision_id));
+  const observations=context.observations.filter(item=>!isPaper||!superseded.has(item.decision_id));
   const fills=[...context.execution.fills].sort((a,b)=>Date.parse(a.occurred_at)-Date.parse(b.occurred_at));
   const snapshots=context.execution.snapshots;
   const observationStart=context.window.forward_observation_start;
   const byDate=new Map([...observations].sort((a,b)=>String(a.generated_at||a.signal_date).localeCompare(String(b.generated_at||b.signal_date))).map(item=>[item.signal_date,item]));
-  const observationById=new Map(observations.filter(item=>item.observation.status==='READY').map(item=>[item.decision_id,item.observation]));
+  const observationById=new Map(context.observations.filter(item=>item.observation.status==='READY').map(item=>[item.decision_id,item.observation]));
   const snapshotByDate=new Map(snapshots.map(item=>[item.session,item]));
   const signalControls=document.createElement('div');signalControls.className='signal-panel-controls';signalControls.hidden=true;
   const signalSelect=document.createElement('select');signalSelect.setAttribute('aria-label','选择信号分组');
@@ -73,7 +74,7 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   const node=(tag,cls,text)=>{const element=document.createElement(tag);element.className=cls;if(text!=null)element.textContent=text;return element;};
   function paintReading(observation,date){
     if(readingDate!==date)expanded=false;readingDate=date;
-    const narrative=(isPaper?dayDecisions(date).at(-1)?.explanation:null)
+    const narrative=(isPaper?dayDecisions(date).findLast(item=>item.status!=='SUPERSEDED')?.explanation:null)
       || (observation?.status==='READY'?observation.signal_panel?.explanation:null);
     const legacy=observation?.status==='READY'&&!narrative;
     reading.hidden=legacy||!state.layers.signal;legacyNotice.hidden=!legacy||!state.layers.signal;
@@ -153,7 +154,7 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
       PLAN_FILLED:'计划全部成交',PLAN_ENDED_WITHOUT_COMPLETION:'计划全部结束，未完成原定交易',
       NORMAL_UNFILLED:'限价买单正常结束，零成交',DEPENDENCY_NOT_TRIGGERED:'前序买入未成交，条件未触发',
       CHANNEL_RESULT_UNCERTAIN:'渠道结果待确认',CHANNEL_EXECUTION:'渠道执行中',AWAITING_EXECUTION:'等待执行',
-      AWAITING_FILL_RECONCILIATION:'等待成交事实对账',EXECUTION_WINDOW_PASSED:'执行时窗已结束',
+      AWAITING_FILL_RECONCILIATION:'等待成交事实对账',EXECUTION_WINDOW_PASSED:'执行时窗已结束',EXECUTION_EXPIRED:'报送时窗已结束',
       REPLACED:'由新决策替代',EXPIRED:'超过执行时限',CANCELLED:'执行前撤回',REJECTED:'订单拒绝',
       MIGRATION_NO_ORDER:'历史计划无需下单',MIGRATION_SUBMISSION_UNCERTAIN:'历史渠道提交结果待确认',
       MIGRATION_ALL_PLANNED_ORDERS_FILLED:'历史计划全部成交',

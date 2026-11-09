@@ -61,6 +61,12 @@ test('MU first paper signal shows the recorded no-order decision and explanation
  f.svg.fire('keydown',{key:'ArrowRight'});
  assert.equal(f.root.dataset.selectedDate,'2026-11-09');
  assert.match(f.root.querySelector('.event-heading').textContent,/无可展示事件/);
+ const current=fixture(),old=c.execution.decisions[0];
+ c.execution.decisions=[{...old,decision_id:'MU-RERUN',explanation:{...old.explanation,judgment:'继续空仓 · 无需下单'}},
+   {...old,status:'SUPERSEDED',state_reason:'PLAN_REPLACED'}];
+ current.window.location={hash:'#2026-11-06'};current.mount(current.root,c);
+ assert.match(current.root.querySelector('.signal-reading').textContent,/继续空仓 · 无需下单/);
+ assert.match(current.root.querySelector('.event-details').textContent,/已替代/);
 });
 test('snapshot interpretation is text only and explanation preserves judgment',()=>{
  const f=fixture();f.mount(f.root,context());const reading=f.root.querySelector('.signal-reading');

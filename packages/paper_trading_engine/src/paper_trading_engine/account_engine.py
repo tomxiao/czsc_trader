@@ -213,9 +213,9 @@ class AccountEngine:
             source_decision_id=source_id,
         )
 
-    def refresh_account(self, account_id: str, *, prepared):
+    def refresh_account(self, account_id: str, *, prepared, scheduled=None, observed_at=None, clock=None):
         with self._decision_lock:
-            return self._refresh_account(account_id, prepared=prepared)
+            return self._refresh_account(account_id, prepared=prepared, scheduled=scheduled, observed_at=observed_at, clock=clock)
 
     def drive_account_decision(self, account_id: str, *, prepared):
         """Evaluate one account and supersede only local, unsubmitted prior work."""
@@ -225,7 +225,7 @@ class AccountEngine:
             )
 
     def _refresh_account(
-        self, account_id: str, *, prepared, operator_drive: bool = False
+        self, account_id: str, *, prepared, operator_drive: bool = False, scheduled=None, observed_at=None, clock=None
     ):
         account = self.store.virtual_account(account_id)
         if account["run_state"] == "PAUSED":
@@ -334,40 +334,8 @@ class AccountEngine:
         previous_action = (
             json.loads(previous_payload).get("action") if previous_payload else None
         )
-        trading_date = window.start
-        decision = self.advice.get_decision(
-            int(account["quantity"]), float(decision_cash),
-            total_assets=float(account["total_assets"]),
-            trading_date=trading_date,
-            portfolio_revision=portfolio_revision,
-            state_revision=state_revision,
-            cycle_target_quantity=account["cycle_target"],
-            entry_cycle=None if account.get("entry_cycle_json") is None else EntryCycleState.from_dict(json.loads(account["entry_cycle_json"])),
-            strategy_id=account["strategy_id"],
-            strategy_version=account["strategy_version"],
-            account_id=account_id,
-            symbol=account["symbol"],
-            asset=account["asset_type"],
-            prepared=prepared,
-        )
+        decision = self._evaluate(account, prepared, decision_cash, portfolio_revision, state_revision)
         decision = self._assign_decision_id(account_id, previous_payload, decision)
-        expected = (
-            account["strategy_id"], account["strategy_version"], account["release_hash"],
-        )
-        actual = (
-            decision.strategy.get("strategy_id"), decision.strategy.get("version"),
-            decision.strategy.get("release_hash"),
-        )
-        if actual != expected:
-            raise ValueError("advice strategy release differs from account")
-        if decision.symbol != account["symbol"]:
-            raise ValueError("advice symbol differs from account")
-        if decision.actual_quantity != int(account["quantity"]):
-            raise ValueError("advice quantity differs from account")
-        if decision.portfolio_revision != portfolio_revision:
-            raise ValueError("advice portfolio revision differs from account")
-        if decision.state_revision != state_revision:
-            raise ValueError("advice state revision differs from account")
 
         # Re-read the account after the potentially long-running strategy call.
         # Store-level intent creation performs the same gate inside its transaction.
@@ -416,6 +384,8 @@ class AccountEngine:
         payload = decision.to_store_payload()
         payload["prepared_data_identity"] = prepared.data_identity
         payload["prepared_data_reference"] = dict(prepared.data_reference)
+        if scheduled is not None:
+            payload["decision_cycle"] = scheduled.cycle_record()
         previous = json.loads(previous_payload) if previous_payload else None
         if (
             previous is not None
@@ -507,7 +477,7 @@ class AccountEngine:
                 )
                 status = self._persist_generated_decision(
                     account_id, payload, locked_account, decision, account,
-                    previous_action,
+                    previous_action, observed_at=observed_at, clock=clock,
                 )
         else:
             with self.store.atomic_decision_update():
@@ -521,6 +491,7 @@ class AccountEngine:
                     raise AccountDecisionBlockedError("账户在提交前发生变化，决策未提交")
                 status = self._persist_generated_decision(
                     account_id, payload, locked_account, decision, account, previous_action,
+                    observed_at=observed_at, clock=clock,
                 )
         if not operator_drive:
             return status
@@ -542,22 +513,93 @@ class AccountEngine:
             superseded_intent_ids=superseded_intent_ids,
         )
 
+    def _evaluate(self, account, prepared, cash, portfolio_revision, state_revision, *, replacement=None):
+        decision = self.advice.get_decision(
+            int(account["quantity"]), float(cash), total_assets=float(account["total_assets"]),
+            trading_date=prepared.tradable_window.start, portfolio_revision=portfolio_revision, state_revision=state_revision,
+            cycle_target_quantity=account["cycle_target"],
+            entry_cycle=None if account.get("entry_cycle_json") is None else EntryCycleState.from_dict(json.loads(account["entry_cycle_json"])),
+            strategy_id=account["strategy_id"], strategy_version=account["strategy_version"],
+            account_id=account["account_id"], symbol=account["symbol"], asset=account["asset_type"],
+            prepared=prepared, **({"replacement": replacement} if replacement is not None else {}),
+        )
+        expected = (account["strategy_id"], account["strategy_version"], account["release_hash"],
+                    account["symbol"], int(account["quantity"]), portfolio_revision, state_revision)
+        actual = (decision.strategy.get("strategy_id"), decision.strategy.get("version"), decision.strategy.get("release_hash"),
+                  decision.symbol, decision.actual_quantity, decision.portfolio_revision, decision.state_revision)
+        if actual != expected:
+            raise ValueError("advice identity or portfolio differs from account")
+        return decision
+
+    def rerun_equity_decision(self, account_id, prior, prepared, scheduled, observed_at, *, initial=None, clock=None):
+        from execution_channels.futu.adoption import DecisionAdoption
+        from execution_channels.futu.decision_replacement import (
+            DecisionReplacementConflict, capture_replacement, replace_decision,
+        )
+
+        with self._decision_lock:
+            if self._draining:
+                raise AccountDecisionBlockedError("PTE正在停止，禁止重新计算决策")
+            snapshot = capture_replacement(self.store, account_id, prior["decision_id"], initial)
+            facts = json.loads(snapshot.evidence)
+            account = facts["account"]
+            local = [row for row in facts["intents"] if row["intent_id"] in snapshot.local_intent_ids]
+            cash = self._cash_after_replaceable_intents(account, local)
+            if cash != Decimal(str(prior["available_cash"])):
+                raise DecisionReplacementConflict("available cash differs from the original decision")
+            projected = {**account, "account_v4_json": snapshot.before}
+            decision = self._evaluate(projected, prepared, cash, self._effective_portfolio_revision(projected, cash),
+                                      self._state_revision(projected), replacement=snapshot)
+            payload = decision.to_store_payload()
+            payload.update(prepared_data_identity=prepared.data_identity,
+                           prepared_data_reference=dict(prepared.data_reference), decision_cycle=scheduled.cycle_record())
+            now = observed_at if clock is None else clock()
+            if not scheduled.validity.start <= now < scheduled.validity.end:
+                raise DecisionReplacementConflict("the current decision cycle ended during the rerun")
+            compared = ("strategy", "signal_date", "valid_session", "target_quantity", "cycle_target_quantity",
+                        "action", "execution_reference_price", "orders", "plan_legs", "plan_mode", "capital_mode",
+                        "strategy_output", "observation", "v4_state_transition")
+            if all(json.dumps(payload.get(key), sort_keys=True, default=str) ==
+                   json.dumps(prior.get(key), sort_keys=True, default=str) for key in compared):
+                if capture_replacement(self.store, account_id, prior["decision_id"], initial) != snapshot:
+                    raise DecisionReplacementConflict("account or order facts changed during the rerun")
+                return prior, "DECISION_REUSED", ()
+            stamp = now.astimezone(self._BEIJING).strftime("%Y%m%d-%H%M")
+            digest = sha256(json.dumps([prior["decision_id"], payload], sort_keys=True, default=str).encode()).hexdigest()[:12].upper()
+            payload.update(decision_id=f"DEC-{stamp}-{digest}", source_decision_id=decision.decision_id)
+            request = DecisionAdoption(account_id, json.dumps(payload, ensure_ascii=False, default=str).encode(),
+                                       prior["action"], now)
+            replace_decision(self.store, self.audit, snapshot, request, initial=initial, clock=clock)
+            adopted = self.store.account_decision(account_id, payload["decision_id"])["payload"]
+            outcome = "DECISION_AND_INTENTS_SUPERSEDED" if snapshot.local_intent_ids else "DECISION_SUPERSEDED"
+            return adopted, outcome, snapshot.local_intent_ids
+
     def _persist_generated_decision(
-        self, account_id, payload, execution_account, decision, account, previous_action,
+        self, account_id, payload, execution_account, decision, account, previous_action, *, observed_at=None, clock=None,
     ):
         from execution_channels.futu.adoption import AccountAdoption, DecisionAdoption
+        if observed_at is not None:
+            observed_at = observed_at if clock is None else clock()
+            validity = payload["decision_cycle"]["validity"]
+            if not datetime.fromisoformat(validity["start"]) <= observed_at < datetime.fromisoformat(validity["end"]):
+                raise AccountDecisionBlockedError("the current decision cycle ended before adoption")
         AccountAdoption(self.store, self.audit).adopt(DecisionAdoption(
-            account_id, json.dumps(payload, ensure_ascii=False, default=str).encode("utf-8"), previous_action),
+            account_id, json.dumps(payload, ensure_ascii=False, default=str).encode("utf-8"), previous_action, observed_at),
             in_transaction=True)
         return self.status(account_id)
 
     def status(self, account_id: str):
         account = self.store.virtual_account(account_id)
         payload = account.pop("last_decision_payload", None)
+        decision = json.loads(payload) if payload else None
+        if decision is None and account["equity_rules_json"] is not None and account["run_state"] in {"RUNNING", "PAUSED"}:
+            adopted = self.store.adopted_decision(account_id)
+            if adopted is not None:
+                decision = adopted["payload"]
         return {
             **account,
             "released_cash": self.store._retirement_cash(account_id),
-            "last_decision": json.loads(payload) if payload else None,
+            "last_decision": decision,
             "forward_observation_start": self.store.first_account_signal_date(account_id),
             "orders": self.store.account_orders(account_id),
             "fills": self.store.account_fills(account_id),

@@ -6,6 +6,7 @@ import json
 import math
 
 from .audit import AuditRecorder
+from .lifecycle import DecisionState
 from .store import PaperStore
 
 
@@ -42,6 +43,7 @@ class DecisionAdoption:
     account_id: str
     document: bytes
     previous_action: str | None = None
+    observed_at: datetime | None = None
 
     def __post_init__(self):
         if type(self.account_id) is not str or not self.account_id or type(self.document) is not bytes:
@@ -49,6 +51,10 @@ class DecisionAdoption:
         payload = json.loads(self.document)
         if type(payload) is not dict or type(payload.get("decision_id")) is not str:
             raise ValueError("adoption requires an explicit decision identity")
+        if self.observed_at is not None and (
+            type(self.observed_at) is not datetime or self.observed_at.utcoffset() is None
+        ):
+            raise ValueError("adoption requires an aware observation time")
 
 
 @dataclass(frozen=True, slots=True)
@@ -107,6 +113,14 @@ class AccountAdoption:
         account_id = request.account_id
         payload = json.loads(request.document)
         decision = _Decision.from_payload(payload)
+        window_closed = request.observed_at is not None and (
+            request.observed_at >= datetime.fromisoformat(payload["equity_execution_interval"]["end"])
+            or (bool(decision.plan_legs) and all(
+                request.observed_at >= leg.submit_before for leg in decision.plan_legs
+            ))
+        )
+        if window_closed and (decision.orders or decision.plan_legs):
+            payload["execution_disposition"] = "WINDOW_CLOSED"
         previous_action = request.previous_action
         account = self.store.virtual_account(account_id)
         if account['run_state'] != 'RUNNING':
@@ -176,7 +190,11 @@ class AccountAdoption:
                     },
                 )
 
-        if execution_account["run_state"] == "RUNNING" and self.store.account_decision(account_id, decision.decision_id)["status"] == "PENDING":
+        state = self.store.account_decision(account_id, decision.decision_id)["status"]
+        if window_closed and state == DecisionState.PENDING:
+            self.store._transition_decision(account_id, decision.decision_id, DecisionState.INCOMPLETE, "EXECUTION_EXPIRED")
+            self.store._release_completed_entry_cycle(account_id)
+        elif execution_account["run_state"] == "RUNNING" and state == DecisionState.PENDING:
             if decision.plan_legs:
                 plan_events = []
                 plan_rows = []

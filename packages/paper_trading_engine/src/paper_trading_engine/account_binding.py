@@ -8,7 +8,7 @@ import re
 from typing import TYPE_CHECKING
 
 from strategy_manager import Qualification
-from dataflows import InstrumentId, MarketId, AssetClass, TimeInterval
+from dataflows import InstrumentId, MarketId, AssetClass
 from strategy_runtime.equity_replay import StateRecord
 from strategy_runtime.inspection import InspectionRuntimePermit
 
@@ -147,7 +147,6 @@ class V4AccountBindingUpdate:
     binding: AccountBindingUpdate
     channel_account_id: str
     expected_facts_sha256: str
-    effective_interval: TimeInterval
     rules: EquityAccountRules
     inputs: 'FormalV4Inputs'
     state: V4StateContinuation | V4StateMigration
@@ -163,8 +162,8 @@ class V4AccountBindingUpdate:
             raise ValueError("V4 account update requires channel account identity")
         if type(self.expected_facts_sha256) is not str or not re.fullmatch(r"[0-9a-f]{64}", self.expected_facts_sha256):
             raise ValueError("V4 account update requires the account facts SHA-256")
-        if type(self.rules) is not EquityAccountRules or type(self.effective_interval) is not TimeInterval:
-            raise TypeError("V4 account update requires typed account rules and cutover interval")
+        if type(self.rules) is not EquityAccountRules:
+            raise TypeError("V4 account update requires typed account rules")
         if type(self.state) not in (V4StateContinuation, V4StateMigration):
             raise TypeError("V4 account update requires an explicit state treatment")
 

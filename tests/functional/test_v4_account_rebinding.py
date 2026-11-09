@@ -133,11 +133,8 @@ def test_rebind_active_v4_and_block_historical_execution(formal_v4, tmp_path, mo
         source_state = json.loads(before['account_v4_json'])
         source_hash = before['release_hash']
         new_hash = _upgrade_target(client, candidate, source_hash, change_schema=change_schema)
-        local = ZoneInfo(candidate.instrument.timezone)
-        opens = datetime(2026, 10, 16, 9, 30, tzinfo=local)
-        effective = TimeInterval(opens, opens.replace(hour=15 if candidate.instrument.market.value == 'CN' else 16, minute=0))
         request = V4AccountBindingUpdate(AccountBindingUpdate('formal', source_hash, new_hash, 'v1'),
-            'formal-channel', account_binding_facts_sha256(scoped, 'formal'), effective,
+            'formal-channel', account_binding_facts_sha256(scoped, 'formal'),
             execution_rules(candidate.instrument, candidate.definition.execution_spec),
             FormalV4Inputs(new_hash, evaluation.input_binding, evaluation.fee_rate, client.inputs('formal').execution_reference),
             V4StateContinuation('source', 'reviewed fixture state'))
@@ -157,6 +154,7 @@ def test_rebind_active_v4_and_block_historical_execution(formal_v4, tmp_path, mo
         after = scoped.virtual_account('formal')
         for key in ('cash', 'quantity', 'frozen_cash', 'receivable', 'initial_cash', 'total_assets', 'run_state'):
             assert after[key] == before[key]
+        assert after['last_decision_id'] == before['last_decision_id']
         for table, records in old_history.items():
             assert list(map(tuple, database._connection.execute(f'SELECT * FROM {table}'))) == records
         target_state = json.loads(after['account_v4_json'])
@@ -175,8 +173,8 @@ def test_rebind_active_v4_and_block_historical_execution(formal_v4, tmp_path, mo
         with pytest.raises(RuntimeError, match='RUNNING'):
             reopened.prepare_interval('formal', interval, observed_at=interval.start)
         scoped.set_virtual_paused('formal', False)
-        with pytest.raises(ValueError, match='cutover'):
-            reopened.prepare_interval('formal', interval, observed_at=interval.start)
+        old_session = json.loads(before['last_decision_payload'])['valid_session']
+        assert scoped.adopted_decision('formal', old_session)['decision_id'] == before['last_decision_id']
         scoped.set_virtual_paused('formal', True)
         committed = list(database._connection.iterdump())
         assert update_account_bindings(runtime, 'target', (request,)).status is AccountBindingUpdateStatus.ALREADY_APPLIED
@@ -185,13 +183,23 @@ def test_rebind_active_v4_and_block_historical_execution(formal_v4, tmp_path, mo
         database.close()
 
 
-@pytest.mark.parametrize('formal_v4', [
-    pytest.param((MarketId.CN, True), id='E2E04-C01'),
-    pytest.param((MarketId.US, True), id='E2E04-C02'),
-], indirect=True)
-def test_rebind_to_qualified_successor_version(formal_v4, tmp_path, monkeypatch, filled_position_seeds):
+@pytest.mark.parametrize('formal_v4,pending', [
+    pytest.param((MarketId.CN, True), False, id='E2E04-C01'),
+    pytest.param((MarketId.US, True), False, id='E2E04-C02'),
+    pytest.param((MarketId.CN, True), True, id='E2E04-C03'),
+    pytest.param((MarketId.US, True), True, id='E2E04-C04'),
+], indirect=['formal_v4'])
+def test_rebind_to_qualified_successor_version(formal_v4, pending, tmp_path, monkeypatch, filled_position_seeds):
     client, store, root, interval, candidate, evaluation = formal_v4
-    _fill_position(client, store, interval, candidate, filled_position_seeds)
+    if pending:
+        client.register_recipe('formal', client.inputs('formal'))
+        engine = AccountEngine(store, client, now=lambda: interval.start)
+        provider = FormalV4ScheduleProvider(client, engine)
+        task = provider.due_decision(store.virtual_account('formal'), interval.start)
+        provider.run_scheduled('formal', task, interval.start)
+        store.set_virtual_paused('formal', True)
+    else:
+        _fill_position(client, store, interval, candidate, filled_position_seeds)
     runtime, database, _ = _runtime(tmp_path, client, root, monkeypatch)
     try:
         scoped = database.scope('formal-channel')
@@ -201,10 +209,8 @@ def test_rebind_to_qualified_successor_version(formal_v4, tmp_path, monkeypatch,
         first_signal = scoped.first_account_signal_date('formal')
         assert first_signal == min(row['signal_date'] for row in scoped.account_decisions('formal'))
         target, _, _ = client.load_release('S999', 'v2')
-        opens = datetime(2026, 10, 16, 9, 30, tzinfo=ZoneInfo(candidate.instrument.timezone))
-        cutover = TimeInterval(opens, opens.replace(hour=15 if candidate.instrument.market is MarketId.CN else 16, minute=0))
         request = V4AccountBindingUpdate(AccountBindingUpdate('formal', before['release_hash'], target.release_hash, 'v2'),
-            'formal-channel', account_binding_facts_sha256(scoped, 'formal'), cutover,
+            'formal-channel', account_binding_facts_sha256(scoped, 'formal'),
             execution_rules(candidate.instrument, candidate.definition.execution_spec),
             FormalV4Inputs(target.release_hash, evaluation.input_binding, evaluation.fee_rate, client.inputs('formal').execution_reference),
             V4StateContinuation('source', 'reviewed successor compatibility'))
@@ -216,6 +222,23 @@ def test_rebind_to_qualified_successor_version(formal_v4, tmp_path, monkeypatch,
         assert json.loads(after['account_v4_json'])['active'] == active
         assert scoped.account_fills('formal') == fills
         assert after['cash'] == before['cash'] and after['quantity'] == before['quantity']
+        if pending:
+            decision_id = before['last_decision_id']
+            assert after['last_decision_id'] == decision_id
+            intent, = scoped.account_intents('formal', decision_id)
+            scoped.set_virtual_paused('formal', False)
+            scoped.set_setting('channel_reconciliation_status', 'OK')
+            scoped.set_setting('futu_cash_reconciliation_status', 'OK')
+            assert scoped.claim_account_intent(intent['intent_id'], moment=interval.start)
+            order = BrokerOrder('carried-fill', candidate.instrument.symbol, 'BUY', intent['quantity'],
+                                float(intent['limit_price']), 'SUBMITTED', 0, 0., intent['intent_id'])
+            scoped.bind_channel_order(intent['intent_id'], order.channel_order_id, asdict(order))
+            report = dict(asdict(order), status='FILLED_ALL', cumulative_filled_quantity=intent['quantity'],
+                          average_fill_price=10.)
+            apply_order_report(scoped, report, occurred_at=(interval.start + timedelta(minutes=1)).isoformat())
+            fill_event, = scoped.query_audit_events(event_type='ORDER_FILLED', decision_id=decision_id)
+            assert fill_event['strategy_version'] == 'v1'
+            assert fill_event['release_hash'] == before['release_hash']
     finally:
         database.close()
 
@@ -260,7 +283,7 @@ def _check_rebound_input_update(client, store, monkeypatch, recipe_case):
     client.register_recipe('formal', updated)
     current = store.v4_runtime_binding('formal')
     assert current['inputs'] == projected.to_dict() and current['forward'] is True
-    assert current['effective_interval'] == record['effective_interval']
+    assert current['bound_at'] == record['bound_at']
     assert current['plan_sha256'] == record['plan_sha256']
     assert store.virtual_account('formal') == account
     if recipe_case == 'stale':
@@ -322,7 +345,7 @@ def test_legacy_same_session_cutover_cancels_locally_then_drives_new_release(
     try:
         scoped = database.scope('formal-channel')
         request = V4AccountBindingUpdate(AccountBindingUpdate('formal', old_hash, target_hash, 'v1'),
-            'formal-channel', account_binding_facts_sha256(scoped, 'formal'), effective,
+            'formal-channel', account_binding_facts_sha256(scoped, 'formal'),
             execution_rules(candidate.instrument, candidate.definition.execution_spec),
             FormalV4Inputs(target_hash, evaluation.input_binding, evaluation.fee_rate, client.inputs('formal').execution_reference),
             V4StateMigration(StateRecord(), 'legacy same-session migration',
@@ -406,7 +429,6 @@ def test_same_session_cutover_never_discards_execution_or_v4_state(evidence):
     rows = {'intents': [intent], 'orders': [], 'fills': [],
         'decisions': [{'decision_id': 'old', 'valid_session': '2026-10-16', 'payload': '{}'}],
         'decision_adoptions': [{'decision_id': 'old'}]}
-    document = {'last_interval': None}
     if evidence == 'SUBMISSION_UNCERTAIN':
         intent['status'] = evidence
     else:
@@ -417,8 +439,8 @@ def test_same_session_cutover_never_discards_execution_or_v4_state(evidence):
         rows['fills'] = [{'decision_id': 'old', 'order_id': 'broker', 'quantity': 100,
                           'occurred_at': interval.start.isoformat()}]
     facts = {'account': account, 'rows': rows, 'active_binding': None}
-    update = SimpleNamespace(effective_interval=interval, rules=SimpleNamespace(timezone=zone))
-    version = SimpleNamespace(forward_start='2026-10-16', selection_data_cutoff='2026-10-15')
-    with pytest.raises(ValueError, match='block|overlap|follow'):
-        replaceable = maintenance._validate_execution(facts, [decision])
-        maintenance._validate_cutover(facts, version, update, document, replaceable)
+    if evidence == 'SUBMISSION_UNCERTAIN':
+        with pytest.raises(ValueError, match='block'):
+            maintenance._validate_execution(facts, [decision])
+    else:
+        assert maintenance._validate_execution(facts, [decision]) == set()

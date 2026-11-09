@@ -56,10 +56,6 @@ def account_binding_facts_sha256(store: PaperStore, account_id: str) -> str:
                 connection.rollback()
 
 
-def _interval_dict(interval):
-    return {"start": interval.start.isoformat(), "end": interval.end.isoformat()}
-
-
 def _plan_identity(release, updates):
     def state_identity(state):
         value = {"source_runtime_release_id": state.source_runtime_release_id, "evidence": state.evidence}
@@ -73,7 +69,7 @@ def _plan_identity(release, updates):
     return canonical_sha256({"runtime_manifest": release.manifest_sha256, "updates": [
         {"binding": asdict(update.binding), "channel_account_id": update.channel_account_id,
          "expected_facts_sha256": update.expected_facts_sha256, "rules": update.rules.to_dict(),
-         "effective_interval": _interval_dict(update.effective_interval), "inputs": update.inputs.to_dict(),
+         "inputs": update.inputs.to_dict(),
          "state_kind": type(update.state).__name__, "state": state_identity(update.state)}
         for update in sorted(updates, key=lambda item: item.account_id)
     ]})
@@ -81,20 +77,15 @@ def _plan_identity(release, updates):
 
 def _validate_execution(facts, decisions):
     rows = facts["rows"]
-    # Only legacy plans have no adopted V4 strategy-state interval to rewind.
     replaceable = set()
-    if not facts["account"]["equity_rules_json"]:
-        for decision in decisions:
-            identity = decision["decision_id"]
-            intents = [row for row in rows["intents"] if row["decision_id"] == identity]
-            if (decision["payload"].get("equity_execution_interval") is None
-                    and not any(row["decision_id"] == identity for row in rows["orders"] + rows["fills"])
-                    and (decision["status"] == DecisionState.PENDING or (
-                        decision["status"] == DecisionState.COMPLETED and decision["state_reason"] == "NO_ORDER"
-                        and not intents))
-                    and all(not row["attention_required"] and not row["channel_order_id"]
-                            and row["status"] in {"PENDING_SUBMIT", "WAITING_DEPENDENCY"} for row in intents)):
-                replaceable.add(identity)
+    for decision in decisions:
+        identity = decision["decision_id"]
+        intents = [row for row in rows["intents"] if row["decision_id"] == identity]
+        if (not any(row["decision_id"] == identity for row in rows["orders"] + rows["fills"])
+                and decision["status"] == DecisionState.PENDING
+                and all(not row["attention_required"] and not row["channel_order_id"]
+                        and row["status"] in {"PENDING_SUBMIT", "WAITING_DEPENDENCY"} for row in intents)):
+            replaceable.add(identity)
     local = [row for row in rows["intents"] if row["decision_id"] in replaceable]
     if any(row["attention_required"] or (row["status"] not in TERMINAL_INTENT_STATUSES
            and row["decision_id"] not in replaceable) for row in rows["intents"]):
@@ -117,34 +108,6 @@ def _validate_execution(facts, decisions):
     if released_cash - Decimal(account["cash"]) != Decimal(account["frozen_cash"]):
         raise ValueError("unexplained frozen cash blocks V4 binding update")
     return replaceable
-
-
-def _validate_cutover(facts, version, update, document, replaceable=()):
-    start = update.effective_interval.start
-    first_day = start.astimezone(update.rules.timezone).date()
-    last_day = (update.effective_interval.end - timedelta(microseconds=1)).astimezone(update.rules.timezone).date()
-    if (first_day != last_day or first_day < date.fromisoformat(version.forward_start)
-            or first_day <= date.fromisoformat(version.selection_data_cutoff)):
-        raise ValueError("V4 cutover must be in one session after the selection cutoff and within the forward window")
-    if document.get("last_interval") and start < datetime.fromisoformat(document["last_interval"]["end"]):
-        raise ValueError("V4 cutover overlaps the last adopted interval")
-    prior_binding = facts["active_binding"]
-    if prior_binding is not None and start < datetime.fromisoformat(prior_binding["effective_interval"]["start"]):
-        raise ValueError("V4 cutover cannot move backwards")
-    adopted = {row["decision_id"] for row in facts["rows"]["decision_adoptions"]}
-    for row in facts["rows"]["decisions"]:
-        if row["decision_id"] not in adopted:
-            continue
-        interval = json.loads(row["payload"]).get("equity_execution_interval")
-        if (row["decision_id"] in replaceable and interval is None
-                and date.fromisoformat(row["valid_session"]) == first_day):
-            continue
-        if ((interval is None and date.fromisoformat(row["valid_session"]) >= first_day)
-                or (interval is not None and datetime.fromisoformat(interval["end"]) > start)):
-            raise ValueError("V4 cutover must follow previously adopted decisions")
-    if any(datetime.fromisoformat(row["occurred_at"]).astimezone(update.rules.timezone).date() >= first_day
-           for row in facts["rows"]["fills"] if not facts["account"]["equity_rules_json"]):
-        raise ValueError("legacy fills on or after the cutover session block V4 binding update")
 
 
 def _legacy_document(facts, treatment, update):
@@ -332,7 +295,8 @@ def _prepare(store, facts, update, release, runtime_root, load_release, data_dir
                 if account["equity_rules_json"] else _legacy_document(facts, update.state, update))
     retired_budget = (None if account["equity_rules_json"]
                       else _retire_unused_legacy_budget(document, definition.execution_policy))
-    _validate_cutover(facts, version, update, document, replaceable)
+    if account["equity_rules_json"] and replaceable and store.equity_account_rules(update.account_id) != update.rules:
+        raise ValueError("existing local orders require unchanged account execution rules")
     validate_document(document)
     state = AccountStrategyState.from_dict(document["state"])
     definition.state_schema.validate_record(state.account, scope="account")
@@ -342,7 +306,7 @@ def _prepare(store, facts, update, release, runtime_root, load_release, data_dir
         definition.state_schema.validate_record(StateRecord.from_dict(document["pending_cycle"]), scope="cycle")
     document["state"] = replace(state, revision=state.revision + 1,
         binding=_state_binding(update.account_id, binding.release_hash, candidate, update.inputs.fee_rate)).to_dict()
-    pending = tuple(row["decision_id"] for row in decisions if row["status"] == DecisionState.PENDING)
+    pending = () if account["equity_rules_json"] else tuple(sorted(replaceable))
     return binding, version, document, pending, retired_budget
 
 
@@ -369,20 +333,20 @@ def _apply(store, update, prepared, plan_sha256):
         cursor = store._connection.execute("SELECT COALESCE(MAX(rowid),0) FROM account_ledger WHERE account_id=?",
                                             (account_id,)).fetchone()[0]
         document["state"] = replace(state, event_cursor=cursor).to_dict()
+    bound_at = _utc_now()
     changed = store._connection.execute(
         "UPDATE virtual_accounts SET strategy_version=?,release_hash=?,name=?,strategy_name_snapshot=?,qualification_snapshot=?,"
-        "selection_data_cutoff=?,equity_rules_json=?,entry_cycle_json=NULL,last_decision_id=NULL,last_decision_payload=NULL,updated_at=? "
+        "selection_data_cutoff=?,equity_rules_json=?,entry_cycle_json=NULL,updated_at=? "
         "WHERE account_id=? AND release_hash=? AND run_state='PAUSED'",
         (binding.version, binding.release_hash, paper_account_name(binding.release_id), binding.name,
          binding.qualification.value, version.selection_data_cutoff,
-         json.dumps(update.rules.to_dict(), sort_keys=True), _utc_now(), account_id, update.binding.expected_release_hash),
+         json.dumps(update.rules.to_dict(), sort_keys=True), bound_at, account_id, update.binding.expected_release_hash),
     ).rowcount
     if changed != 1:
         raise ValueError("account binding changed concurrently")
     save_document(store, account_id, document)
     live_inputs = replace(update.inputs, binding=update.inputs.binding.for_observations())
-    record = {"inputs": live_inputs.to_dict(), "forward": True,
-              "effective_interval": _interval_dict(update.effective_interval), "plan_sha256": plan_sha256}
+    record = {"inputs": live_inputs.to_dict(), "forward": True, "bound_at": bound_at, "plan_sha256": plan_sha256}
     store._save_v4_runtime_binding(account_id, record)
     store._insert_audit_event(store._new_audit_event(
         "ACCOUNT_STRATEGY_BOUND", source="account_maintenance", actor_type="OPERATOR", account_id=account_id,
@@ -390,7 +354,7 @@ def _apply(store, update, prepared, plan_sha256):
         correlation_id=plan_sha256, details={"reason": "V4_BINDING_CUTOVER", "previous_version": old["strategy_version"],
         "previous_release_hash": old["release_hash"], "state_treatment": type(update.state).__name__,
         "state_evidence": update.state.evidence, "inputs_sha256": canonical_sha256(record["inputs"]),
-        "effective_interval": record["effective_interval"], "retired_legacy_budget": retired_budget},
+        "bound_at": bound_at, "retired_legacy_budget": retired_budget},
     ))
     store._connection.executemany("DELETE FROM settings WHERE key=?", [
         (store._setting_key(f"{prefix}:{account_id}"),) for prefix in (

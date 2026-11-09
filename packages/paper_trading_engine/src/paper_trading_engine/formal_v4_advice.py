@@ -231,10 +231,6 @@ class FormalV4AdviceClient:
             raise ValueError('unsupported V4 forward recipe')
         return FormalV4Inputs.from_dict(value['inputs'])
 
-    def _interval_allowed(self, account_id: str, interval: TimeInterval) -> bool:
-        stored = self.store.v4_runtime_binding(account_id)
-        return stored is None or interval.start >= datetime.fromisoformat(stored['effective_interval']['start'])
-
     def _calendar_products(self, recipe, point):
         """Only independently available calendars; never current-day OHLCV."""
         items = tuple((role, replace(parameters, query=replace(parameters.query,
@@ -351,20 +347,28 @@ class FormalV4AdviceClient:
             return result
 
     def prepare_interval(self, account_id: str, interval: TimeInterval, *,
-                         observed_at: datetime) -> PreparedEquityDecision:
+                         observed_at: datetime, prior_decision: dict | None = None) -> PreparedEquityDecision:
         if type(interval) is not TimeInterval or type(observed_at) is not datetime or observed_at.utcoffset() is None:
             raise TypeError('formal V4 preparation requires an interval and aware observation time')
         self._require_running(account_id)
-        if observed_at >= interval.end:
-            raise ValueError('formal V4 interval is not currently executable')
-        if not self._interval_allowed(account_id, interval):
-            raise ValueError('formal V4 interval precedes the account binding cutover')
         _, release, candidate = self._account_release(account_id)
         task = self._validate_decision_time(account_id, interval, observed_at)
         cutoff = min(observed_at, interval.start)
         recipe = self.recipe(account_id)
-        inputs = self._pinned_inputs(account_id, interval) if recipe is None else self._forward_inputs(
-            account_id, recipe, interval, cutoff=cutoff, candidate=candidate)
+        if prior_decision is not None:
+            prior_hash = prior_decision['strategy']['release_hash']
+            prior_path = self._interval_path(account_id, prior_hash, interval)
+            if not prior_path.is_file():
+                raise RuntimeError('current decision has no authenticated pinned inputs')
+            inputs = replace(FormalV4Inputs.from_dict(json.loads(prior_path.read_text(encoding='utf-8'))),
+                             release_hash=release.release_hash)
+            try:
+                inputs.validate_candidate(release.release_hash, candidate)
+            except ValueError as exc:
+                raise RuntimeError('current decision inputs are incompatible with the bound release') from exc
+        else:
+            inputs = self._pinned_inputs(account_id, interval) if recipe is None else self._forward_inputs(
+                account_id, recipe, interval, cutoff=cutoff, candidate=candidate)
         self._require_running(account_id)
         if inputs.release_hash != release.release_hash:
             raise ValueError('formal V4 prepared inputs belong to another release')
@@ -384,7 +388,9 @@ class FormalV4AdviceClient:
         if (candidate.definition.execution_spec.decision_clock.value == BarFrequency.DAILY.value
                 and prepared.history.Date.iloc[-1] != task.decision_at - DAILY_CLOSE_DELAY):
             raise ValueError('daily decision requires complete preceding trading-session data')
-        if recipe is not None:
+        if prior_decision is not None and prepared.data_identity != prior_decision.get('prepared_data_identity'):
+            raise RuntimeError('rerun inputs differ from the current adopted decision')
+        if recipe is not None or prior_decision is not None:
             path = self._interval_path(account_id, inputs.release_hash, interval)
             with self._lock:
                 existing = self._existing_interval(account_id, path, interval)
@@ -424,12 +430,13 @@ class FormalV4AdviceClient:
                 # Its row availability is a research observation convention, not
                 # the publication time of the advance exchange calendar.
                 if (availability[session.session_date.isoformat()] > interval.start
-                        or not self._interval_allowed(account['account_id'], interval)):
+                        or session.session_date <= date.fromisoformat(account['selection_data_cutoff'])):
                     continue
                 decision_at = sessions[index - 1].segments[-1].end + DAILY_CLOSE_DELAY if daily else interval.start
-                task_id = canonical_sha256({'account_id': account['account_id'], 'release_hash': account['release_hash'],
+                task_id = canonical_sha256({'account_id': account['account_id'],
                                             'start': interval.start.isoformat(), 'end': interval.end.isoformat()})
-                yield ScheduledDecision(task_id, interval, decision_at)
+                next_decision_at = interval.end + DAILY_CLOSE_DELAY if daily else None
+                yield ScheduledDecision(task_id, interval, decision_at, next_decision_at)
 
     def _validate_decision_time(self, account_id, interval, observed_at, *, allow_expired=False):
         account = self.store.virtual_account(account_id)
@@ -437,15 +444,13 @@ class FormalV4AdviceClient:
         inputs = self._existing_interval(account_id, path, interval)
         task = next((task for task in self._schedule_tasks(account, observed_at, inputs=inputs)
                      if task.interval == interval), None)
-        if task is None or observed_at < task.decision_at or (not allow_expired and observed_at >= interval.end):
+        if task is None or observed_at < task.decision_at or (not allow_expired and observed_at >= task.validity.end):
             raise ValueError('decision preparation is not eligible: requires preceding market close plus 5 hours for DAILY')
         return task
 
     def get_decision(self, *args, **kwargs):
         _, release, candidate = self._account_release(kwargs['account_id'])
         prepared = kwargs['prepared']
-        if not self._interval_allowed(kwargs['account_id'], prepared.interval):
-            raise ValueError('formal V4 interval precedes the account binding cutover')
         inputs = FormalV4Inputs.from_dict(json.loads(self._interval_path(
             kwargs['account_id'], release.release_hash, prepared.interval).read_text(encoding='utf-8')))
         if (not prepared.live_interval or prepared.candidate != candidate
@@ -468,15 +473,55 @@ class FormalV4ScheduleProvider:
         if account['run_state'] != 'RUNNING':
             return None
         return next((task for task in self.client._schedule_tasks(account, observed_at)
-                     if task.decision_at <= observed_at < task.submit_before), None)
+                     if task.validity.start <= observed_at < task.validity.end), None)
 
-    def run_scheduled(self, account_id: str, task: ScheduledDecision, observed_at: datetime) -> None:
+    def run_scheduled(self, account_id: str, task: ScheduledDecision, observed_at: datetime, *, clock=None) -> None:
         with self.client.decision_cycle_lock(account_id):
             if self.client.store.virtual_account(account_id)['run_state'] != 'RUNNING':
                 return
-            self._adopt(account_id, task, observed_at, source='formal_v4', actor='SCHEDULER')
+            if self._adopted(account_id, task) is None:
+                self._adopt(account_id, task, observed_at, source='formal_v4', actor='SCHEDULER', clock=clock)
 
-    def drive_decision(self, account_id: str, observed_at: datetime) -> dict[str, object]:
+    def _adopted(self, account_id, task):
+        rules = self.client.store.equity_account_rules(account_id)
+        session = task.interval.start.astimezone(rules.timezone).date().isoformat()
+        row = self.client.store.adopted_decision(account_id, session)
+        if row is None:
+            return None
+        payload = row["payload"]
+        if (payload.get("equity_execution_interval") is None
+                and row["state_reason"] in {"V4_BINDING_CUTOVER", "NO_ORDER"}
+                and not any(item["decision_id"] == row["decision_id"]
+                            for item in self.client.store.account_orders(account_id)
+                            + self.client.store.account_fills(account_id))):
+            return None
+        expected = {"start": task.interval.start.isoformat(), "end": task.interval.end.isoformat()}
+        if payload.get("equity_execution_interval") not in (None, expected):
+            raise RuntimeError("adopted decision differs from the current execution interval")
+        return payload
+
+    def _original_initial_state(self, account, previous):
+        """First decisions have no stored pre-state; authenticate their frozen initializer."""
+        strategy = previous["strategy"]
+        if strategy["release_hash"] == account["release_hash"] or previous["v4_state_transition"]["before"] is not None:
+            return None
+        from execution_channels.futu.equity_account_state import load_document
+        from .ec_boundary import initial_account_record
+
+        strategy_id, version, digest = strategy["strategy_id"], strategy["version"], strategy["release_hash"]
+        strategies = self.client.repo_root / "strategies"
+        relative = Path(strategy_id) / "versions" / f"{version}.json"
+        archive = strategies / "revisions" / f"{strategy_id}-{version}" / digest / "strategies" / relative
+        source = archive if archive.is_file() else strategies / relative
+        if not source.is_file():
+            raise RuntimeError("the original frozen strategy initializer is unavailable")
+        old = StrategyRelease.from_mapping(json.loads(source.read_text(encoding="utf-8")))
+        if old.release_hash != digest:
+            raise RuntimeError("the original frozen strategy initializer cannot be authenticated")
+        definition = EquityStrategyDefinition.from_dict(dict(old.payload["equity_definition"]))
+        return load_document({"quantity": previous["actual_quantity"]}, initial_account_record(definition))
+
+    def drive_decision(self, account_id: str, observed_at: datetime, *, clock=None) -> dict[str, object]:
         with self.client.decision_cycle_lock(account_id):
             account = self.client.store.virtual_account(account_id)
             self.client._require_running(account_id)
@@ -485,26 +530,42 @@ class FormalV4ScheduleProvider:
             task = self.due_decision(account, observed_at)
             if task is None:
                 raise RuntimeError('no executable V4 interval for the current account binding')
-            previous = json.loads(account['last_decision_payload'] or '{}')
+            previous = self._adopted(account_id, task)
             interval = {'start': task.interval.start.isoformat(), 'end': task.interval.end.isoformat()}
-            reused = (previous.get('equity_execution_interval') == interval
-                      and previous.get('strategy', {}).get('release_hash') == account['release_hash'])
-            decision = previous if reused else self._adopt(
-                account_id, task, observed_at, source='web.control', actor='OPERATOR',
-            )
+            superseded = ()
+            if previous is None:
+                decision = self._adopt(account_id, task, observed_at, source='web.control', actor='OPERATOR', clock=clock)
+                outcome = 'DECISION_COMPLETED'
+            else:
+                if previous.get('contract_version') != 'advice.equity.v4':
+                    raise RuntimeError('the current adoption belongs to a legacy account contract')
+                initial = self._original_initial_state(account, previous)
+                try:
+                    prepared = self.client.prepare_interval(account_id, task.interval, observed_at=observed_at,
+                                                            prior_decision=previous)
+                    decision, outcome, superseded = self.accounts.rerun_equity_decision(
+                        account_id, previous, prepared, task, observed_at, initial=initial, clock=clock)
+                except ValueError as exc:
+                    raise RuntimeError(str(exc)) from exc
+            reused = outcome == 'DECISION_REUSED'
             result = {
-                'status': 'DECISION_REUSED' if reused else 'DECISION_COMPLETED',
+                'status': outcome,
                 'account_id': account_id,
                 'channel_account_id': account['channel_account_id'],
                 'release_hash': account['release_hash'],
                 'execution_interval': interval,
                 'prepared_data_identity': decision['prepared_data_identity'],
                 'reused_decision': reused,
+                **task.cycle_record(),
                 **{key: decision[key] for key in (
                     'decision_id', 'signal_date', 'valid_session', 'action',
                     'target_quantity', 'execution_reference_price',
                 )},
             }
+            if previous is not None and not reused:
+                result.update(superseded_decision_id=previous['decision_id'], superseded_intent_ids=list(superseded))
+            if decision.get('execution_disposition'):
+                result['execution_disposition'] = decision['execution_disposition']
             self.accounts.audit.record(
                 'ACCOUNT_DECISION_DRIVEN', source='web.control', actor_type='OPERATOR',
                 account_id=account_id, strategy_id=account['strategy_id'],
@@ -513,7 +574,7 @@ class FormalV4ScheduleProvider:
             )
             return result
 
-    def _adopt(self, account_id, task, observed_at, *, source, actor):
+    def _adopt(self, account_id, task, observed_at, *, source, actor, clock=None):
         prepared = self.client.prepare_interval(account_id, task.interval, observed_at=observed_at)
         self.client._require_running(account_id)
         self.client.store.settle_equity_receivables(account_id, at=observed_at)
@@ -523,7 +584,10 @@ class FormalV4ScheduleProvider:
             details={'prepared_data_reference': prepared.data_reference,
                      'data_identity': prepared.data_identity,
                      'interval': {'start': task.interval.start.isoformat(), 'end': task.interval.end.isoformat()}})
-        self.accounts.refresh_account(account_id, prepared=prepared)
+        adoption_at = observed_at if clock is None else clock()
+        if not task.validity.start <= adoption_at < task.validity.end:
+            raise RuntimeError('the current decision cycle ended before adoption')
+        self.accounts.refresh_account(account_id, prepared=prepared, scheduled=task, observed_at=adoption_at, clock=clock)
         account = self.client.store.virtual_account(account_id)
         adopted = json.loads(account['last_decision_payload']) if account['last_decision_payload'] else {}
         expected = {'start': task.interval.start.isoformat(), 'end': task.interval.end.isoformat()}

@@ -418,21 +418,20 @@ class ChannelExecution(RetirementExecution):
             )
             if requests and requests[0]["actor_type"] == "OPERATOR":
                 continue
-            account = self.store.virtual_account(intent["account_id"])
             # Persist provenance before the network call. This is not confirmation
             # of cancellation: release still requires a terminal broker report.
             self.audit.record(
                 "CANCEL_REQUESTED", source="futu_execution", outcome="UNKNOWN",
                 account_id=intent["account_id"], channel=self.channel_id,
-                strategy_id=account["strategy_id"], strategy_version=account["strategy_version"],
-                release_hash=account["release_hash"], decision_id=intent["decision_id"],
+                **self.store.decision_audit_identity(intent["account_id"], intent["decision_id"]),
+                decision_id=intent["decision_id"],
                 order_id=intent["channel_order_id"], correlation_id=intent["decision_id"],
                 details={"reason": "planned_deadline", "deadline": deadline_at.isoformat()},
             )
             try:
                 self.broker.cancel_order(intent["channel_order_id"])
             except Exception as exc:
-                if account["health"] == AccountHealth.OK:
+                if self.store.virtual_account(intent["account_id"])["health"] == AccountHealth.OK:
                     self.store.set_virtual_health(
                         intent["account_id"], AccountHealth.BLOCKED,
                         "计划订单到期但撤单结果不确定，等待渠道对账",
@@ -767,12 +766,10 @@ class ChannelExecution(RetirementExecution):
             try:
                 previous_status = self.store.account_order(order.channel_order_id).get("status")
             except KeyError:
-                account = self.store.virtual_account(intent["account_id"])
                 recovered = self.audit.build(
                     "ORDER_INTENT_RECOVERED", source="futu_execution",
-                    account_id=intent["account_id"], strategy_id=account["strategy_id"],
-                    strategy_version=account["strategy_version"],
-                    release_hash=account["release_hash"], channel=self.channel_id,
+                    account_id=intent["account_id"], channel=self.channel_id,
+                    **self.store.decision_audit_identity(intent["account_id"], intent["decision_id"]),
                     decision_id=intent["decision_id"], order_id=order.channel_order_id,
                     correlation_id=intent["decision_id"],
                     details={"intent_id": intent["intent_id"], "status": order.status},
@@ -788,13 +785,10 @@ class ChannelExecution(RetirementExecution):
             if order.status in {"CANCELLED_PART", "CANCELLED_ALL"} and (
                 previous_status not in TERMINAL_ORDER_STATUSES
             ):
-                account = self.store.virtual_account(intent["account_id"])
                 self.audit.record(
                     "CANCEL_SUCCEEDED", source="futu_execution",
                     account_id=intent["account_id"], channel=self.channel_id,
-                    strategy_id=account["strategy_id"],
-                    strategy_version=account["strategy_version"],
-                    release_hash=account["release_hash"],
+                    **self.store.decision_audit_identity(intent["account_id"], intent["decision_id"]),
                     decision_id=intent["decision_id"], order_id=order.channel_order_id,
                     correlation_id=intent["decision_id"],
                     details={"status": order.status},
@@ -804,7 +798,6 @@ class ChannelExecution(RetirementExecution):
                 and order.status != "FILLED_ALL"
                 and previous_status not in TERMINAL_ORDER_STATUSES
             ):
-                account = self.store.virtual_account(intent["account_id"])
                 terminated = self.store.account_intent(intent["intent_id"])
                 if terminated["attention_required"]:
                     self.store.set_virtual_health(
@@ -813,9 +806,8 @@ class ChannelExecution(RetirementExecution):
                     )
                 self.audit.record(
                     "ORDER_TERMINATED", source="futu_execution",
-                    account_id=intent["account_id"], strategy_id=account["strategy_id"],
-                    strategy_version=account["strategy_version"],
-                    release_hash=account["release_hash"], channel=self.channel_id,
+                    account_id=intent["account_id"], channel=self.channel_id,
+                    **self.store.decision_audit_identity(intent["account_id"], intent["decision_id"]),
                     decision_id=intent["decision_id"], order_id=order.channel_order_id,
                     correlation_id=intent["decision_id"],
                     details={
@@ -1052,8 +1044,8 @@ class ChannelExecution(RetirementExecution):
                 raise
             submitted_event = self.audit.build(
                 "ORDER_SUBMITTED", source="futu_execution", account_id=row["account_id"],
-                strategy_id=account["strategy_id"], strategy_version=account["strategy_version"],
-                release_hash=account["release_hash"], channel=self.channel_id,
+                channel=self.channel_id,
+                **self.store.decision_audit_identity(row["account_id"], row["decision_id"]),
                 decision_id=row["decision_id"], order_id=order.channel_order_id,
                 correlation_id=row["decision_id"],
                 details={
@@ -1225,13 +1217,11 @@ class ChannelExecution(RetirementExecution):
         result = self.store.consume_cancel_token(token, channel_order_id, now)
         if result != "ok":
             raise ValueError("cancel token is invalid, expired, used, or belongs to another order")
-        account = self.store.virtual_account(account_id)
+        identity = self.store.decision_audit_identity(account_id, order["decision_id"])
         self.audit.record(
             "CANCEL_REQUESTED", source="futu_execution", actor_type="OPERATOR",
             account_id=account_id, channel=self.channel_id, decision_id=order["decision_id"],
-            strategy_id=account["strategy_id"],
-            strategy_version=account["strategy_version"],
-            release_hash=account["release_hash"],
+            **identity,
             order_id=channel_order_id, correlation_id=order["decision_id"], details={},
         )
         try:
@@ -1240,9 +1230,7 @@ class ChannelExecution(RetirementExecution):
             self.audit.record(
                 "CANCEL_FAILED", source="futu_execution", outcome="FAILURE",
                 actor_type="OPERATOR", account_id=account_id, channel=self.channel_id,
-                strategy_id=account["strategy_id"],
-                strategy_version=account["strategy_version"],
-                release_hash=account["release_hash"],
+                **identity,
                 decision_id=order["decision_id"], order_id=channel_order_id,
                 correlation_id=order["decision_id"],
                 details={"error_type": type(exc).__name__, "error": str(exc)},

@@ -1039,7 +1039,7 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
             return self._setting(key)
 
     def v4_runtime_binding(self, account_id: str) -> dict[str, Any] | None:
-        """Read the active V4 input and cutover record for this account."""
+        """Read the active V4 binding and input recipe for this account."""
         self._check_owned("account", account_id)
         with self._lock:
             row = self._connection.execute(
@@ -1066,7 +1066,7 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
         self, account_id: str, inputs: "AccountInputIdentity", *,
         expected_inputs: "AccountInputIdentity", forward: bool,
     ) -> None:
-        """Replace a rebound account's inputs while preserving the cutover watermark."""
+        """Replace a rebound account's inputs while preserving binding evidence."""
         if type(inputs) is not AccountInputIdentity or type(expected_inputs) is not AccountInputIdentity:
             raise TypeError("V4 runtime inputs require typed account input identities")
         if type(forward) is not bool:
@@ -2501,11 +2501,14 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
             raise ValueError("decision is not the adopted plan for its effective session")
         payload = decision["payload"]
         identity = payload["strategy"]
-        if (identity.get("strategy_id"), identity.get("version"), identity.get("release_hash"),
-            payload.get("symbol"), decision["valid_session"]) != (
-            account["strategy_id"], account["strategy_version"], account["release_hash"],
-            symbol.upper(), valid_session,
-        ) or account["symbol"] != symbol.upper():
+        bound = (identity.get("version"), identity.get("release_hash")) == (
+            account["strategy_version"], account["release_hash"],
+        )
+        carried = submitting and payload.get("contract_version") == "advice.equity.v4"
+        if ((not bound and not carried)
+                or (identity.get("strategy_id"), payload.get("symbol"), decision["valid_session"]) != (
+                    account["strategy_id"], symbol.upper(), valid_session)
+                or account["symbol"] != symbol.upper()):
             raise ValueError("decision identity or effective session differs from account")
         if self.get_setting("channel_reconciliation_status") == "BLOCKED" or self.get_setting("futu_cash_reconciliation_status") == "BLOCKED":
             from .equity_contracts import EquityReconciliationError
@@ -2687,6 +2690,15 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
                     or interval.start.astimezone(rules.timezone).date().isoformat() != valid_session
                     or observed.astimezone(rules.timezone).date().isoformat() != signal_date):
                 raise ValueError("US decision violates causal interval identity")
+            cycle = payload.get("decision_cycle")
+            if cycle is not None:
+                if (type(cycle) is not dict or set(cycle) != {"cycle_id", "validity"}
+                        or type(cycle["cycle_id"]) is not str or not cycle["cycle_id"]
+                        or type(cycle["validity"]) is not dict or set(cycle["validity"]) != {"start", "end"}):
+                    raise ValueError("decision requires an explicit cycle identity and validity")
+                validity = TimeInterval(*(datetime.fromisoformat(cycle["validity"][key]) for key in ("start", "end")))
+                if not validity.start <= interval.start < interval.end <= validity.end:
+                    raise ValueError("order submission interval must belong to the decision cycle")
         encoded = json.dumps(payload, ensure_ascii=False, default=str)
         cycle_target = int(payload.get("cycle_target_quantity") or 0) or None
         if payload.get("plan_mode") == "CORE_SETUP":
@@ -2697,10 +2709,8 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
                 raise ValueError("inactive account cannot save decisions")
             runtime_binding = self.v4_runtime_binding(account_id)
             if runtime_binding is not None:
-                boundary = datetime.fromisoformat(runtime_binding["effective_interval"]["start"])
-                if (rules is None or payload.get("contract_version") != "advice.equity.v4"
-                        or interval.start < boundary):
-                    raise ValueError("decision precedes the V4 account cutover or uses another contract")
+                if rules is None or payload.get("contract_version") != "advice.equity.v4":
+                    raise ValueError("bound equity account requires a V4 decision")
             identity = payload["strategy"]
             if (identity.get("strategy_id"), identity.get("version"), identity.get("release_hash"), payload.get("symbol")) != (
                 account["strategy_id"], account["strategy_version"], account["release_hash"], account["symbol"],
@@ -2814,6 +2824,34 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
                           state_changed_at=events[-1]["occurred_at"],
                           state_events=[{key: event[key] for key in ("sequence", "state", "reason", "occurred_at", "related_decision_id")} for event in events])
             return result
+
+    def decision_audit_identity(self, account_id: str, decision_id: str) -> dict[str, str]:
+        self._check_owned("account", account_id)
+        with self._lock:
+            row = self._connection.execute(
+                "SELECT payload FROM decisions WHERE account_id=? AND decision_id=?",
+                (account_id, decision_id),
+            ).fetchone()
+        if row is None:
+            raise KeyError((account_id, decision_id))
+        identity = json.loads(row["payload"])["strategy"]
+        return {
+            "strategy_id": identity["strategy_id"],
+            "strategy_version": identity["version"],
+            "release_hash": identity["release_hash"],
+        }
+
+    def adopted_decision(self, account_id: str, valid_session: str | None = None) -> dict[str, Any] | None:
+        """Return the adopted decision for a session, or the latest adoption when omitted."""
+        self._check_owned("account", account_id)
+        query = "SELECT decision_id FROM decision_adoptions WHERE account_id=?"
+        args = (account_id,)
+        if valid_session is not None:
+            query += " AND valid_session=?"
+            args = (account_id, valid_session)
+        with self._lock:
+            row = self._connection.execute(query + " ORDER BY valid_session DESC LIMIT 1", args).fetchone()
+            return None if row is None else self.account_decision(account_id, row[0])
 
     def first_account_signal_date(self, account_id: str) -> str | None:
         """First persisted strategy decision, including decisions with no order."""
@@ -3551,7 +3589,8 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
                 "ORDER_FILLED" if cumulative_quantity >= int(intent["quantity"])
                 else "ORDER_PARTIALLY_FILLED",
                 source="futu_execution", account_id=order["account_id"],
-                strategy_id=account["strategy_id"], channel=intent["channel_id"],
+                channel=intent["channel_id"],
+                **self.decision_audit_identity(order["account_id"], order["decision_id"]),
                 decision_id=order["decision_id"], order_id=str(channel_order_id),
                 correlation_id=order["decision_id"],
                 details={

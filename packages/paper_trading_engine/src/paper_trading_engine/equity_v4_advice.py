@@ -27,7 +27,7 @@ def _cached(payload, actual, available, portfolio_revision, state_revision):
 
 
 def account_decision(store, prepared, account, actual_quantity, available_cash, trading_date,
-                     portfolio_revision, state_revision):
+                     portfolio_revision, state_revision, *, through_cursor=None):
     candidate = prepared.candidate
     definition, rules = candidate.definition, store.equity_account_rules(account["account_id"])
     if prepared.v4_replay is None or prepared.buy_sellable_at is None:
@@ -56,7 +56,8 @@ def account_decision(store, prepared, account, actual_quantity, available_cash, 
     if snapshot.quantity != actual_quantity:
         raise ValueError("strategy request quantity differs from confirmed channel account")
     engine = AccountDecisionEngine(candidate, prepared.v4_replay)
-    events, cursor = recognized_events(store, account["account_id"], state.event_cursor, prepared.interval.start)
+    events, cursor = recognized_events(store, account["account_id"], state.event_cursor,
+                                       prepared.interval.start, through_cursor=through_cursor)
     owner = account["account_id"] + ":" + account["release_hash"]
     result = engine.propose(prepared.interval, portfolio, snapshot, state, feedback, owner=owner,
         fee_rate=prepared.fee_rate, events=strategy_events(events),

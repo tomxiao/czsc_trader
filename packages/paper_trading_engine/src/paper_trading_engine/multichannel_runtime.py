@@ -84,7 +84,8 @@ class RuntimeScheduleProvider:
             raise ValueError('only a running account can execute a scheduled decision')
         services = self.runtime.services[account['channel_account_id']]
         if account['equity_rules_json'] is not None:
-            return FormalV4ScheduleProvider(services.formal, services.accounts).run_scheduled(account_id, task, observed_at)
+            return FormalV4ScheduleProvider(services.formal, services.accounts).run_scheduled(
+                account_id, task, observed_at, clock=lambda: datetime.now(timezone.utc))
         return services.cycle.run(account_id,
             signal_date=task.decision_at.astimezone(ZoneInfo('Asia/Shanghai')).date(), observed_at=observed_at)
 
@@ -159,7 +160,7 @@ class MultiChannelRuntime:
             return self.console_view.drive_virtual_account_decision(account_id)
         services = self.services[account['channel_account_id']]
         return FormalV4ScheduleProvider(services.formal, services.accounts).drive_decision(
-            account_id, datetime.now(timezone.utc),
+            account_id, datetime.now(timezone.utc), clock=lambda: datetime.now(timezone.utc),
         )
 
     def _services_for_account(self, account_id: str) -> ChannelServices:

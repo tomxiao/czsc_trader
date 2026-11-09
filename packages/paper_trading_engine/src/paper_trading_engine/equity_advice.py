@@ -243,13 +243,18 @@ class EquityAdviceClient:
 
     def get_decision(self, actual_quantity, available_cash, *, total_assets, trading_date,
                      portfolio_revision, state_revision, cycle_target_quantity, entry_cycle,
-                     strategy_id, strategy_version, account_id, symbol, asset, prepared):
+                     strategy_id, strategy_version, account_id, symbol, asset, prepared, replacement=None):
         if type(prepared) is not PreparedEquityDecision:
             raise TypeError("equity advice requires PreparedEquityDecision")
         prepared.validate_unchanged()
         candidate = prepared.candidate
         rules = self.store.equity_account_rules(account_id)
         account = self.store.virtual_account(account_id)
+        if replacement is not None:
+            from execution_channels.futu.decision_replacement import ReplacementSnapshot
+            if type(replacement) is not ReplacementSnapshot or replacement.account_id != account_id:
+                raise TypeError("equity rerun requires the matching EC replacement snapshot")
+            account = {**account, "account_v4_json": replacement.before}
         import json
         events = {row["event_id"]:json.loads(row["payload"]) for row in self.store._connection.execute(
             "SELECT event_id,payload FROM equity_account_events WHERE account_id=?",(account_id,))}
@@ -278,4 +283,5 @@ class EquityAdviceClient:
             raise ValueError('PTE equity runtime requires V4; migrate the frozen strategy and account explicitly')
         from .equity_v4_advice import account_decision
         return account_decision(self.store, prepared, account, actual_quantity, available_cash,
-            trading_date, portfolio_revision, state_revision)
+            trading_date, portfolio_revision, state_revision,
+            through_cursor=None if replacement is None else replacement.event_cursor)

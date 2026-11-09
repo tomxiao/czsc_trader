@@ -287,6 +287,43 @@ def test_online_v4_decision_and_execution_use_the_scoped_runtime(formal_v4, monk
         expected['decision'].pop('fresh')
         assert verify(server.server_port, plan)['status'] == 'PASS'
         assert store.virtual_account('formal')['last_decision_id'] == decision_id
+        old_intent, = store.account_intents('formal', decision_id)
+        old_cash = store.virtual_account('formal')['frozen_cash']
+        from execution_channels.futu.adoption import AccountAdoption
+        evaluate = runtime.services['formal-channel'].accounts.advice.get_decision
+
+        def revised(*args, **kwargs):
+            decision = evaluate(*args, **kwargs)
+            return replace(decision, strategy_output={**decision.strategy_output, 'explanation': {
+                **decision.strategy_output['explanation'], 'next_watch': 'review after the next close',
+            }})
+
+        adopt = AccountAdoption._adopt
+        def fail_after_adoption(*args):
+            adopt(*args)
+            raise RuntimeError('injected replacement failure')
+
+        decision_path = '/api/virtual-accounts/formal/decision'
+        with monkeypatch.context() as changes:
+            changes.setattr(runtime.services['formal-channel'].accounts.advice, 'get_decision', revised)
+            with monkeypatch.context() as fail:
+                fail.setattr(AccountAdoption, '_adopt', fail_after_adoption)
+                with pytest.raises(HTTPError, match='409') as rejected:
+                    read_json(decision_path, {})
+                assert 'injected replacement failure' in json.load(rejected.value)['error']
+                assert store.virtual_account('formal')['last_decision_id'] == decision_id
+                assert store.account_intent(old_intent['intent_id'])['status'] == 'PENDING_SUBMIT'
+                assert store.virtual_account('formal')['frozen_cash'] == old_cash
+            replaced = read_json(decision_path, {})
+            assert replaced['status'] == 'DECISION_AND_INTENTS_SUPERSEDED'
+            assert replaced['superseded_decision_id'] == decision_id
+            assert replaced['superseded_intent_ids'] == [old_intent['intent_id']]
+            assert store.account_decision('formal', decision_id)['status'] == 'SUPERSEDED'
+            assert store.account_intent(old_intent['intent_id'])['status'] == 'SUPERSEDED'
+            assert store.virtual_account('formal')['frozen_cash'] == old_cash
+            assert replaced['validity']['end'] == (interval.end + timedelta(hours=5)).isoformat()
+            assert read_json(decision_path, {})['status'] == 'DECISION_REUSED'
+            decision_id = replaced['decision_id']
 
         assert read_json('/api/virtual-accounts/formal/pause', {})['account']['run_state'] == 'PAUSED'
         request = Request(base + '/api/virtual-accounts/formal/decision', b'{}',
@@ -304,6 +341,9 @@ def test_online_v4_decision_and_execution_use_the_scoped_runtime(formal_v4, monk
         runtime.schedule_provider.run_scheduled('formal', task, interval.start)
         execution.submit_pending()
         assert broker.submissions == 1 and broker.order.quantity == target
+        with pytest.raises(HTTPError, match='409') as live:
+            urlopen(request, timeout=5)
+        assert 'zero fills' in json.load(live.value)['error']
         broker.quantity = target
         broker.cash = capital - target * 10 * (1 + evaluation.fee_rate)
         broker.order = replace(broker.order, status='FILLED_ALL', cumulative_filled_quantity=target,
@@ -327,10 +367,75 @@ def test_online_v4_decision_and_execution_use_the_scoped_runtime(formal_v4, monk
         now = interval.end
         with pytest.raises(HTTPError, match='409') as closed:
             urlopen(request, timeout=5)
-        assert 'no executable V4 interval' in json.load(closed.value)['error']
+        assert 'confirmed fills' in json.load(closed.value)['error']
+        now = interval.end + timedelta(hours=5)
+        next_task = runtime.schedule_provider.due_decision(store.virtual_account('formal'), now)
+        assert next_task is None or next_task.task_id != task.task_id
         assert store.virtual_account('formal')['last_decision_id'] == decision_id
     finally:
         server.shutdown()
         worker.join()
         server.server_close()
         runtime.account_chart.close()
+
+
+@pytest.mark.parametrize("filled", (0, 1, None), ids=("cancelled-zero", "cancelled-partial", "submission-race"))
+def test_v4_rerun_after_order_window_uses_confirmed_channel_facts(formal_v4, monkeypatch, filled):
+    from dataclasses import asdict
+    from execution_channels.futu.broker import BrokerOrder
+    from execution_channels.futu.order_reports import apply_order_report
+
+    client, store, _, interval, candidate, _ = formal_v4
+    client.register_recipe('formal', client.inputs('formal'))
+    engine = AccountEngine(store, client, now=lambda: interval.start)
+    provider = FormalV4ScheduleProvider(client, engine)
+    prior = provider.drive_decision('formal', interval.start)
+    intent, = store.account_intents('formal', prior['decision_id'])
+    store.set_setting('channel_reconciliation_status', 'OK')
+    store.set_setting('futu_cash_reconciliation_status', 'OK')
+    evaluate = client.get_decision
+
+    def revised(*args, **kwargs):
+        result = evaluate(*args, **kwargs)
+        return replace(result, strategy_output={**result.strategy_output, 'explanation': {
+            **result.strategy_output['explanation'], 'next_watch': 'updated review text',
+        }})
+
+    if filled is None:
+        def claim_after_evaluation(*args, **kwargs):
+            result = revised(*args, **kwargs)
+            assert store.claim_account_intent(intent['intent_id'], moment=interval.start)
+            return result
+
+        monkeypatch.setattr(client, 'get_decision', claim_after_evaluation)
+        with pytest.raises(RuntimeError, match='may already have been submitted'):
+            provider.drive_decision('formal', interval.start)
+        assert store.account_intent(intent['intent_id'])['status'] == 'SUBMITTING'
+        assert store.virtual_account('formal')['last_decision_id'] == prior['decision_id']
+        assert len(store.account_decisions('formal')) == 1
+        return
+
+    assert store.claim_account_intent(intent['intent_id'], moment=interval.start)
+    order = BrokerOrder('rerun-cancel', candidate.instrument.symbol, 'BUY', intent['quantity'],
+                        float(intent['limit_price']), 'SUBMITTED', 0, 0., intent['intent_id'])
+    store.bind_channel_order(intent['intent_id'], order.channel_order_id, asdict(order))
+    closed = interval.end + timedelta(seconds=1)
+    report = dict(asdict(order), status='CANCELLED_PART' if filled else 'CANCELLED_ALL',
+                  cumulative_filled_quantity=filled, average_fill_price=10. if filled else 0.,
+                  updated_at=closed.isoformat())
+    apply_order_report(store, report, occurred_at=closed.isoformat())
+    monkeypatch.setattr(client, 'get_decision', revised)
+    old_order = store.account_order(order.channel_order_id)
+    if filled:
+        with pytest.raises(RuntimeError, match='confirmed fills'):
+            provider.drive_decision('formal', closed)
+        assert store.virtual_account('formal')['last_decision_id'] == prior['decision_id']
+    else:
+        result = provider.drive_decision('formal', closed)
+        assert result['status'] == 'DECISION_SUPERSEDED'
+        assert result['cycle_id'] == prior['cycle_id']
+        assert result['execution_disposition'] == 'WINDOW_CLOSED'
+        assert store.account_decision('formal', result['decision_id'])['state_reason'] == 'EXECUTION_EXPIRED'
+        assert not store.account_intents('formal', result['decision_id'])
+        assert Decimal(store.virtual_account('formal')['frozen_cash']) == 0
+    assert store.account_order(order.channel_order_id) == old_order

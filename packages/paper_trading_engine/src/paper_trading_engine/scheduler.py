@@ -266,7 +266,7 @@ class RuntimeScheduler:
                 return
             if type(task) is not ScheduledDecision:
                 raise TypeError("schedule provider must return ScheduledDecision or None")
-            if not task.decision_at <= now < task.submit_before:
+            if not task.validity.start <= now < task.validity.end:
                 raise ValueError("schedule provider returned a decision outside its valid window")
             key = f"last_account_schedule_task:{account_id}"
             if self.store.get_setting(key) == task.task_id:

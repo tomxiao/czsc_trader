@@ -215,13 +215,15 @@ def record_v4_position_reconciliation(store, account_id, *, quantity_before, qua
     save_document(store, account_id, document)
 
 
-def recognized_events(store, account_id, cursor, through):
+def recognized_events(store, account_id, cursor, through, *, through_cursor=None):
     output, next_cursor = [], cursor
     metadata = {value.get("ledger_entry_id"): value for row in store._connection.execute(
         "SELECT payload FROM equity_account_events WHERE account_id=?", (account_id,))
         for value in (json.loads(row[0]),) if value.get("ledger_entry_id")}
     rows = store._connection.execute("SELECT rowid,* FROM account_ledger WHERE account_id=? AND rowid>? ORDER BY rowid", (account_id, cursor))
     for row in rows:
+        if through_cursor is not None and row["rowid"] > through_cursor:
+            break
         kind = row["entry_type"]
         if kind not in {"POSITION_ADJUSTMENT", "SALE_SETTLEMENT"}:
             next_cursor = row["rowid"]

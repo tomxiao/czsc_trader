@@ -13,6 +13,7 @@ class ScheduledDecision:
     task_id: str
     interval: TimeInterval
     decision_at: datetime
+    next_decision_at: datetime | None = None
 
     def __post_init__(self) -> None:
         if type(self.task_id) is not str or not self.task_id.strip():
@@ -23,6 +24,20 @@ class ScheduledDecision:
             raise ValueError("scheduled decision requires a timezone-aware decision time")
         if self.decision_at > self.interval.start:
             raise ValueError("scheduled decision cannot follow its submission start")
+        if self.next_decision_at is not None and (
+            type(self.next_decision_at) is not datetime or self.next_decision_at.utcoffset() is None
+            or self.next_decision_at < self.interval.end
+        ):
+            raise ValueError("next decision must follow the current submission window")
+
+    @property
+    def validity(self) -> TimeInterval:
+        return TimeInterval(self.decision_at, self.next_decision_at or self.interval.end)
+
+    def cycle_record(self) -> dict[str, object]:
+        return {"cycle_id": self.task_id, "validity": {
+            "start": self.validity.start.isoformat(), "end": self.validity.end.isoformat(),
+        }}
 
     @property
     def submit_after(self) -> datetime:
