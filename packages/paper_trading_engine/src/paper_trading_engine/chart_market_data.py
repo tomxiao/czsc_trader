@@ -8,15 +8,20 @@ from zoneinfo import ZoneInfo
 
 from dataflows import (
     BarFrequency, DataError, DataRequest, Dataflows, Dataset, EquityDataRequest,
-    EquityProduct, EquityQuery, MarketId, PreparePolicy, PriceAdjustment, canonical_frame_sha256,
+    EquityProduct, EquityQuery, PreparePolicy, PriceAdjustment, canonical_frame_sha256,
 )
 from dataflows.equity_data import sessions_from_metadata
 import pandas as pd
 
 from execution_channels.futu.trading_window import SHANGHAI, shanghai_now
+from .scheduling_contracts import DAILY_CLOSE_DELAY
 
 
-CHART_UPDATE_TIME = time(20, 30)
+LEGACY_CHART_UPDATE_TIME = time(20)  # The legacy CN date-only calendar uses the regular 15:00 close.
+
+
+def _chart_ready_at(session, calendar_available):
+    return max(session.segments[-1].end + DAILY_CLOSE_DELAY, calendar_available)
 
 
 class AccountChartDataError(ValueError):
@@ -73,13 +78,13 @@ class AccountChartMarketData:
                      for session in sessions_from_metadata(result.identity.metadata))
 
     def scheduled_session_ready(self, account_id: str, at: datetime) -> bool | None:
-        """Return None on non-session days and False while the session is open."""
+        """Return None on non-session days and False before the chart refresh window."""
         inputs = self.formal_inputs(account_id)
         zone = ZoneInfo(inputs.binding.instrument.timezone)
         day = at.astimezone(zone).date()
         for session, available in self._formal_calendar(inputs, day - timedelta(days=14), day):
             if session.session_date == day:
-                return session.segments[-1].end <= at and available <= at
+                return at >= _chart_ready_at(session, available)
         return None
 
     def _formal_history(self, account_id, cutoff, context_sessions, refresh_source):
@@ -88,14 +93,10 @@ class AccountChartMarketData:
         now = self.now()
         if now.utcoffset() is None:
             raise ValueError("account chart clock must be timezone-aware")
-        local_now = now.astimezone(zone)
-        day = local_now.date()
-        # A completed CN session can precede publication of its adjusted daily bar.
-        if inputs.binding.instrument.market is MarketId.CN and local_now.time() < CHART_UPDATE_TIME:
-            day -= timedelta(days=1)
+        day = now.astimezone(zone).date()
         start = cutoff - timedelta(days=max(180, context_sessions * 3))
         completed = [session.session_date for session, available in self._formal_calendar(inputs, start, day)
-                     if session.segments[-1].end <= now and available <= now]
+                      if _chart_ready_at(session, available) <= now]
         if not completed or completed[-1] < cutoff:
             raise ValueError("account selection cutoff exceeds the latest completed trading session")
         parameters = dict(inputs.binding.request_bindings)["bars"]
@@ -159,7 +160,7 @@ class AccountChartMarketData:
             moment.date().isoformat(), moment.date().isoformat(), "daily",
         ), policy)
         sessions = pd.to_datetime(calendar.loc[calendar["IsOpen"].eq(1), "Date"]).dt.date
-        sessions = sessions[sessions <= moment.date()] if moment.time() >= CHART_UPDATE_TIME else sessions[sessions < moment.date()]
+        sessions = sessions[sessions <= moment.date()] if moment.time() >= LEGACY_CHART_UPDATE_TIME else sessions[sessions < moment.date()]
         if sessions.empty:
             raise ValueError("account chart calendar has no completed trading session")
         end = sessions.iloc[-1]

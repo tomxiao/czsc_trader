@@ -11,7 +11,7 @@ from collections.abc import Mapping
 
 from execution_channels.futu.audit import AuditRecorder
 from .account_chart import AccountChartService
-from .chart_market_data import CHART_UPDATE_TIME
+from .chart_market_data import LEGACY_CHART_UPDATE_TIME
 from execution_channels.futu.trading_window import SHANGHAI
 from .scheduling_contracts import ScheduledDecision
 
@@ -294,7 +294,7 @@ class RuntimeScheduler:
             return
         local_now = now.astimezone(SHANGHAI)
         if (self.account_chart is not None
-                and (self.schedule_provider is not None or local_now.time().replace(tzinfo=None) >= CHART_UPDATE_TIME)
+                and (self.schedule_provider is not None or local_now.time() >= LEGACY_CHART_UPDATE_TIME)
                 and self._due(self._last_chart_check, now, self.data_prepare_interval)):
             self._guard("account_charts", now, lambda: self.account_chart.refresh_daily(now))
             self._last_chart_check = now

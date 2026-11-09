@@ -27,7 +27,7 @@ from .account_binding import AccountStrategyBinding
 from .execution_reference import ExecutionReferenceBinding
 from .equity_advice import EquityAdviceClient, PreparedEquityDecision, prepare_equity_decision
 from .srt_advice_client import _strategy_identity
-from .scheduling_contracts import ScheduledDecision
+from .scheduling_contracts import DAILY_CLOSE_DELAY, ScheduledDecision
 
 
 @dataclass(frozen=True, slots=True)
@@ -382,7 +382,7 @@ class FormalV4AdviceClient:
                                            as_of=cutoff),
                                        execution_context=context, as_of=cutoff)
         if (candidate.definition.execution_spec.decision_clock.value == BarFrequency.DAILY.value
-                and prepared.history.Date.iloc[-1] != task.decision_at - timedelta(hours=5)):
+                and prepared.history.Date.iloc[-1] != task.decision_at - DAILY_CLOSE_DELAY):
             raise ValueError('daily decision requires complete preceding trading-session data')
         if recipe is not None:
             path = self._interval_path(account_id, inputs.release_hash, interval)
@@ -426,7 +426,7 @@ class FormalV4AdviceClient:
                 if (availability[session.session_date.isoformat()] > interval.start
                         or not self._interval_allowed(account['account_id'], interval)):
                     continue
-                decision_at = sessions[index - 1].segments[-1].end + timedelta(hours=5) if daily else interval.start
+                decision_at = sessions[index - 1].segments[-1].end + DAILY_CLOSE_DELAY if daily else interval.start
                 task_id = canonical_sha256({'account_id': account['account_id'], 'release_hash': account['release_hash'],
                                             'start': interval.start.isoformat(), 'end': interval.end.isoformat()})
                 yield ScheduledDecision(task_id, interval, decision_at)

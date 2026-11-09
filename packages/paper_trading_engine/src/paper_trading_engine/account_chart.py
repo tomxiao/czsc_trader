@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from concurrent.futures import CancelledError, Executor, Future
-from datetime import date, datetime, time as wall_time, timezone
+from datetime import date, datetime, timezone
 import hashlib
 import json
 import os
@@ -19,7 +19,7 @@ from zoneinfo import ZoneInfo
 from execution_channels.futu.audit import AuditRecorder
 from execution_channels.futu.channel import channel_profile
 from strategy_runtime.signal_explanation import SignalExplanationSnapshot
-from .chart_market_data import AccountChartDataError, CHART_UPDATE_TIME
+from .chart_market_data import AccountChartDataError, LEGACY_CHART_UPDATE_TIME
 from .file_publication import replace_published_file
 from .forward_chart import ChartObservation, FORWARD_CHART_CONTRACT_VERSION, render_forward_chart_html
 from execution_channels.futu.trading_window import SHANGHAI
@@ -714,8 +714,7 @@ class AccountChartService:
             for account in accounts:
                 profile = channel_profile(account["channel_id"]) if account.get("equity_rules_json") is not None else None
                 local = at.astimezone(ZoneInfo(profile.timezone) if profile else SHANGHAI)
-                earliest = wall_time(13) if profile and profile.market == "US" else CHART_UPDATE_TIME
-                if local.time() < earliest:
+                if profile is None and local.time() < LEGACY_CHART_UPDATE_TIME:
                     continue
                 account_id = str(account["account_id"])
                 if self._load_meta(self._meta_path(account_id)).get("last_daily_check") == local.date().isoformat():

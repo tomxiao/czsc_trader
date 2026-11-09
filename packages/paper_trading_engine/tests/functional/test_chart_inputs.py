@@ -19,7 +19,8 @@ from paper_trading_engine.account_chart import AccountChartService
 # Independent risk: PTE24; responsibility-level assertions.
 @pytest.mark.parametrize('day,close', [
     (date(2026, 7, 2), 16),
-], ids=['PTE24-C01'])
+    (date(2026, 11, 27), 13),
+], ids=['PTE24-C01-regular', 'PTE24-C01-early-close'])
 def test_v4_us_chart_uses_bound_source_and_actual_new_york_close(monkeypatch, day, close):
     zone = ZoneInfo("America/New_York")
     prior = day - timedelta(days=1)
@@ -58,9 +59,12 @@ def test_v4_us_chart_uses_bound_source_and_actual_new_york_close(monkeypatch, da
     assert adapter.scheduled_session_ready("us-v4", moment[0]) is False
     assert adapter.history(**args)[1].Date.max() == prior
     moment[0] = sessions[-1].segments[-1].end
-    assert adapter.scheduled_session_ready("us-v4", moment[0]) is True
+    assert adapter.scheduled_session_ready("us-v4", moment[0]) is False
+    moment[0] += timedelta(hours=5, seconds=-1)
+    assert adapter.scheduled_session_ready("us-v4", moment[0]) is False
     assert adapter.history(**args)[1].Date.max() == prior
-    moment[0] += timedelta(minutes=5)
+    moment[0] += timedelta(seconds=1)
+    assert adapter.scheduled_session_ready("us-v4", moment[0]) is True
     assert adapter.history(**args, refresh_source=True)[1].Date.max() == day
     parameters, policy = seen[-1]
     assert (parameters.instrument, parameters.source, parameters.query.frequency, parameters.query.adjustment) == (
@@ -82,7 +86,7 @@ def test_v4_cn_chart_waits_for_daily_refresh_before_requesting_today(monkeypatch
     parameters = EquityDataRequest(instrument, SourceRef("tushare", "v1"),
                                    EquityQuery(EquityProduct.BARS, prior, day)).parameters
     binding = SimpleNamespace(instrument=instrument, request_bindings=(("bars", parameters),))
-    moment = [datetime.combine(day, time(20, 29), zone)]
+    moment = [datetime.combine(day, time(19, 59, 59), zone)]
     adapter = AccountChartMarketData(dataflows=None, now=lambda: moment[0],
                                      formal_inputs=lambda _: SimpleNamespace(binding=binding))
     monkeypatch.setattr(adapter, "_formal_calendar", lambda _inputs, _start, end: tuple(
@@ -92,12 +96,14 @@ def test_v4_cn_chart_waits_for_daily_refresh_before_requesting_today(monkeypatch
     def read(request, _policy):
         ends = [session.segments[-1].end for session in sessions
                 if session.session_date <= request.parameters.query.end]
-        assert len(ends) == (1 if moment[0].minute == 29 else 2)
+        assert len(ends) == (1 if moment[0].hour < 20 else 2)
         return pd.DataFrame({"Date": ends, "AvailableDate": ends, "Close": 10.0})
 
     monkeypatch.setattr(adapter, "_read", read)
     args = dict(symbol=instrument.symbol, asset="etf", account_id="cn-v4",
                 selection_data_cutoff=prior.isoformat(), context_sessions=20)
+    assert adapter.scheduled_session_ready("cn-v4", moment[0]) is False
     assert adapter.history(**args)[1].Date.max() == prior
-    moment[0] = datetime.combine(day, time(20, 30), zone)
+    moment[0] = datetime.combine(day, time(20), zone)
+    assert adapter.scheduled_session_ready("cn-v4", moment[0]) is True
     assert adapter.history(**args)[1].Date.max() == day

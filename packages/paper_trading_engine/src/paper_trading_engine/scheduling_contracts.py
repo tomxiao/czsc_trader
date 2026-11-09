@@ -1,7 +1,10 @@
 """Calendar-resolved scheduling facts owned by the PTE host."""
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from dataflows import TimeInterval
+
+DAILY_CLOSE_DELAY = timedelta(hours=5)
+
 
 @dataclass(frozen=True, slots=True)
 class ScheduledDecision:

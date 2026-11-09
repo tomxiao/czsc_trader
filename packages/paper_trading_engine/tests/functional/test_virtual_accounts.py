@@ -212,7 +212,7 @@ def test_PTE24_C03_daily_chart_update_retries_then_persists_success_and_skips_cl
 
     store = new_store(tmp_path / "daily-charts.db")
     create_account(store, "s001-v1", "v1", "a")
-    due = datetime(2026, 9, 4, 20, 30, tzinfo=SHANGHAI)
+    due = datetime(2026, 9, 4, 20, 0, tzinfo=SHANGHAI)
     calls, clock, failed = [], [0.0], [True]
     render_failed, published = [True], [due.date()]
     monkeypatch.setattr(account_chart.time, "monotonic", lambda: clock[0])
@@ -253,7 +253,7 @@ def test_PTE24_C03_daily_chart_update_retries_then_persists_success_and_skips_cl
         renderer=render,
     )
     service = AccountChartService(store, **options)
-    service.refresh_daily(due.replace(hour=20, minute=29))
+    service.refresh_daily(due.replace(hour=19, minute=59))
     assert calls == []
     service.refresh_daily(due)
     assert "实际截至 2026-09-03" in service.current_error("s001-v1")
