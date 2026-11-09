@@ -50,6 +50,7 @@ def _calendar_provider(zone, signal_day, execution_day, signal_close, execution_
         "selection_data_cutoff": signal_day,
     }
     client = object.__new__(FormalV4AdviceClient)
+    client.inspection_permit = None
     client.recipe = lambda _: SimpleNamespace(release_hash=account["release_hash"])
     client._calendar_products = lambda *_: {"sessions": fetched}
     client.store = SimpleNamespace(
@@ -95,6 +96,7 @@ def test_daily_decision_uses_actual_previous_close_and_next_trading_session(
     assert task.validity.end == next_gate
     assert provider.due_decision(account, next_gate - timedelta(microseconds=1)).task_id == task.task_id
     assert provider.due_decision(account, next_gate) is None
+    assert provider.due_decision(dict(account, selection_data_cutoff=execution_day), eligible) is None
 
 
 def test_PTE05_C02_manual_drive_obeys_close_plus_five_hours():

@@ -420,6 +420,10 @@ class FormalV4AdviceClient:
         availability = {str(row.SessionDate): row.AvailableDate for row in fetched.dataframe.itertuples()}
         sessions = sessions_from_metadata(fetched.identity.metadata)
         daily = rules.execution.decision_clock.value == BarFrequency.DAILY.value
+        # The forward observation boundary applies to deployed accounts.
+        # Permit-bound technical inspections exercise explicitly pinned scenarios.
+        selection_cutoff = (date.fromisoformat(account['selection_data_cutoff'])
+                            if self.inspection_permit is None else None)
         for index, session in enumerate(sessions):
             if daily and index == 0:
                 continue  # A preceding trading session is required, not a guessed calendar day.
@@ -430,7 +434,7 @@ class FormalV4AdviceClient:
                 # Its row availability is a research observation convention, not
                 # the publication time of the advance exchange calendar.
                 if (availability[session.session_date.isoformat()] > interval.start
-                        or session.session_date <= date.fromisoformat(account['selection_data_cutoff'])):
+                        or (selection_cutoff is not None and session.session_date <= selection_cutoff)):
                     continue
                 decision_at = sessions[index - 1].segments[-1].end + DAILY_CLOSE_DELAY if daily else interval.start
                 task_id = canonical_sha256({'account_id': account['account_id'],
