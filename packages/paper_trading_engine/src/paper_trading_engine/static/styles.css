@@ -175,7 +175,8 @@ body{background:var(--bg)}
 .market-switch button[aria-pressed="true"]{background:#263556;color:var(--blue);font-weight:650}
 main{padding:16px}
 .panel,.sidebar{background:var(--panel);box-shadow:none;border-radius:9px}
-.account-layout{grid-template-columns:185px minmax(0,1fr)}
+#app:has(>.account-layout){display:flex;flex-direction:column}
+.account-layout{flex:1 0 auto;grid-template-columns:185px minmax(0,1fr)}
 .account-layout .sidebar{top:var(--banner-offset);height:calc(100dvh - var(--banner-offset) - 18px);scrollbar-gutter:stable}
 .account-heading h1 .badge{vertical-align:middle;margin-left:7px}
 .primary-metrics,.channel-core-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:8px;background:var(--panel)}

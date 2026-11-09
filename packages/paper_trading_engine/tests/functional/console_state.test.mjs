@@ -22,7 +22,7 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
   const observation=value=>({status:'READY',series:[{key:'score',label:'策略得分',value,guides:[{key:'threshold',label:'入场阈值',value:.2}]}],facts:[]});
   const context={
     mode:'PAPER',
-    strategy:{release_id:'S003-v1',name:'测试策略',symbol:'510500.SH',account_id:'s003-v1',release_hash:'current'},
+    strategy:{release_id:'S003-v1',name:'测试策略',symbol:'510500.SH',account_id:'s003-v1',release_hash:'current',currency:'CNY'},
     window:{selection_data_cutoff:'2026-09-02',forward_observation_start:'2026-09-02'},
     market_data:{as_of:'2026-09-04',bars:['2026-09-02','2026-09-03','2026-09-04'].map(date=>({date,open:1,high:1.1,low:.9,close:1}))},
     observations:[

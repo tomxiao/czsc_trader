@@ -366,6 +366,7 @@ function applyAccountChart(status){
   if(chartShouldReload(state.chart,status)||!document.querySelector('#accountChartFrame')){
     host.innerHTML=`<iframe id="accountChartFrame" data-account-id="${esc(status.scope.account_id)}" title="${esc(status.scope.release_id)}前瞻观察图" src="${esc(chartUrl())}"></iframe>`;
     const frame=document.querySelector('#accountChartFrame');
+    const app=document.querySelector('#app');
     frame.onload=()=>{
       if(!frame.isConnected)return;
       const doc=frame.contentDocument;
@@ -377,7 +378,8 @@ function applyAccountChart(status){
       };
       const resize=new ResizeObserver(()=>{
         const height=Math.ceil(chart.getBoundingClientRect().height);
-        if(frame.isConnected&&height>0)host.style.setProperty('--chart-content-height',`${height}px`);
+        // Keep the last measured height while the next account's frame loads.
+        if(frame.isConnected&&height>0)app.style.setProperty('--chart-content-height',`${height}px`);
       });
       resize.observe(chart);
       frame.contentWindow.addEventListener('pagehide',()=>resize.disconnect(),{once:true});
