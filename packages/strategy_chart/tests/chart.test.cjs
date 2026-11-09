@@ -43,6 +43,25 @@ function context(){
  const panel={groups:[],series:[],states:[{key:'state',label:'状态',description:'',options:[{key:'wait',label:'等待'}],value:'wait',status:'AVAILABLE',reason:null}],explanation:narrative};
  return {mode:'BACKTEST',strategy:{reference_id:'TEST',symbol:'TEST'},window:{start:'2026-01-05',end:'2026-01-07'},market_data:{as_of:'2026-01-07',bars:['2026-01-05','2026-01-06','2026-01-07'].map(date=>({date,open:1,high:1.1,low:.9,close:1}))},observations:[{signal_date:'2026-01-05',decision_id:'old',observation:{status:'READY',definition_sha256:'old',series:[],facts:[]}},{signal_date:'2026-01-06',decision_id:'failed',observation:{status:'UNAVAILABLE',message:'计算错误'}},{signal_date:'2026-01-07',decision_id:'current',observation:{status:'READY',definition_sha256:'current',series:[],facts:[],signal_panel:panel}}],execution:{decisions:[],fills:[{fill_id:'trade',session:'2026-01-10',occurred_at:'2026-01-10',time_precision:'SESSION',side:'BUY',quantity:100,price:1,fee:.1}],snapshots:[{session:'2026-01-07',quantity:100}]}};
 }
+test('MU first paper signal shows the recorded no-order decision and explanation on its signal date',()=>{
+ const f=fixture(),c=context();
+ c.mode='PAPER';c.strategy={symbol:'MU',account_id:'s018-v1',release_id:'S018-v1'};
+ c.window={selection_data_cutoff:'2026-10-30',forward_observation_start:'2026-11-06'};
+ c.market_data.bars=['2026-11-05','2026-11-06','2026-11-09'].map(date=>({date,open:10,high:11,low:9,close:10}));
+ c.observations=[];c.execution.fills=[];
+ c.execution.decisions=[{decision_id:'MU-FIRST',signal_date:'2026-11-06',valid_session:'2026-11-09',generated_at:'2026-11-08T13:36:43Z',
+   action:'WAIT',status:'COMPLETED',state_reason:'NO_ORDER',target_quantity:0,
+   explanation:{judgment:'no opportunity',basis:[{key:'first',text:'已记录的入场判断'}],next_watch:'下一根日线',explanation:'未满足入场条件'}}];
+ f.window.location={hash:'#2026-11-06'};f.mount(f.root,c);
+ assert.equal(f.root.dataset.selectedDate,'2026-11-06');
+ assert.match(f.root.querySelector('.event-heading').textContent,/2026-11-06 · 决策 1 笔/);
+ assert.match(f.root.querySelector('.event-details').textContent,/2026-11-08 21:36:43 · 决策：等待；目标 0 股.*生效 2026-11-09/);
+ assert.match(f.root.querySelector('.event-details').textContent,/计划无需下单/);
+ assert.match(f.root.querySelector('.signal-reading').textContent,/no opportunity.*已记录的入场判断/);
+ f.svg.fire('keydown',{key:'ArrowRight'});
+ assert.equal(f.root.dataset.selectedDate,'2026-11-09');
+ assert.match(f.root.querySelector('.event-heading').textContent,/无可展示事件/);
+});
 test('snapshot interpretation is text only and explanation preserves judgment',()=>{
  const f=fixture();f.mount(f.root,context());const reading=f.root.querySelector('.signal-reading');
  assert.match(reading.textContent,/等待条件满足/);assert.match(reading.textContent,/<img src=x/);assert.equal(reading.querySelector('img'),null);

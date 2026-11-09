@@ -198,6 +198,8 @@ def test_rebind_to_qualified_successor_version(formal_v4, tmp_path, monkeypatch,
         before = scoped.virtual_account('formal')
         active = json.loads(before['account_v4_json'])['active']
         fills = scoped.account_fills('formal')
+        first_signal = scoped.first_account_signal_date('formal')
+        assert first_signal == min(row['signal_date'] for row in scoped.account_decisions('formal'))
         target, _, _ = client.load_release('S999', 'v2')
         opens = datetime(2026, 10, 16, 9, 30, tzinfo=ZoneInfo(candidate.instrument.timezone))
         cutover = TimeInterval(opens, opens.replace(hour=15 if candidate.instrument.market is MarketId.CN else 16, minute=0))
@@ -209,6 +211,8 @@ def test_rebind_to_qualified_successor_version(formal_v4, tmp_path, monkeypatch,
         assert update_account_bindings(runtime, 'target', (request,)).status is AccountBindingUpdateStatus.COMMITTED
         after = scoped.virtual_account('formal')
         assert after['strategy_version'] == 'v2' and after['release_hash'] == target.release_hash
+        assert after['name'] == 'S999-v2模拟账户'
+        assert scoped.first_account_signal_date('formal') == first_signal
         assert json.loads(after['account_v4_json'])['active'] == active
         assert scoped.account_fills('formal') == fills
         assert after['cash'] == before['cash'] and after['quantity'] == before['quantity']

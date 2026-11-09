@@ -6,6 +6,11 @@ interface SignalGroup {
   format: NumericFormat; precision: number; description: string;
 }
 interface SignalStateOption { key: string; label: string }
+interface DecisionExplanation {
+  state_key: string; case_key: string; judgment: string;
+  basis: Array<{key: string; text: string}>;
+  next_watch: string; explanation: string;
+}
 interface SignalPanel {
   groups: SignalGroup[];
   series: Array<{
@@ -18,11 +23,7 @@ interface SignalPanel {
     value: string | null; status: SignalAvailability; reason: string | null;
   }>;
   /** Absent only on explicitly supported legacy observations. */
-  explanation?: {
-    state_key: string; case_key: string; judgment: string;
-    basis: Array<{key: string; text: string}>;
-    next_watch: string; explanation: string;
-  };
+  explanation?: DecisionExplanation;
 }
 interface ReadyObservationValues {
   status: 'READY';
@@ -45,7 +46,7 @@ interface StrategyChartContext {
     symbol: string; release_id?: string; reference_id?: string;
     name?: string; account_id?: string;
   };
-  window: {start?: string; end?: string; selection_data_cutoff?: string; observation_start?: string};
+  window: {start?: string; end?: string; selection_data_cutoff?: string; forward_observation_start?: string | null};
   market_data: {
     as_of: string;
     bars: Array<{date: string; open: number; high: number; low: number; close: number}>;
@@ -59,6 +60,7 @@ interface StrategyChartContext {
       decision_id: string; generated_at: string; signal_date: string; valid_session: string;
       action: string; target_quantity: number; status: string;
       state_reason?: string; state_changed_at?: string;
+      explanation?: DecisionExplanation | null;
     }>;
     fills: Array<{
       fill_id: string; occurred_at: string; session?: string; time_precision?: 'SESSION' | 'TIMESTAMP';

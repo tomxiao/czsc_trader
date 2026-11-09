@@ -10,6 +10,8 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   if(!stage||!svg||!tooltip){delete root.dataset.strategyChartMounted;throw new TypeError('strategy chart requires the shared chart shell');}
   const embedded=window.parent!==window;
   if(embedded)root.classList.add('embedded');
+  const isPaper=context.mode==='PAPER',compactEmbed=isPaper&&embedded;
+  if(compactEmbed)root.classList.add('paper-embedded');
   const NS='http://www.w3.org/2000/svg';
   const colors=new Map();
   const css=name=>{if(!colors.has(name))colors.set(name,getComputedStyle(root).getPropertyValue(name).trim());return colors.get(name);};
@@ -19,7 +21,7 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   const decisions=[...context.execution.decisions].sort((a,b)=>Date.parse(a.generated_at)-Date.parse(b.generated_at));
   const fills=[...context.execution.fills].sort((a,b)=>Date.parse(a.occurred_at)-Date.parse(b.occurred_at));
   const snapshots=context.execution.snapshots;
-  const cutoff=context.window.selection_data_cutoff;
+  const observationStart=context.window.forward_observation_start;
   const byDate=new Map([...observations].sort((a,b)=>String(a.generated_at||a.signal_date).localeCompare(String(b.generated_at||b.signal_date))).map(item=>[item.signal_date,item]));
   const observationById=new Map(observations.filter(item=>item.observation.status==='READY').map(item=>[item.decision_id,item.observation]));
   const snapshotByDate=new Map(snapshots.map(item=>[item.session,item]));
@@ -47,17 +49,19 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   const statusLabel=value=>({PENDING:'待执行',EXECUTING:'执行中',COMPLETED:'已完成',SUPERSEDED:'已替代',CANCELLED:'已取消',INCOMPLETE:'未完成'}[value]||value);
   const quantity=value=>value==null?'未记录':`${Number(value).toLocaleString('zh-CN')} 股`;
   const money=value=>value==null?'未记录':`${Number(value).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})} 元`;
-  const dayDecisions=date=>decisions.filter(item=>localTime(item.generated_at).slice(0,10)===date);
+  const decisionDate=item=>isPaper?item.signal_date:localTime(item.generated_at).slice(0,10);
+  const dayDecisions=date=>decisions.filter(item=>decisionDate(item)===date);
   const dayFills=date=>fills.filter(item=>fillDate(item)===date);
   const fillSummary=item=>`${fillTime(item)} · 成交：${String(item.side).toUpperCase()==='BUY'?'买入':'卖出'} ${quantity(item.quantity)}，价格 ${fmt(item.price)} 元（不复权），金额 ${money(Number(item.quantity)*Number(item.price))}，费用 ${money(item.fee)}`;
-  const eventDates=[...new Set([...bars.map(item=>item.date),...decisions.map(item=>localTime(item.generated_at).slice(0,10)),...fills.map(fillDate)])].sort();
+  const eventDates=[...new Set([...bars.map(item=>item.date),...decisions.map(decisionDate),...fills.map(fillDate)])].sort();
+  const requestedDate=window.location?.hash?.slice(1);
+  if(isPaper&&eventDates.includes(requestedDate))state.selected=requestedDate;
   const tradingDates=new Set(bars.map(item=>item.date));
 
   const write=(selector,text)=>{const node=root.querySelector(selector);if(node)node.textContent=text;};
   const isBacktest=context.mode==='BACKTEST';
   write('#forward-title',`${context.strategy.release_id||context.strategy.reference_id} · ${context.strategy.name||context.strategy.symbol}`);
-  const observationStart=context.window.observation_start;
-  write('#forward-subtitle',isBacktest?`回测复盘 · ${context.strategy.symbol} · ${context.window.start} — ${context.window.end}`:`前瞻观察 · ${context.strategy.symbol} · ${context.strategy.account_id} · ${observationStart?`观察事实自 ${observationStart}`:'等待首条观察事实'}`);
+  write('#forward-subtitle',isBacktest?`回测复盘 · ${context.strategy.symbol} · ${context.window.start} — ${context.window.end}`:`前瞻观察 · ${context.strategy.symbol} · ${context.strategy.account_id} · ${observationStart?`首个信号 ${observationStart}`:'等待首个信号'}`);
   write('#forward-asof',`${isBacktest?'回测完成':'运行正常'} · 数据截至 ${context.market_data.as_of}`);
 
 
@@ -67,7 +71,8 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   const node=(tag,cls,text)=>{const element=document.createElement(tag);element.className=cls;if(text!=null)element.textContent=text;return element;};
   function paintReading(observation,date){
     if(readingDate!==date)expanded=false;readingDate=date;
-    const narrative=observation?.status==='READY'?observation.signal_panel?.explanation:null;
+    const narrative=(isPaper?dayDecisions(date).at(-1)?.explanation:null)
+      || (observation?.status==='READY'?observation.signal_panel?.explanation:null);
     const legacy=observation?.status==='READY'&&!narrative;
     reading.hidden=legacy||!state.layers.signal;legacyNotice.hidden=!legacy||!state.layers.signal;
     signalControls.hidden=!legacy||!state.layers.signal||!signalSelect.options.length;
@@ -77,11 +82,11 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     const judgment=narrative?.judgment||(unavailable?'观察不可用':'当日没有信号观察');
     const reason=unavailable?observation.message:'该日期没有记录策略观察，不据此推断入场或退出。';
     const head=node('div','reading-head');head.append(node('div','reading-label','当前判断'),node('strong','',judgment),node('span','reading-date',date));
-    if(narrative){const toggle=node('button','',expanded?'返回':'解释');toggle.type='button';toggle.setAttribute('aria-label',expanded?'返回信号结论':'解释策略判断');toggle.addEventListener('click',()=>{expanded=!expanded;paintReading(observation,date);});head.append(toggle);}
+    if(narrative&&!compactEmbed){const toggle=node('button','',expanded?'返回':'解释');toggle.type='button';toggle.setAttribute('aria-label',expanded?'返回信号结论':'解释策略判断');toggle.addEventListener('click',()=>{expanded=!expanded;paintReading(observation,date);});head.append(toggle);}
     const basis=node('div','reading-basis');basis.append(node('div','reading-label',expanded?'怎么看这个判断':'判断依据'));
     const body=node('div','reading-body');
     if(expanded)body.append(node('div','reading-detail',narrative.explanation));
-    else if(narrative)narrative.basis.forEach(item=>{const row=node('div','reading-row',item.text);row.dataset.basisKey=item.key;body.append(row);});
+    else if(narrative)(compactEmbed?narrative.basis.slice(0,1):narrative.basis).forEach(item=>{const row=node('div','reading-row',item.text);row.dataset.basisKey=item.key;body.append(row);});
     else body.append(node('div','reading-detail',reason));
     basis.append(body);
     const next=node('div','reading-next');next.append(node('div','reading-label','接下来关注'),node('div','reading-body',narrative?.next_watch||(unavailable?'等待完整观察；交易结果以事件和账户记录为准。':'请选择有观察记录的日期。')));
@@ -113,7 +118,11 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
       const details=[`${localTime(item.generated_at)} · 决策：${actionLabel(item.action)}；目标 ${quantity(item.target_quantity)}；${statusLabel(item.status)}；生效 ${item.valid_session}；信号 ${item.signal_date}`];
       if(item.state_reason)details.push(`状态原因：${reasonLabel(item.state_reason)}；记录 ${localTime(item.state_changed_at)}`);
       const observation=observationById.get(item.decision_id);
-      details.push(observation?`决策依据：${explanation(observation)}`:'决策依据：无可用于本图的策略观察事实');
+      if(item.explanation){
+        const value=item.explanation;
+        details.push(`决策判断：${value.judgment}`);
+        if(!compactEmbed)details.push(...value.basis.map(fact=>fact.text),value.explanation,`接下来关注：${value.next_watch}`);
+      }else details.push(observation?`决策依据：${explanation(observation)}`:'决策依据：无可用于本图的策略观察事实');
       return details;
     });
     if(!lines.length)lines.push('当日无可展示的决策或成交事件');
@@ -122,9 +131,13 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   const eventHeight=128;
   function eventPanel(x,y,width){
     const frame=add(el('foreignObject',{x,y,width,height:eventHeight}));
-    const content=node('div','event-scroll');content.setAttribute('tabindex','0');content.setAttribute('aria-label','当日事件，可滚动查看');
+    const content=node('div','event-scroll');content.setAttribute('tabindex','0');content.setAttribute('aria-label',compactEmbed?'当日事件摘要':'当日事件，可滚动查看');
     const main=node('div','event-heading'),details=node('div','event-details');content.append(main,details);frame.appendChild(content);
     return date=>{
+      if(isPaper&&date&&root.dataset.selectedDate!==date){
+        root.dataset.selectedDate=date;
+        if(compactEmbed)root.dispatchEvent(new CustomEvent('pte-chart-date',{bubbles:true}));
+      }
       const selectedFills=dayFills(date),selectedDecisions=dayDecisions(date);
       const summary=[selectedDecisions.length?`决策 ${selectedDecisions.length} 笔`:'',selectedFills.length?`成交 ${selectedFills.length} 笔`:''].filter(Boolean).join(' · ')||'当日无可展示事件';
       const title=`${date} · ${summary}${tradingDates.has(date)?'':' · 非交易日，无行情K线'}`;
@@ -302,8 +315,8 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     const [smin0,smax0]=signalValues.length?extent(signalValues):[0,1],spad=(smax0-smin0||1)*.12,ySignal=scale(smin0-spad,smax0+spad,signalTop+signalH-34,signalTop+25);
     const quantities=[0,...snapshots.map(item=>Number(item.quantity))];
     const qmax=Math.max(...quantities,1),yPosition=scale(0,qmax*1.08,positionTop+positionH,positionTop);
-    const visibleCutoff=rows.findIndex(row=>row.date>cutoff);
-    if(visibleCutoff>=0){const cutoffX=visibleCutoff?x(visibleCutoff-.5):x(0);add(el('rect',{x:cutoffX,y:priceTop,width:left+innerW-cutoffX,height:explainTop+explainH-priceTop,fill:css('--forward')}));add(el('line',{x1:cutoffX,x2:cutoffX,y1:priceTop,y2:explainTop+explainH,class:'cutoff'}));add(el('text',{x:cutoffX+6,y:priceTop+12,class:'cutoff-label'},'冻结后前瞻区间'));}
+    const forwardIndex=isPaper&&observationStart?rows.findIndex(row=>row.date>=observationStart):-1;
+    if(forwardIndex>=0){const startX=forwardIndex?x(forwardIndex-.5):left;add(el('rect',{x:startX,y:priceTop,width:left+innerW-startX,height:explainTop+explainH-priceTop,fill:css('--forward')}));add(el('line',{x1:startX,x2:startX,y1:priceTop,y2:explainTop+explainH,class:'cutoff'}));add(el('text',{x:startX+6,y:priceTop+12,class:'cutoff-label'},'前瞻观察区间'));}
     const priceTicks=5;for(let index=0;index<priceTicks;index++){const value=pmin-pad+(pmax-pmin+2*pad)*index/(priceTicks-1),y=yPrice(value);add(el('line',{x1:left,x2:left+innerW,y1:y,y2:y,class:'grid-line'}));add(el('text',{x:left+innerW+8,y:y+4,class:'axis'},fmt(value)));}
     const priceLabel=add(el('text',{x:8,y:priceTop+12,class:'panel-label','aria-label':'价格（后复权）'},'价格'));
     priceLabel.appendChild(el('tspan',{x:8,dy:15},'后复权'));

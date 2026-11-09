@@ -64,7 +64,7 @@ def _utc_now() -> str:
 
 def _update_account_bindings(
     connection: sqlite3.Connection,
-    bindings: tuple[tuple[object, object, dict[str, object]], ...],
+    bindings: tuple[tuple[object, object, dict[str, object], str], ...],
 ) -> None:
     """Switch validated bindings and adopt prepared replacements in one transaction."""
     from .audit import AuditRecorder
@@ -74,7 +74,7 @@ def _update_account_bindings(
     store = PaperStore.__new__(PaperStore)
     store._connection, store._lock, store._atomic_decision_depth = connection, RLock(), 1
     audit = AuditRecorder(store)
-    for update, binding, payload in bindings:
+    for update, binding, payload, display_name in bindings:
         account_id = update.account_id
         account = store.virtual_account(account_id)
         if account["run_state"] != RunState.PAUSED or account["release_hash"] != update.expected_release_hash:
@@ -104,9 +104,9 @@ def _update_account_bindings(
                     details={"intent_id": intent["intent_id"], "replacement_decision_id": payload["decision_id"]}),
             )
         changed = connection.execute(
-            "UPDATE virtual_accounts SET strategy_version=?,release_hash=?,strategy_name_snapshot=?,qualification_snapshot=?,updated_at=? "
+            "UPDATE virtual_accounts SET strategy_version=?,release_hash=?,name=?,strategy_name_snapshot=?,qualification_snapshot=?,updated_at=? "
             "WHERE account_id=? AND strategy_version=? AND release_hash=? AND run_state='PAUSED'",
-            (binding.version, binding.release_hash, binding.name, binding.qualification.value, _utc_now(),
+            (binding.version, binding.release_hash, display_name, binding.name, binding.qualification.value, _utc_now(),
              account_id, account["strategy_version"], update.expected_release_hash),
         ).rowcount
         if changed != 1:
@@ -1348,6 +1348,26 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
                 details={"previous_name": previous_name, "name": normalized_name},
             ))
         return True
+
+    def update_virtual_account_name(self, account_id: str, name: str) -> dict[str, Any]:
+        """Change a strategy account's display label in one audited transaction."""
+        if type(name) is not str or not name.strip():
+            raise ValueError("account name is required")
+        with self._lock, self._write_context(False):
+            account = self.virtual_account(account_id)
+            if account["account_type"] != STRATEGY_ACCOUNT_TYPE:
+                raise ValueError("display name normalization requires a strategy account")
+            if account["name"] != name:
+                self._connection.execute(
+                    "UPDATE virtual_accounts SET name=?,updated_at=? WHERE account_id=?",
+                    (name, _utc_now(), account_id),
+                )
+                self._insert_audit_event(self._new_audit_event(
+                    "ACCOUNT_DISPLAY_NAME_UPDATED", source="account_maintenance",
+                    actor_type="OPERATOR", account_id=account_id, correlation_id=str(uuid4()),
+                    details={"previous_name": account["name"], "name": name},
+                ))
+        return self.virtual_account(account_id)
 
     def rename_virtual_account(self, old_account_id: str, account_id: str, name: str):
         """Atomically migrate a runtime account identity without losing its ledger."""
@@ -2794,6 +2814,14 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
                           state_changed_at=events[-1]["occurred_at"],
                           state_events=[{key: event[key] for key in ("sequence", "state", "reason", "occurred_at", "related_decision_id")} for event in events])
             return result
+
+    def first_account_signal_date(self, account_id: str) -> str | None:
+        """First persisted strategy decision, including decisions with no order."""
+        with self._lock:
+            self._check_owned("account", account_id)
+            return self._connection.execute(
+                "SELECT MIN(signal_date) FROM decisions WHERE account_id=?", (account_id,),
+            ).fetchone()[0]
 
     def account_decisions(self, account_id: str | None = None) -> list[dict[str, Any]]:
         self._check_owned("account", account_id)

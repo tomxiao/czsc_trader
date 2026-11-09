@@ -13,7 +13,7 @@ from dataflows import DataSpace
 from strategy_runtime import EntryCycleState
 
 from .account_binding import (
-    AccountBindingUpdate, AccountBindingUpdateResult, AccountBindingUpdateStatus, V4AccountBindingUpdate,
+    AccountBindingUpdate, AccountBindingUpdateResult, AccountBindingUpdateStatus, V4AccountBindingUpdate, paper_account_name,
 )
 from .account_engine import AccountEngine
 from execution_channels.futu.broker import TERMINAL_INTENT_STATUSES, TERMINAL_ORDER_STATUSES
@@ -181,7 +181,7 @@ def update_account_bindings(
                         portfolio_revision, state_revision, signal_date, prepared.tradable_window.start, cash):
                     raise ValueError(f"{update.account_id}: replacement decision differs from bound portfolio or preparation")
                 value = AccountEngine(store, client)._assign_decision_id(update.account_id, None, value)
-                bindings.append((update, binding, value.to_store_payload()))
+                bindings.append((update, binding, value.to_store_payload(), paper_account_name(binding.release_id)))
             if load_release(runtime_root, target_release_id).manifest_sha256 != release.manifest_sha256:
                 raise ValueError("target release changed during account binding validation")
             connection.execute("BEGIN IMMEDIATE")

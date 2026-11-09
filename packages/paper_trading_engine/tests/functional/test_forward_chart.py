@@ -1,14 +1,49 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
 
+import pandas as pd
 import pytest
 
 from paper_trading_engine.forward_chart import render_forward_chart_html
 
 
+def test_mu_no_order_decision_drives_chart_start_and_saved_explanation(tmp_path):
+    from paper_trading_engine.account_chart import AccountChartService
+
+    explanation = {"state_key": "decision", "case_key": "wait", "judgment": "no opportunity",
+                   "basis": [{"key": "target", "text": "target_weight: 0"}],
+                   "next_watch": "next completed daily bar", "explanation": "wait"}
+    row = {"account_id": "s018-v1", "decision_id": "mu-first", "signal_date": "2026-11-06",
+           "valid_session": "2026-11-09", "generated_at": "2026-11-08T13:36:43+00:00",
+           "status": "COMPLETED", "state_reason": "NO_ORDER", "state_changed_at": None,
+           "state_events": [], "payload": {"action": "WAIT", "target_quantity": 0, "observation": None,
+                                           "strategy_output": {"explanation": explanation}}}
+    account = {"account_id": "s018-v1", "symbol": "MU", "asset_type": "stock", "strategy_id": "S018",
+               "strategy_version": "v1", "strategy_name_snapshot": "MU", "release_hash": "a" * 64,
+               "selection_data_cutoff": "2026-10-30"}
+    store = SimpleNamespace(account_decisions=lambda _: [row], account_intents=lambda _: [],
+                            account_fills=lambda _: [], account_snapshots=lambda _: [])
+    bars = pd.DataFrame([{"Date": day, "Open": 1, "High": 2, "Low": 1, "Close": 2}
+                         for day in ("2026-11-05", "2026-11-06")])
+    service = AccountChartService(store, market_data=SimpleNamespace(history=lambda **_: ("data", bars)),
+                                  cache_dir=tmp_path)
+    try:
+        result = service._request(account)
+        assert result["window"]["forward_observation_start"] == "2026-11-06"
+        assert result["window"]["selection_data_cutoff"] == "2026-10-30"
+        assert result["observations"] == []
+        decision, = result["execution"]["decisions"]
+        assert decision["explanation"] == explanation
+        assert decision["state_reason"] == "NO_ORDER"
+        assert 'no opportunity' in render_forward_chart_html(result)
+    finally:
+        service.close()
+
+
 def _context() -> dict[str, object]:
     return {
-        "contract_version": "pte_forward_chart.v2",
+        "contract_version": "pte_forward_chart.v3",
         "strategy": {
             "account_id": "s007-v1",
             "strategy_id": "S007",
@@ -18,7 +53,8 @@ def _context() -> dict[str, object]:
             "name": "多源机会风险门控",
             "symbol": "588080.SH",
         },
-        "window": {"selection_data_cutoff": "2026-09-02", "context_sessions": 60},
+        "window": {"selection_data_cutoff": "2026-09-02", "context_sessions": 60,
+                   "forward_observation_start": "2026-09-03"},
         "market_data": {
             "identity": "b" * 64,
             "adjustment": "hfq",

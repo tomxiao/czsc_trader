@@ -39,3 +39,14 @@
 .strategy-chart .event-heading{color:var(--text);font-size:12px;line-height:20px;font-weight:500}
 .strategy-chart .event-details{color:var(--muted);font-size:11px;line-height:18px;white-space:pre-wrap}
 .strategy-chart .event-scroll:focus-visible{outline:1px solid var(--position);outline-offset:-1px}
+html:has(.paper-embedded){overflow:hidden;scrollbar-gutter:auto!important}
+.strategy-chart.paper-embedded .event-scroll,
+.strategy-chart.paper-embedded .reading-body,
+.strategy-chart.paper-embedded .signal-panel-legend,
+.strategy-chart.paper-embedded .signal-legacy-notice{overflow:clip}
+.strategy-chart.paper-embedded .event-details,
+.strategy-chart.paper-embedded .reading-row,
+.strategy-chart.paper-embedded .reading-detail{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden;overflow-wrap:anywhere}
+.strategy-chart.paper-embedded .reading-row,
+.strategy-chart.paper-embedded .reading-detail{-webkit-line-clamp:2}
+@container(max-width:700px){.strategy-chart.paper-embedded .signal-reading{padding-inline:14px}}

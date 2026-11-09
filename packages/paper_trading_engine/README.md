@@ -176,7 +176,8 @@ EC V4 账户文档使用 schema 2，`locked_quantity` 与周期预算由 EC 持�
 
 其余命令均显式传入 `--channel-account-id`，并沿用公共 `--database / --data-dir / --repo-root`：
 
-- `create-v4 --definition`：字段为 `account_id/name/strategy_id/strategy_version/release_hash/symbol/asset/fee_rate/initial_cash`，新账户暂停。
+- `create-v4 --definition`：必填字段为 `account_id/strategy_id/strategy_version/release_hash/symbol/asset/fee_rate/initial_cash`。`name` 可省略，显式提供时必须为 `{发布版本}模拟账户`。A 股 `account create` 的 `--name` 使用相同规则，新账户暂停。
+- `normalize-account-name --channel-account-id <渠道账户> --account-id <策略账户>`：离线统一存量账户显示名。保留账户 ID、策略全名和交易账本，相同名称重复执行不新增审计事件。重绑时显示名随发布版本更新。
 - `bind-inputs --definition` 固定输入，或 `bind-recipe --definition` 注册连续日线准备；字段为 `account_id/release_hash/fee_rate/binding/execution_reference`，其中 `binding` 使用 `EquityInputBinding.to_dict()`，`execution_reference` 为独立 RAW 行情引用。
 - `prepare-data --account-id --interval-start --interval-end --as-of` 以带时区的时间戳准备当前 V4 配方的 DFLS 数据。按实际 `as_of` 和执行区间起点中较早的时点选择历史价格与观察输入。结果包含准备引用及逐请求状态，账户库以只读方式打开。准备引用可用于数据审计，正式执行区间仍由调度器独立采纳。
 - `pause-account / resume-account --account-id` 仅改变指定策略账户运行状态；启用要求冻结绑定、已注册输入和现有账户健康检查通过。
@@ -391,6 +392,12 @@ PTE订单处理和SQLite记账代码；外部渠道使用`RECORDED_FILLS_V1`受�
 PTE前瞻观察图由三类事实组成：SRT随决策记录的观察快照、PTE通过DFLS独立获取的行情背景，
 以及账户订单、成交和持仓。PTE与TDR复用[共享图表组件](../strategy_chart/README.md)，
 按价格、持仓、信号、事件顺序展示，不读取候选包中的前瞻图代码，也不解析SRT私有准备数据。
+
+账户快照 `account.forward_observation_start` 与图表状态 `forward_observation_start` 返回账户最早的正式决策信号日，包含无需下单的决策。尚无决策时返回 `null`。重绑保留账户已有信号历史。`selection_data_cutoff` 仍表示选型截止，`metrics.observation_start/end` 仍表示日终估值窗口。
+
+图表载荷 `pte_forward_chart.v3` 按信号日归档决策，保留生成时间和生效日；成交按市场实际成交日归档。V4 已保存的 `strategy_output.explanation` 投影为决策解释，可在没有数值观察时展示。嵌入图展示摘要且不出现局部滚动条，展开大图定位到当前选中日期。版本升级后后台按新契约重建图表缓存。
+
+账户页首行展示总资产、可用现金、冻结资金、持仓、累计收益率。冻结资金和累计收益率分别取自快照 `account.frozen_cash` 和 `metrics.current_total_return`。累计收益率为当前总资产除以初始资金减一，退役后以已回收资金作为期末资产。
 独立行情只用于展示，不能反向改变策略计算。
 
 `strategy_observation.v4`携带由策略声明并由SRT解析的解释快照；页面直接展示“当前判断、

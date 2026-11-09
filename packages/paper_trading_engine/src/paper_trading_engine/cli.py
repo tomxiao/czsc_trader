@@ -26,7 +26,7 @@ from dataflows import DataSpace
 from execution_channels.futu.audit import AuditRecorder
 from .srt_advice_client import SrtAdviceClient
 from .data_space import create_dataflows
-from .account_binding import AccountStrategyBinding
+from .account_binding import AccountStrategyBinding, paper_account_name
 from execution_channels.futu.account_retirement import AccountRetirementRequest, AccountRetirementStatus
 from .account_data_preparer import AccountDataPreparer
 from .account_strategy_cycle import AccountStrategyCycle
@@ -120,7 +120,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     channel = actions.add_parser("channel")
     channel_actions = channel.add_subparsers(dest="channel_action", required=True)
-    for operation in ("list", "status", "register", "create-v4", "bind-inputs", "bind-recipe", "pause", "resume", "pause-account", "resume-account", "prepare-data"):
+    for operation in ("list", "status", "register", "create-v4", "bind-inputs", "bind-recipe", "pause", "resume", "pause-account", "resume-account", "normalize-account-name", "prepare-data"):
         leaf = channel_actions.add_parser(operation)
         _common(leaf)
         leaf.set_defaults(definition=None)
@@ -128,7 +128,7 @@ def build_parser() -> argparse.ArgumentParser:
             leaf.add_argument("--channel-account-id", required=True)
         if operation in {"register", "create-v4", "bind-inputs", "bind-recipe"}:
             leaf.add_argument("--definition", required=True, type=Path)
-        if operation in {"pause-account", "resume-account", "prepare-data"}:
+        if operation in {"pause-account", "resume-account", "normalize-account-name", "prepare-data"}:
             leaf.add_argument("--account-id", required=True)
         if operation == "prepare-data":
             leaf.add_argument("--interval-start", required=True, type=datetime.fromisoformat)
@@ -144,7 +144,7 @@ def build_parser() -> argparse.ArgumentParser:
     create = account_actions.add_parser("create")
     _common(create)
     create.add_argument("--account-id", required=True)
-    create.add_argument("--name", required=True)
+    create.add_argument("--name")
     create.add_argument("--strategy", required=True)
     create.add_argument("--strategy-version")
     create.add_argument("--initial-cash", default="100000")
@@ -681,6 +681,7 @@ def _run_writable_account_command(args: argparse.Namespace) -> dict[str, object]
         identity = _validate_strategy(args)
         baseline_version = identity.release_id
         baseline_hash = identity.release_hash
+        account_name = paper_account_name(identity.release_id, args.name)
         existing = None
         try:
             existing = store.virtual_account(args.account_id)
@@ -695,7 +696,7 @@ def _run_writable_account_command(args: argparse.Namespace) -> dict[str, object]
             ) != (
                 identity.strategy_id, identity.version,
                 identity.release_hash,
-                args.name, args.symbol.upper(), args.asset,
+                account_name, args.symbol.upper(), args.asset,
                 str(Decimal(args.initial_cash).quantize(Decimal("0.0001"))),
                 identity.selection_data_cutoff.isoformat(),
             ):
@@ -703,7 +704,7 @@ def _run_writable_account_command(args: argparse.Namespace) -> dict[str, object]
             return existing
         _preflight_strategy_account(args, identity)
         created = store.create_virtual_account(
-            args.account_id, args.name, baseline_version, baseline_hash, args.initial_cash,
+            args.account_id, account_name, baseline_version, baseline_hash, args.initial_cash,
             strategy_id=identity.strategy_id,
             strategy_name_snapshot=identity.name,
             strategy_version=identity.version,

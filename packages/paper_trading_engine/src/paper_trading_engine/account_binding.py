@@ -18,6 +18,13 @@ if TYPE_CHECKING:
     from .formal_v4_advice import FormalV4Inputs
 
 
+def paper_account_name(release_id: str, supplied: str | None = None) -> str:
+    name = f"{release_id}模拟账户"
+    if supplied is not None and supplied != name:
+        raise ValueError(f"account display name must be {name}")
+    return name
+
+
 @dataclass(frozen=True, slots=True)
 class AccountStrategyBinding:
     strategy_id: str

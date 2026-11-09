@@ -8,6 +8,7 @@ from decimal import Decimal
 import json
 
 from execution_channels.futu.channel import ChannelAccountConfig
+from .account_binding import paper_account_name
 from .runtime_lock import RuntimeDatabaseLock
 from execution_channels.futu.store import PaperStore
 
@@ -76,6 +77,10 @@ def run_channel_command(args):
                 scoped.create_channel_reconciliation_account()
             return {'channel_account_id': config.channel_account_id, 'registered': True}
         scoped = store.scope(args.channel_account_id)
+        if args.channel_action == 'normalize-account-name':
+            account = scoped.virtual_account(args.account_id)
+            release_id = f"{account['strategy_id']}-{account['strategy_version']}"
+            return scoped.update_virtual_account_name(args.account_id, paper_account_name(release_id))
         if args.channel_action == 'pause':
             scoped.set_paused(True)
             return {'channel_account_id': scoped.channel_account_id, 'paused': True}
@@ -98,15 +103,17 @@ def run_channel_command(args):
                     account_id=args.account_id, channel=scoped.execution_channel_id)
             return account
         if args.channel_action == 'create-v4':
-            expected = {'account_id','name','strategy_id','strategy_version','release_hash','symbol','asset','fee_rate','initial_cash'}
-            if type(value) is not dict or set(value) != expected:
+            expected = {'account_id','strategy_id','strategy_version','release_hash','symbol','asset','fee_rate','initial_cash'}
+            if (type(value) is not dict or set(value) - {'name'} != expected
+                    or ('name' in value and type(value['name']) is not str)):
                 raise ValueError('invalid explicit V4 account definition')
             binding = client.validate_account_binding(strategy_id=value['strategy_id'],
                 strategy_version=value['strategy_version'], symbol=value['symbol'], asset=value['asset'], fee_rate=value['fee_rate'])
             if binding.release_hash != value['release_hash']:
                 raise ValueError('requested release differs from qualified deployed release')
             _, candidate, _ = client.load_release(binding.strategy_id, binding.version)
-            account = scoped.create_virtual_account(value['account_id'], value['name'], binding.version,
+            name = paper_account_name(binding.release_id, value.get('name'))
+            account = scoped.create_virtual_account(value['account_id'], name, binding.version,
                 candidate.implementation_hash, value['initial_cash'], symbol=binding.symbol, asset_type=value['asset'],
                 strategy_id=binding.strategy_id, strategy_name_snapshot=binding.name, strategy_version=binding.version,
                 release_hash=binding.release_hash, qualification_snapshot=binding.qualification.value,

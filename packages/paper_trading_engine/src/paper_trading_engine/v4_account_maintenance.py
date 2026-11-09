@@ -18,7 +18,7 @@ from strategy_runtime.equity import equity_hash
 from strategy_runtime.equity_replay import CycleState, StateRecord
 from strategy_runtime.replay_contracts import CycleBudget
 
-from .account_binding import AccountBindingUpdateResult, AccountBindingUpdateStatus, AccountStrategyBinding, V4StateContinuation
+from .account_binding import AccountBindingUpdateResult, AccountBindingUpdateStatus, AccountStrategyBinding, V4StateContinuation, paper_account_name
 from execution_channels.futu.broker import TERMINAL_INTENT_STATUSES, TERMINAL_ORDER_STATUSES
 from execution_channels.futu.channel import STRATEGY_ACCOUNT_TYPE, channel_profile
 from execution_channels.futu.equity_account_state import (budget_to_dict, load_document, position_from_dict,
@@ -370,10 +370,11 @@ def _apply(store, update, prepared, plan_sha256):
                                             (account_id,)).fetchone()[0]
         document["state"] = replace(state, event_cursor=cursor).to_dict()
     changed = store._connection.execute(
-        "UPDATE virtual_accounts SET strategy_version=?,release_hash=?,strategy_name_snapshot=?,qualification_snapshot=?,"
+        "UPDATE virtual_accounts SET strategy_version=?,release_hash=?,name=?,strategy_name_snapshot=?,qualification_snapshot=?,"
         "selection_data_cutoff=?,equity_rules_json=?,entry_cycle_json=NULL,last_decision_id=NULL,last_decision_payload=NULL,updated_at=? "
         "WHERE account_id=? AND release_hash=? AND run_state='PAUSED'",
-        (binding.version, binding.release_hash, binding.name, binding.qualification.value, version.selection_data_cutoff,
+        (binding.version, binding.release_hash, paper_account_name(binding.release_id), binding.name,
+         binding.qualification.value, version.selection_data_cutoff,
          json.dumps(update.rules.to_dict(), sort_keys=True), _utc_now(), account_id, update.binding.expected_release_hash),
     ).rowcount
     if changed != 1:

@@ -272,7 +272,11 @@ def test_online_v4_decision_and_execution_use_the_scoped_runtime(formal_v4, monk
         assert 'formal-channel' in {row['channel_account_id'] for row in read_json(f'/api/channel-accounts?market={market}')['channels']}
         assert not any(row.get('account_id') == 'formal' for row in read_json(f'/api/audit-events?market={other_market}')['events'])
         assert read_json(f'/api/system/status?market={market}')['scope']['market'] == market
-        assert read_json('/api/virtual-accounts/formal/chart')['scope']['account_id'] == 'formal'
+        chart = read_json('/api/virtual-accounts/formal/chart')
+        snapshot = read_json('/api/virtual-accounts/formal/snapshot')
+        assert chart['scope']['account_id'] == 'formal'
+        assert chart['forward_observation_start'] == snapshot['decision']['signal_date']
+        assert snapshot['account']['forward_observation_start'] == chart['forward_observation_start']
         assert read_json('/api/channel-accounts/formal-channel/pause', {})['paused'] is True
         assert read_json('/api/channel-accounts/formal-channel/resume', {})['paused'] is False
         decision_id = store.virtual_account('formal')['last_decision_id']

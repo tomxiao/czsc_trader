@@ -23,7 +23,7 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
   const context={
     mode:'PAPER',
     strategy:{release_id:'S003-v1',name:'测试策略',symbol:'510500.SH',account_id:'s003-v1',release_hash:'current'},
-    window:{selection_data_cutoff:'2026-09-02',observation_start:'2026-09-02'},
+    window:{selection_data_cutoff:'2026-09-02',forward_observation_start:'2026-09-02'},
     market_data:{as_of:'2026-09-04',bars:['2026-09-02','2026-09-03','2026-09-04'].map(date=>({date,open:1,high:1.1,low:.9,close:1}))},
     observations:[
       {decision_id:'OLD',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-02T12:30:00Z',action:'HOLD',observation:observation(.1)},
@@ -63,10 +63,9 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
   assert.match(svg.textContent,/事件/);
   assert.match(svg.textContent,/2026-09-04 · 决策 1 笔 · 成交 2 笔/);
   assert.match(svg.textContent,/2026-09-04 02:30:00 · 成交：买入/);
-  assert.match(svg.textContent,/2026-09-04 09:00:00 · 决策：等待/);
+  assert.match(svg.textContent,/2026-09-05 11:00:00 · 决策：持有/);
   assert.match(svg.textContent,/2026-09-04 11:00:00 · 成交：卖出/);
-  assert.ok(svg.textContent.indexOf('02:30:00 · 成交')<svg.textContent.indexOf('09:00:00 · 决策'));
-  assert.ok(svg.textContent.indexOf('09:00:00 · 决策')<svg.textContent.indexOf('11:00:00 · 成交'));
+  assert.ok(svg.textContent.indexOf('2026-09-04 11:00:00 · 成交')<svg.textContent.indexOf('2026-09-05 11:00:00 · 决策'));
   assert.ok(!svg.textContent.includes('已失效'));
   assert.ok(!svg.textContent.includes('目标 5,000 股'));
   for(const text of ['买入 100 股','卖出 400 股','123.45 元','费用 0.12 元','2026-09-04 02:30:00'])assert.ok(svg.textContent.includes(text),text);
@@ -81,28 +80,26 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
   for(const text of ['目标持仓','未记录','决策','成交','买入','卖出','费用'])assert.ok(!tooltip.innerHTML.includes(text),text);
   const overlay=svg.children.at(-1);
   overlay.listeners.pointermove({clientX:68,clientY:60});
-  assert.match(svg.textContent,/2026-09-02 · 决策 1 笔/);
+  assert.match(svg.textContent,/2026-09-02 · 决策 3 笔/);
   assert.match(svg.textContent,/日内轮换/);
   assert.match(svg.textContent,/已替代/);
-  assert.doesNotMatch(svg.textContent,/待执行/);
+  assert.match(svg.textContent,/待执行/);
+  assert.match(svg.textContent,/生效 2026-09-04；信号 2026-09-02/);
+  assert.ok(svg.textContent.indexOf('20:30:00 · 决策')<svg.textContent.indexOf('01:30:00 · 决策'));
   assert.doesNotMatch(svg.textContent,/决策 0 笔|成交 0 笔/);
   assert.doesNotMatch(tooltip.innerHTML,/目标持仓|未记录|决策|成交/);
   overlay.listeners.pointermove({clientX:498,clientY:60});
-  assert.match(svg.textContent,/2026-09-03 · 决策 3 笔/);
-  assert.match(svg.textContent,/待执行/);
+  assert.match(svg.textContent,/2026-09-03 · 决策 2 笔/);
   assert.match(svg.textContent,/目标 0 股/);
-  assert.match(svg.textContent,/2026-09-03 01:30:00 · 决策：持有/);
-  assert.ok(svg.textContent.indexOf('01:30:00 · 决策')<svg.textContent.indexOf('21:00:00 · 决策'));
-  assert.ok(svg.textContent.indexOf('21:00:00 · 决策')<svg.textContent.indexOf('22:00:00 · 决策'));
-  assert.match(svg.textContent,/生效 2026-09-04；信号 2026-09-02/);
+  assert.match(svg.textContent,/2026-09-04 09:00:00 · 决策：等待/);
+  assert.ok(svg.textContent.indexOf('21:00:00 · 决策')<svg.textContent.indexOf('09:00:00 · 决策'));
   assert.doesNotMatch(svg.textContent,/已替代|已失效/);
   const candleCount=svg.children.filter(node=>node.name==='rect'&&node.attributes.stroke).length;
   let prevented=false;svg.listeners.keydown({key:'End',preventDefault(){prevented=true;}});assert.equal(prevented,true);
-  assert.match(svg.textContent,/2026-09-05 · 决策 1 笔 · 非交易日，无行情K线/);
+  assert.match(svg.textContent,/2026-09-04 · 决策 1 笔 · 成交 2 笔/);
   assert.match(svg.textContent,/状态原因：计划无需下单/);
   assert.equal(svg.children.filter(node=>node.name==='rect'&&node.attributes.stroke).length,candleCount);
   assert.equal(tooltip.hidden,true);
-  assert.equal(svg.children.find(node=>node.attributes.class==='crosshair').style.display,'none');
   svg.children.at(-1).listeners.pointermove({clientX:928,clientY:60});
   nodes['forward-stage'].clientWidth=360;window.listeners.resize();
   assert.equal(points().length,2);
@@ -269,6 +266,7 @@ test('retired account shows recovered cash and cannot be resumed', () => {
   assert.match(html, /id="accountSwitch" disabled/);
   assert.match(html, /已退出/);
   assert.match(html, /已回收资金/);
+  assert.match(html, /累计收益率<\/label><strong>1\.25%/);
   assert.doesNotMatch(html, /点击恢复/);
   assert.equal(accountOperatingStatus({run_state:'RETIRED',health:'OK'}), '已退出');
 });

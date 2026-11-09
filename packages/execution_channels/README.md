@@ -16,6 +16,8 @@ EC 核对发布、标的、执行规范、模型费率及当前旧文档快照�
 现金与持仓对账，市场差异通过明确的渠道配置处理。账本位于 `futu.store.PaperStore`，
 按渠道和策略账户隔离；现金差额归平账账户的既有规则保持不变。
 
+`PaperStore.first_account_signal_date(account_id)` 读取账户最早的已保存决策信号日，包含无需下单的决策。无记录时返回 `None`。`update_virtual_account_name(account_id, name)` 只更新策略账户的显示名和更新时间，并在同一事务内审计。名称格式由 PTE 管理。
+
 `ChannelExecution.retire_account(AccountRetirementRequest)` 受理账户退役，支持 CN／US 模拟渠道。
 请求绑定账户和预期发布哈希，持久化为 `RETIRING`；重复请求返回当前进度。
 先终止未提交策略意图、撤销在途策略订单并等待确认，再以 `MARKET SELL` 清理实际可卖持仓。

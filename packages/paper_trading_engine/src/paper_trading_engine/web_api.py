@@ -354,7 +354,7 @@ class PteWebApi:
             "frozen_cash", "total_assets", "quantity", "average_cost", "realized_pnl",
             "cycle_target", "run_state", "observation_start", "last_settlement_session", "health",
             "last_error", "channel_id", "created_at", "updated_at",
-            "selection_data_cutoff", "released_cash",
+            "selection_data_cutoff", "forward_observation_start", "released_cash",
         }
         events = store.query_audit_events(account_id=account_id, limit=200)
         chart_error = self._account_chart_error(account_id)

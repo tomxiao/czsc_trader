@@ -45,6 +45,20 @@ def test_new_accounts_are_healthy_without_starting_strategy_execution(memory_sto
     store.close()
 
 
+def test_display_name_normalization_changes_only_the_account_label_and_audit(memory_store):
+    store = memory_store()
+    try:
+        old = create_account(store, "s001-v1", "v1", "a")
+        updated = store.update_virtual_account_name("s001-v1", "S001-v1模拟账户")
+        assert updated == {**old, "name": "S001-v1模拟账户", "updated_at": updated["updated_at"]}
+        assert store.update_virtual_account_name("s001-v1", updated["name"]) == updated
+        events = store.query_audit_events(account_id="s001-v1", event_type="ACCOUNT_DISPLAY_NAME_UPDATED")
+        assert len(events) == 1
+        assert events[0]["details"] == {"previous_name": old["name"], "name": updated["name"]}
+    finally:
+        store.close()
+
+
 # Independent risk: PTE16; responsibility-level assertions.
 @pytest.mark.parametrize("action", [
     "create",
@@ -257,7 +271,8 @@ def test_PTE24_C03_daily_chart_update_retries_then_persists_success_and_skips_cl
     assert store.query_audit_events(event_type="ACCOUNT_CHART_RECOVERED")
     status = service.status("s001-v1")
     assert status["market_data_cutoff"] == "2026-09-04"
-    assert status["message"] == "等待第一条策略观察事实"
+    assert status["message"] == "等待首个信号"
+    assert status["forward_observation_start"] is None
     service.close()
 
     # A restart and ordinary redraw preserve the completed daily update.

@@ -18,6 +18,7 @@ from zoneinfo import ZoneInfo
 
 from execution_channels.futu.audit import AuditRecorder
 from execution_channels.futu.channel import channel_profile
+from strategy_runtime.signal_explanation import SignalExplanationSnapshot
 from .chart_market_data import AccountChartDataError, CHART_UPDATE_TIME
 from .file_publication import replace_published_file
 from .forward_chart import ChartObservation, FORWARD_CHART_CONTRACT_VERSION, render_forward_chart_html
@@ -27,7 +28,7 @@ from execution_channels.futu.trading_window import SHANGHAI
 ACCOUNT_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 INPUT_LIMIT = 5 * 1024 * 1024
 OUTPUT_LIMIT = 20 * 1024 * 1024
-CACHE_RENDER_REVISION = "pte-forward-chart-v13"
+CACHE_RENDER_REVISION = "pte-forward-chart-v14"
 
 
 def _path_comparison_key(path: Path) -> str:
@@ -172,7 +173,7 @@ class AccountChartService:
             return account_dir / "observation.html"
         if not isinstance(selected, str) or re.fullmatch(r"[0-9a-f]{64}", selected) is None:
             raise ValueError("invalid account chart fingerprint")
-        return account_dir / f"{selected}.html"
+        return account_dir / f"{CACHE_RENDER_REVISION}-{selected}.html"
 
     def _meta_path(self, account_id: str) -> Path:
         return self._account_dir(account_id) / "observation.meta.json"
@@ -221,13 +222,14 @@ class AccountChartService:
                     if active is not None and active[1] is result:
                         self._market_fetches.pop(fetch_key, None)
 
-    def _market_data(self, account: dict[str, Any], *, refresh_source: bool = False) -> tuple[str, list[dict[str, object]]]:
+    def _market_data(self, account: dict[str, Any], start: str | None, *, refresh_source: bool = False) -> tuple[str, list[dict[str, object]]]:
         cutoff = date.fromisoformat(str(account["selection_data_cutoff"])).isoformat()
+        anchor = min(cutoff, start) if start else cutoff
         price_identity, frame = self._bounded_market_history(
             str(account["account_id"]),
             symbol=str(account["symbol"]),
             asset=str(account["asset_type"]),
-            selection_data_cutoff=cutoff,
+            selection_data_cutoff=anchor,
             context_sessions=self.context_sessions,
             refresh_source=refresh_source,
             **({"account_id": str(account["account_id"])} if account.get("equity_rules_json") is not None else {}),
@@ -253,8 +255,10 @@ class AccountChartService:
                 "close": float(row["close"]),
             }
         ordered = [bars[key] for key in sorted(bars)]
-        history = [bar for bar in ordered if bar["date"] <= cutoff][-self.context_sessions :]
-        selected = history + [bar for bar in ordered if bar["date"] > cutoff]
+        selected = ordered[-self.context_sessions :] if start is None else (
+            [bar for bar in ordered if bar["date"] < start][-self.context_sessions :]
+            + [bar for bar in ordered if bar["date"] >= start]
+        )
         if not selected:
             raise ValueError("no daily market data is available for the account chart")
         return str(price_identity), selected
@@ -350,6 +354,8 @@ class AccountChartService:
     @staticmethod
     def _decision_event(row: dict[str, Any]) -> dict[str, Any]:
         payload = dict(row.get("payload") or {})
+        raw = (payload.get("strategy_output") or {}).get("explanation")
+        explanation = SignalExplanationSnapshot.from_dict(raw).to_dict() if raw is not None else None
         return {
             "account_id": row["account_id"], "decision_id": row["decision_id"],
             "signal_date": row["signal_date"], "valid_session": row["valid_session"],
@@ -357,17 +363,10 @@ class AccountChartService:
             "state_reason": row["state_reason"], "state_changed_at": row["state_changed_at"],
             "state_events": row["state_events"],
             "action": payload.get("action"), "target_quantity": payload.get("target_quantity"),
+            "explanation": explanation,
         }
 
-    def _after_cutoff(
-        self, rows: list[dict[str, Any]], cutoff: str, fields: tuple[str, ...],
-    ) -> list[dict[str, Any]]:
-        return [
-            row for row in rows
-            if (observed := self._fact_date(row, fields)) is not None and observed > cutoff
-        ]
-
-    def _request(self, account: dict[str, Any], *, refresh_source: bool = False) -> tuple[dict[str, object], bool]:
+    def _request(self, account: dict[str, Any], *, refresh_source: bool = False) -> dict[str, Any]:
         account_id = str(account["account_id"])
         cutoff_value = account.get("selection_data_cutoff")
         if not cutoff_value:
@@ -380,24 +379,14 @@ class AccountChartService:
             intent_rows = self.store.account_intents(account_id)
             fill_rows = self.store.account_fills(account_id)
             snapshot_rows = self.store.account_snapshots(account_id)
-        forward_decision_rows = self._after_cutoff(
-            decision_rows, cutoff, ("valid_session",)
-        )
         decisions = [
             self._decision(row)
-            for row in forward_decision_rows
+            for row in decision_rows
             if self._has_chart_observation(row)
         ]
-        omitted_decision_count = len(forward_decision_rows) - len(decisions)
-        observation_start = min(
-            (str(row["signal_date"]) for row in decisions if row["observation"]["status"] == "READY"), default=None,
-        )
-        intents = [
-            self._intent(row)
-            for row in self._after_cutoff(
-                intent_rows, cutoff, ("valid_session", "session"),
-            )
-        ]
+        missing_observation_count = len(decision_rows) - len(decisions)
+        observation_start = min((row["signal_date"] for row in decision_rows), default=None)
+        intents = [self._intent(row) for row in intent_rows]
         formal_zone = (ZoneInfo(channel_profile(account["channel_id"]).timezone)
                        if account.get("equity_rules_json") is not None else None)
         fills = [
@@ -414,7 +403,7 @@ class AccountChartService:
                 "fee": row.get("fee"),
             }
             for row in fill_rows
-            if (session := self._fact_date(row, ("occurred_at", "session"), formal_zone)) is not None and session > cutoff
+            if (session := self._fact_date(row, ("occurred_at", "session"), formal_zone)) is not None
         ]
         snapshots = [
             {
@@ -422,11 +411,9 @@ class AccountChartService:
                 "session": row.get("session"),
                 "quantity": row.get("quantity"),
             }
-            for row in self._after_cutoff(
-                snapshot_rows, cutoff, ("session",),
-            )
+            for row in snapshot_rows
         ]
-        market_identity, bars = self._market_data(account, refresh_source=refresh_source)
+        market_identity, bars = self._market_data(account, observation_start, refresh_source=refresh_source)
         if self._closing.is_set():
             raise _RefreshCancelled
         release_id = f'{account["strategy_id"]}-{account["strategy_version"]}'
@@ -444,8 +431,8 @@ class AccountChartService:
             "window": {
                 "selection_data_cutoff": cutoff,
                 "context_sessions": self.context_sessions,
-                "observation_start": observation_start,
-                "omitted_decision_count": omitted_decision_count,
+                "forward_observation_start": observation_start,
+                "missing_observation_count": missing_observation_count,
             },
             "market_data": {
                 "identity": market_identity,
@@ -455,11 +442,11 @@ class AccountChartService:
             },
             "observations": decisions,
             "execution": {
-                "decisions": [self._decision_event(row) for row in forward_decision_rows],
+                "decisions": [self._decision_event(row) for row in decision_rows],
                 "intents": intents, "fills": fills, "snapshots": snapshots,
             },
         }
-        return request, any(bar["date"] > cutoff for bar in bars)
+        return request
 
     @staticmethod
     def _load_meta(path: Path) -> dict[str, Any]:
@@ -491,7 +478,9 @@ class AccountChartService:
         error_fingerprint = self._sha256(message.encode("utf-8"))
         old = self._load_meta(meta_path)
         should_audit = old.get("error_fingerprint") != error_fingerprint
-        old.update({"error_fingerprint": error_fingerprint, "error": message})
+        if old.get("render_revision") != CACHE_RENDER_REVISION:
+            old = {}
+        old.update({"render_revision": CACHE_RENDER_REVISION, "error_fingerprint": error_fingerprint, "error": message})
         self._atomic_write(meta_path, json.dumps(old, ensure_ascii=False))
         if should_audit:
             details = {"operation": "render", "error": message, "error_type": type(error).__name__}
@@ -543,7 +532,7 @@ class AccountChartService:
                     old_meta["last_daily_check"] = scheduled_session.isoformat()
                     self._atomic_write(meta_path, json.dumps(old_meta, ensure_ascii=False))
                     return
-            request, has_forward = self._request(account, refresh_source=refresh_source)
+            request = self._request(account, refresh_source=refresh_source)
             market_cutoff = str(request["market_data"]["as_of"])
             if scheduled_session is not None and market_cutoff != scheduled_session.isoformat():
                 raise ValueError(
@@ -571,12 +560,8 @@ class AccountChartService:
                 meta_path,
                 json.dumps(
                     {
-                        "fingerprint": fingerprint, "has_forward": has_forward,
-                        "has_observation": bool(request["observations"]),
-                        "observation_start": request["window"]["observation_start"],
-                        "omitted_decision_count": request["window"][
-                            "omitted_decision_count"
-                        ],
+                        "fingerprint": fingerprint, "render_revision": CACHE_RENDER_REVISION,
+                        "forward_observation_start": request["window"]["forward_observation_start"],
                         "generated_at": datetime.now(timezone.utc).isoformat(),
                         "market_data_cutoff": market_cutoff,
                         "last_daily_check": (
@@ -620,11 +605,14 @@ class AccountChartService:
     ) -> dict[str, object]:
         account_id = str(account["account_id"])
         meta = self._load_meta(self._meta_path(account_id))
+        if meta.get("render_revision") != CACHE_RENDER_REVISION:
+            meta = {}
         fingerprint = str(meta.get("fingerprint") or "")
-        chart_exists = self.chart_path(account_id).is_file()
+        chart_exists = bool(fingerprint) and self.chart_path(account_id, fingerprint).is_file()
         base = {
             "scope": self._scope(account),
             "selection_data_cutoff": account.get("selection_data_cutoff"),
+            "forward_observation_start": self.store.first_account_signal_date(account["account_id"]),
             "context_sessions": self.context_sessions,
             "market_data_cutoff": meta.get("market_data_cutoff"),
         }
@@ -639,21 +627,16 @@ class AccountChartService:
                 "fingerprint": None, "message": str(meta["error"]),
             }
         if fingerprint and chart_exists:
-            has_forward = bool(meta.get("has_forward"))
-            has_observation = bool(meta.get("has_observation"))
+            has_forward = meta.get("forward_observation_start") is not None
             return {
                 **base,
                 "status": "REFRESHING" if refreshing else (
-                    "READY" if has_forward and has_observation else "EMPTY"
+                    "READY" if has_forward else "EMPTY"
                 ),
                 "chart_url": f"/charts/{account_id}/observation.html?v={fingerprint}",
                 "fingerprint": fingerprint,
                 "message": "正在刷新观察图" if refreshing else (
-                    (None if has_observation else "等待第一条策略观察事实")
-                    if has_forward else (
-                        f"研究截止日为 {account['selection_data_cutoff']}；"
-                        "等待此后交易日的完整收盘行情"
-                    )
+                    None if has_forward else "等待首个信号"
                 ),
             }
         return {

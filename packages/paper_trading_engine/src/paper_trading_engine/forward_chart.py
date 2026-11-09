@@ -14,7 +14,7 @@ from strategy_runtime import (
 )
 
 
-FORWARD_CHART_CONTRACT_VERSION = "pte_forward_chart.v2"
+FORWARD_CHART_CONTRACT_VERSION = "pte_forward_chart.v3"
 
 
 @dataclass(frozen=True, slots=True)
@@ -127,6 +127,11 @@ def render_forward_chart_html(value: object) -> str:
     strategy_name = str(strategy.get("name", "")).strip()
     if not release_id or not strategy_name:
         raise ValueError("PTE forward chart strategy title is incomplete")
+    window = context["window"]
+    start = window["forward_observation_start"]
+    events = context["execution"]["decisions"]
+    if start != min((row["signal_date"] for row in events), default=None):
+        raise ValueError("forward start differs from the first decision signal date")
     for row in context['observations']:
         ChartObservation.from_dict(row['observation'])
         if (row['account_id'] != strategy['account_id'] or
@@ -134,11 +139,10 @@ def render_forward_chart_html(value: object) -> str:
             raise ValueError('forward observation differs from account or symbol')
         if date.fromisoformat(row['signal_date']) >= date.fromisoformat(row['valid_session']):
             raise ValueError('invalid chart observation sessions')
-    for row in context['execution'].get('decisions', []):
+    for row in events:
         if row['account_id'] != strategy['account_id']:
             raise ValueError('forward decision event differs from account identity')
     context["mode"] = "PAPER"
-    context["execution"] = {**context["execution"], "decisions": context["execution"].get("decisions", [])}
     encoded = json.dumps(
         context,
         ensure_ascii=False,

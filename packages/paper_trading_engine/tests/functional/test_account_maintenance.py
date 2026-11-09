@@ -126,13 +126,14 @@ def test_update_preserves_economics_completed_history_and_health(maintenance, ta
     assert result.status is AccountBindingUpdateStatus.COMMITTED
     assert result.account_ids == ("one", "two")
     after = m.store.virtual_account("one")
-    changed = {"strategy_version", "release_hash", "strategy_name_snapshot", "qualification_snapshot",
+    changed = {"strategy_version", "release_hash", "name", "strategy_name_snapshot", "qualification_snapshot",
                "last_decision_id", "last_decision_payload", "updated_at"}
     assert {k: v for k, v in after.items() if k not in changed} == {
         k: v for k, v in before.items() if k not in changed
     }
     assert after["release_hash"] == "b" * 64
     assert after["strategy_version"] == target_version
+    assert after["name"] == f"S001-{target_version}模拟账户"
     assert after["run_state"] == "PAUSED"
     assert after["health"] == "BLOCKED"
     assert after["cycle_target"] == after["quantity"] == 5900

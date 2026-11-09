@@ -558,6 +558,7 @@ class AccountEngine:
             **account,
             "released_cash": self.store._retirement_cash(account_id),
             "last_decision": json.loads(payload) if payload else None,
+            "forward_observation_start": self.store.first_account_signal_date(account_id),
             "orders": self.store.account_orders(account_id),
             "fills": self.store.account_fills(account_id),
             "snapshots": self.store.account_snapshots(account_id),

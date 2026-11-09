@@ -26,7 +26,7 @@ export const auditQuery = filters => {
 export const auditCategoryLabel = value => ({STRATEGY:'策略事件',TRADING:'交易事件',SYSTEM:'系统事件',OTHER:'其他事件'}[value]||value||'未分类');
 export const auditEventLabel = value => ({
   ACCOUNT_RETIRED:'账户退出并回收资金',
-  MARKET_DATA_PUBLICATION_REQUESTED:'请求发布数据',MARKET_DATA_PUBLISHED:'发布数据成功',MARKET_DATA_PUBLICATION_FAILED:'发布数据失败',MARKET_DATA_OBSERVED:'验收SRT数据',MARKET_DATA_OBSERVATION_FAILED:'SRT数据验收失败',DECISION_GENERATED:'生成决策',DECISION_GENERATION_FAILED:'生成决策失败',ACCOUNT_DECISION_DRIVEN:'人工驱动账户决策',ACCOUNT_DECISION_DRIVE_FAILED:'人工驱动账户决策失败',DECISION_SUPERSEDED:'决策已被替代',SIGNAL_TRIGGERED:'触发信号',SIGNAL_CLEARED:'信号解除',DECISION_EXPIRED:'决策过期',CHANNEL_STRATEGY_BOUND:'历史关系 · 渠道曾直接绑定策略',ACCOUNT_STRATEGY_BOUND:'虚拟账户绑定策略',ACCOUNT_STRATEGY_NAME_UPDATED:'更新策略名称',ACCOUNT_CHANNEL_BOUND:'虚拟账户绑定渠道',CHANNEL_RECONCILIATION_FAILED:'渠道对账失败',CHANNEL_RECONCILIATION_RECOVERED:'渠道对账恢复',
+  MARKET_DATA_PUBLICATION_REQUESTED:'请求发布数据',MARKET_DATA_PUBLISHED:'发布数据成功',MARKET_DATA_PUBLICATION_FAILED:'发布数据失败',MARKET_DATA_OBSERVED:'验收SRT数据',MARKET_DATA_OBSERVATION_FAILED:'SRT数据验收失败',DECISION_GENERATED:'生成决策',DECISION_GENERATION_FAILED:'生成决策失败',ACCOUNT_DECISION_DRIVEN:'人工驱动账户决策',ACCOUNT_DECISION_DRIVE_FAILED:'人工驱动账户决策失败',DECISION_SUPERSEDED:'决策已被替代',SIGNAL_TRIGGERED:'触发信号',SIGNAL_CLEARED:'信号解除',DECISION_EXPIRED:'决策过期',CHANNEL_STRATEGY_BOUND:'历史关系 · 渠道曾直接绑定策略',ACCOUNT_STRATEGY_BOUND:'虚拟账户绑定策略',ACCOUNT_STRATEGY_NAME_UPDATED:'更新策略名称',ACCOUNT_DISPLAY_NAME_UPDATED:'更新账户显示名',ACCOUNT_CHANNEL_BOUND:'虚拟账户绑定渠道',CHANNEL_RECONCILIATION_FAILED:'渠道对账失败',CHANNEL_RECONCILIATION_RECOVERED:'渠道对账恢复',
   EXECUTION_GAP_ACKNOWLEDGED:'已确认执行缺口',EXECUTION_PLAN_LEG_SKIPPED:'计划环节未触发',EXECUTION_PLAN_LEG_READY:'计划环节就绪',EXECUTION_PLAN_BLOCKED:'执行计划阻塞',ORDER_INTENT_CREATED:'创建订单意图',ORDER_INTENT_RECOVERED:'恢复订单意图',ORDER_SUBMISSION_BLOCKED:'订单提交受阻',ORDER_SUBMITTED:'订单已提交',ORDER_SUBMISSION_FAILED:'订单提交失败',ORDER_REJECTED:'订单被明确拒绝',CANCEL_REQUESTED:'请求撤单',CANCEL_SUCCEEDED:'撤单成功',CANCEL_FAILED:'撤单失败',ORDER_PARTIALLY_FILLED:'订单部分成交',ORDER_FILLED:'订单成交',ORDER_TERMINATED:'订单终止',BROKER_FEE_RECONCILED:'Futu费用对账',
   SERVICE_STARTED:'服务启动',SERVICE_STOPPED:'服务停止',RESTART_REQUESTED:'请求重启',ACCOUNT_PAUSED:'账户暂停',ACCOUNT_RESUMED:'账户恢复',ACCOUNT_EXECUTION_MIGRATED:'账户执行关系迁移',ACCOUNT_RECONCILIATION_RECOVERED:'账户对账恢复',EXTERNAL_CALL_SUCCEEDED:'外部接口调用成功',EXTERNAL_CALL_FAILED:'外部接口调用失败',DEPENDENCY_DEGRADED:'外部依赖降级',DEPENDENCY_RECOVERED:'外部依赖恢复',SCHEDULER_OPERATION_FAILED:'调度任务失败',SCHEDULER_OPERATION_RECOVERED:'调度任务恢复',SCHEDULER_CYCLE_FAILED:'调度周期失败',VIRTUAL_ACCOUNT_FAILED:'虚拟账户运行失败',ACCOUNT_CHART_GENERATION_FAILED:'前瞻观察图生成失败',ACCOUNT_CHART_RECOVERED:'前瞻观察图恢复',LEGACY_EVENT:'历史事件',UNCLASSIFIED_EVENT:'未分类事件',
 }[value]||value||'未知事件');
@@ -275,10 +275,10 @@ export function accountMarkup(snapshot,accountList=state.accounts,view={}){
     <div class="workspace">
       <section class="panel hero account-hero" data-account-section="hero"><div class="account-heading"><div class="subtle">${marketName(scope.market)} · ${esc(scope.release_id)} · ${esc(a.symbol)} · Futu</div><h1>${esc(a.name)} <span class="badge">${esc(accountOperatingStatus(a))}</span></h1></div><div class="account-actions"><a class="button" data-account-audit href="/audit-events?${auditQuery({account_id:scope.account_id})}">审计事件</a><button type="button" id="accountDetails" class="button" aria-haspopup="dialog">账户详情</button><button id="accountSwitch" ${a.run_state==='RETIRED'?'disabled':''} class="switch ${a.run_state==='PAUSED'?'paused':''}" role="switch" aria-checked="${a.run_state==='RUNNING'}">${a.run_state==='RETIRED'?'已退出':a.run_state==='PAUSED'?'恢复账户':'暂停账户'}</button></div></section>
       <div data-account-section="alerts">${alerts(snapshot.alerts)}${gapActions}</div>
-      <div class="grid account-metrics primary-metrics" data-account-section="metrics">${metric(a.run_state==='RETIRED'?'已回收资金':'总资产',cash(a.run_state==='RETIRED'?a.released_cash:a.total_assets))}${metric('可用现金',cash(a.cash))}${metric('持仓',formatQuantity(a.quantity))}</div>
+      <div class="grid account-metrics primary-metrics" data-account-section="metrics">${metric(a.run_state==='RETIRED'?'已回收资金':'总资产',cash(a.run_state==='RETIRED'?a.released_cash:a.total_assets))}${metric('可用现金',cash(a.cash))}${metric('冻结资金',cash(a.frozen_cash))}${metric('持仓',formatQuantity(a.quantity))}${metric('累计收益率',pct(m.current_total_return))}</div>
       <section class="panel account-decision" data-account-section="decision"><div class="decision-summary"><div><span class="subtle">最近决策 · ${esc(d.valid_session||'—')}</span><div><strong>${esc(d.decision_id?actionLabel(d.action):'暂无决策')}</strong> <span>· ${esc(weightSummary)} · ${esc(executionState)}</span></div></div><button type="button" class="button secondary" id="decisionDetails" aria-haspopup="dialog">决策详情</button></div></section>
       <div class="account-tabs" role="tablist" aria-label="账户视图">${[['chart','前瞻观察'],['records','交易记录'],['performance','绩效']].map(([key,label])=>`<button type="button" role="tab" id="account-tab-${key}" aria-controls="account-panel-${key}" aria-selected="${tab===key}" tabindex="${tab===key?0:-1}" data-account-tab="${key}">${label}</button>`).join('')}</div>
-      <section id="account-panel-chart" role="tabpanel" aria-labelledby="account-tab-chart" data-account-panel="chart" ${tab==='chart'?'':'hidden'} class="panel section account-chart" data-account-section="chart"><div class="section-head"><span class="subtle">选择截止 ${esc(a.selection_data_cutoff)} · 截止线左侧为行情背景</span><a id="expandAccountChart" class="button" target="_blank" rel="noopener" hidden>展开大图 ↗</a></div><div id="accountChartMessage" class="chart-message" hidden></div><div id="accountChartFrameHost" class="chart-frame-host"><div class="loading">正在加载前瞻观察图…</div></div></section>
+      <section id="account-panel-chart" role="tabpanel" aria-labelledby="account-tab-chart" data-account-panel="chart" ${tab==='chart'?'':'hidden'} class="panel section account-chart" data-account-section="chart"><div class="section-head"><span class="subtle">选型截止 ${esc(a.selection_data_cutoff)} · 首个信号前为行情背景</span><a id="expandAccountChart" class="button" target="_blank" rel="noopener" hidden>展开大图 ↗</a></div><div id="accountChartMessage" class="chart-message" hidden></div><div id="accountChartFrameHost" class="chart-frame-host"><div class="loading">正在加载前瞻观察图…</div></div></section>
       <div id="account-panel-records" role="tabpanel" aria-labelledby="account-tab-records" data-account-panel="records" ${tab==='records'?'':'hidden'}><div class="record-tabs" role="tablist" aria-label="交易记录类型">${[['intents','订单意图'],['orders','订单'],['fills','成交']].map(([key,label])=>`<button type="button" role="tab" id="record-tab-${key}" aria-controls="record-panel-${key}" aria-selected="${recordTab===key}" tabindex="${recordTab===key?0:-1}" data-record-tab="${key}">${label}</button>`).join('')}</div>
       ${accountRecords('intents','订单意图',[['决策ID',r=>r.decision_id],['计划环节',r=>planRoleLabel(r.payload?.role)],['计划时点',r=>r.payload?.checkpoint||'—'],['方向',r=>sideLabel(r.side)],['数量',r=>formatQuantity(r.quantity)],['委托价',r=>orderPriceLabel(r)==='市价'?'市价':formatPrice(orderPriceLabel(r))],['有效交易日',r=>r.valid_session],['状态',r=>statusLabel(r.status)],['Futu订单',r=>r.channel_order_id||'—']],intents,view)}
       ${accountRecords('orders','订单',[['账户',r=>r.account_id],['Futu订单',r=>r.channel_order_id],['下单时间',r=>formatBeijingTime(r.created_at)],['方向',r=>sideLabel(r.side)],['数量',r=>formatQuantity(r.quantity)],['委托价',r=>orderPriceLabel(r)==='市价'?'市价':formatPrice(orderPriceLabel(r))],['状态',r=>statusLabel(r.status)]],orders,view)}
@@ -349,8 +349,10 @@ function applyAccountChart(status){
   message.textContent=status.message||'';message.hidden=!status.message;
   message.title=status.message||'';
   const expand=document.querySelector('#expandAccountChart');
+  const view=accountView(status.scope.account_id);
   expand.hidden=!status.chart_url;
-  if(status.chart_url)expand.href=status.chart_url;
+  const chartUrl=()=>view.chartDate?`${status.chart_url}#${view.chartDate}`:status.chart_url;
+  if(status.chart_url)expand.href=chartUrl();
   if(status.status==='BUILDING'){
     host.innerHTML='<div class="loading">正在生成前瞻观察图…</div>';
     state.chart={account_id:status.scope.account_id,fingerprint:null};return;
@@ -362,11 +364,25 @@ function applyAccountChart(status){
   }
   const current={account_id:status.scope.account_id,fingerprint:status.fingerprint};
   if(chartShouldReload(state.chart,status)||!document.querySelector('#accountChartFrame')){
-    host.innerHTML=`<iframe id="accountChartFrame" data-account-id="${esc(status.scope.account_id)}" title="${esc(status.scope.release_id)}前瞻观察图" src="${esc(status.chart_url)}"></iframe>`;
-    const frame=document.querySelector('#accountChartFrame'),view=accountView(status.scope.account_id);
+    host.innerHTML=`<iframe id="accountChartFrame" data-account-id="${esc(status.scope.account_id)}" title="${esc(status.scope.release_id)}前瞻观察图" src="${esc(chartUrl())}"></iframe>`;
+    const frame=document.querySelector('#accountChartFrame');
     frame.onload=()=>{
       if(!frame.isConnected)return;
       const doc=frame.contentDocument;
+      const chart=doc?.querySelector('#pte-forward-chart');
+      if(!chart)return;
+      const updateDate=()=>{
+        view.chartDate=chart.dataset.selectedDate;
+        if(frame.isConnected)expand.href=chartUrl();
+      };
+      const resize=new ResizeObserver(()=>{
+        const height=Math.ceil(chart.getBoundingClientRect().height);
+        if(frame.isConnected&&height>0)host.style.setProperty('--chart-content-height',`${height}px`);
+      });
+      resize.observe(chart);
+      frame.contentWindow.addEventListener('pagehide',()=>resize.disconnect(),{once:true});
+      doc.addEventListener('pte-chart-date',updateDate);
+      updateDate();
       doc?.querySelector(`[data-range="${view.chartRange||'all'}"]`)?.click();
       doc?.addEventListener('click',event=>{const range=event.target.closest('[data-range]');if(range)view.chartRange=range.dataset.range;});
     };
@@ -392,7 +408,7 @@ function bindAccountEvents(accountId,runState){
       ['账户',a.name],['账户 ID',scope.account_id],['渠道账户',scope.channel_account_id],
       ['市场与币种',`${marketName(scope.market)} · ${scope.currency||'CNY'}`],['发布哈希',scope.release_hash],
       ['资格',qualificationLabel(a.qualification_snapshot)],['选择截止',a.selection_data_cutoff],
-      ['观察起点',a.observation_start],['账务更新',formatBeijingTime(a.updated_at)],['日终估值',a.last_settlement_session],
+      ['前瞻观察起点',a.forward_observation_start||'等待首个信号'],['账务更新',formatBeijingTime(a.updated_at)],['日终估值',a.last_settlement_session],
       ['冻结资金',`${money(a.frozen_cash)} ${scope.currency||'CNY'}`],['当前累计收益',pct(metrics?.current_total_return)],
     ])+executionEffectMarkup(state.accountSnapshot.decision,scope.currency||'CNY'),event.currentTarget);
   };
@@ -479,7 +495,7 @@ async function cancelOrder(order,prefix,market,channel){
   }catch(error){toast(error.message);}
 }
 
-function renderComparison(s){document.querySelector('#app').innerHTML=`<section class="panel hero"><div><div class="eyebrow">只读评估</div><h1>虚拟账户比较</h1><div class="subtle">各账户按自身前瞻观察窗口统计，指标与账户详情页保持一致</div></div></section><section class="panel section"><div class="section-head"><h2>参与账户</h2><span class="badge">无交易干预</span></div><div class="comparison-select">${state.accounts.map(a=>`<label><input type="checkbox" value="${esc(a.account_id)}" ${s.accounts.some(x=>x.account_id===a.account_id)?'checked':''}> ${esc(a.name)} · ${esc(a.release_id)}</label>`).join('')}</div></section><section class="panel section"><div class="section-head"><h2>核心指标</h2><span class="badge">OPC优先级</span></div>${rowsTable([['账户',r=>r.account_id],['策略发布',r=>r.release_id],['观察窗口',r=>r.metrics.observation_start&&r.metrics.observation_end?`${r.metrics.observation_start} 至 ${r.metrics.observation_end}`:'尚无日终快照'],['交易日',r=>r.metrics.observation_count??0],['闭合交易',r=>r.metrics.closed_trades??0],['累计收益',r=>pct(r.metrics.total_return)],['最大回撤',r=>pct(r.metrics.maximum_drawdown)],['卡玛比率',r=>r.metrics.calmar_ratio==null?'不可用':Number(r.metrics.calmar_ratio).toFixed(3)],['盈亏比',r=>r.metrics.win_loss_ratio==null?'不可用':Number(r.metrics.win_loss_ratio).toFixed(3)]],s.accounts)}</section>`;document.querySelectorAll('.comparison-select input').forEach(el=>el.onchange=()=>{const ids=[...document.querySelectorAll('.comparison-select input:checked')].map(x=>x.value);navigate(`/comparison${ids.length?'?'+comparisonQuery(ids):''}`);});}
+function renderComparison(s){document.querySelector('#app').innerHTML=`<section class="panel hero"><div><div class="eyebrow">只读评估</div><h1>虚拟账户比较</h1><div class="subtle">各账户按自身日终估值窗口统计，指标与账户详情页保持一致</div></div></section><section class="panel section"><div class="section-head"><h2>参与账户</h2><span class="badge">无交易干预</span></div><div class="comparison-select">${state.accounts.map(a=>`<label><input type="checkbox" value="${esc(a.account_id)}" ${s.accounts.some(x=>x.account_id===a.account_id)?'checked':''}> ${esc(a.name)} · ${esc(a.release_id)}</label>`).join('')}</div></section><section class="panel section"><div class="section-head"><h2>核心指标</h2><span class="badge">OPC优先级</span></div>${rowsTable([['账户',r=>r.account_id],['策略发布',r=>r.release_id],['绩效估值窗口',r=>r.metrics.observation_start&&r.metrics.observation_end?`${r.metrics.observation_start} 至 ${r.metrics.observation_end}`:'尚无日终快照'],['交易日',r=>r.metrics.observation_count??0],['闭合交易',r=>r.metrics.closed_trades??0],['累计收益',r=>pct(r.metrics.total_return)],['最大回撤',r=>pct(r.metrics.maximum_drawdown)],['卡玛比率',r=>r.metrics.calmar_ratio==null?'不可用':Number(r.metrics.calmar_ratio).toFixed(3)],['盈亏比',r=>r.metrics.win_loss_ratio==null?'不可用':Number(r.metrics.win_loss_ratio).toFixed(3)]],s.accounts)}</section>`;document.querySelectorAll('.comparison-select input').forEach(el=>el.onchange=()=>{const ids=[...document.querySelectorAll('.comparison-select input:checked')].map(x=>x.value);navigate(`/comparison${ids.length?'?'+comparisonQuery(ids):''}`);});}
 
 function renderAudit(s){
   const selected=new URLSearchParams(location.search),categories=['STRATEGY','TRADING','SYSTEM','OTHER'];
