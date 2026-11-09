@@ -1,6 +1,7 @@
 """S011 pressure signal: HFQ observations and current-account-equity targets."""
 import pandas as pd
-from strategy_runtime import AccountDecision, AccountStepResult, StateRecord
+from strategy_runtime import (AccountDecision, AccountStepResult, StateRecord,
+    SignalBasisSnapshot, SignalExplanationSnapshot)
 from .signal_math import features, policy
 
 
@@ -25,6 +26,14 @@ def signal_history(inputs, parameters):
     return policy(panel, parameters, sessions)
 
 
+def _decision(target, judgment, summary, details, watch):
+    basis = (SignalBasisSnapshot('summary', summary), SignalBasisSnapshot('conditions', details),
+             SignalBasisSnapshot('target_weight', f'目标仓位为账户权益的 {target:.2%}。'))
+    return AccountDecision(target, SignalExplanationSnapshot(
+        'target', 'long' if target else 'flat', judgment, basis, watch,
+        ' '.join(item.text for item in basis)))
+
+
 def step(ctx, state):
     inputs = {'daily': local_frame(ctx.history, daily=True),
         'bars': local_frame(ctx.auxiliary_histories['intraday']),
@@ -32,11 +41,17 @@ def step(ctx, state):
         'spx': local_frame(ctx.observations['spx'], timezone='America/New_York', daily=True)}
     history = signal_history(inputs, ctx.parameters)
     row = history.iloc[-1]
-    decision = AccountDecision.from_facts(float(row.target_position), str(row.reason),
-        facts={'signal_day': history.index[-1].date().isoformat(), 'score': float(row.score),
-            'intent_age': int(row.intent_age), 'entry_threshold': ctx.parameters['entry'],
-            'exit_threshold': ctx.parameters['exit'], 'max_signal_days': ctx.parameters['max_days'],
-            'tail': float(row['tail']), 'market': float(row.market), 'spx': float(row.spx),
-            'spx_source_date': str(row.spx_source_time), 'spx_staleness_days': int(row.spx_staleness_days)},
-        next_watch='下一交易日压力评分或信号持有期限变化')
+    target = float(row.target_position)
+    reason = str(row.reason)
+    judgment, summary = {
+        'PRESSURE_ENTRY': ('触发入场', '压力评分达到入场线，触发买入信号。'),
+        'CASH': ('继续空仓', '压力评分低于入场线，继续空仓。'),
+        'HOLD': ('延续目标仓位', '压力评分仍高于退出线，且信号未到期。'),
+        'PRESSURE_RELEASED': ('目标清仓', '压力评分降至退出线或以下，触发退出。'),
+        'SIGNAL_EXPIRED': ('目标清仓', '压力评分尚未触发退出，但持有信号已到期。'),
+    }[reason]
+    details = (f'压力评分 {row.score:.6g}，入场线 {ctx.parameters["entry"]:.6g}，'
+               f'退出线 {ctx.parameters["exit"]:.6g}。信号已持续 {int(row.intent_age)} 个交易日，'
+               f'有效期上限 {ctx.parameters["max_days"]} 个交易日。')
+    decision = _decision(target, judgment, summary, details, '下一交易日复核压力评分和信号有效期。')
     return AccountStepResult(decision, cycle_values=StateRecord())
