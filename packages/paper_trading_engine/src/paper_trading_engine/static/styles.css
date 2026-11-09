@@ -178,6 +178,9 @@ main{padding:16px}
 #app:has(>.account-layout){display:flex;flex-direction:column}
 .account-layout{flex:1 0 auto;grid-template-columns:185px minmax(0,1fr)}
 .account-layout .sidebar{top:var(--banner-offset);height:calc(100dvh - var(--banner-offset) - 18px);scrollbar-gutter:stable}
+.account-layout .account-card{padding:8px;margin-bottom:4px}
+.account-layout .account-card>strong,.account-layout .account-card>small{line-height:1.4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.account-layout .account-card>small{margin-top:2px}
 .account-heading h1 .badge{vertical-align:middle;margin-left:7px}
 .primary-metrics,.channel-core-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
 .account-metrics.primary-metrics{grid-template-columns:repeat(5,minmax(0,1fr))}

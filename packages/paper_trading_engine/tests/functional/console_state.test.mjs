@@ -226,7 +226,7 @@ test('account health and operating state stay consistent across account and chan
     const html=accountMarkup({scope:{account_id:account.account_id},account},[account]);
     if(run_state!=='RETIRED'){
       assert.match(html,new RegExp(`<option[^>]*>测试账户 · ${label}</option>`));
-      assert.match(html,new RegExp(`<small>— · ${label}</small>`));
+      assert.match(html,new RegExp(`<small title="— · ${label}">— · ${label}</small>`));
     }
     assert.match(html,new RegExp(`class="badge">${label}</span>`));
     assert.match(channelMarkup({accounts:[account]}),new RegExp(`<td>${label}</td>`));
