@@ -1,0 +1,72 @@
+{
+  "parent": "C0300",
+  "round": 4,
+  "trial_budget": 48,
+  "startup_trials": 16,
+  "seed": 20261114,
+  "batch_size": 4,
+  "candidate_start": 334,
+  "space": {
+    "weak_fraction": {
+      "kind": "float",
+      "low": 0.2,
+      "high": 0.6,
+      "step": 0.005
+    },
+    "trail_atr": {
+      "kind": "float",
+      "low": 2.16,
+      "high": 2.64,
+      "step": 0.01
+    },
+    "participation_threshold": {
+      "kind": "float",
+      "low": 1.0,
+      "high": 1.5,
+      "step": 0.0125
+    },
+    "quiet_fraction": {
+      "kind": "float",
+      "low": 0.35,
+      "high": 0.75,
+      "step": 0.0025
+    }
+  },
+  "center": {
+    "confirm": true,
+    "down_days": 1,
+    "exit_mode": "fixed",
+    "hold_days": 5,
+    "information": "relative",
+    "joint_rule": "maximum",
+    "participation_days": 3,
+    "participation_threshold": 1.1875,
+    "quiet_fraction": 0.5775,
+    "require_sector": false,
+    "risk_basis": "daily",
+    "trail_atr": 2.4,
+    "treatment": "tilt",
+    "weak_fraction": 0.315
+  },
+  "sampler": "TPESampler(multivariate=True, constant_liar=True, constraints_func=normalized_gates)",
+  "optuna_version": "4.9.0",
+  "objective": "MAXIMIZE_NAR_SUBJECT_TO_ALL_SIX_CENTER_GATES",
+  "center_control": "research/S019/experiments/EX039_20261110/others/C0224_P046_account.json",
+  "stopping": "48 proposals, all outcomes retained; no score-based early stop",
+  "pruning": "DISABLED_FULL_CONTINUOUS_ACCOUNTS",
+  "duplicates": "reuse exact evaluated configuration within study",
+  "recovery": "Replay deterministic ask/tell batches from seed, verify saved proposals, reuse authenticated account evidence",
+  "storage": "InMemoryStorage; imported observations and deterministic JSON checkpoints",
+  "fixed_parameters": {
+    "down_days": 1,
+    "hold_days": 5,
+    "participation_days": 3
+  },
+  "comparison_controls": [
+    "research/S019/experiments/EX039_20261110/others/C0224_P046_account.json",
+    "research/S019/experiments/EX038_20261110/others/trial026_account.json",
+    "research/S019/experiments/EX036_20261110/others/trial033_account.json"
+  ],
+  "prior_observations": 81,
+  "prior_path": "protocols/prior_observations.json"
+}

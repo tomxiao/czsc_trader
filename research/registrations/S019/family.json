@@ -3,9 +3,22 @@
   "created_by": "RSCH",
   "name": "MU独立多周期只做多择时研究",
   "research_intent": {
-    "active_experiment": null,
     "authorization_source": "当前会话用户明确提出独立研究，确认55%与卡玛5及默认回撤/频率，并指示新开研究分支，然后继续。",
     "branch": "codex/mu-independent-research",
+    "center_optimization_decision": {
+      "decision_id": "S019-RESUME-CENTER-20261110",
+      "evidence": {
+        "owner": {
+          "experiment_id": null,
+          "strategy_id": "S019",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "decisions/S019-RESUME-CENTER-20261110.json",
+        "sha256": "938f268329aeccade03d7f84de0365af6b4763fb044f9300f9b7ecf4636e0156",
+        "type": "ResearchEvidenceRef"
+      },
+      "type": "DecisionReference"
+    },
     "confirmed_center_targets": {
       "drawdown_buyhold_multiplier_max": 0.8,
       "drawdown_max": 0.25,
@@ -261,13 +274,15 @@
     "joint_search_budget": {
       "authorization_decision": "S019-JOINT-20261110",
       "authorized_rounds": 10,
-      "benchmark_accounts": 4,
-      "candidate_accounts": 142,
+      "benchmark_accounts": 5,
+      "candidate_accounts": 190,
       "configuration_count_basis": "unique_configurations sums within-round unique counts; exact cross-round repetition reported separately",
-      "distinct_configurations_across_rounds": 141,
-      "eligible_candidates": 0,
-      "proposals": 144,
-      "remaining_rounds": 7,
+      "counting_note": "81 historical observations are search inputs, not additional current proposals or account replays. Exact current/historical aliases retained separately.",
+      "distinct_configurations_across_rounds": 189,
+      "eligible_candidates": 21,
+      "imported_observation_count_this_round": 81,
+      "proposals": 192,
+      "remaining_rounds": 6,
       "repeated_configurations_across_rounds": 1,
       "rounds": [
         {
@@ -302,10 +317,45 @@
           "protocol_sha256": "9e810f0ecd2dae1a3d4e2b863c7803b72383865a479b84db2cf7496f57ca458a",
           "round": 3,
           "unique_configurations": 48
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 48,
+          "eligible_ids": [
+            "C0367",
+            "C0375",
+            "C0368",
+            "C0373",
+            "C0362",
+            "C0359",
+            "C0365",
+            "C0379",
+            "C0355",
+            "C0360",
+            "C0351",
+            "C0300",
+            "C0298",
+            "C0299",
+            "C0341",
+            "C0282",
+            "C0280",
+            "C0281",
+            "C0264",
+            "C0262",
+            "C0263"
+          ],
+          "experiment": "EX040_20261110",
+          "imported_observations": 81,
+          "inherited_qualified_implementations": 9,
+          "parent": "C0300",
+          "proposals": 48,
+          "protocol_sha256": "d1b5ada0959e3b153a29145b8a6c083ba08ae3d5f9b1905a8b74c339caec3adf",
+          "round": 4,
+          "unique_configurations": 48
         }
       ],
-      "unique_configurations": 142,
-      "used_rounds": 3
+      "unique_configurations": 190,
+      "used_rounds": 4
     },
     "joint_search_decision": {
       "decision_id": "S019-JOINT-20261110",
@@ -326,16 +376,16 @@
         "strategy_id": "S019",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "39fdd41df0fa9de7f7937bf3574a4bf48546bc879b55d0110021db9b36e076bb",
-      "revision": 4,
+      "content_sha256": "f23eabeb82c5dee731197bcb5a842e6175f4b3c85a4052ce40126dd1a6262cf9",
+      "revision": 6,
       "stage": "CANDIDATES",
       "type": "DeliveryReference"
     },
-    "joint_search_status": "ROUND_THREE_COMPLETE",
+    "joint_search_status": "ROUND_FOUR_COMPLETE",
     "latest_experiment_report": {
-      "evidence_id": "4aeb22193d1daf8d495a817fdf4286d8498d31ac9c28c5cf9399cbe863bc577d.json",
+      "evidence_id": "0c489cc13a25cf74c7b463e02470616c05f528fa5c4f4a9f052cce1b771333a6.json",
       "experiment": {
-        "experiment_id": "EX038_20261110",
+        "experiment_id": "EX040_20261110",
         "strategy_id": "S019",
         "type": "ExperimentRef"
       },
@@ -343,7 +393,7 @@
       "name": "experiment-report",
       "schema": "experiment_report",
       "schema_version": 1,
-      "sha256": "4aeb22193d1daf8d495a817fdf4286d8498d31ac9c28c5cf9399cbe863bc577d",
+      "sha256": "0c489cc13a25cf74c7b463e02470616c05f528fa5c4f4a9f052cce1b771333a6",
       "type": "EvidenceRef"
     },
     "mandate": {
@@ -356,7 +406,8 @@
       "stage": "MANDATE",
       "type": "DeliveryReference"
     },
-    "next_action": "阶段四已完成，两个指定中心均未通过原目标。建议复用不利路径研究仓位和退出协作，等待用户决定后续阶段；7轮优化额度保留。",
+    "next_action": "建议将全部中心达标实现纳入阶段四，复用已有账户并估算完整点集后，按用户批准的范围执行；重点比较最高NAR及最高Calmar配置，检验ATR敏感性、费用压力和已见样本风险。剩余6轮优化额度保留。",
+    "next_stage_four_approval": "PENDING_USER_APPROVAL",
     "objective": "独立经济假设；中心净年化收益至少55%，净卡玛至少5；达标后优先提高净年化。",
     "parameter_joint_pass_rate_min": 0.8,
     "prior_sample_exposure": "2022为S018已用预热；2023-01-03至2026-10-30为反复使用开发池；2026-11-06存在决策视觉预览记录。",
@@ -366,7 +417,7 @@
       "strategy_version": "S018-v1"
     },
     "sample_selection_authority": "RSCH_WITHIN_AUTHORIZED_SCOPE",
-    "stage": "STAGE_FOUR",
+    "stage": "STAGE_THREE",
     "stage_four_approval": {
       "decision_id": "S019-STAGE4-20261110",
       "evidence": {
@@ -533,5 +584,5 @@
     "US.MU"
   ],
   "strategy_id": "S019",
-  "updated_at": "2026-11-10T19:48:39+08:00"
+  "updated_at": "2026-11-10T20:47:38+08:00"
 }

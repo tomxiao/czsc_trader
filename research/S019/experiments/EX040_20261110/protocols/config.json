@@ -1,0 +1,1020 @@
+{
+  "round": 4,
+  "state_schema": {
+    "account_fields": [],
+    "cycle_fields": [
+      {
+        "key": "anchor",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "allocation",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "exiting",
+        "value_type": "bool",
+        "nullable": false
+      },
+      {
+        "key": "high_water",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "entry_atr",
+        "value_type": "float",
+        "nullable": false
+      }
+    ]
+  },
+  "extra_auxiliary_inputs": [
+    {
+      "name": "soxx_open",
+      "instrument": {
+        "market": "US",
+        "asset_class": "ETF",
+        "symbol": "SOXX"
+      },
+      "source": {
+        "provider": "futu",
+        "revision": "s019-unified-window-20261110-v2"
+      },
+      "frequency": "30m",
+      "warmup_bars": 1,
+      "max_age_seconds": 604800,
+      "analysis_price": "HFQ"
+    }
+  ],
+  "candidates": [
+    {
+      "name": "trial000",
+      "id": "C0334",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.1875,
+        "quiet_fraction": 0.5775,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.4,
+        "treatment": "tilt",
+        "weak_fraction": 0.315
+      }
+    },
+    {
+      "name": "trial001",
+      "id": "C0335",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.075,
+        "quiet_fraction": 0.67,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.44,
+        "treatment": "tilt",
+        "weak_fraction": 0.36
+      }
+    },
+    {
+      "name": "trial002",
+      "id": "C0336",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.1875,
+        "quiet_fraction": 0.425,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.38,
+        "treatment": "tilt",
+        "weak_fraction": 0.42
+      }
+    },
+    {
+      "name": "trial003",
+      "id": "C0337",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.0375,
+        "quiet_fraction": 0.5025,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.45,
+        "treatment": "tilt",
+        "weak_fraction": 0.335
+      }
+    },
+    {
+      "name": "trial004",
+      "id": "C0338",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.1875,
+        "quiet_fraction": 0.63,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.39,
+        "treatment": "tilt",
+        "weak_fraction": 0.445
+      }
+    },
+    {
+      "name": "trial005",
+      "id": "C0339",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.125,
+        "quiet_fraction": 0.58,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.245
+      }
+    },
+    {
+      "name": "trial006",
+      "id": "C0340",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.1375,
+        "quiet_fraction": 0.63,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.41,
+        "treatment": "tilt",
+        "weak_fraction": 0.3
+      }
+    },
+    {
+      "name": "trial007",
+      "id": "C0341",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.1625,
+        "quiet_fraction": 0.525,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.45,
+        "treatment": "tilt",
+        "weak_fraction": 0.405
+      }
+    },
+    {
+      "name": "trial008",
+      "id": "C0342",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.1625,
+        "quiet_fraction": 0.4825,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.45,
+        "treatment": "tilt",
+        "weak_fraction": 0.4
+      }
+    },
+    {
+      "name": "trial009",
+      "id": "C0343",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.0,
+        "quiet_fraction": 0.5775,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.35,
+        "treatment": "tilt",
+        "weak_fraction": 0.45
+      }
+    },
+    {
+      "name": "trial010",
+      "id": "C0344",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.1375,
+        "quiet_fraction": 0.5675,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.45,
+        "treatment": "tilt",
+        "weak_fraction": 0.465
+      }
+    },
+    {
+      "name": "trial011",
+      "id": "C0345",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.4,
+        "quiet_fraction": 0.7325,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.61,
+        "treatment": "tilt",
+        "weak_fraction": 0.53
+      }
+    },
+    {
+      "name": "trial012",
+      "id": "C0346",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.0625,
+        "quiet_fraction": 0.4425,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.36,
+        "treatment": "tilt",
+        "weak_fraction": 0.25
+      }
+    },
+    {
+      "name": "trial013",
+      "id": "C0347",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.4125,
+        "quiet_fraction": 0.3875,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.41,
+        "treatment": "tilt",
+        "weak_fraction": 0.395
+      }
+    },
+    {
+      "name": "trial014",
+      "id": "C0348",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.4975,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.39,
+        "treatment": "tilt",
+        "weak_fraction": 0.2
+      }
+    },
+    {
+      "name": "trial015",
+      "id": "C0349",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.2,
+        "quiet_fraction": 0.5525,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.61,
+        "treatment": "tilt",
+        "weak_fraction": 0.465
+      }
+    },
+    {
+      "name": "trial016",
+      "id": "C0350",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.1125,
+        "quiet_fraction": 0.5525,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.41,
+        "treatment": "tilt",
+        "weak_fraction": 0.35
+      }
+    },
+    {
+      "name": "trial017",
+      "id": "C0351",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.2125,
+        "quiet_fraction": 0.63,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.225
+      }
+    },
+    {
+      "name": "trial018",
+      "id": "C0352",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.45,
+        "quiet_fraction": 0.5125,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.53,
+        "treatment": "tilt",
+        "weak_fraction": 0.505
+      }
+    },
+    {
+      "name": "trial019",
+      "id": "C0353",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.275,
+        "quiet_fraction": 0.525,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.38,
+        "treatment": "tilt",
+        "weak_fraction": 0.425
+      }
+    },
+    {
+      "name": "trial020",
+      "id": "C0354",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.225,
+        "quiet_fraction": 0.7,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.31,
+        "treatment": "tilt",
+        "weak_fraction": 0.285
+      }
+    },
+    {
+      "name": "trial021",
+      "id": "C0355",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3
+      }
+    },
+    {
+      "name": "trial022",
+      "id": "C0356",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.1625,
+        "quiet_fraction": 0.6575,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.48,
+        "treatment": "tilt",
+        "weak_fraction": 0.2
+      }
+    },
+    {
+      "name": "trial023",
+      "id": "C0357",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.1625,
+        "quiet_fraction": 0.6025,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.38,
+        "treatment": "tilt",
+        "weak_fraction": 0.37
+      }
+    },
+    {
+      "name": "trial024",
+      "id": "C0358",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.0,
+        "quiet_fraction": 0.7,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.19,
+        "treatment": "tilt",
+        "weak_fraction": 0.21
+      }
+    },
+    {
+      "name": "trial025",
+      "id": "C0359",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.2125,
+        "quiet_fraction": 0.6575,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.43,
+        "treatment": "tilt",
+        "weak_fraction": 0.335
+      }
+    },
+    {
+      "name": "trial026",
+      "id": "C0360",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.62,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.4,
+        "treatment": "tilt",
+        "weak_fraction": 0.315
+      }
+    },
+    {
+      "name": "trial027",
+      "id": "C0361",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.325,
+        "quiet_fraction": 0.725,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.58,
+        "treatment": "tilt",
+        "weak_fraction": 0.215
+      }
+    },
+    {
+      "name": "trial028",
+      "id": "C0362",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.2375,
+        "quiet_fraction": 0.6725,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.48,
+        "treatment": "tilt",
+        "weak_fraction": 0.365
+      }
+    },
+    {
+      "name": "trial029",
+      "id": "C0363",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.2625,
+        "quiet_fraction": 0.725,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.43,
+        "treatment": "tilt",
+        "weak_fraction": 0.305
+      }
+    },
+    {
+      "name": "trial030",
+      "id": "C0364",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.4875,
+        "quiet_fraction": 0.6325,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.23,
+        "treatment": "tilt",
+        "weak_fraction": 0.495
+      }
+    },
+    {
+      "name": "trial031",
+      "id": "C0365",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.2,
+        "quiet_fraction": 0.66,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.43,
+        "treatment": "tilt",
+        "weak_fraction": 0.315
+      }
+    },
+    {
+      "name": "trial032",
+      "id": "C0366",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.2,
+        "quiet_fraction": 0.6525,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.39,
+        "treatment": "tilt",
+        "weak_fraction": 0.29
+      }
+    },
+    {
+      "name": "trial033",
+      "id": "C0367",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.2125,
+        "quiet_fraction": 0.735,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.43,
+        "treatment": "tilt",
+        "weak_fraction": 0.415
+      }
+    },
+    {
+      "name": "trial034",
+      "id": "C0368",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.225,
+        "quiet_fraction": 0.6675,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.41,
+        "treatment": "tilt",
+        "weak_fraction": 0.34
+      }
+    },
+    {
+      "name": "trial035",
+      "id": "C0369",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.2875,
+        "quiet_fraction": 0.69,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.53,
+        "treatment": "tilt",
+        "weak_fraction": 0.39
+      }
+    },
+    {
+      "name": "trial036",
+      "id": "C0370",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.25,
+        "quiet_fraction": 0.735,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.35,
+        "treatment": "tilt",
+        "weak_fraction": 0.43
+      }
+    },
+    {
+      "name": "trial037",
+      "id": "C0371",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.2375,
+        "quiet_fraction": 0.67,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.49,
+        "treatment": "tilt",
+        "weak_fraction": 0.37
+      }
+    },
+    {
+      "name": "trial038",
+      "id": "C0372",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.1875,
+        "quiet_fraction": 0.725,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.49,
+        "treatment": "tilt",
+        "weak_fraction": 0.47
+      }
+    },
+    {
+      "name": "trial039",
+      "id": "C0373",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.1875,
+        "quiet_fraction": 0.6775,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.45,
+        "treatment": "tilt",
+        "weak_fraction": 0.35
+      }
+    },
+    {
+      "name": "trial040",
+      "id": "C0374",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.1375,
+        "quiet_fraction": 0.74,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.37,
+        "treatment": "tilt",
+        "weak_fraction": 0.32
+      }
+    },
+    {
+      "name": "trial041",
+      "id": "C0375",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.2,
+        "quiet_fraction": 0.6925,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.48,
+        "treatment": "tilt",
+        "weak_fraction": 0.285
+      }
+    },
+    {
+      "name": "trial042",
+      "id": "C0376",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.1375,
+        "quiet_fraction": 0.6975,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.47,
+        "treatment": "tilt",
+        "weak_fraction": 0.375
+      }
+    },
+    {
+      "name": "trial043",
+      "id": "C0377",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.275,
+        "quiet_fraction": 0.685,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.36,
+        "treatment": "tilt",
+        "weak_fraction": 0.365
+      }
+    },
+    {
+      "name": "trial044",
+      "id": "C0378",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.1625,
+        "quiet_fraction": 0.65,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.49,
+        "treatment": "tilt",
+        "weak_fraction": 0.31
+      }
+    },
+    {
+      "name": "trial045",
+      "id": "C0379",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.225,
+        "quiet_fraction": 0.6575,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.31
+      }
+    },
+    {
+      "name": "trial046",
+      "id": "C0380",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.125,
+        "quiet_fraction": 0.3575,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.21,
+        "treatment": "tilt",
+        "weak_fraction": 0.34
+      }
+    },
+    {
+      "name": "trial047",
+      "id": "C0381",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.15,
+        "quiet_fraction": 0.74,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.55,
+        "treatment": "tilt",
+        "weak_fraction": 0.31
+      }
+    }
+  ],
+  "controls": [
+    "research/S019/experiments/EX039_20261110/others/C0224_P046_account.json",
+    "research/S019/experiments/EX038_20261110/others/trial026_account.json",
+    "research/S019/experiments/EX036_20261110/others/trial033_account.json"
+  ],
+  "stage": "STAGE_THREE",
+  "primary_warmup": 900
+}
