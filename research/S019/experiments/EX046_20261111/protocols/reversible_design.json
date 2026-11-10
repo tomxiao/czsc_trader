@@ -1,0 +1,160 @@
+{
+  "status": "PREPARED_FOR_ROOT_SELECTION",
+  "purpose": "Distinguish persistent partial de-risking from rebuilding allocation after price recovery, within the original five-session cycle.",
+  "new_experiments": 0,
+  "new_accounts": 0,
+  "mechanism": {
+    "new_exit_policy": "ramp_rebuild",
+    "fraction": "clip((trail_atr + exit_width/2 - (high_water-price)/entry_atr)/exit_width, 0, 1)",
+    "old_ramp": "risk_fraction = min(previous_risk_fraction, fraction)",
+    "new_ramp": "risk_fraction = fraction",
+    "unchanged": [
+      "existing entry and participation function",
+      "allocation fixed at cycle entry",
+      "high-water update",
+      "zero-risk exit latch",
+      "prior exiting latch",
+      "five-session expiry",
+      "execution contract and costs"
+    ],
+    "explanation_only_correction": "For ramp_rebuild with prior exiting=true before five-session expiry, explicitly explain continuation of already-triggered liquidation; target/state rules unchanged."
+  },
+  "anchors": [
+    {
+      "label": "PRESPECIFIED_C0355_LINEAR10",
+      "parameter_source": "research/S019/experiments/EX044_20261110/others/results.json",
+      "source_label": "ramp_linear10_center",
+      "rationale": "Prespecified unchanged C0355 core, ramp width 0.5 and participation half-width 0.1; directly tests the interaction already measured in EX044.",
+      "center_status": "Observed Calmar approximately 4.42283; diagnostic anchor below the original target.",
+      "selection_status": "ROOT_PREDECLARED",
+      "candidate_id": "C0678",
+      "account_ref": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S019",
+          "experiment_id": "EX044_20261110"
+        },
+        "evidence_id": "db4d5fc8e94a21da3d2e996f446c18dc065c54b5adb9ff3e8565cbd3afdb3d3f.json",
+        "sha256": "db4d5fc8e94a21da3d2e996f446c18dc065c54b5adb9ff3e8565cbd3afdb3d3f",
+        "media_type": "application/json",
+        "name": "ramp_linear10_center",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "content_hash": "3abc9b01353a78bd50202e3d7b0fca9299c67d4d28318088a0483c1d799fa5f4",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "label": "EX045_RAMP_LINEAR_ADAPTED",
+      "parameter_source": "Pending completed EX045 exact result and reference",
+      "selection": "Among EX045 ramp_linear candidates passing all six original gates choose maximum NAR. If none, restrict to the other five gates passing and choose maximum Calmar, breaking ties by NAR; label this as a Calmar-gap diagnostic anchor. If no candidate passes the other five gates, return to root before any selection.",
+      "rationale": "Tests whether rebuilding adds value after joint parameter adaptation, without selecting the anchor on reversible-policy performance.",
+      "selection_status": "RULE_PREDECLARED_AWAITING_REAL_RESULTS"
+    },
+    {
+      "label": "EX045_HARD_LINEAR_QUALIFIED",
+      "parameter_source": "Pending completed EX045 exact result and reference",
+      "selection": "Maximum unrounded NAR among EX045 hard_linear observations passing all original six gates; omit third anchor if none qualify.",
+      "rationale": "Directly examine ATR sensitivity and rebuilding costs at an adapted qualified configuration. This extension is result-driven and declared before R4 freeze.",
+      "selection_status": "CONDITIONAL_RULE_AWAITING_COMPLETE_RESULTS_AND_ROOT_FREEZE"
+    }
+  ],
+  "point_set": {
+    "exit_policies": [
+      "hard",
+      "ramp",
+      "ramp_rebuild"
+    ],
+    "atr_multipliers": [
+      0.95,
+      1.0,
+      1.05
+    ],
+    "fixed_within_anchor": "All parameters except exit_policy and the three trail_atr multipliers.",
+    "duplicates": "Deduplicate identical effective parameter configurations across anchors; explicitly record reused control identities and completed coverage. No substitute parameters chosen to fill the nominal count.",
+    "center_control_parity": "At the first two anchors, ramp center matches its prior economic path; at the optional third anchor, hard center matches its prior economic path. These controls pass before remaining variants.",
+    "scope": "At most 27 mechanism-comparison configurations before deduplication; original formal 80% neighbor protocol remains separate.",
+    "anchor_count_maximum": 3,
+    "required_anchor_count": 2,
+    "optional_anchor_count": 1,
+    "planned_configurations_maximum": 27
+  },
+  "evaluation": {
+    "primary": [
+      "original six-gate status",
+      "NAR",
+      "Calmar",
+      "MDD peak/trough/recovery",
+      "same-anchor three-ATR spans"
+    ],
+    "matched_comparisons": [
+      "ramp_rebuild minus ramp at identical anchor/ATR",
+      "ramp_rebuild minus hard at identical anchor/ATR",
+      "ramp minus hard retained as existing-mechanism context"
+    ],
+    "whole_path": [
+      "actual common entries and exits",
+      "unique cycles",
+      "annual and daywise log-return differences",
+      "positive and negative contribution concentration",
+      "actual fills, cash fees, turnover, and exposure",
+      "number of cycles with fraction increases while active",
+      "actual buys linked to fraction increases separated from constant-target rebalancing",
+      "full-zero exits remaining latched until confirmed close",
+      "timing and returns of harmed as well as improved cycles"
+    ],
+    "previously_seen_counterexamples": [
+      "2025-11-19",
+      "2025-05-21",
+      "2025-04-07",
+      "2026-02-02",
+      "2026-10-06"
+    ],
+    "counterexample_role": "Report alongside the full cycle population; these dates were already examined and do not govern trading rules or anchor selection.",
+    "adverse_hypotheses": [
+      "Rebuilding buys after price rises, followed by another sell during oscillation, increasing loss and fees.",
+      "Recovery in a short cycle reverses again and raises MDD.",
+      "Any improvement is concentrated in one previously noticed rebound while other years or cycles deteriorate.",
+      "Parameter sensitivity persists or increases despite higher central NAR."
+    ]
+  },
+  "decision_guidance": [
+    "If rebuilding improves the matched net path and original target attainment with acceptable losses across complete cycles, retain it for subsequent parameter research or approved self-check.",
+    "If the full matched path loses after costs, MDD worsens materially, or only an isolated known rebound improves, keep the counterevidence and deprioritize this expression.",
+    "Treat three-point sensitivity as mechanism evidence; formal stage-four qualification follows its approved full protocol."
+  ],
+  "implementation_validation": {
+    "script": ".tmp/s019-stage2-resume/check_reversible.py",
+    "result": ".tmp/s019-stage2-resume/reversible_checks.json",
+    "method": "Synthetic actual step calls, exact old-source restoration, public StrategyStateSchema validation; no account replay.",
+    "bindings": {
+      "base_source_sha256": "c30230b475f5583352165f474e6b289bf7100dab3e6333bf8edb42b6c5d438d7",
+      "prepared_source_sha256": "b7adc4eb3ee0567db72243e670d671665c806e2c4aaee46ea2734399f243411f",
+      "verification_source_sha256": "b484f584ce1689d4553dba22e9ad586cd93d0ddfceb7245f3efe97ec6eb783b8",
+      "schema_config_sha256": "51a0326c718fa00fa223a7d86be427c8417d8cb26e18b879d00b8a8e18da3f42"
+    },
+    "result_sha256": "1167a680be95c54dc9b04bb4adbe82255f990ca6e0227ea1c77befc6711eb080",
+    "status": "PASS"
+  }
+}

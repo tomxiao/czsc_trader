@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "new_accounts": 0,
+  "analysis_source_sha256": "7dd2d6b8c1176c53ce9cf542c981346154a553cf69bd67517a5d8dd747e1f4d0",
+  "verification_source_sha256": "f77009e39248916e53af2ecdb8abbb0478197df30e8faf37cca3cf0a4d9349f8",
+  "checks": [
+    "fraction increase linked to actual BUY",
+    "constant-target BUY excluded by decision linkage",
+    "zero-target exiting latch excludes fraction recovery",
+    "new cycle starts with fraction one",
+    "fees normalized by entry equity",
+    "post-restore marked equity interval"
+  ],
+  "restoration_fixture": {
+    "risk_increase_decisions": 1,
+    "actual_restore_buy_fills": 1,
+    "mean_closed_cycle_fees_over_entry_equity": 0.0005
+  },
+  "latched_new_cycle_fixture": {
+    "risk_increase_decisions": 0,
+    "actual_restore_buy_fills": 0
+  }
+}

@@ -1,0 +1,720 @@
+{
+  "base_candidate": "C0355",
+  "parameter_schema": {
+    "exit_policy": {
+      "type": "string"
+    },
+    "exit_width": {
+      "type": "number"
+    },
+    "confirm_bars": {
+      "type": "integer"
+    },
+    "participation_policy": {
+      "type": "string"
+    },
+    "participation_width": {
+      "type": "number"
+    }
+  },
+  "state_schema": {
+    "account_fields": [],
+    "cycle_fields": [
+      {
+        "key": "anchor",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "allocation",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "exiting",
+        "value_type": "bool",
+        "nullable": false
+      },
+      {
+        "key": "high_water",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "entry_atr",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "risk_fraction",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "breach_count",
+        "value_type": "int",
+        "nullable": false
+      }
+    ]
+  },
+  "candidate_start": 780,
+  "round_budget": {
+    "allocated_rounds": 6,
+    "round_index": 4,
+    "total_round": 8,
+    "remaining_after_completion": 2
+  },
+  "specs": [
+    {
+      "label": "original_hard_center",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "label": "original_hard_low",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.299,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "label": "original_hard_high",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.541,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "label": "original_ramp_center",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.1
+      },
+      "control_account": "research/S019/experiments/EX044_20261110/others/ramp_linear10_center_account.json"
+    },
+    {
+      "label": "original_ramp_low",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.299,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "label": "original_ramp_high",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.541,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "label": "original_ramp_rebuild_center",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "ramp_rebuild",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "label": "original_ramp_rebuild_low",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.299,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "ramp_rebuild",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "label": "original_ramp_rebuild_high",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.541,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "ramp_rebuild",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "label": "adapted_hard_center",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "hard",
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "exit_width": 0.2740615273915011,
+        "participation_threshold": 1.1315317232919104,
+        "participation_width": 0.08435000567127467,
+        "quiet_fraction": 0.44235666637023285,
+        "trail_atr": 2.4378854802442214,
+        "weak_fraction": 0.21558456614201083
+      }
+    },
+    {
+      "label": "adapted_hard_low",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "hard",
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "exit_width": 0.2740615273915011,
+        "participation_threshold": 1.1315317232919104,
+        "participation_width": 0.08435000567127467,
+        "quiet_fraction": 0.44235666637023285,
+        "trail_atr": 2.31599120623201,
+        "weak_fraction": 0.21558456614201083
+      }
+    },
+    {
+      "label": "adapted_hard_high",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "hard",
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "exit_width": 0.2740615273915011,
+        "participation_threshold": 1.1315317232919104,
+        "participation_width": 0.08435000567127467,
+        "quiet_fraction": 0.44235666637023285,
+        "trail_atr": 2.5597797542564327,
+        "weak_fraction": 0.21558456614201083
+      }
+    },
+    {
+      "label": "adapted_ramp_center",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "ramp",
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "exit_width": 0.2740615273915011,
+        "participation_threshold": 1.1315317232919104,
+        "participation_width": 0.08435000567127467,
+        "quiet_fraction": 0.44235666637023285,
+        "trail_atr": 2.4378854802442214,
+        "weak_fraction": 0.21558456614201083
+      },
+      "control_account": "research/S019/experiments/EX045_20261111/others/trials/ramp_linear_022_account.json"
+    },
+    {
+      "label": "adapted_ramp_low",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "ramp",
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "exit_width": 0.2740615273915011,
+        "participation_threshold": 1.1315317232919104,
+        "participation_width": 0.08435000567127467,
+        "quiet_fraction": 0.44235666637023285,
+        "trail_atr": 2.31599120623201,
+        "weak_fraction": 0.21558456614201083
+      }
+    },
+    {
+      "label": "adapted_ramp_high",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "ramp",
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "exit_width": 0.2740615273915011,
+        "participation_threshold": 1.1315317232919104,
+        "participation_width": 0.08435000567127467,
+        "quiet_fraction": 0.44235666637023285,
+        "trail_atr": 2.5597797542564327,
+        "weak_fraction": 0.21558456614201083
+      }
+    },
+    {
+      "label": "adapted_ramp_rebuild_center",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "ramp_rebuild",
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "exit_width": 0.2740615273915011,
+        "participation_threshold": 1.1315317232919104,
+        "participation_width": 0.08435000567127467,
+        "quiet_fraction": 0.44235666637023285,
+        "trail_atr": 2.4378854802442214,
+        "weak_fraction": 0.21558456614201083
+      }
+    },
+    {
+      "label": "adapted_ramp_rebuild_low",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "ramp_rebuild",
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "exit_width": 0.2740615273915011,
+        "participation_threshold": 1.1315317232919104,
+        "participation_width": 0.08435000567127467,
+        "quiet_fraction": 0.44235666637023285,
+        "trail_atr": 2.31599120623201,
+        "weak_fraction": 0.21558456614201083
+      }
+    },
+    {
+      "label": "adapted_ramp_rebuild_high",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "ramp_rebuild",
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "exit_width": 0.2740615273915011,
+        "participation_threshold": 1.1315317232919104,
+        "participation_width": 0.08435000567127467,
+        "quiet_fraction": 0.44235666637023285,
+        "trail_atr": 2.5597797542564327,
+        "weak_fraction": 0.21558456614201083
+      }
+    },
+    {
+      "label": "qualified_linear_hard_center",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_threshold": 1.0443117349209394,
+        "participation_width": 0.2888670017592839,
+        "quiet_fraction": 0.35250973549252723,
+        "trail_atr": 2.4279380676391424,
+        "weak_fraction": 0.3284299259134771
+      },
+      "control_account": "research/S019/experiments/EX045_20261111/others/trials/hard_linear_012_account.json"
+    },
+    {
+      "label": "qualified_linear_hard_low",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_threshold": 1.0443117349209394,
+        "participation_width": 0.2888670017592839,
+        "quiet_fraction": 0.35250973549252723,
+        "trail_atr": 2.3065411642571854,
+        "weak_fraction": 0.3284299259134771
+      }
+    },
+    {
+      "label": "qualified_linear_hard_high",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_threshold": 1.0443117349209394,
+        "participation_width": 0.2888670017592839,
+        "quiet_fraction": 0.35250973549252723,
+        "trail_atr": 2.5493349710210995,
+        "weak_fraction": 0.3284299259134771
+      }
+    },
+    {
+      "label": "qualified_linear_ramp_center",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_threshold": 1.0443117349209394,
+        "participation_width": 0.2888670017592839,
+        "quiet_fraction": 0.35250973549252723,
+        "trail_atr": 2.4279380676391424,
+        "weak_fraction": 0.3284299259134771
+      }
+    },
+    {
+      "label": "qualified_linear_ramp_low",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_threshold": 1.0443117349209394,
+        "participation_width": 0.2888670017592839,
+        "quiet_fraction": 0.35250973549252723,
+        "trail_atr": 2.3065411642571854,
+        "weak_fraction": 0.3284299259134771
+      }
+    },
+    {
+      "label": "qualified_linear_ramp_high",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_threshold": 1.0443117349209394,
+        "participation_width": 0.2888670017592839,
+        "quiet_fraction": 0.35250973549252723,
+        "trail_atr": 2.5493349710210995,
+        "weak_fraction": 0.3284299259134771
+      }
+    },
+    {
+      "label": "qualified_linear_ramp_rebuild_center",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "ramp_rebuild",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_threshold": 1.0443117349209394,
+        "participation_width": 0.2888670017592839,
+        "quiet_fraction": 0.35250973549252723,
+        "trail_atr": 2.4279380676391424,
+        "weak_fraction": 0.3284299259134771
+      }
+    },
+    {
+      "label": "qualified_linear_ramp_rebuild_low",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "ramp_rebuild",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_threshold": 1.0443117349209394,
+        "participation_width": 0.2888670017592839,
+        "quiet_fraction": 0.35250973549252723,
+        "trail_atr": 2.3065411642571854,
+        "weak_fraction": 0.3284299259134771
+      }
+    },
+    {
+      "label": "qualified_linear_ramp_rebuild_high",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "ramp_rebuild",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_threshold": 1.0443117349209394,
+        "participation_width": 0.2888670017592839,
+        "quiet_fraction": 0.35250973549252723,
+        "trail_atr": 2.5493349710210995,
+        "weak_fraction": 0.3284299259134771
+      }
+    }
+  ]
+}

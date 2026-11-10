@@ -1,0 +1,83 @@
+{
+  "family": "hard_linear",
+  "number": 3,
+  "proposed_candidate_id": "C0711",
+  "candidate_id": "C0711",
+  "alias_of": null,
+  "content_hash": "f6a06fa83bf23230714ac2f3af5fdb50450e32a2cd07a539cf43fbdf92c823e5",
+  "raw_parameters": {
+    "participation_threshold": 1.3895947672280626,
+    "participation_width": 0.17165312816187328,
+    "quiet_fraction": 0.42584984382830793,
+    "trail_atr": 2.615550688842216,
+    "weak_fraction": 0.4888828808951953
+  },
+  "parameters": {
+    "confirm": true,
+    "down_days": 1,
+    "exit_mode": "fixed",
+    "hold_days": 5,
+    "information": "relative",
+    "joint_rule": "maximum",
+    "participation_days": 3,
+    "require_sector": false,
+    "risk_basis": "daily",
+    "treatment": "tilt",
+    "exit_policy": "hard",
+    "exit_width": 0.5,
+    "confirm_bars": 2,
+    "participation_policy": "linear",
+    "participation_threshold": 1.3895947672280626,
+    "participation_width": 0.17165312816187328,
+    "quiet_fraction": 0.42584984382830793,
+    "trail_atr": 2.615550688842216,
+    "weak_fraction": 0.4888828808951953
+  },
+  "distributions": {
+    "participation_threshold": {
+      "name": "FloatDistribution",
+      "attributes": {
+        "step": null,
+        "low": 1.0,
+        "high": 1.5,
+        "log": false
+      }
+    },
+    "participation_width": {
+      "name": "FloatDistribution",
+      "attributes": {
+        "step": null,
+        "low": 0.05,
+        "high": 0.3,
+        "log": false
+      }
+    },
+    "quiet_fraction": {
+      "name": "FloatDistribution",
+      "attributes": {
+        "step": null,
+        "low": 0.35,
+        "high": 0.85,
+        "log": false
+      }
+    },
+    "trail_atr": {
+      "name": "FloatDistribution",
+      "attributes": {
+        "step": null,
+        "low": 2.0,
+        "high": 2.8,
+        "log": false
+      }
+    },
+    "weak_fraction": {
+      "name": "FloatDistribution",
+      "attributes": {
+        "step": null,
+        "low": 0.2,
+        "high": 0.5,
+        "log": false
+      }
+    }
+  }
+}

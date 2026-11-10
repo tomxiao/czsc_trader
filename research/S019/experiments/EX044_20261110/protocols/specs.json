@@ -1,0 +1,647 @@
+{
+  "base_candidate": "C0355",
+  "candidate_start": 660,
+  "round_budget": {
+    "allocated_rounds": 6,
+    "round_index": 2,
+    "total_round": 6,
+    "remaining_after_completion": 4
+  },
+  "parameter_schema": {
+    "exit_policy": {
+      "type": "string"
+    },
+    "exit_width": {
+      "type": "number"
+    },
+    "confirm_bars": {
+      "type": "integer"
+    },
+    "participation_policy": {
+      "type": "string"
+    },
+    "participation_width": {
+      "type": "number"
+    }
+  },
+  "specs": [
+    {
+      "label": "hard_hard10_center",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "hard",
+        "participation_width": 0.1
+      },
+      "control_account": "research/S019/experiments/EX043_20261110/others/hard_center_account.json"
+    },
+    {
+      "label": "hard_hard10_low",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.11625,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "hard",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "label": "hard_hard10_high",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.2337500000000001,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "hard",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "label": "hard_linear05_center",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.05
+      }
+    },
+    {
+      "label": "hard_linear05_low",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.11625,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.05
+      }
+    },
+    {
+      "label": "hard_linear05_high",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.2337500000000001,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.05
+      }
+    },
+    {
+      "label": "hard_linear10_center",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "label": "hard_linear10_low",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.11625,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "label": "hard_linear10_high",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.2337500000000001,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "label": "hard_linear20_center",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.2
+      }
+    },
+    {
+      "label": "hard_linear20_low",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.11625,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.2
+      }
+    },
+    {
+      "label": "hard_linear20_high",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.2337500000000001,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.2
+      }
+    },
+    {
+      "label": "ramp_hard10_center",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "hard",
+        "participation_width": 0.1
+      },
+      "control_account": "research/S019/experiments/EX043_20261110/others/ramp05_center_account.json"
+    },
+    {
+      "label": "ramp_hard10_low",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.11625,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "hard",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "label": "ramp_hard10_high",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.2337500000000001,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "hard",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "label": "ramp_linear05_center",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.05
+      }
+    },
+    {
+      "label": "ramp_linear05_low",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.11625,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.05
+      }
+    },
+    {
+      "label": "ramp_linear05_high",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.2337500000000001,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.05
+      }
+    },
+    {
+      "label": "ramp_linear10_center",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "label": "ramp_linear10_low",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.11625,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "label": "ramp_linear10_high",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.2337500000000001,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "label": "ramp_linear20_center",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.2
+      }
+    },
+    {
+      "label": "ramp_linear20_low",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.11625,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.2
+      }
+    },
+    {
+      "label": "ramp_linear20_high",
+      "parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.2337500000000001,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.2
+      }
+    }
+  ],
+  "state_schema": {
+    "account_fields": [],
+    "cycle_fields": [
+      {
+        "key": "anchor",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "allocation",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "exiting",
+        "value_type": "bool",
+        "nullable": false
+      },
+      {
+        "key": "high_water",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "entry_atr",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "risk_fraction",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "breach_count",
+        "value_type": "int",
+        "nullable": false
+      }
+    ]
+  }
+}

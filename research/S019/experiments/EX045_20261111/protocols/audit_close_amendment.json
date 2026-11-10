@@ -1,0 +1,35 @@
+{
+  "reason": "Adapt independent audit and report settlement to frozen OPTUNA_FAMILY_SEARCH_V1 output. Search protocol and financial definition unchanged.",
+  "initial_audit": {
+    "path": "src/semantic_audit_initial.py",
+    "sha256": "f4b39c2e28bcad67c9c3c3862b9ac7e3a37316b5bdcc73c1b481ab44f380331a"
+  },
+  "source_origins": {
+    "family_close_inputs.py": {
+      "path": ".tmp/s019-stage2-resume/family_close_inputs.py",
+      "sha256": "b3c93fddc9db6366c7123f5b039a7b0c770de68b9c9ad486887a837ecf2b4262"
+    },
+    "close_round.py": {
+      "path": ".tmp/s019-stage2-resume/close_family_round.py",
+      "sha256": "f6c0c9bde71363fede6cf8e612c7d9b96375bda122115868c728c458d426b658"
+    },
+    "prepare_audit.py": {
+      "path": ".tmp/s019-stage2-resume/prepare_family_audit.py",
+      "sha256": "d8364cc147201b0580645cc0c53fd4a33ebf590cf17fcf2d414040f2d739d385"
+    },
+    "semantic_audit.py": {
+      "path": ".tmp/s019-stage2-resume/semantic_family.py",
+      "sha256": "61e3482e23f64a16e2cb041e8a721931cd45072b84640aa14e0d9eef3c67d70c"
+    }
+  },
+  "frozen_files": {
+    "src/strategy.py": "c30230b475f5583352165f474e6b289bf7100dab3e6333bf8edb42b6c5d438d7",
+    "src/family_search.py": "419e2c426976051659f5ca3b1d1d3a2da47334b7dd0047f8bb33aa68ed6e8228",
+    "protocols/search.json": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50",
+    "protocols/plan.md": "f0d4f17c8bc3e70d9ba27f4609ebcf8bb6cf6c50d78761ecd37febf1b680cd4e"
+  },
+  "parameter_boundary_checks": 99,
+  "new_account_replays": 0,
+  "research_rounds_debited": 0,
+  "selection_rule": "Each family: control, highest NAR among six-gate eligible (else sum positive normalized violations, maximum violation, then descending NAR); lowest Calmar; union global maximum MDD. Exact account aliases audited once."
+}

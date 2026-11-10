@@ -272,17 +272,19 @@
     ],
     "extension_status": "COMPLETE",
     "joint_search_budget": {
+      "all_round_replay_statistics_complete": true,
       "authorization_decision": "S019-JOINT-20261110",
       "authorized_rounds": 10,
-      "benchmark_accounts": 5,
-      "candidate_accounts": 190,
+      "benchmark_accounts": 9,
+      "candidate_accounts": 356,
       "configuration_count_basis": "unique_configurations sums within-round unique counts; exact cross-round repetition reported separately",
-      "counting_note": "81 historical observations are search inputs, not additional current proposals or account replays. Exact current/historical aliases retained separately.",
+      "counting_note": "Prior optimization proposal counts retained. New mechanism configurations and economic control replays recorded separately; unknown technical tasks are not inferred as successful replays.",
+      "current_round_replay_statistics_complete": true,
       "distinct_configurations_across_rounds": 189,
       "eligible_candidates": 21,
       "imported_observation_count_this_round": 81,
       "proposals": 192,
-      "remaining_rounds": 6,
+      "remaining_rounds": 2,
       "repeated_configurations_across_rounds": 1,
       "rounds": [
         {
@@ -352,10 +354,109 @@
           "protocol_sha256": "d1b5ada0959e3b153a29145b8a6c083ba08ae3d5f9b1905a8b74c339caec3adf",
           "round": 4,
           "unique_configurations": 48
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 19,
+          "control_replays": 3,
+          "design_configurations": 19,
+          "eligible_ids": [
+            "C0646",
+            "C0642"
+          ],
+          "experiment": "EX043_20261110",
+          "mechanism_round": 1,
+          "preceding_technical_failure": {
+            "debited_rounds": 0,
+            "experiment": "EX042_20261110",
+            "unknown_tasks": 8,
+            "valid_accounts": 0
+          },
+          "protocol_sha256": "c582c6ecd97f708b2ef8f24c77ffb2e99ac8a39ce74d8e4fd59b8ec120bdb307",
+          "replay_statistics_complete": true,
+          "round": 5,
+          "stage": "STAGE_TWO",
+          "structural_accounts": 16,
+          "unknown_compute_tasks": 0
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 24,
+          "control_replays": 2,
+          "design_configurations": 24,
+          "eligible_ids": [
+            "C0660",
+            "C0662",
+            "C0667",
+            "C0663",
+            "C0670"
+          ],
+          "experiment": "EX044_20261110",
+          "mechanism_round": 2,
+          "protocol_sha256": "832edcf9caf4407d90b46d38c6ea728d4cbbacfb4b7cce5e20f4311ad6ca4a04",
+          "replay_statistics_complete": true,
+          "round": 6,
+          "stage": "STAGE_TWO",
+          "structural_accounts": 22,
+          "unknown_compute_tasks": 0
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 96,
+          "control_replays": 4,
+          "design_configurations": 96,
+          "distinct_accounts": 96,
+          "eligible_ids": [
+            "C0684",
+            "C0720",
+            "C0705",
+            "C0754",
+            "C0726"
+          ],
+          "exact_aliases": 0,
+          "experiment": "EX045_20261111",
+          "mechanism_round": 3,
+          "proposed_configurations": 96,
+          "protocol_sha256": "f0d4f17c8bc3e70d9ba27f4609ebcf8bb6cf6c50d78761ecd37febf1b680cd4e",
+          "replay_statistics_complete": true,
+          "round": 7,
+          "search_protocol_sha256": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50",
+          "stage": "STAGE_TWO",
+          "structural_accounts": 92,
+          "unknown_compute_tasks": 0
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 27,
+          "control_replays": 3,
+          "design_configurations": 27,
+          "eligible_ids": [
+            "C0798",
+            "C0800",
+            "C0804",
+            "C0805",
+            "C0806",
+            "C0803",
+            "C0789",
+            "C0796",
+            "C0801",
+            "C0792",
+            "C0802"
+          ],
+          "experiment": "EX046_20261111",
+          "mechanism_round": 4,
+          "protocol_sha256": "03e0b07f8ee9cf5cd0f26817917819c73a8952a1d181bcd86951d78d94b102b7",
+          "replay_statistics_complete": true,
+          "round": 8,
+          "stage": "STAGE_TWO",
+          "structural_accounts": 24,
+          "unknown_compute_tasks": 0
         }
       ],
+      "structural_design_configurations": 166,
       "unique_configurations": 190,
-      "used_rounds": 4
+      "unknown_compute_tasks": 0,
+      "used_rounds": 8
     },
     "joint_search_decision": {
       "decision_id": "S019-JOINT-20261110",
@@ -383,9 +484,9 @@
     },
     "joint_search_status": "ROUND_FOUR_COMPLETE",
     "latest_experiment_report": {
-      "evidence_id": "9b7c87062c903eaf24df0be7e21910db10573dec574bf1eea366946a8a2a8f7f.json",
+      "evidence_id": "76d6c4e0cc369f4c796d51708bb06ebb7d5dfd443adb6b65dc7db95a31e0670b.json",
       "experiment": {
-        "experiment_id": "EX041_20261110",
+        "experiment_id": "EX046_20261111",
         "strategy_id": "S019",
         "type": "ExperimentRef"
       },
@@ -393,7 +494,7 @@
       "name": "experiment-report",
       "schema": "experiment_report",
       "schema_version": 1,
-      "sha256": "9b7c87062c903eaf24df0be7e21910db10573dec574bf1eea366946a8a2a8f7f",
+      "sha256": "76d6c4e0cc369f4c796d51708bb06ebb7d5dfd443adb6b65dc7db95a31e0670b",
       "type": "EvidenceRef"
     },
     "mandate": {
@@ -406,7 +507,78 @@
       "stage": "MANDATE",
       "type": "DeliveryReference"
     },
-    "next_action": "建议回阶段二，优先比较ATR硬退出及参与阈值仓位跳变的替代表达，保留C0355作为完整账户对照；原硬门目标和剩余6轮额度保持，等待用户批准研究方向。",
+    "mechanism_completed_rounds": 4,
+    "mechanism_frontier": [
+      {
+        "delivery": {
+          "batch": {
+            "strategy_id": "S019",
+            "type": "ResearchBatchRef"
+          },
+          "content_sha256": "55e29687912eb5333615d041238b83974717c423d94fddee0ef1af77cce682f1",
+          "revision": 3,
+          "stage": "PROTOTYPES",
+          "type": "DeliveryReference"
+        },
+        "prototype_id": "C0804",
+        "type": "PrototypeReference"
+      },
+      {
+        "delivery": {
+          "batch": {
+            "strategy_id": "S019",
+            "type": "ResearchBatchRef"
+          },
+          "content_sha256": "55e29687912eb5333615d041238b83974717c423d94fddee0ef1af77cce682f1",
+          "revision": 3,
+          "stage": "PROTOTYPES",
+          "type": "DeliveryReference"
+        },
+        "prototype_id": "C0801",
+        "type": "PrototypeReference"
+      },
+      {
+        "delivery": {
+          "batch": {
+            "strategy_id": "S019",
+            "type": "ResearchBatchRef"
+          },
+          "content_sha256": "55e29687912eb5333615d041238b83974717c423d94fddee0ef1af77cce682f1",
+          "revision": 3,
+          "stage": "PROTOTYPES",
+          "type": "DeliveryReference"
+        },
+        "prototype_id": "C0720",
+        "type": "PrototypeReference"
+      }
+    ],
+    "mechanism_remaining_authorized_rounds": 2,
+    "mechanism_research_delivery": {
+      "batch": {
+        "strategy_id": "S019",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "55e29687912eb5333615d041238b83974717c423d94fddee0ef1af77cce682f1",
+      "revision": 3,
+      "stage": "PROTOTYPES",
+      "type": "DeliveryReference"
+    },
+    "mechanism_research_status": "STAGE_TWO_COMPLETE",
+    "mechanism_resume_decision": {
+      "decision_id": "S019-RESUME-MECHANISMS-20261110",
+      "evidence": {
+        "owner": {
+          "experiment_id": null,
+          "strategy_id": "S019",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "decisions/S019-RESUME-MECHANISMS-20261110.json",
+        "sha256": "b5c745c4200f465b1e8c1033015d1755bd24f553d4d33e25340723c5ccc5671a",
+        "type": "ResearchEvidenceRef"
+      },
+      "type": "DecisionReference"
+    },
+    "next_action": "向用户交付PROTOTYPES/3；建议批准阶段三后使用剩余2轮研究仓位与连续宽度的达标区域。原目标和完整自检标准保持，当前未推进阶段三。",
     "next_stage_four_approval": "APPROVED_THREE_CANDIDATES",
     "objective": "独立经济假设；中心净年化收益至少55%，净卡玛至少5；达标后优先提高净年化。",
     "parameter_joint_pass_rate_min": 0.8,
@@ -417,7 +589,7 @@
       "strategy_version": "S018-v1"
     },
     "sample_selection_authority": "RSCH_WITHIN_AUTHORIZED_SCOPE",
-    "stage": "STAGE_FOUR",
+    "stage": "STAGE_TWO",
     "stage_four_approval": {
       "decision_id": "S019-STAGE4-THREE-20261110",
       "evidence": {
@@ -598,7 +770,10 @@
       "stage": "PROTOTYPES",
       "type": "DeliveryReference"
     },
-    "stage_two_status": "COMPLETE"
+    "stage_two_status": "COMPLETE",
+    "technical_failed_experiments": [
+      "EX042_20261110"
+    ]
   },
   "research_state": "RESEARCHING",
   "schema_version": 2,
@@ -606,5 +781,5 @@
     "US.MU"
   ],
   "strategy_id": "S019",
-  "updated_at": "2026-11-10T22:53:58+08:00"
+  "updated_at": "2026-11-11T01:35:03+08:00"
 }

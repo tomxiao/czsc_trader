@@ -1,0 +1,305 @@
+{
+  "status": "PASS",
+  "method": "Public StrategyStateSchema.validate_record and real strategy.step with synthetic histories; no account replay.",
+  "old_definition_sha256": "977eb2a7e8f7dc06a4d004222457334d80f004e230e695a5bd3f13c869393539",
+  "source_sha256": "b8dc6460e16140acadd6d6041f323afd5a751396f14e17ba069a8e3c9b04c1f2",
+  "negative_checks": [
+    {
+      "test": "old_five_field_schema_rejects_actual_seven_field_shape",
+      "error_type": "ValueError",
+      "message": "state fields differ from declared cycle schema"
+    },
+    {
+      "test": "missing_risk_fraction",
+      "error_type": "ValueError",
+      "message": "state fields differ from declared cycle schema"
+    },
+    {
+      "test": "missing_breach_count",
+      "error_type": "ValueError",
+      "message": "state fields differ from declared cycle schema"
+    },
+    {
+      "test": "breach_count_float_rejected",
+      "error_type": "TypeError",
+      "message": "state field type differs: breach_count"
+    },
+    {
+      "test": "static_source_rejects_old_schema",
+      "error_type": "AssertionError",
+      "message": "StateRecord at line 65 differs from declared state fields: ['allocation', 'anchor', 'breach_count', 'entry_atr', 'exiting', 'high_water', 'risk_fraction']"
+    }
+  ],
+  "real_step_samples": [
+    {
+      "policy": "hard",
+      "branch": "entry",
+      "values": {
+        "anchor": 100.15625,
+        "allocation": 0.1935,
+        "exiting": false,
+        "high_water": 99.5,
+        "entry_atr": 2.0,
+        "risk_fraction": 1.0,
+        "breach_count": 0
+      }
+    },
+    {
+      "policy": "hard",
+      "branch": "holding",
+      "values": {
+        "anchor": 100.15625,
+        "allocation": 0.1935,
+        "exiting": false,
+        "high_water": 99.5,
+        "entry_atr": 2.0,
+        "risk_fraction": 1.0,
+        "breach_count": 0
+      }
+    },
+    {
+      "policy": "hard",
+      "branch": "risk_exit",
+      "values": {
+        "anchor": 100.15625,
+        "allocation": 0.1935,
+        "exiting": true,
+        "high_water": 120.0,
+        "entry_atr": 2.0,
+        "risk_fraction": 1.0,
+        "breach_count": 2
+      }
+    },
+    {
+      "policy": "none",
+      "branch": "entry",
+      "values": {
+        "anchor": 100.15625,
+        "allocation": 0.1935,
+        "exiting": false,
+        "high_water": 99.5,
+        "entry_atr": 2.0,
+        "risk_fraction": 1.0,
+        "breach_count": 0
+      }
+    },
+    {
+      "policy": "none",
+      "branch": "holding",
+      "values": {
+        "anchor": 100.15625,
+        "allocation": 0.1935,
+        "exiting": false,
+        "high_water": 99.5,
+        "entry_atr": 2.0,
+        "risk_fraction": 1.0,
+        "breach_count": 0
+      }
+    },
+    {
+      "policy": "none",
+      "branch": "risk_exit",
+      "values": {
+        "anchor": 100.15625,
+        "allocation": 0.1935,
+        "exiting": false,
+        "high_water": 120.0,
+        "entry_atr": 2.0,
+        "risk_fraction": 1.0,
+        "breach_count": 2
+      }
+    },
+    {
+      "policy": "confirm",
+      "branch": "entry",
+      "values": {
+        "anchor": 100.15625,
+        "allocation": 0.1935,
+        "exiting": false,
+        "high_water": 99.5,
+        "entry_atr": 2.0,
+        "risk_fraction": 1.0,
+        "breach_count": 0
+      }
+    },
+    {
+      "policy": "confirm",
+      "branch": "holding",
+      "values": {
+        "anchor": 100.15625,
+        "allocation": 0.1935,
+        "exiting": false,
+        "high_water": 99.5,
+        "entry_atr": 2.0,
+        "risk_fraction": 1.0,
+        "breach_count": 0
+      }
+    },
+    {
+      "policy": "confirm",
+      "branch": "risk_exit",
+      "values": {
+        "anchor": 100.15625,
+        "allocation": 0.1935,
+        "exiting": true,
+        "high_water": 120.0,
+        "entry_atr": 2.0,
+        "risk_fraction": 1.0,
+        "breach_count": 2
+      }
+    },
+    {
+      "policy": "ramp",
+      "branch": "entry",
+      "values": {
+        "anchor": 100.15625,
+        "allocation": 0.1935,
+        "exiting": false,
+        "high_water": 99.5,
+        "entry_atr": 2.0,
+        "risk_fraction": 1.0,
+        "breach_count": 0
+      }
+    },
+    {
+      "policy": "ramp",
+      "branch": "holding",
+      "values": {
+        "anchor": 100.15625,
+        "allocation": 0.1935,
+        "exiting": false,
+        "high_water": 99.5,
+        "entry_atr": 2.0,
+        "risk_fraction": 1.0,
+        "breach_count": 0
+      }
+    },
+    {
+      "policy": "ramp",
+      "branch": "risk_exit",
+      "values": {
+        "anchor": 100.15625,
+        "allocation": 0.1935,
+        "exiting": true,
+        "high_water": 120.0,
+        "entry_atr": 2.0,
+        "risk_fraction": 0.0,
+        "breach_count": 2
+      }
+    },
+    {
+      "policy": "daily_close",
+      "branch": "entry",
+      "values": {
+        "anchor": 100.15625,
+        "allocation": 0.1935,
+        "exiting": false,
+        "high_water": 99.5,
+        "entry_atr": 2.0,
+        "risk_fraction": 1.0,
+        "breach_count": 0
+      }
+    },
+    {
+      "policy": "daily_close",
+      "branch": "holding",
+      "values": {
+        "anchor": 100.15625,
+        "allocation": 0.1935,
+        "exiting": false,
+        "high_water": 99.5,
+        "entry_atr": 2.0,
+        "risk_fraction": 1.0,
+        "breach_count": 0
+      }
+    },
+    {
+      "policy": "daily_close",
+      "branch": "risk_exit",
+      "values": {
+        "anchor": 100.15625,
+        "allocation": 0.1935,
+        "exiting": false,
+        "high_water": 120.0,
+        "entry_atr": 2.0,
+        "risk_fraction": 1.0,
+        "breach_count": 2
+      }
+    },
+    {
+      "policy": "rolling_atr",
+      "branch": "entry",
+      "values": {
+        "anchor": 100.15625,
+        "allocation": 0.1935,
+        "exiting": false,
+        "high_water": 99.5,
+        "entry_atr": 2.0,
+        "risk_fraction": 1.0,
+        "breach_count": 0
+      }
+    },
+    {
+      "policy": "rolling_atr",
+      "branch": "holding",
+      "values": {
+        "anchor": 100.15625,
+        "allocation": 0.1935,
+        "exiting": false,
+        "high_water": 99.5,
+        "entry_atr": 2.0,
+        "risk_fraction": 1.0,
+        "breach_count": 0
+      }
+    },
+    {
+      "policy": "rolling_atr",
+      "branch": "risk_exit",
+      "values": {
+        "anchor": 100.15625,
+        "allocation": 0.1935,
+        "exiting": true,
+        "high_water": 120.0,
+        "entry_atr": 2.0,
+        "risk_fraction": 1.0,
+        "breach_count": 2
+      }
+    }
+  ],
+  "static_preflight": {
+    "status": "PASS",
+    "checks": [
+      {
+        "line": 65,
+        "fields": [
+          "allocation",
+          "anchor",
+          "breach_count",
+          "entry_atr",
+          "exiting",
+          "high_water",
+          "risk_fraction"
+        ],
+        "matching_scopes": [
+          "cycle"
+        ]
+      },
+      {
+        "line": 134,
+        "fields": [
+          "allocation",
+          "anchor",
+          "breach_count",
+          "entry_atr",
+          "exiting",
+          "high_water",
+          "risk_fraction"
+        ],
+        "matching_scopes": [
+          "cycle"
+        ]
+      }
+    ],
+    "coverage": "Exact literal field sets and literal value types; variable value types require synthetic step probes."
+  }
+}

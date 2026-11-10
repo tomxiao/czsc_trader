@@ -1,0 +1,58 @@
+"""No-account spawn/import/threadpoolctl/NumPy/pandas serialization probe."""
+from concurrent.futures import ProcessPoolExecutor, as_completed
+import faulthandler
+import json
+import multiprocessing
+import os
+from pathlib import Path
+import runpy
+import sys
+import traceback
+
+ROOT = Path.cwd()
+MODE = sys.argv[1]
+assert MODE in ('before', 'after')
+faulthandler.enable(all_threads=True)
+os.environ['PYTHONFAULTHANDLER'] = '1'
+RESOURCES = dict(OMP_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1', MKL_NUM_THREADS='1', NUMEXPR_NUM_THREADS='1',
+    TEMP=str(ROOT/'.tmp/s019-stage2-resume'), TMP=str(ROOT/'.tmp/s019-stage2-resume'))
+if MODE == 'before':
+    os.environ.update(RESOURCES)
+namespace = runpy.run_path(str(ROOT/'research/S019/experiments/EX042_20261110/src/batch_runner.py'), run_name='diagnostic')
+if MODE == 'after':
+    os.environ.update(RESOURCES)
+
+
+def probe(index, frame, array):
+    import numpy as np
+    from threadpoolctl import threadpool_limits, threadpool_info
+    with threadpool_limits(limits=1):
+        total = float(np.sum(array @ array.T))
+        grouped = frame.groupby('bucket', sort=True).value.sum().to_dict()
+        assert total == 3200000.0 and grouped == {0: 90, 1: 100}
+        return {'task': index, 'pid': os.getpid(), 'total': total, 'grouped': grouped,
+                'native_pools': [(r['internal_api'], r['num_threads']) for r in threadpool_info()]}
+
+
+if __name__ == '__main__':
+    import numpy as np
+    import pandas as pd
+    frame = pd.DataFrame({'bucket': [i % 2 for i in range(20)], 'value': list(range(20))})
+    array = np.full((20, 20), 20.0)
+    print('START', MODE, 'parent', os.getpid(), 'max_workers', 12, flush=True)
+    failed, outputs = False, []
+    with ProcessPoolExecutor(max_workers=12, mp_context=multiprocessing.get_context('spawn')) as pool:
+        futures = [pool.submit(probe, i, frame, array) for i in range(12)]
+        for future in as_completed(futures, timeout=90):
+            try:
+                result = future.result()
+                outputs.append(result)
+                print('PASS', json.dumps(result), flush=True)
+            except BaseException:
+                failed = True
+                traceback.print_exc()
+                # Diagnostic observation only: record child exit codes before shutdown.
+                print('WORKER_EXIT_CODES', [(p.pid, p.exitcode) for p in pool._processes.values()], flush=True)
+    print('SUMMARY', json.dumps({'mode': MODE, 'successful_tasks': len(outputs),
+        'distinct_worker_pids': sorted({r['pid'] for r in outputs}), 'failed': failed}), flush=True)
+    raise SystemExit(1 if failed else 0)

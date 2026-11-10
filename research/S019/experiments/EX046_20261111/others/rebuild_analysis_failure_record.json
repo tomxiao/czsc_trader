@@ -1,0 +1,28 @@
+{
+  "record_kind": "STRUCTURED_SESSION_FAILURE_RECORD_NOT_VERBATIM_TRACEBACK",
+  "status": "RESOLVED",
+  "new_accounts": 0,
+  "failed_account_label": "original_hard_center",
+  "error_type": "KeyError",
+  "missing_cycle_id": "39c1f740c376d6195bc48b30bf0328607914bb5b378518a51daab9c6de52755e:0",
+  "location": "risk_dynamics: trades[cid] lookup while building fill-cycle intervals",
+  "cause": "Public trades contains CLOSED cycles only; terminal open fill cycle was absent from that map.",
+  "failed_source": "src/compare_rebuild_v1.py",
+  "failed_source_sha256": "7dd2d6b8c1176c53ce9cf542c981346154a553cf69bd67517a5d8dd747e1f4d0",
+  "failed_projection_count": 1,
+  "projection_caches_written_before_failure": 0,
+  "additional_readonly_materializations_before_v2": {
+    "failed_projection": 1,
+    "terminal_reconciliation_diagnostic": 1
+  },
+  "successful_v2_accounts": 27,
+  "successful_v2_seconds": 162.20705749999615,
+  "failed_and_diagnostic_elapsed_seconds": null,
+  "elapsed_note": "No retained precise duration for the two prior readonly materializations; the v2 timer covers the successful 27-account analysis only.",
+  "resolution_receipt": "others/rebuild_analysis_source_receipt.json",
+  "resolution_receipt_sha256": "7c04ecaab7b7fcb8684065e2c1e5d1fb46247e3d93d75ae8163f63e0e56d5e12",
+  "resolution_checks": "others/rebuild_counter_checks.json",
+  "resolution": "Require one terminal absent cycle, positive exact fill-net/terminal quantity and same cycle id; separate OPEN-derived projection for frozen helper; preserve complete marked equity and closed trade ledger.",
+  "raw_traceback_file": null,
+  "raw_traceback_note": "Failure was reported in interactive tool output. This structured record preserves observed error and correction; it does not reconstruct a verbatim traceback."
+}

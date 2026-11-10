@@ -1,0 +1,47 @@
+{
+  "authorization_decision": "S019-RESUME-MECHANISMS-20261110",
+  "previous_experiment": "research/S019/experiments/EX045_20261111",
+  "previous_report": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S019",
+      "experiment_id": "EX045_20261111"
+    },
+    "evidence_id": "4c859b07f568de06e1a434daea901cce66d4ba780f5efd8057c4c407204b8aca.json",
+    "sha256": "4c859b07f568de06e1a434daea901cce66d4ba780f5efd8057c4c407204b8aca",
+    "media_type": "application/json",
+    "name": "experiment-report",
+    "schema": "experiment_report",
+    "schema_version": 1
+  },
+  "source_origins": {
+    "strategy.py": {
+      "path": ".tmp/s019-stage2-resume/strategy_reversible.py",
+      "sha256": "b7adc4eb3ee0567db72243e670d671665c806e2c4aaee46ea2734399f243411f"
+    },
+    "batch_runner.py": {
+      "path": ".tmp/s019-stage2-resume/batch_runner_reversible.py",
+      "sha256": "73f9371e21c9c28d2106394a625f9595120ee317a8023b80ebdd9338521c0ed7"
+    },
+    "semantic_audit.py": {
+      "path": ".tmp/s019-stage2-resume/semantic_reversible.py",
+      "sha256": "77a8165a0c26f16236e3ef2084f195bf3058c9cda6750a97a6559ea3202100d6"
+    },
+    "prepare_audit.py": {
+      "path": ".tmp/s019-stage2-resume/prepare_reversible_audit.py",
+      "sha256": "e1fe82e993ee1201f857fd44d6e2174ab637c79bc855ffff778a5926a3d037dc"
+    },
+    "close_round.py": {
+      "path": "research/S019/experiments/EX043_20261110/src/close_round.py",
+      "sha256": "a23c0004f7cd57b2847b57f8d5e438374300898b488458d26192e57799906638"
+    }
+  },
+  "research_question": "减仓后随价格修复恢复敞口，能否补回收益并维持原风险目标，还是增加反复交易与回撤？",
+  "budget": {
+    "allocated_rounds": 6,
+    "round_index": 4,
+    "total_round": 8,
+    "remaining_after_completion": 2
+  }
+}

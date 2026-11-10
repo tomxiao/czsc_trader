@@ -1,0 +1,73 @@
+{
+  "family": "hard_hard",
+  "number": 5,
+  "proposed_candidate_id": "C0689",
+  "candidate_id": "C0689",
+  "alias_of": null,
+  "content_hash": "99909526ab4f9e3cee484771349a025e77187d8d66f64e24af9e76efdfdb7383",
+  "raw_parameters": {
+    "participation_threshold": 1.2841745490571548,
+    "quiet_fraction": 0.8485344890774271,
+    "trail_atr": 2.6650705114627207,
+    "weak_fraction": 0.412758386461982
+  },
+  "parameters": {
+    "confirm": true,
+    "down_days": 1,
+    "exit_mode": "fixed",
+    "hold_days": 5,
+    "information": "relative",
+    "joint_rule": "maximum",
+    "participation_days": 3,
+    "require_sector": false,
+    "risk_basis": "daily",
+    "treatment": "tilt",
+    "exit_policy": "hard",
+    "exit_width": 0.5,
+    "confirm_bars": 2,
+    "participation_policy": "hard",
+    "participation_width": 0.1,
+    "participation_threshold": 1.2841745490571548,
+    "quiet_fraction": 0.8485344890774271,
+    "trail_atr": 2.6650705114627207,
+    "weak_fraction": 0.412758386461982
+  },
+  "distributions": {
+    "participation_threshold": {
+      "name": "FloatDistribution",
+      "attributes": {
+        "step": null,
+        "low": 1.0,
+        "high": 1.5,
+        "log": false
+      }
+    },
+    "quiet_fraction": {
+      "name": "FloatDistribution",
+      "attributes": {
+        "step": null,
+        "low": 0.35,
+        "high": 0.85,
+        "log": false
+      }
+    },
+    "trail_atr": {
+      "name": "FloatDistribution",
+      "attributes": {
+        "step": null,
+        "low": 2.0,
+        "high": 2.8,
+        "log": false
+      }
+    },
+    "weak_fraction": {
+      "name": "FloatDistribution",
+      "attributes": {
+        "step": null,
+        "low": 0.2,
+        "high": 0.5,
+        "log": false
+      }
+    }
+  }
+}

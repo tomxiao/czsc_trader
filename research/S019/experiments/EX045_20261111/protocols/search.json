@@ -1,0 +1,364 @@
+{
+  "families": [
+    {
+      "name": "hard_hard",
+      "fixed": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "hard",
+        "participation_width": 0.1
+      },
+      "space": {
+        "weak_fraction": {
+          "kind": "float",
+          "low": 0.2,
+          "high": 0.5,
+          "step": null
+        },
+        "quiet_fraction": {
+          "kind": "float",
+          "low": 0.35,
+          "high": 0.85,
+          "step": null
+        },
+        "participation_threshold": {
+          "kind": "float",
+          "low": 1.0,
+          "high": 1.5,
+          "step": null
+        },
+        "trail_atr": {
+          "kind": "float",
+          "low": 2.0,
+          "high": 2.8,
+          "step": null
+        }
+      },
+      "control_account": "research/S019/experiments/EX044_20261110/others/hard_hard10_center_account.json",
+      "control_parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "hard",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "name": "hard_linear",
+      "fixed": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear"
+      },
+      "space": {
+        "weak_fraction": {
+          "kind": "float",
+          "low": 0.2,
+          "high": 0.5,
+          "step": null
+        },
+        "quiet_fraction": {
+          "kind": "float",
+          "low": 0.35,
+          "high": 0.85,
+          "step": null
+        },
+        "participation_threshold": {
+          "kind": "float",
+          "low": 1.0,
+          "high": 1.5,
+          "step": null
+        },
+        "trail_atr": {
+          "kind": "float",
+          "low": 2.0,
+          "high": 2.8,
+          "step": null
+        },
+        "participation_width": {
+          "kind": "float",
+          "low": 0.05,
+          "high": 0.3,
+          "step": null
+        }
+      },
+      "control_account": "research/S019/experiments/EX044_20261110/others/hard_linear10_center_account.json",
+      "control_parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "name": "ramp_linear",
+      "fixed": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "ramp",
+        "confirm_bars": 2,
+        "participation_policy": "linear"
+      },
+      "space": {
+        "weak_fraction": {
+          "kind": "float",
+          "low": 0.2,
+          "high": 0.5,
+          "step": null
+        },
+        "quiet_fraction": {
+          "kind": "float",
+          "low": 0.35,
+          "high": 0.85,
+          "step": null
+        },
+        "participation_threshold": {
+          "kind": "float",
+          "low": 1.0,
+          "high": 1.5,
+          "step": null
+        },
+        "trail_atr": {
+          "kind": "float",
+          "low": 2.0,
+          "high": 2.8,
+          "step": null
+        },
+        "participation_width": {
+          "kind": "float",
+          "low": 0.05,
+          "high": 0.3,
+          "step": null
+        },
+        "exit_width": {
+          "kind": "float",
+          "low": 0.25,
+          "high": 1.0,
+          "step": null
+        }
+      },
+      "control_account": "research/S019/experiments/EX044_20261110/others/ramp_linear10_center_account.json",
+      "control_parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear",
+        "participation_width": 0.1
+      }
+    },
+    {
+      "name": "daily_close_hard",
+      "fixed": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "daily_close",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "hard",
+        "participation_width": 0.1
+      },
+      "space": {
+        "weak_fraction": {
+          "kind": "float",
+          "low": 0.2,
+          "high": 0.5,
+          "step": null
+        },
+        "quiet_fraction": {
+          "kind": "float",
+          "low": 0.35,
+          "high": 0.85,
+          "step": null
+        },
+        "participation_threshold": {
+          "kind": "float",
+          "low": 1.0,
+          "high": 1.5,
+          "step": null
+        },
+        "trail_atr": {
+          "kind": "float",
+          "low": 2.0,
+          "high": 2.8,
+          "step": null
+        }
+      },
+      "control_account": "research/S019/experiments/EX043_20261110/others/daily_close_center_account.json",
+      "control_parameters": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_threshold": 1.175,
+        "quiet_fraction": 0.645,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.42,
+        "treatment": "tilt",
+        "weak_fraction": 0.3,
+        "exit_policy": "daily_close",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "hard",
+        "participation_width": 0.1
+      },
+      "neutral_added_parameters": {
+        "participation_policy": "hard",
+        "participation_width": 0.1
+      }
+    }
+  ],
+  "state_schema": {
+    "account_fields": [],
+    "cycle_fields": [
+      {
+        "key": "anchor",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "allocation",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "exiting",
+        "value_type": "bool",
+        "nullable": false
+      },
+      {
+        "key": "high_water",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "entry_atr",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "risk_fraction",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "breach_count",
+        "value_type": "int",
+        "nullable": false
+      }
+    ]
+  },
+  "base_candidate": "C0355",
+  "parameter_schema": {
+    "exit_policy": {
+      "type": "string"
+    },
+    "exit_width": {
+      "type": "number"
+    },
+    "confirm_bars": {
+      "type": "integer"
+    },
+    "participation_policy": {
+      "type": "string"
+    },
+    "participation_width": {
+      "type": "number"
+    }
+  },
+  "candidate_start": 684,
+  "round_budget": {
+    "allocated_rounds": 6,
+    "round_index": 3,
+    "total_round": 7,
+    "remaining_after_completion": 3
+  },
+  "seed": 20261117,
+  "trial_budget": 24,
+  "startup_trials": 8,
+  "batch_size": 4
+}

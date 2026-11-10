@@ -1,0 +1,1987 @@
+{
+  "owner_experiment": "EX046_20261111",
+  "completed_experiments": [
+    "EX040_20261110",
+    "EX043_20261110",
+    "EX044_20261110",
+    "EX045_20261111",
+    "EX046_20261111"
+  ],
+  "completed_mechanism_experiments": [
+    "EX043_20261110",
+    "EX044_20261110",
+    "EX045_20261111",
+    "EX046_20261111"
+  ],
+  "stage_report": "research/S019/experiments/EX046_20261111/others/stage_report.md",
+  "conclusion": "阶段二四轮机制研究形成C0804主要发展原型、C0801平缓对照和C0720硬退出收益对照，保留其他精确原型与反例。原目标全部保持；新完整自检待检，C0355原ASSESSMENT/2失败保持。本次6轮额度用4轮，总10轮用8轮剩2轮，建议经用户批准进入阶段三后再使用剩余额度寻找仓位/宽度的达标参数区域。",
+  "stage": "STAGE_TWO",
+  "prototypes": [
+    {
+      "type": "PrototypeEntry",
+      "prototype_id": "C0355",
+      "identity": {
+        "type": "CandidateIdentityRef",
+        "key": {
+          "type": "CandidateKey",
+          "strategy_id": "S019",
+          "candidate_id": "C0355"
+        },
+        "content_sha256": "5bc24fba4873c5179ec70f40726bd94a504220180cae615786e4549d92b0eb8c"
+      },
+      "definition": {
+        "type": "ExperimentDefinitionRef",
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "93d3698da9e7d133c7669a883f60abeeffda2ac2f92ab6dc021c50ef945d4cf1.json",
+          "sha256": "93d3698da9e7d133c7669a883f60abeeffda2ac2f92ab6dc021c50ef945d4cf1",
+          "media_type": "application/json",
+          "name": "mechanism-close-00",
+          "schema": null,
+          "schema_version": null
+        },
+        "entrypoint": "strategy:step"
+      },
+      "hypothesis": "既有硬参与、硬ATR退出配置提供可复现的原六门中心，参数响应问题值得机制研究。",
+      "components": [
+        {
+          "type": "PrototypeComponentUse",
+          "component_id": "F_C0355",
+          "role": "精确历史收益与硬退出对照",
+          "rationale": "硬参与阈值与固定周期ATR退出共同决定当前权益目标仓位。"
+        }
+      ],
+      "evaluations": [
+        {
+          "type": "EvaluationEvidenceRef",
+          "evidence": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX040_20261110"
+            },
+            "evidence_id": "44d92a77eadeee74916491d9678b948e7bb5104b0a8c01808837e8603f6ae4ea.json",
+            "sha256": "44d92a77eadeee74916491d9678b948e7bb5104b0a8c01808837e8603f6ae4ea",
+            "media_type": "application/json",
+            "name": "trial021",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "evaluation_ids": [
+            "70274a4649aaa41037a7165a0d3f8d313e038800f61f52a8f1ada08b467c62f9"
+          ]
+        }
+      ],
+      "disposition": "INVESTIGATE",
+      "judgment": "中心NAR71.0588%、Calmar5.180354；EX041完整参数自检35/80通过、原验收失败保持。作为配置收益与敏感性基准。",
+      "limitations": [
+        "全部绩效来自2022-01-03至2026-10-30已反复使用的开发历史；2021仅用于预热。",
+        "阶段二机制研究；新原型的完整正式自检、费用压力及样本外验证仍待后续批准与执行。",
+        "原中心NAR≥55%、Calmar≥5及正式完整邻域通过率≥80%等目标保持；本轮ATR三档用于机制诊断。",
+        "ASSESSMENT/2原失败结论保持，EX041参数完整集35/80=43.75%；此次仅保留精确原型对照。"
+      ],
+      "next_step": "保留原身份供后续配置取舍比较，复核其已知ATR距离阈值与参与仓位交互。",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "e1ff59448fe9e89c2232bd86f751911b68d483e3766603d1f1ec5d45dd7aba41.py",
+          "sha256": "e1ff59448fe9e89c2232bd86f751911b68d483e3766603d1f1ec5d45dd7aba41",
+          "media_type": "text/x-python",
+          "name": "mechanism-close-03",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "f292b00bd359fb29a476af9b19de2e1f10531ad8e5895f47cb3168220013d36f.json",
+          "sha256": "f292b00bd359fb29a476af9b19de2e1f10531ad8e5895f47cb3168220013d36f",
+          "media_type": "application/json",
+          "name": "mechanism-close-02",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "938c061009b6c6acbb34cbfb1fcc60f337b71ffca9052ede87f91aa0ac85ada5.json",
+          "sha256": "938c061009b6c6acbb34cbfb1fcc60f337b71ffca9052ede87f91aa0ac85ada5",
+          "media_type": "application/json",
+          "name": "mechanism-close-01",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "missing_evaluation_reason": null,
+      "sources": [
+        {
+          "type": "PrototypeReference",
+          "delivery": {
+            "type": "DeliveryReference",
+            "batch": {
+              "type": "ResearchBatchRef",
+              "strategy_id": "S019"
+            },
+            "stage": "PROTOTYPES",
+            "revision": 2,
+            "content_sha256": "1a9973d809b8a9804fbbfda848c3c016e180fc3eb25d04cff93fd9f8597ed1f5"
+          },
+          "prototype_id": "C0080"
+        }
+      ]
+    },
+    {
+      "type": "PrototypeEntry",
+      "prototype_id": "C0783",
+      "identity": {
+        "type": "CandidateIdentityRef",
+        "key": {
+          "type": "CandidateKey",
+          "strategy_id": "S019",
+          "candidate_id": "C0783"
+        },
+        "content_sha256": "8ac0c17a61c64f0a753bc5a67189cb279f80c7cf37c16900e2975d69cec415ce"
+      },
+      "definition": {
+        "type": "ExperimentDefinitionRef",
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "9e93b44c27fb9951b6abb22814f12bf755b602129678270e7cf1c625e6fa36be.json",
+          "sha256": "9e93b44c27fb9951b6abb22814f12bf755b602129678270e7cf1c625e6fa36be",
+          "media_type": "application/json",
+          "name": "mechanism-close-04",
+          "schema": null,
+          "schema_version": null
+        },
+        "entrypoint": "strategy:step"
+      },
+      "hypothesis": "在原参数锚点采用线性参与与单向渐进减仓，能达到原中心Calmar≥5。",
+      "components": [
+        {
+          "type": "PrototypeComponentUse",
+          "component_id": "F_C0783",
+          "role": "原参数下单向渐进减仓负对照",
+          "rationale": "风险比例只减；参与函数保持线性，周期配置及5日持有上限保持。"
+        }
+      ],
+      "evaluations": [
+        {
+          "type": "EvaluationEvidenceRef",
+          "evidence": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "bb7d7fb4173cccf49728b8ab839db6dcdb8d06e4d3a5d1a49b5861d1a33184fd.json",
+            "sha256": "bb7d7fb4173cccf49728b8ab839db6dcdb8d06e4d3a5d1a49b5861d1a33184fd",
+            "media_type": "application/json",
+            "name": "original_ramp_center",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "evaluation_ids": [
+            "314b63efb5dd07c2c828c44eaa3d1856075437d5e04526742d50409306e70971"
+          ]
+        }
+      ],
+      "disposition": "INVESTIGATE",
+      "judgment": "NAR66.3175%、Calmar4.422833，中心Calmar缺口保留。原参数负对照用于识别机制效果随配置而变。",
+      "limitations": [
+        "全部绩效来自2022-01-03至2026-10-30已反复使用的开发历史；2021仅用于预热。",
+        "阶段二机制研究；新原型的完整正式自检、费用压力及样本外验证仍待后续批准与执行。",
+        "原中心NAR≥55%、Calmar≥5及正式完整邻域通过率≥80%等目标保持；本轮ATR三档用于机制诊断。",
+        "未来自检须绑定本条精确candidate identity，历史同类实现的检查结果各自留存。"
+      ],
+      "next_step": "保留作机制反例对照，不投入原参数邻近微调。",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "b7adc4eb3ee0567db72243e670d671665c806e2c4aaee46ea2734399f243411f.py",
+          "sha256": "b7adc4eb3ee0567db72243e670d671665c806e2c4aaee46ea2734399f243411f",
+          "media_type": "text/x-python",
+          "name": "mechanism-close-07",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1.json",
+          "sha256": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1",
+          "media_type": "application/json",
+          "name": "mechanism-close-06",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205.json",
+          "sha256": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205",
+          "media_type": "application/json",
+          "name": "mechanism-close-05",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "missing_evaluation_reason": null,
+      "sources": [
+        {
+          "type": "PrototypeReference",
+          "delivery": {
+            "type": "DeliveryReference",
+            "batch": {
+              "type": "ResearchBatchRef",
+              "strategy_id": "S019"
+            },
+            "stage": "PROTOTYPES",
+            "revision": 2,
+            "content_sha256": "1a9973d809b8a9804fbbfda848c3c016e180fc3eb25d04cff93fd9f8597ed1f5"
+          },
+          "prototype_id": "C0080"
+        }
+      ]
+    },
+    {
+      "type": "PrototypeEntry",
+      "prototype_id": "C0786",
+      "identity": {
+        "type": "CandidateIdentityRef",
+        "key": {
+          "type": "CandidateKey",
+          "strategy_id": "S019",
+          "candidate_id": "C0786"
+        },
+        "content_sha256": "cac3d169e2dc9e5ca1e0e2e7253d597f46ed8b6a74d7f21ec899e8c60525824f"
+      },
+      "definition": {
+        "type": "ExperimentDefinitionRef",
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "b144ae68a4aca35cbadc4e5b8dc02558f11e47d29f29208b99cfc142b3964c0a.json",
+          "sha256": "b144ae68a4aca35cbadc4e5b8dc02558f11e47d29f29208b99cfc142b3964c0a",
+          "media_type": "application/json",
+          "name": "mechanism-close-08",
+          "schema": null,
+          "schema_version": null
+        },
+        "entrypoint": "strategy:step"
+      },
+      "hypothesis": "原参数下价格修复后恢复敞口，可改善单向渐进减仓的完整账户风险调整表现。",
+      "components": [
+        {
+          "type": "PrototypeComponentUse",
+          "component_id": "F_C0786",
+          "role": "原参数下恢复敞口的完整账户反例",
+          "rationale": "允许风险因子回升，零仓位退出锁定及5日上限保持。"
+        }
+      ],
+      "evaluations": [
+        {
+          "type": "EvaluationEvidenceRef",
+          "evidence": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "42743989901c13aeb58c82dace610ba9dd607c605dc60ef2b0ed6a970900f03f.json",
+            "sha256": "42743989901c13aeb58c82dace610ba9dd607c605dc60ef2b0ed6a970900f03f",
+            "media_type": "application/json",
+            "name": "original_ramp_rebuild_center",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "evaluation_ids": [
+            "73b2cc9011b0a0857b99b8d44018923cc2b5bf6cdcda89b0eb4b71ddd1b0cdf3"
+          ]
+        }
+      ],
+      "disposition": "STOP",
+      "judgment": "NAR由66.3175%升至67.7503%，MDD由14.9944%升至16.0079%，Calmar由4.422833降至4.232296；ATR三档均未过原中心六门。停止发展该精确配置。",
+      "limitations": [
+        "全部绩效来自2022-01-03至2026-10-30已反复使用的开发历史；2021仅用于预热。",
+        "阶段二机制研究；新原型的完整正式自检、费用压力及样本外验证仍待后续批准与执行。",
+        "原中心NAR≥55%、Calmar≥5及正式完整邻域通过率≥80%等目标保持；本轮ATR三档用于机制诊断。",
+        "未来自检须绑定本条精确candidate identity，历史同类实现的检查结果各自留存。"
+      ],
+      "next_step": "保留负例证据，用于约束恢复敞口的机制解释。",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "b7adc4eb3ee0567db72243e670d671665c806e2c4aaee46ea2734399f243411f.py",
+          "sha256": "b7adc4eb3ee0567db72243e670d671665c806e2c4aaee46ea2734399f243411f",
+          "media_type": "text/x-python",
+          "name": "mechanism-close-07",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1.json",
+          "sha256": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1",
+          "media_type": "application/json",
+          "name": "mechanism-close-06",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205.json",
+          "sha256": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205",
+          "media_type": "application/json",
+          "name": "mechanism-close-05",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "missing_evaluation_reason": null,
+      "sources": [
+        {
+          "type": "PrototypeReference",
+          "delivery": {
+            "type": "DeliveryReference",
+            "batch": {
+              "type": "ResearchBatchRef",
+              "strategy_id": "S019"
+            },
+            "stage": "PROTOTYPES",
+            "revision": 2,
+            "content_sha256": "1a9973d809b8a9804fbbfda848c3c016e180fc3eb25d04cff93fd9f8597ed1f5"
+          },
+          "prototype_id": "C0080"
+        }
+      ]
+    },
+    {
+      "type": "PrototypeEntry",
+      "prototype_id": "C0754",
+      "identity": {
+        "type": "CandidateIdentityRef",
+        "key": {
+          "type": "CandidateKey",
+          "strategy_id": "S019",
+          "candidate_id": "C0754"
+        },
+        "content_sha256": "7948de6d0325ea9902eacc12d8dd3b43f032c24e7c01bf904cfaee02e70a968d"
+      },
+      "definition": {
+        "type": "ExperimentDefinitionRef",
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "af3075a9c7c0e0d83066e88af6595b733efd0b2d138039ed009b509948016e52.json",
+          "sha256": "af3075a9c7c0e0d83066e88af6595b733efd0b2d138039ed009b509948016e52",
+          "media_type": "application/json",
+          "name": "mechanism-close-09",
+          "schema": null,
+          "schema_version": null
+        },
+        "entrypoint": "strategy:step"
+      },
+      "hypothesis": "在既定六维域、24次提议内，联合适配渐进退出及线性参与配置可获得原六门中心。",
+      "components": [
+        {
+          "type": "PrototypeComponentUse",
+          "component_id": "F_C0754",
+          "role": "渐进退出与线性参与的联合适配原型",
+          "rationale": "仓位、参与阈值/宽度与ATR阈值/退出宽度共同变化。"
+        }
+      ],
+      "evaluations": [
+        {
+          "type": "EvaluationEvidenceRef",
+          "evidence": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX045_20261111"
+            },
+            "evidence_id": "63b9247673be6952718be9ea36602da54990c2fe3942f579ce0ba3427fcd1605.json",
+            "sha256": "63b9247673be6952718be9ea36602da54990c2fe3942f579ce0ba3427fcd1605",
+            "media_type": "application/json",
+            "name": "ramp_linear_022",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "evaluation_ids": [
+            "c52c447042ce889c4a043e6c12153386650cc9e0d09e06c40e036f1f3e07620a"
+          ]
+        }
+      ],
+      "disposition": "INVESTIGATE",
+      "judgment": "中心NAR64.4138%、Calmar5.007010；EX046该锚点渐进退出低/高ATR档Calmar4.987220/4.745593，配置取舍仍需研究。",
+      "limitations": [
+        "全部绩效来自2022-01-03至2026-10-30已反复使用的开发历史；2021仅用于预热。",
+        "阶段二机制研究；新原型的完整正式自检、费用压力及样本外验证仍待后续批准与执行。",
+        "原中心NAR≥55%、Calmar≥5及正式完整邻域通过率≥80%等目标保持；本轮ATR三档用于机制诊断。",
+        "未来自检须绑定本条精确candidate identity，历史同类实现的检查结果各自留存。"
+      ],
+      "next_step": "保留为不同仓位和连续宽度的适配证据，优先级低于C0720锚点。",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "c30230b475f5583352165f474e6b289bf7100dab3e6333bf8edb42b6c5d438d7.py",
+          "sha256": "c30230b475f5583352165f474e6b289bf7100dab3e6333bf8edb42b6c5d438d7",
+          "media_type": "text/x-python",
+          "name": "mechanism-close-12",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4.json",
+          "sha256": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4",
+          "media_type": "application/json",
+          "name": "mechanism-close-11",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50.json",
+          "sha256": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50",
+          "media_type": "application/json",
+          "name": "mechanism-close-10",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "missing_evaluation_reason": null,
+      "sources": [
+        {
+          "type": "PrototypeReference",
+          "delivery": {
+            "type": "DeliveryReference",
+            "batch": {
+              "type": "ResearchBatchRef",
+              "strategy_id": "S019"
+            },
+            "stage": "PROTOTYPES",
+            "revision": 2,
+            "content_sha256": "1a9973d809b8a9804fbbfda848c3c016e180fc3eb25d04cff93fd9f8597ed1f5"
+          },
+          "prototype_id": "C0080"
+        }
+      ]
+    },
+    {
+      "type": "PrototypeEntry",
+      "prototype_id": "C0720",
+      "identity": {
+        "type": "CandidateIdentityRef",
+        "key": {
+          "type": "CandidateKey",
+          "strategy_id": "S019",
+          "candidate_id": "C0720"
+        },
+        "content_sha256": "e9fa0d93ca50fde72c0054254b2d0a4cb185c550eed00779aca80fddec027f97"
+      },
+      "definition": {
+        "type": "ExperimentDefinitionRef",
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "6f255cf73e393d9962e840437fa3c28acec39c6061fcb1f978dcde8a6d97d7e4.json",
+          "sha256": "6f255cf73e393d9962e840437fa3c28acec39c6061fcb1f978dcde8a6d97d7e4",
+          "media_type": "application/json",
+          "name": "mechanism-close-13",
+          "schema": null,
+          "schema_version": null
+        },
+        "entrypoint": "strategy:step"
+      },
+      "hypothesis": "线性参与及联合仓位配置可在保留硬退出时实现原六门中心，并提供较高Calmar的比较基准。",
+      "components": [
+        {
+          "type": "PrototypeComponentUse",
+          "component_id": "F_C0720",
+          "role": "硬退出的收益与风险对照",
+          "rationale": "连续参与调节入场配置，硬ATR退出保留阈值触发。"
+        }
+      ],
+      "evaluations": [
+        {
+          "type": "EvaluationEvidenceRef",
+          "evidence": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX045_20261111"
+            },
+            "evidence_id": "8ee6b44a319582c1c45ea97495e62b8dbb506493b84e5132aeac57f126d59e9d.json",
+            "sha256": "8ee6b44a319582c1c45ea97495e62b8dbb506493b84e5132aeac57f126d59e9d",
+            "media_type": "application/json",
+            "name": "hard_linear_012",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "evaluation_ids": [
+            "60585d9adf4045f939e6d9374216209d2d8aea512347305d1e81f10af15db020"
+          ]
+        }
+      ],
+      "disposition": "DEVELOP",
+      "judgment": "中心NAR67.2761%、MDD12.2465%、Calmar5.493510；所检ATR低档Calmar4.605738，高于邻点经济门4.5，低于原中心门5。保留收益对照并研究阈值响应。",
+      "limitations": [
+        "全部绩效来自2022-01-03至2026-10-30已反复使用的开发历史；2021仅用于预热。",
+        "阶段二机制研究；新原型的完整正式自检、费用压力及样本外验证仍待后续批准与执行。",
+        "原中心NAR≥55%、Calmar≥5及正式完整邻域通过率≥80%等目标保持；本轮ATR三档用于机制诊断。",
+        "未来自检须绑定本条精确candidate identity，历史同类实现的检查结果各自留存。"
+      ],
+      "next_step": "经批准进入阶段三后，与两种渐进退出同预算寻找达标参数区域。",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "c30230b475f5583352165f474e6b289bf7100dab3e6333bf8edb42b6c5d438d7.py",
+          "sha256": "c30230b475f5583352165f474e6b289bf7100dab3e6333bf8edb42b6c5d438d7",
+          "media_type": "text/x-python",
+          "name": "mechanism-close-12",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4.json",
+          "sha256": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4",
+          "media_type": "application/json",
+          "name": "mechanism-close-11",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50.json",
+          "sha256": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50",
+          "media_type": "application/json",
+          "name": "mechanism-close-10",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "missing_evaluation_reason": null,
+      "sources": [
+        {
+          "type": "PrototypeReference",
+          "delivery": {
+            "type": "DeliveryReference",
+            "batch": {
+              "type": "ResearchBatchRef",
+              "strategy_id": "S019"
+            },
+            "stage": "PROTOTYPES",
+            "revision": 2,
+            "content_sha256": "1a9973d809b8a9804fbbfda848c3c016e180fc3eb25d04cff93fd9f8597ed1f5"
+          },
+          "prototype_id": "C0080"
+        }
+      ]
+    },
+    {
+      "type": "PrototypeEntry",
+      "prototype_id": "C0801",
+      "identity": {
+        "type": "CandidateIdentityRef",
+        "key": {
+          "type": "CandidateKey",
+          "strategy_id": "S019",
+          "candidate_id": "C0801"
+        },
+        "content_sha256": "33288470b305a6948c69c3bf10ef19d6ee75e8dde0b1a7bcee30187ed7fce9a8"
+      },
+      "definition": {
+        "type": "ExperimentDefinitionRef",
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "c8e8d04e087729bd391377d93ac441080842ebd50929194e6031594323d9502b.json",
+          "sha256": "c8e8d04e087729bd391377d93ac441080842ebd50929194e6031594323d9502b",
+          "media_type": "application/json",
+          "name": "mechanism-close-14",
+          "schema": null,
+          "schema_version": null
+        },
+        "entrypoint": "strategy:step"
+      },
+      "hypothesis": "在C0720完整参数锚点，仅改为单向渐进退出可收窄所检ATR三档Calmar跨度，并保留三档原六门。",
+      "components": [
+        {
+          "type": "PrototypeComponentUse",
+          "component_id": "F_C0801",
+          "role": "ATR三档Calmar反应较平缓的结构对照",
+          "rationale": "入场配置及参与函数保持；退出风险比例只能下降。"
+        }
+      ],
+      "evaluations": [
+        {
+          "type": "EvaluationEvidenceRef",
+          "evidence": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "9be22fa345e84defd912af7f8107746c0605031baaecffe23a3ea66b31851ae6.json",
+            "sha256": "9be22fa345e84defd912af7f8107746c0605031baaecffe23a3ea66b31851ae6",
+            "media_type": "application/json",
+            "name": "qualified_linear_ramp_center",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "evaluation_ids": [
+            "03a7825da0bcbbf81357b522dc78f05ca1501b694d3ab151ddaed4ba3b2c4ab2"
+          ]
+        }
+      ],
+      "disposition": "DEVELOP",
+      "judgment": "中心NAR64.7443%、Calmar5.222378；三档全部通过原中心六门，Calmar跨度0.103196。保留较低收益与较平缓阈值反应的结构对照。",
+      "limitations": [
+        "全部绩效来自2022-01-03至2026-10-30已反复使用的开发历史；2021仅用于预热。",
+        "阶段二机制研究；新原型的完整正式自检、费用压力及样本外验证仍待后续批准与执行。",
+        "原中心NAR≥55%、Calmar≥5及正式完整邻域通过率≥80%等目标保持；本轮ATR三档用于机制诊断。",
+        "未来自检须绑定本条精确candidate identity，历史同类实现的检查结果各自留存。"
+      ],
+      "next_step": "与C0804共同检验仓位和连续宽度参数区域，随后再执行完整自检。",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "b7adc4eb3ee0567db72243e670d671665c806e2c4aaee46ea2734399f243411f.py",
+          "sha256": "b7adc4eb3ee0567db72243e670d671665c806e2c4aaee46ea2734399f243411f",
+          "media_type": "text/x-python",
+          "name": "mechanism-close-07",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1.json",
+          "sha256": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1",
+          "media_type": "application/json",
+          "name": "mechanism-close-06",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205.json",
+          "sha256": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205",
+          "media_type": "application/json",
+          "name": "mechanism-close-05",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "missing_evaluation_reason": null,
+      "sources": [
+        {
+          "type": "PrototypeReference",
+          "delivery": {
+            "type": "DeliveryReference",
+            "batch": {
+              "type": "ResearchBatchRef",
+              "strategy_id": "S019"
+            },
+            "stage": "PROTOTYPES",
+            "revision": 2,
+            "content_sha256": "1a9973d809b8a9804fbbfda848c3c016e180fc3eb25d04cff93fd9f8597ed1f5"
+          },
+          "prototype_id": "C0080"
+        }
+      ]
+    },
+    {
+      "type": "PrototypeEntry",
+      "prototype_id": "C0804",
+      "identity": {
+        "type": "CandidateIdentityRef",
+        "key": {
+          "type": "CandidateKey",
+          "strategy_id": "S019",
+          "candidate_id": "C0804"
+        },
+        "content_sha256": "b82511658dd2c095f9cb0a569e657583813054fb3a8f71322a0b6ed638f0dd7e"
+      },
+      "definition": {
+        "type": "ExperimentDefinitionRef",
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "ff7f43099503c181a18226b59dbbd338ed114c1a5881079f162dc9d8be64a9be.json",
+          "sha256": "ff7f43099503c181a18226b59dbbd338ed114c1a5881079f162dc9d8be64a9be",
+          "media_type": "application/json",
+          "name": "mechanism-close-15",
+          "schema": null,
+          "schema_version": null
+        },
+        "entrypoint": "strategy:step"
+      },
+      "hypothesis": "在C0720参数锚点，风险下降后恢复敞口可补回单向减仓的收益，并保持预定ATR三档原六门达标。",
+      "components": [
+        {
+          "type": "PrototypeComponentUse",
+          "component_id": "F_C0804",
+          "role": "主要发展原型：价格修复后恢复部分敞口",
+          "rationale": "连续参与确定入场配置，风险区间内可恢复敞口；全零退出锁定及5日上限保持。"
+        }
+      ],
+      "evaluations": [
+        {
+          "type": "EvaluationEvidenceRef",
+          "evidence": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "f52d3a84d6b3c46ffd24a8b106a363255c50a696237c03c753a5bb380fe28bdf.json",
+            "sha256": "f52d3a84d6b3c46ffd24a8b106a363255c50a696237c03c753a5bb380fe28bdf",
+            "media_type": "application/json",
+            "name": "qualified_linear_ramp_rebuild_center",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "evaluation_ids": [
+            "a0255ad4cb2f39aff6d30d028302715ca8fcc1b8ca5f1a0ee5d5a10fedbea522"
+          ]
+        }
+      ],
+      "disposition": "DEVELOP",
+      "judgment": "中心NAR66.3048%、MDD12.6141%、Calmar5.256417；三档NAR66.0971%—66.3048%，Calmar5.098477—5.412563。相对C0801补回收益，同时增加部分MDD及费用；作为主要发展原型。",
+      "limitations": [
+        "全部绩效来自2022-01-03至2026-10-30已反复使用的开发历史；2021仅用于预热。",
+        "阶段二机制研究；新原型的完整正式自检、费用压力及样本外验证仍待后续批准与执行。",
+        "原中心NAR≥55%、Calmar≥5及正式完整邻域通过率≥80%等目标保持；本轮ATR三档用于机制诊断。",
+        "未来自检须绑定本条精确candidate identity，历史同类实现的检查结果各自留存。"
+      ],
+      "next_step": "经用户批准阶段三后，以仓位及连续宽度寻找原目标达标区域，避免只追求单一中心最优。",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "b7adc4eb3ee0567db72243e670d671665c806e2c4aaee46ea2734399f243411f.py",
+          "sha256": "b7adc4eb3ee0567db72243e670d671665c806e2c4aaee46ea2734399f243411f",
+          "media_type": "text/x-python",
+          "name": "mechanism-close-07",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1.json",
+          "sha256": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1",
+          "media_type": "application/json",
+          "name": "mechanism-close-06",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205.json",
+          "sha256": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205",
+          "media_type": "application/json",
+          "name": "mechanism-close-05",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "missing_evaluation_reason": null,
+      "sources": [
+        {
+          "type": "PrototypeReference",
+          "delivery": {
+            "type": "DeliveryReference",
+            "batch": {
+              "type": "ResearchBatchRef",
+              "strategy_id": "S019"
+            },
+            "stage": "PROTOTYPES",
+            "revision": 2,
+            "content_sha256": "1a9973d809b8a9804fbbfda848c3c016e180fc3eb25d04cff93fd9f8597ed1f5"
+          },
+          "prototype_id": "C0080"
+        }
+      ]
+    },
+    {
+      "type": "PrototypeEntry",
+      "prototype_id": "C0775",
+      "identity": {
+        "type": "CandidateIdentityRef",
+        "key": {
+          "type": "CandidateKey",
+          "strategy_id": "S019",
+          "candidate_id": "C0775"
+        },
+        "content_sha256": "e9f357d39728041b4a0a0488097724a2ace1ea5616766e9146b755dd08fed774"
+      },
+      "definition": {
+        "type": "ExperimentDefinitionRef",
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "7fc0cc91c01b50127d37cd39c3a65443dc8674b586d105f4aec7d09cefa0fdb4.json",
+          "sha256": "7fc0cc91c01b50127d37cd39c3a65443dc8674b586d105f4aec7d09cefa0fdb4",
+          "media_type": "application/json",
+          "name": "mechanism-close-16",
+          "schema": null,
+          "schema_version": null
+        },
+        "entrypoint": "strategy:step"
+      },
+      "hypothesis": "在既定四维域与24次等预算提议内，日收盘退出方向能够找到原六门中心。",
+      "components": [
+        {
+          "type": "PrototypeComponentUse",
+          "component_id": "F_C0775",
+          "role": "有限预算内未达标的日收盘退出方向",
+          "rationale": "以已完成日收盘信息，在下一交易日首个执行槽判断退出，硬参与表达及完整账户合同保持。"
+        }
+      ],
+      "evaluations": [
+        {
+          "type": "EvaluationEvidenceRef",
+          "evidence": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX045_20261111"
+            },
+            "evidence_id": "7fc6e8ff47d7d61721ee385ac23eff5adabe93a0c2987f37086ff0b961de7cf4.json",
+            "sha256": "7fc6e8ff47d7d61721ee385ac23eff5adabe93a0c2987f37086ff0b961de7cf4",
+            "media_type": "application/json",
+            "name": "daily_close_hard_019",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "evaluation_ids": [
+            "38f8c8b36d5acf19b0239ab26b9d8016559f7958e8bfcfcb89dcd90368832707"
+          ]
+        }
+      ],
+      "disposition": "STOP",
+      "judgment": "本族最高Calmar为4.801017、NAR62.9706%，24项均未过原中心六门。本次有限域及预算未支持继续发展，保留停止证据。",
+      "limitations": [
+        "全部绩效来自2022-01-03至2026-10-30已反复使用的开发历史；2021仅用于预热。",
+        "阶段二机制研究；新原型的完整正式自检、费用压力及样本外验证仍待后续批准与执行。",
+        "原中心NAR≥55%、Calmar≥5及正式完整邻域通过率≥80%等目标保持；本轮ATR三档用于机制诊断。",
+        "未来自检须绑定本条精确candidate identity，历史同类实现的检查结果各自留存。"
+      ],
+      "next_step": "停止本轮方向；将来有新机制依据再重新定义研究问题与预算。",
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "c30230b475f5583352165f474e6b289bf7100dab3e6333bf8edb42b6c5d438d7.py",
+          "sha256": "c30230b475f5583352165f474e6b289bf7100dab3e6333bf8edb42b6c5d438d7",
+          "media_type": "text/x-python",
+          "name": "mechanism-close-12",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4.json",
+          "sha256": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4",
+          "media_type": "application/json",
+          "name": "mechanism-close-11",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50.json",
+          "sha256": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50",
+          "media_type": "application/json",
+          "name": "mechanism-close-10",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "missing_evaluation_reason": null,
+      "sources": [
+        {
+          "type": "PrototypeReference",
+          "delivery": {
+            "type": "DeliveryReference",
+            "batch": {
+              "type": "ResearchBatchRef",
+              "strategy_id": "S019"
+            },
+            "stage": "PROTOTYPES",
+            "revision": 2,
+            "content_sha256": "1a9973d809b8a9804fbbfda848c3c016e180fc3eb25d04cff93fd9f8597ed1f5"
+          },
+          "prototype_id": "C0080"
+        }
+      ]
+    }
+  ],
+  "components": [
+    {
+      "type": "ComponentEntry",
+      "component_id": "F_C0355",
+      "definition": {
+        "type": "ExperimentDefinitionRef",
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "93d3698da9e7d133c7669a883f60abeeffda2ac2f92ab6dc021c50ef945d4cf1.json",
+          "sha256": "93d3698da9e7d133c7669a883f60abeeffda2ac2f92ab6dc021c50ef945d4cf1",
+          "media_type": "application/json",
+          "name": "mechanism-close-00",
+          "schema": null,
+          "schema_version": null
+        },
+        "entrypoint": "strategy:step"
+      },
+      "role": "精确历史收益与硬退出对照",
+      "label": "既有硬参与、硬ATR退出配置提供可复现的原六门中心，参数响应问题值得机制研究。",
+      "horizon": "30分钟决定、5日持有上限",
+      "control": "保留EX040原账户，并关联ASSESSMENT/2及EX041完整自检失败。",
+      "availability": "只使用完成行情及确认持仓状态",
+      "price_basis": "HFQ整数单位、当前权益目标仓位与日末MDD",
+      "applicability": "MU已见2022-01-03至2026-10-30",
+      "judgment": "中心NAR71.0588%、Calmar5.180354；EX041完整参数自检35/80通过、原验收失败保持。作为配置收益与敏感性基准。",
+      "tests": [
+        {
+          "type": "ComponentTestResult",
+          "test_id": "mechanism_C0355",
+          "experiment_id": "EX040_20261110",
+          "protocol": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "938c061009b6c6acbb34cbfb1fcc60f337b71ffca9052ede87f91aa0ac85ada5.json",
+            "sha256": "938c061009b6c6acbb34cbfb1fcc60f337b71ffca9052ede87f91aa0ac85ada5",
+            "media_type": "application/json",
+            "name": "mechanism-close-01",
+            "schema": null,
+            "schema_version": null
+          },
+          "status": "SUPPORTED",
+          "explanation": "中心NAR71.0588%、Calmar5.180354；EX041完整参数自检35/80通过、原验收失败保持。作为配置收益与敏感性基准。",
+          "evidence": [
+            {
+              "type": "EvidenceRef",
+              "experiment": {
+                "type": "ExperimentRef",
+                "strategy_id": "S019",
+                "experiment_id": "EX046_20261111"
+              },
+              "evidence_id": "f292b00bd359fb29a476af9b19de2e1f10531ad8e5895f47cb3168220013d36f.json",
+              "sha256": "f292b00bd359fb29a476af9b19de2e1f10531ad8e5895f47cb3168220013d36f",
+              "media_type": "application/json",
+              "name": "mechanism-close-02",
+              "schema": null,
+              "schema_version": null
+            }
+          ],
+          "fact_ids": []
+        }
+      ]
+    },
+    {
+      "type": "ComponentEntry",
+      "component_id": "F_C0783",
+      "definition": {
+        "type": "ExperimentDefinitionRef",
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "9e93b44c27fb9951b6abb22814f12bf755b602129678270e7cf1c625e6fa36be.json",
+          "sha256": "9e93b44c27fb9951b6abb22814f12bf755b602129678270e7cf1c625e6fa36be",
+          "media_type": "application/json",
+          "name": "mechanism-close-04",
+          "schema": null,
+          "schema_version": null
+        },
+        "entrypoint": "strategy:step"
+      },
+      "role": "原参数下单向渐进减仓负对照",
+      "label": "在原参数锚点采用线性参与与单向渐进减仓，能达到原中心Calmar≥5。",
+      "horizon": "30分钟决定、5日持有上限",
+      "control": "与EX044 C0678经济路径精确一致；EX046同源码的C0786仅更改恢复规则。",
+      "availability": "只使用完成行情及确认持仓状态",
+      "price_basis": "HFQ整数单位、当前权益目标仓位与日末MDD",
+      "applicability": "MU已见2022-01-03至2026-10-30",
+      "judgment": "NAR66.3175%、Calmar4.422833，中心Calmar缺口保留。原参数负对照用于识别机制效果随配置而变。",
+      "tests": [
+        {
+          "type": "ComponentTestResult",
+          "test_id": "mechanism_C0783",
+          "experiment_id": "EX046_20261111",
+          "protocol": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205.json",
+            "sha256": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205",
+            "media_type": "application/json",
+            "name": "mechanism-close-05",
+            "schema": null,
+            "schema_version": null
+          },
+          "status": "INEFFECTIVE",
+          "explanation": "NAR66.3175%、Calmar4.422833，中心Calmar缺口保留。原参数负对照用于识别机制效果随配置而变。",
+          "evidence": [
+            {
+              "type": "EvidenceRef",
+              "experiment": {
+                "type": "ExperimentRef",
+                "strategy_id": "S019",
+                "experiment_id": "EX046_20261111"
+              },
+              "evidence_id": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1.json",
+              "sha256": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1",
+              "media_type": "application/json",
+              "name": "mechanism-close-06",
+              "schema": null,
+              "schema_version": null
+            }
+          ],
+          "fact_ids": []
+        }
+      ]
+    },
+    {
+      "type": "ComponentEntry",
+      "component_id": "F_C0786",
+      "definition": {
+        "type": "ExperimentDefinitionRef",
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "b144ae68a4aca35cbadc4e5b8dc02558f11e47d29f29208b99cfc142b3964c0a.json",
+          "sha256": "b144ae68a4aca35cbadc4e5b8dc02558f11e47d29f29208b99cfc142b3964c0a",
+          "media_type": "application/json",
+          "name": "mechanism-close-08",
+          "schema": null,
+          "schema_version": null
+        },
+        "entrypoint": "strategy:step"
+      },
+      "role": "原参数下恢复敞口的完整账户反例",
+      "label": "原参数下价格修复后恢复敞口，可改善单向渐进减仓的完整账户风险调整表现。",
+      "horizon": "30分钟决定、5日持有上限",
+      "control": "同一EX046源码、全部参数固定，C0786相对C0783仅exit_policy由ramp变为ramp_rebuild。",
+      "availability": "只使用完成行情及确认持仓状态",
+      "price_basis": "HFQ整数单位、当前权益目标仓位与日末MDD",
+      "applicability": "MU已见2022-01-03至2026-10-30",
+      "judgment": "NAR由66.3175%升至67.7503%，MDD由14.9944%升至16.0079%，Calmar由4.422833降至4.232296；ATR三档均未过原中心六门。停止发展该精确配置。",
+      "tests": [
+        {
+          "type": "ComponentTestResult",
+          "test_id": "mechanism_C0786",
+          "experiment_id": "EX046_20261111",
+          "protocol": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205.json",
+            "sha256": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205",
+            "media_type": "application/json",
+            "name": "mechanism-close-05",
+            "schema": null,
+            "schema_version": null
+          },
+          "status": "INEFFECTIVE",
+          "explanation": "NAR由66.3175%升至67.7503%，MDD由14.9944%升至16.0079%，Calmar由4.422833降至4.232296；ATR三档均未过原中心六门。停止发展该精确配置。",
+          "evidence": [
+            {
+              "type": "EvidenceRef",
+              "experiment": {
+                "type": "ExperimentRef",
+                "strategy_id": "S019",
+                "experiment_id": "EX046_20261111"
+              },
+              "evidence_id": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1.json",
+              "sha256": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1",
+              "media_type": "application/json",
+              "name": "mechanism-close-06",
+              "schema": null,
+              "schema_version": null
+            }
+          ],
+          "fact_ids": []
+        }
+      ]
+    },
+    {
+      "type": "ComponentEntry",
+      "component_id": "F_C0754",
+      "definition": {
+        "type": "ExperimentDefinitionRef",
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "af3075a9c7c0e0d83066e88af6595b733efd0b2d138039ed009b509948016e52.json",
+          "sha256": "af3075a9c7c0e0d83066e88af6595b733efd0b2d138039ed009b509948016e52",
+          "media_type": "application/json",
+          "name": "mechanism-close-09",
+          "schema": null,
+          "schema_version": null
+        },
+        "entrypoint": "strategy:step"
+      },
+      "role": "渐进退出与线性参与的联合适配原型",
+      "label": "在既定六维域、24次提议内，联合适配渐进退出及线性参与配置可获得原六门中心。",
+      "horizon": "30分钟决定、5日持有上限",
+      "control": "相对C0783为多参数完整配置比较；C0792与C0754精确经济parity将其接入EX046同源码对照。",
+      "availability": "只使用完成行情及确认持仓状态",
+      "price_basis": "HFQ整数单位、当前权益目标仓位与日末MDD",
+      "applicability": "MU已见2022-01-03至2026-10-30",
+      "judgment": "中心NAR64.4138%、Calmar5.007010；EX046该锚点渐进退出低/高ATR档Calmar4.987220/4.745593，配置取舍仍需研究。",
+      "tests": [
+        {
+          "type": "ComponentTestResult",
+          "test_id": "mechanism_C0754",
+          "experiment_id": "EX045_20261111",
+          "protocol": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50.json",
+            "sha256": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50",
+            "media_type": "application/json",
+            "name": "mechanism-close-10",
+            "schema": null,
+            "schema_version": null
+          },
+          "status": "SUPPORTED",
+          "explanation": "中心NAR64.4138%、Calmar5.007010；EX046该锚点渐进退出低/高ATR档Calmar4.987220/4.745593，配置取舍仍需研究。",
+          "evidence": [
+            {
+              "type": "EvidenceRef",
+              "experiment": {
+                "type": "ExperimentRef",
+                "strategy_id": "S019",
+                "experiment_id": "EX046_20261111"
+              },
+              "evidence_id": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4.json",
+              "sha256": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4",
+              "media_type": "application/json",
+              "name": "mechanism-close-11",
+              "schema": null,
+              "schema_version": null
+            }
+          ],
+          "fact_ids": []
+        }
+      ]
+    },
+    {
+      "type": "ComponentEntry",
+      "component_id": "F_C0720",
+      "definition": {
+        "type": "ExperimentDefinitionRef",
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "6f255cf73e393d9962e840437fa3c28acec39c6061fcb1f978dcde8a6d97d7e4.json",
+          "sha256": "6f255cf73e393d9962e840437fa3c28acec39c6061fcb1f978dcde8a6d97d7e4",
+          "media_type": "application/json",
+          "name": "mechanism-close-13",
+          "schema": null,
+          "schema_version": null
+        },
+        "entrypoint": "strategy:step"
+      },
+      "role": "硬退出的收益与风险对照",
+      "label": "线性参与及联合仓位配置可在保留硬退出时实现原六门中心，并提供较高Calmar的比较基准。",
+      "horizon": "30分钟决定、5日持有上限",
+      "control": "与C0355为多参数及参与表达的完整配置取舍；EX046 C0798与C0720经济parity精确。",
+      "availability": "只使用完成行情及确认持仓状态",
+      "price_basis": "HFQ整数单位、当前权益目标仓位与日末MDD",
+      "applicability": "MU已见2022-01-03至2026-10-30",
+      "judgment": "中心NAR67.2761%、MDD12.2465%、Calmar5.493510；所检ATR低档Calmar4.605738，高于邻点经济门4.5，低于原中心门5。保留收益对照并研究阈值响应。",
+      "tests": [
+        {
+          "type": "ComponentTestResult",
+          "test_id": "mechanism_C0720",
+          "experiment_id": "EX045_20261111",
+          "protocol": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50.json",
+            "sha256": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50",
+            "media_type": "application/json",
+            "name": "mechanism-close-10",
+            "schema": null,
+            "schema_version": null
+          },
+          "status": "SUPPORTED",
+          "explanation": "中心NAR67.2761%、MDD12.2465%、Calmar5.493510；所检ATR低档Calmar4.605738，高于邻点经济门4.5，低于原中心门5。保留收益对照并研究阈值响应。",
+          "evidence": [
+            {
+              "type": "EvidenceRef",
+              "experiment": {
+                "type": "ExperimentRef",
+                "strategy_id": "S019",
+                "experiment_id": "EX046_20261111"
+              },
+              "evidence_id": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4.json",
+              "sha256": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4",
+              "media_type": "application/json",
+              "name": "mechanism-close-11",
+              "schema": null,
+              "schema_version": null
+            }
+          ],
+          "fact_ids": []
+        }
+      ]
+    },
+    {
+      "type": "ComponentEntry",
+      "component_id": "F_C0801",
+      "definition": {
+        "type": "ExperimentDefinitionRef",
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "c8e8d04e087729bd391377d93ac441080842ebd50929194e6031594323d9502b.json",
+          "sha256": "c8e8d04e087729bd391377d93ac441080842ebd50929194e6031594323d9502b",
+          "media_type": "application/json",
+          "name": "mechanism-close-14",
+          "schema": null,
+          "schema_version": null
+        },
+        "entrypoint": "strategy:step"
+      },
+      "role": "ATR三档Calmar反应较平缓的结构对照",
+      "label": "在C0720完整参数锚点，仅改为单向渐进退出可收窄所检ATR三档Calmar跨度，并保留三档原六门。",
+      "horizon": "30分钟决定、5日持有上限",
+      "control": "以同源码C0798为硬退出控制，再通过C0798↔C0720经济parity连接历史原型。",
+      "availability": "只使用完成行情及确认持仓状态",
+      "price_basis": "HFQ整数单位、当前权益目标仓位与日末MDD",
+      "applicability": "MU已见2022-01-03至2026-10-30",
+      "judgment": "中心NAR64.7443%、Calmar5.222378；三档全部通过原中心六门，Calmar跨度0.103196。保留较低收益与较平缓阈值反应的结构对照。",
+      "tests": [
+        {
+          "type": "ComponentTestResult",
+          "test_id": "mechanism_C0801",
+          "experiment_id": "EX046_20261111",
+          "protocol": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205.json",
+            "sha256": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205",
+            "media_type": "application/json",
+            "name": "mechanism-close-05",
+            "schema": null,
+            "schema_version": null
+          },
+          "status": "SUPPORTED",
+          "explanation": "中心NAR64.7443%、Calmar5.222378；三档全部通过原中心六门，Calmar跨度0.103196。保留较低收益与较平缓阈值反应的结构对照。",
+          "evidence": [
+            {
+              "type": "EvidenceRef",
+              "experiment": {
+                "type": "ExperimentRef",
+                "strategy_id": "S019",
+                "experiment_id": "EX046_20261111"
+              },
+              "evidence_id": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1.json",
+              "sha256": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1",
+              "media_type": "application/json",
+              "name": "mechanism-close-06",
+              "schema": null,
+              "schema_version": null
+            }
+          ],
+          "fact_ids": []
+        }
+      ]
+    },
+    {
+      "type": "ComponentEntry",
+      "component_id": "F_C0804",
+      "definition": {
+        "type": "ExperimentDefinitionRef",
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "ff7f43099503c181a18226b59dbbd338ed114c1a5881079f162dc9d8be64a9be.json",
+          "sha256": "ff7f43099503c181a18226b59dbbd338ed114c1a5881079f162dc9d8be64a9be",
+          "media_type": "application/json",
+          "name": "mechanism-close-15",
+          "schema": null,
+          "schema_version": null
+        },
+        "entrypoint": "strategy:step"
+      },
+      "role": "主要发展原型：价格修复后恢复部分敞口",
+      "label": "在C0720参数锚点，风险下降后恢复敞口可补回单向减仓的收益，并保持预定ATR三档原六门达标。",
+      "horizon": "30分钟决定、5日持有上限",
+      "control": "与C0801为同源码、同参、仅风险比例恢复规则改变；与C0720由C0798精确parity连接同源码机制对照。",
+      "availability": "只使用完成行情及确认持仓状态",
+      "price_basis": "HFQ整数单位、当前权益目标仓位与日末MDD",
+      "applicability": "MU已见2022-01-03至2026-10-30",
+      "judgment": "中心NAR66.3048%、MDD12.6141%、Calmar5.256417；三档NAR66.0971%—66.3048%，Calmar5.098477—5.412563。相对C0801补回收益，同时增加部分MDD及费用；作为主要发展原型。",
+      "tests": [
+        {
+          "type": "ComponentTestResult",
+          "test_id": "mechanism_C0804",
+          "experiment_id": "EX046_20261111",
+          "protocol": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205.json",
+            "sha256": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205",
+            "media_type": "application/json",
+            "name": "mechanism-close-05",
+            "schema": null,
+            "schema_version": null
+          },
+          "status": "SUPPORTED",
+          "explanation": "中心NAR66.3048%、MDD12.6141%、Calmar5.256417；三档NAR66.0971%—66.3048%，Calmar5.098477—5.412563。相对C0801补回收益，同时增加部分MDD及费用；作为主要发展原型。",
+          "evidence": [
+            {
+              "type": "EvidenceRef",
+              "experiment": {
+                "type": "ExperimentRef",
+                "strategy_id": "S019",
+                "experiment_id": "EX046_20261111"
+              },
+              "evidence_id": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1.json",
+              "sha256": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1",
+              "media_type": "application/json",
+              "name": "mechanism-close-06",
+              "schema": null,
+              "schema_version": null
+            }
+          ],
+          "fact_ids": []
+        }
+      ]
+    },
+    {
+      "type": "ComponentEntry",
+      "component_id": "F_C0775",
+      "definition": {
+        "type": "ExperimentDefinitionRef",
+        "evidence": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "7fc0cc91c01b50127d37cd39c3a65443dc8674b586d105f4aec7d09cefa0fdb4.json",
+          "sha256": "7fc0cc91c01b50127d37cd39c3a65443dc8674b586d105f4aec7d09cefa0fdb4",
+          "media_type": "application/json",
+          "name": "mechanism-close-16",
+          "schema": null,
+          "schema_version": null
+        },
+        "entrypoint": "strategy:step"
+      },
+      "role": "有限预算内未达标的日收盘退出方向",
+      "label": "在既定四维域与24次等预算提议内，日收盘退出方向能够找到原六门中心。",
+      "horizon": "30分钟决定、5日持有上限",
+      "control": "同轮等预算适配比较；相对C0355为退出表达与多参数配置比较，各族维度和搜索难度不同。",
+      "availability": "只使用完成行情及确认持仓状态",
+      "price_basis": "HFQ整数单位、当前权益目标仓位与日末MDD",
+      "applicability": "MU已见2022-01-03至2026-10-30",
+      "judgment": "本族最高Calmar为4.801017、NAR62.9706%，24项均未过原中心六门。本次有限域及预算未支持继续发展，保留停止证据。",
+      "tests": [
+        {
+          "type": "ComponentTestResult",
+          "test_id": "mechanism_C0775",
+          "experiment_id": "EX045_20261111",
+          "protocol": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50.json",
+            "sha256": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50",
+            "media_type": "application/json",
+            "name": "mechanism-close-10",
+            "schema": null,
+            "schema_version": null
+          },
+          "status": "INEFFECTIVE",
+          "explanation": "本族最高Calmar为4.801017、NAR62.9706%，24项均未过原中心六门。本次有限域及预算未支持继续发展，保留停止证据。",
+          "evidence": [
+            {
+              "type": "EvidenceRef",
+              "experiment": {
+                "type": "ExperimentRef",
+                "strategy_id": "S019",
+                "experiment_id": "EX046_20261111"
+              },
+              "evidence_id": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4.json",
+              "sha256": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4",
+              "media_type": "application/json",
+              "name": "mechanism-close-11",
+              "schema": null,
+              "schema_version": null
+            }
+          ],
+          "fact_ids": []
+        }
+      ]
+    }
+  ],
+  "comparisons": [
+    {
+      "type": "PrototypeComparison",
+      "comparison_id": "C0786_vs_C0783",
+      "subject_id": "C0786",
+      "control_id": "C0783",
+      "question": "原参数下恢复敞口是否改善风险调整表现？",
+      "protocol": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S019",
+          "experiment_id": "EX046_20261111"
+        },
+        "evidence_id": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205.json",
+        "sha256": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205",
+        "media_type": "application/json",
+        "name": "mechanism-close-05",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1.json",
+          "sha256": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1",
+          "media_type": "application/json",
+          "name": "mechanism-close-06",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "conclusion": "同源码纯机制配对：NAR增加1.4328个百分点，MDD增加1.0136个百分点，Calmar下降0.190537；完整账户负例削弱原参数下的恢复假设。"
+    },
+    {
+      "type": "PrototypeComparison",
+      "comparison_id": "C0754_vs_C0783",
+      "subject_id": "C0754",
+      "control_id": "C0783",
+      "question": "联合适配能否缓解渐进退出原配置的Calmar缺口？",
+      "protocol": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S019",
+          "experiment_id": "EX046_20261111"
+        },
+        "evidence_id": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50.json",
+        "sha256": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50",
+        "media_type": "application/json",
+        "name": "mechanism-close-10",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4.json",
+          "sha256": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4",
+          "media_type": "application/json",
+          "name": "mechanism-close-11",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1.json",
+          "sha256": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1",
+          "media_type": "application/json",
+          "name": "mechanism-close-06",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "conclusion": "多参数完整配置比较：NAR66.3175%→64.4138%，MDD14.9944%→12.8647%，Calmar4.422833→5.007010；结果反映联合配置取舍，单项参数贡献另待辨别。"
+    },
+    {
+      "type": "PrototypeComparison",
+      "comparison_id": "C0720_vs_C0355",
+      "subject_id": "C0720",
+      "control_id": "C0355",
+      "question": "连续参与及联合配置带来怎样的收益与风险取舍？",
+      "protocol": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S019",
+          "experiment_id": "EX046_20261111"
+        },
+        "evidence_id": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50.json",
+        "sha256": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50",
+        "media_type": "application/json",
+        "name": "mechanism-close-10",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4.json",
+          "sha256": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4",
+          "media_type": "application/json",
+          "name": "mechanism-close-11",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "f292b00bd359fb29a476af9b19de2e1f10531ad8e5895f47cb3168220013d36f.json",
+          "sha256": "f292b00bd359fb29a476af9b19de2e1f10531ad8e5895f47cb3168220013d36f",
+          "media_type": "application/json",
+          "name": "mechanism-close-02",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "conclusion": "完整配置比较：NAR71.0588%→67.2761%，MDD13.7170%→12.2465%，Calmar5.180354→5.493510；参与表达和多个参数共同变化。C0355原ASSESSMENT/2失败保持。"
+    },
+    {
+      "type": "PrototypeComparison",
+      "comparison_id": "C0801_vs_C0720",
+      "subject_id": "C0801",
+      "control_id": "C0720",
+      "question": "同参数渐进退出能否降低ATR三档反应并维持达标？",
+      "protocol": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S019",
+          "experiment_id": "EX046_20261111"
+        },
+        "evidence_id": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205.json",
+        "sha256": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205",
+        "media_type": "application/json",
+        "name": "mechanism-close-05",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1.json",
+          "sha256": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1",
+          "media_type": "application/json",
+          "name": "mechanism-close-06",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4.json",
+          "sha256": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4",
+          "media_type": "application/json",
+          "name": "mechanism-close-11",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "conclusion": "经C0798精确parity连接的EX046同源码纯机制配对：三档均过原中心六门，Calmar跨度由0.887772降至0.103196；中心NAR让出2.5319个百分点，费用及完整周期差异另列。"
+    },
+    {
+      "type": "PrototypeComparison",
+      "comparison_id": "C0804_vs_C0801",
+      "subject_id": "C0804",
+      "control_id": "C0801",
+      "question": "仅开放风险比例恢复，能否补回单向减仓的收益？",
+      "protocol": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S019",
+          "experiment_id": "EX046_20261111"
+        },
+        "evidence_id": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205.json",
+        "sha256": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205",
+        "media_type": "application/json",
+        "name": "mechanism-close-05",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1.json",
+          "sha256": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1",
+          "media_type": "application/json",
+          "name": "mechanism-close-06",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "conclusion": "同源码同参数纯机制配对：中心NAR增加1.5605个百分点、MDD增加0.2166个百分点、Calmar增加0.034039；三档均达原中心六门，恢复伴随成本及震荡风险取舍。"
+    },
+    {
+      "type": "PrototypeComparison",
+      "comparison_id": "C0804_vs_C0720",
+      "subject_id": "C0804",
+      "control_id": "C0720",
+      "question": "可恢复渐进退出相对硬退出的完整取舍如何？",
+      "protocol": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S019",
+          "experiment_id": "EX046_20261111"
+        },
+        "evidence_id": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205.json",
+        "sha256": "38539ac5ea88c5fa5ca58a1eddd10e1ec5b923c6be2ec2eae660aed56f0b3205",
+        "media_type": "application/json",
+        "name": "mechanism-close-05",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1.json",
+          "sha256": "5c197023f01dda264e2012baea79c71b080d15ecc21b0dd9d88023acb861eea1",
+          "media_type": "application/json",
+          "name": "mechanism-close-06",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4.json",
+          "sha256": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4",
+          "media_type": "application/json",
+          "name": "mechanism-close-11",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "conclusion": "经C0798精确parity连接的同源码机制配对：中心NAR减少0.9713个百分点、MDD增加0.3676个百分点、Calmar减少0.237093；所检三档NAR跨度明显收窄。完整自检仍待执行。"
+    },
+    {
+      "type": "PrototypeComparison",
+      "comparison_id": "C0775_vs_C0355",
+      "subject_id": "C0775",
+      "control_id": "C0355",
+      "question": "日收盘退出在本轮预算内是否形成更值得发展的配置？",
+      "protocol": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S019",
+          "experiment_id": "EX046_20261111"
+        },
+        "evidence_id": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50.json",
+        "sha256": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50",
+        "media_type": "application/json",
+        "name": "mechanism-close-10",
+        "schema": null,
+        "schema_version": null
+      },
+      "evidence": [
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4.json",
+          "sha256": "bbcfff87dd3727b7512ea206a8be4bba5d9d31171febcbc1eae8536d5f8785b4",
+          "media_type": "application/json",
+          "name": "mechanism-close-11",
+          "schema": null,
+          "schema_version": null
+        },
+        {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "f292b00bd359fb29a476af9b19de2e1f10531ad8e5895f47cb3168220013d36f.json",
+          "sha256": "f292b00bd359fb29a476af9b19de2e1f10531ad8e5895f47cb3168220013d36f",
+          "media_type": "application/json",
+          "name": "mechanism-close-02",
+          "schema": null,
+          "schema_version": null
+        }
+      ],
+      "conclusion": "有限预算的完整配置比较：日收盘族24项无原六门通过，最佳Calmar4.801017；保留本轮停止结论，范围限于已检域、预算和历史。"
+    }
+  ],
+  "account_reference_files": {
+    "44d92a77eadeee74916491d9678b948e7bb5104b0a8c01808837e8603f6ae4ea": "research/S019/experiments/EX040_20261110/others/trial021_account.json",
+    "bb7d7fb4173cccf49728b8ab839db6dcdb8d06e4d3a5d1a49b5861d1a33184fd": "research/S019/experiments/EX046_20261111/others/original_ramp_center_account.json",
+    "42743989901c13aeb58c82dace610ba9dd607c605dc60ef2b0ed6a970900f03f": "research/S019/experiments/EX046_20261111/others/original_ramp_rebuild_center_account.json",
+    "63b9247673be6952718be9ea36602da54990c2fe3942f579ce0ba3427fcd1605": "research/S019/experiments/EX045_20261111/others/trials/ramp_linear_022_account.json",
+    "8ee6b44a319582c1c45ea97495e62b8dbb506493b84e5132aeac57f126d59e9d": "research/S019/experiments/EX045_20261111/others/trials/hard_linear_012_account.json",
+    "9be22fa345e84defd912af7f8107746c0605031baaecffe23a3ea66b31851ae6": "research/S019/experiments/EX046_20261111/others/qualified_linear_ramp_center_account.json",
+    "f52d3a84d6b3c46ffd24a8b106a363255c50a696237c03c753a5bb380fe28bdf": "research/S019/experiments/EX046_20261111/others/qualified_linear_ramp_rebuild_center_account.json",
+    "7fc6e8ff47d7d61721ee385ac23eff5adabe93a0c2987f37086ff0b961de7cf4": "research/S019/experiments/EX045_20261111/others/trials/daily_close_hard_019_account.json"
+  }
+}

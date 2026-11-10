@@ -1,0 +1,137 @@
+{
+  "status": "PASS",
+  "new_accounts": 0,
+  "new_experiments": 0,
+  "base_source_sha256": "c30230b475f5583352165f474e6b289bf7100dab3e6333bf8edb42b6c5d438d7",
+  "prepared_source_sha256": "b7adc4eb3ee0567db72243e670d671665c806e2c4aaee46ea2734399f243411f",
+  "verification_source_sha256": "b484f584ce1689d4553dba22e9ad586cd93d0ddfceb7245f3efe97ec6eb783b8",
+  "schema_config_sha256": "51a0326c718fa00fa223a7d86be427c8417d8cb26e18b879d00b8a8e18da3f42",
+  "exact_original_source_restoration": true,
+  "original_actual_step_parity_cases": 732,
+  "public_schema_validation": "All actual step account/cycle outputs; strict wrong-type negative probe.",
+  "checks": [
+    {
+      "branch": "entry",
+      "policy": "hard",
+      "participation": "hard",
+      "target": 0.1935
+    },
+    {
+      "branch": "entry",
+      "policy": "none",
+      "participation": "hard",
+      "target": 0.1935
+    },
+    {
+      "branch": "entry",
+      "policy": "confirm",
+      "participation": "hard",
+      "target": 0.1935
+    },
+    {
+      "branch": "entry",
+      "policy": "ramp",
+      "participation": "hard",
+      "target": 0.1935
+    },
+    {
+      "branch": "entry",
+      "policy": "daily_close",
+      "participation": "hard",
+      "target": 0.1935
+    },
+    {
+      "branch": "entry",
+      "policy": "rolling_atr",
+      "participation": "hard",
+      "target": 0.1935
+    },
+    {
+      "branch": "entry",
+      "policy": "ramp_rebuild",
+      "participation": "hard",
+      "target": 0.1935
+    },
+    {
+      "branch": "entry",
+      "policy": "hard",
+      "participation": "linear",
+      "target": 0.1935
+    },
+    {
+      "branch": "entry",
+      "policy": "none",
+      "participation": "linear",
+      "target": 0.1935
+    },
+    {
+      "branch": "entry",
+      "policy": "confirm",
+      "participation": "linear",
+      "target": 0.1935
+    },
+    {
+      "branch": "entry",
+      "policy": "ramp",
+      "participation": "linear",
+      "target": 0.1935
+    },
+    {
+      "branch": "entry",
+      "policy": "daily_close",
+      "participation": "linear",
+      "target": 0.1935
+    },
+    {
+      "branch": "entry",
+      "policy": "rolling_atr",
+      "participation": "linear",
+      "target": 0.1935
+    },
+    {
+      "branch": "entry",
+      "policy": "ramp_rebuild",
+      "participation": "linear",
+      "target": 0.1935
+    },
+    {
+      "branch": "boundary",
+      "price": 96.5,
+      "expected_target": 0.6
+    },
+    {
+      "branch": "boundary",
+      "price": 96.0,
+      "expected_target": 0.3
+    },
+    {
+      "branch": "boundary",
+      "price": 95.5,
+      "expected_target": 0.0
+    },
+    {
+      "branch": "half_then_recovery",
+      "policy": "ramp",
+      "target": 0.3
+    },
+    {
+      "branch": "half_then_recovery",
+      "policy": "ramp_rebuild",
+      "target": 0.6
+    },
+    {
+      "branch": "full_exit_latch",
+      "target_after_price_recovery": 0.0,
+      "judgment": "已触发退出，继续完成清仓"
+    },
+    {
+      "branch": "five_day_expiry",
+      "target": 0.0
+    },
+    {
+      "branch": "monotone_and_continuous_band",
+      "grid_points": 101
+    }
+  ],
+  "scope": "Synthetic real step calls only; no market-data reading, accounts, experiments, or economic claims."
+}

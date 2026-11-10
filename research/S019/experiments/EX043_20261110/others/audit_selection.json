@@ -1,0 +1,88 @@
+{
+  "rule": "Center ATR and lowest unrounded Calmar per exit policy (ramp widths separately), union global maximum MDD; label breaks exact ties.",
+  "results_sha256": "f93eafc85738ddd6c076f99e88ad1188672f977e153035ac1f4aedd42d003675",
+  "specs_sha256": "3fabeb52486ed16fa662ae141d5dafafb46903cf80dff405764b9ec17eec3466",
+  "selection_source_sha256": "4ef748b7aaa3ab33ff20bafb05261c56ec398b1c109421c309cf8b027e2ad6f8",
+  "manifest_sha256": "bb55b5de578f7be483ea769c822e0859fe603cb3b95de3d5724da97902a3eda0",
+  "center_atr": 2.42,
+  "groups": {
+    "confirm": {
+      "labels": [
+        "confirm_center",
+        "confirm_high",
+        "confirm_low"
+      ],
+      "center": "confirm_center",
+      "lowest_calmar": "confirm_high"
+    },
+    "daily_close": {
+      "labels": [
+        "daily_close_center",
+        "daily_close_high",
+        "daily_close_low"
+      ],
+      "center": "daily_close_center",
+      "lowest_calmar": "daily_close_center"
+    },
+    "hard": {
+      "labels": [
+        "hard_center",
+        "hard_high",
+        "hard_low"
+      ],
+      "center": "hard_center",
+      "lowest_calmar": "hard_high"
+    },
+    "none": {
+      "labels": [
+        "time_only"
+      ],
+      "center": "time_only",
+      "lowest_calmar": "time_only"
+    },
+    "ramp:0.5": {
+      "labels": [
+        "ramp05_center",
+        "ramp05_high",
+        "ramp05_low"
+      ],
+      "center": "ramp05_center",
+      "lowest_calmar": "ramp05_high"
+    },
+    "ramp:1": {
+      "labels": [
+        "ramp10_center",
+        "ramp10_high",
+        "ramp10_low"
+      ],
+      "center": "ramp10_center",
+      "lowest_calmar": "ramp10_high"
+    },
+    "rolling_atr": {
+      "labels": [
+        "rolling_atr_center",
+        "rolling_atr_high",
+        "rolling_atr_low"
+      ],
+      "center": "rolling_atr_center",
+      "lowest_calmar": "rolling_atr_center"
+    }
+  },
+  "maximum_mdd": "time_only",
+  "selected": [
+    "confirm_center",
+    "confirm_high",
+    "daily_close_center",
+    "hard_center",
+    "hard_high",
+    "ramp05_center",
+    "ramp05_high",
+    "ramp10_center",
+    "ramp10_high",
+    "rolling_atr_center",
+    "time_only"
+  ],
+  "selected_accounts": 11,
+  "selected_decisions_expected": 172722,
+  "new_account_replays": 0
+}

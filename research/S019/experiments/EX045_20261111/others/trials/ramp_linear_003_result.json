@@ -1,0 +1,258 @@
+{
+  "name": "ramp_linear_003",
+  "family": "ramp_linear",
+  "trial_number": 3,
+  "proposed_candidate_id": "C0735",
+  "id": "C0735",
+  "parameters": {
+    "confirm": true,
+    "down_days": 1,
+    "exit_mode": "fixed",
+    "hold_days": 5,
+    "information": "relative",
+    "joint_rule": "maximum",
+    "participation_days": 3,
+    "require_sector": false,
+    "risk_basis": "daily",
+    "treatment": "tilt",
+    "exit_policy": "ramp",
+    "confirm_bars": 2,
+    "participation_policy": "linear",
+    "exit_width": 0.4152956106670479,
+    "participation_threshold": 1.3480366450649242,
+    "participation_width": 0.08087924233558132,
+    "quiet_fraction": 0.5343024642069001,
+    "trail_atr": 2.6195885357042252,
+    "weak_fraction": 0.4619150619997744
+  },
+  "content_hash": "c384ccfeb32d43c14c1e972db365bbd4a473b01aac6d3084f485aed0ae26c254",
+  "definition": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "MU"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 900,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "strategy.py"
+    ],
+    "source_sha256": "9661fbb1f9943f149b68bef7e67a577ee45454bf74dd43145997fbeb2a325761",
+    "parameters_json": "{\"confirm\":true,\"confirm_bars\":2,\"down_days\":1,\"exit_mode\":\"fixed\",\"exit_policy\":\"ramp\",\"exit_width\":0.4152956106670479,\"hold_days\":5,\"information\":\"relative\",\"joint_rule\":\"maximum\",\"participation_days\":3,\"participation_policy\":\"linear\",\"participation_threshold\":1.3480366450649242,\"participation_width\":0.08087924233558132,\"quiet_fraction\":0.5343024642069001,\"require_sector\":false,\"risk_basis\":\"daily\",\"trail_atr\":2.6195885357042252,\"treatment\":\"tilt\",\"weak_fraction\":0.4619150619997744}",
+    "dependencies": [
+      {
+        "name": "numpy",
+        "version": "2.5.2"
+      },
+      {
+        "name": "pandas",
+        "version": "3.0.5"
+      }
+    ],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"confirm\":{\"type\":\"boolean\"},\"confirm_bars\":{\"type\":\"integer\"},\"down_days\":{\"type\":\"integer\"},\"exit_mode\":{\"type\":\"string\"},\"exit_policy\":{\"type\":\"string\"},\"exit_width\":{\"type\":\"number\"},\"hold_days\":{\"type\":\"integer\"},\"information\":{\"type\":\"string\"},\"joint_rule\":{\"type\":\"string\"},\"participation_days\":{\"type\":\"integer\"},\"participation_policy\":{\"type\":\"string\"},\"participation_threshold\":{\"type\":\"number\"},\"participation_width\":{\"type\":\"number\"},\"quiet_fraction\":{\"type\":\"number\"},\"require_sector\":{\"type\":\"boolean\"},\"risk_basis\":{\"type\":\"string\"},\"trail_atr\":{\"type\":\"number\"},\"treatment\":{\"type\":\"string\"},\"weak_fraction\":{\"type\":\"number\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "HFQ",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "auxiliary_inputs": [
+      {
+        "name": "mu_daily",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "frequency": "daily",
+        "warmup_bars": 65,
+        "max_age_seconds": 604800,
+        "analysis_price": "HFQ"
+      },
+      {
+        "name": "soxx_daily",
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SOXX"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "frequency": "daily",
+        "warmup_bars": 65,
+        "max_age_seconds": 604800,
+        "analysis_price": "HFQ"
+      },
+      {
+        "name": "soxx_open",
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SOXX"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "frequency": "30m",
+        "warmup_bars": 1,
+        "max_age_seconds": 604800,
+        "analysis_price": "HFQ"
+      }
+    ],
+    "session_context": true,
+    "feature_graph": {
+      "nodes": [],
+      "outputs": [],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "anchor",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "allocation",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "exiting",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "high_water",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "entry_atr",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "risk_fraction",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "breach_count",
+          "value_type": "int",
+          "nullable": false
+        }
+      ]
+    },
+    "computation": "STATEFUL_STEP",
+    "execution_policy": {
+      "policy_type": "TARGET_POSITION",
+      "settings": {
+        "capital_mode": "target_equity_fraction"
+      }
+    }
+  },
+  "account": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S019",
+      "experiment_id": "EX045_20261111"
+    },
+    "evidence_id": "12d71f1bd51e771cb69089ee59545bcf0383d0c66432a1e68a8ba50f658c13ee.json",
+    "sha256": "12d71f1bd51e771cb69089ee59545bcf0383d0c66432a1e68a8ba50f658c13ee",
+    "media_type": "application/json",
+    "name": "ramp_linear_003",
+    "schema": "equity_research",
+    "schema_version": 4
+  },
+  "request_sha256": "a7a98e17cff0d4d72ad8a198dd05b1a56ff1e8e702e21f7e124d2dd5cdfeabf0",
+  "candidate": {
+    "nar": 0.5707034125054109,
+    "drawdown": 0.14600071722691133,
+    "bar_drawdown": 0.15563746282096935,
+    "calmar": 3.9089082803506736,
+    "closed_cycles": 116,
+    "frequency_median": 6.0,
+    "frequency_coverage": 0.9982653946227233,
+    "year_returns": {
+      "2022": 0.08076827341989201,
+      "2023": 0.173782555118839,
+      "2024": 0.24861234015117484,
+      "2025": 1.2852019586584218,
+      "2026": 1.4235233830647913
+    },
+    "gates": {
+      "nar": true,
+      "calmar": false,
+      "absolute_dd": true,
+      "relative_dd": true,
+      "frequency_median": true,
+      "frequency_coverage": true
+    },
+    "eligible": false,
+    "fees": 35424.180392502996
+  },
+  "buy_hold": {
+    "nar": 0.5930831369630878,
+    "drawdown": 0.5695248274745268,
+    "bar_drawdown": 0.5832097877410136,
+    "calmar": 1.0413648507529105,
+    "closed_cycles": 0,
+    "frequency_median": 0.0,
+    "frequency_coverage": 0.0,
+    "year_returns": {
+      "2022": -0.46101403090000004,
+      "2023": 0.703127023200278,
+      "2024": -0.008298386617065723,
+      "2025": 2.344269718302019,
+      "2026": 2.0843508883998956
+    },
+    "gates": {
+      "nar": true,
+      "calmar": false,
+      "absolute_dd": false,
+      "relative_dd": false,
+      "frequency_median": false,
+      "frequency_coverage": false
+    },
+    "eligible": false,
+    "fees": 99.56309
+  },
+  "audit": {
+    "chronology_cash_integer": "PASS"
+  },
+  "provenance": {
+    "kind": "NEW_ACCOUNT",
+    "canonical": "ramp_linear_003"
+  }
+}

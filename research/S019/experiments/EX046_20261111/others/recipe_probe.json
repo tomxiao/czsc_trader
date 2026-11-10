@@ -1,0 +1,111 @@
+{
+  "status": "PASS",
+  "scope": "Static recipe/public definition and prior control payload checks; zero replay and zero registration",
+  "configurations": 27,
+  "candidate_start": 780,
+  "candidate_end": 806,
+  "next_candidate_start": 807,
+  "controls": [
+    {
+      "label": "original_ramp_center",
+      "candidate_id": "C0783",
+      "reference_candidate_id": "C0678",
+      "reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S019",
+          "experiment_id": "EX044_20261110"
+        },
+        "evidence_id": "db4d5fc8e94a21da3d2e996f446c18dc065c54b5adb9ff3e8565cbd3afdb3d3f.json",
+        "sha256": "db4d5fc8e94a21da3d2e996f446c18dc065c54b5adb9ff3e8565cbd3afdb3d3f",
+        "media_type": "application/json",
+        "name": "ramp_linear10_center",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "full_parameters_and_non_source_contract": "EXACT_EQUAL"
+    },
+    {
+      "label": "adapted_ramp_center",
+      "candidate_id": "C0792",
+      "reference_candidate_id": "C0754",
+      "reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S019",
+          "experiment_id": "EX045_20261111"
+        },
+        "evidence_id": "63b9247673be6952718be9ea36602da54990c2fe3942f579ce0ba3427fcd1605.json",
+        "sha256": "63b9247673be6952718be9ea36602da54990c2fe3942f579ce0ba3427fcd1605",
+        "media_type": "application/json",
+        "name": "ramp_linear_022",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "full_parameters_and_non_source_contract": "EXACT_EQUAL"
+    },
+    {
+      "label": "qualified_linear_hard_center",
+      "candidate_id": "C0798",
+      "reference_candidate_id": "C0720",
+      "reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S019",
+          "experiment_id": "EX045_20261111"
+        },
+        "evidence_id": "8ee6b44a319582c1c45ea97495e62b8dbb506493b84e5132aeac57f126d59e9d.json",
+        "sha256": "8ee6b44a319582c1c45ea97495e62b8dbb506493b84e5132aeac57f126d59e9d",
+        "media_type": "application/json",
+        "name": "hard_linear_012",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "full_parameters_and_non_source_contract": "EXACT_EQUAL"
+    }
+  ],
+  "state_schema": {
+    "status": "PASS",
+    "checks": [
+      {
+        "line": 85,
+        "fields": [
+          "allocation",
+          "anchor",
+          "breach_count",
+          "entry_atr",
+          "exiting",
+          "high_water",
+          "risk_fraction"
+        ],
+        "matching_scopes": [
+          "cycle"
+        ]
+      },
+      {
+        "line": 162,
+        "fields": [
+          "allocation",
+          "anchor",
+          "breach_count",
+          "entry_atr",
+          "exiting",
+          "high_water",
+          "risk_fraction"
+        ],
+        "matching_scopes": [
+          "cycle"
+        ]
+      }
+    ],
+    "coverage": "Exact literal field sets and literal value types; variable value types require synthetic step probes."
+  },
+  "source_bundle_sha256": "0082d1ca613c6f475c651317db8622b23ff3e50725977592818ee7fe493e4fc8",
+  "source_file_sha256": "b7adc4eb3ee0567db72243e670d671665c806e2c4aaee46ea2734399f243411f",
+  "recipe_sha256": "a14d0d75b27b616ce33e15f46deae0feb52f8f2d81ca334e7cfd75021f111c38",
+  "anchors_sha256": "3866eccb0561b9289c521071d16970efbe2e26bdaeebb5be419c2e4b881f2a20",
+  "runner_sha256": "73f9371e21c9c28d2106394a625f9595120ee317a8023b80ebdd9338521c0ed7"
+}

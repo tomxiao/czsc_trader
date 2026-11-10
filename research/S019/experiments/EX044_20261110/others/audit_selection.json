@@ -1,0 +1,104 @@
+{
+  "rule": "Center participation threshold and lowest unrounded Calmar per exit/participation policy (linear half-widths separately), union global maximum MDD; label breaks exact ties.",
+  "results_sha256": "da94480d574c4336696e74d40ca11b8ac63120b2fa5bb8419dd0a7cf52db43f7",
+  "specs_sha256": "51a0326c718fa00fa223a7d86be427c8417d8cb26e18b879d00b8a8e18da3f42",
+  "selection_source_sha256": "7618471479b73481dc2a27de69ed0b089e02ad4d6321760c368d260a4a081bc8",
+  "manifest_sha256": "91d75f484f7120c6d3033fa582cd7696fe917c8d5fb42990c9ef5dc60d5fe500",
+  "center_threshold": 1.175,
+  "groups": {
+    "hard:hard": {
+      "labels": [
+        "hard_hard10_center",
+        "hard_hard10_high",
+        "hard_hard10_low"
+      ],
+      "center": "hard_hard10_center",
+      "lowest_calmar": "hard_hard10_low"
+    },
+    "hard:linear:0.05": {
+      "labels": [
+        "hard_linear05_center",
+        "hard_linear05_high",
+        "hard_linear05_low"
+      ],
+      "center": "hard_linear05_center",
+      "lowest_calmar": "hard_linear05_low"
+    },
+    "hard:linear:0.1": {
+      "labels": [
+        "hard_linear10_center",
+        "hard_linear10_high",
+        "hard_linear10_low"
+      ],
+      "center": "hard_linear10_center",
+      "lowest_calmar": "hard_linear10_high"
+    },
+    "hard:linear:0.2": {
+      "labels": [
+        "hard_linear20_center",
+        "hard_linear20_high",
+        "hard_linear20_low"
+      ],
+      "center": "hard_linear20_center",
+      "lowest_calmar": "hard_linear20_high"
+    },
+    "ramp:hard": {
+      "labels": [
+        "ramp_hard10_center",
+        "ramp_hard10_high",
+        "ramp_hard10_low"
+      ],
+      "center": "ramp_hard10_center",
+      "lowest_calmar": "ramp_hard10_low"
+    },
+    "ramp:linear:0.05": {
+      "labels": [
+        "ramp_linear05_center",
+        "ramp_linear05_high",
+        "ramp_linear05_low"
+      ],
+      "center": "ramp_linear05_center",
+      "lowest_calmar": "ramp_linear05_high"
+    },
+    "ramp:linear:0.1": {
+      "labels": [
+        "ramp_linear10_center",
+        "ramp_linear10_high",
+        "ramp_linear10_low"
+      ],
+      "center": "ramp_linear10_center",
+      "lowest_calmar": "ramp_linear10_high"
+    },
+    "ramp:linear:0.2": {
+      "labels": [
+        "ramp_linear20_center",
+        "ramp_linear20_high",
+        "ramp_linear20_low"
+      ],
+      "center": "ramp_linear20_center",
+      "lowest_calmar": "ramp_linear20_high"
+    }
+  },
+  "maximum_mdd": "ramp_hard10_low",
+  "selected": [
+    "hard_hard10_center",
+    "hard_hard10_low",
+    "hard_linear05_center",
+    "hard_linear05_low",
+    "hard_linear10_center",
+    "hard_linear10_high",
+    "hard_linear20_center",
+    "hard_linear20_high",
+    "ramp_hard10_center",
+    "ramp_hard10_low",
+    "ramp_linear05_center",
+    "ramp_linear05_high",
+    "ramp_linear10_center",
+    "ramp_linear10_high",
+    "ramp_linear20_center",
+    "ramp_linear20_high"
+  ],
+  "selected_accounts": 16,
+  "selected_decisions_expected": 251232,
+  "new_account_replays": 0
+}

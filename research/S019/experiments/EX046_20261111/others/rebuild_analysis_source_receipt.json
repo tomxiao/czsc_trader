@@ -1,0 +1,27 @@
+{
+  "status": "V2_OPEN_RECONCILIATION_PROBED",
+  "new_accounts": 0,
+  "analysis": {
+    "original": ".tmp/s019-stage2-resume/compare_rebuild.py",
+    "formal": "research/S019/experiments/EX046_20261111/src/compare_rebuild.py",
+    "original_sha256": "7dd2d6b8c1176c53ce9cf542c981346154a553cf69bd67517a5d8dd747e1f4d0",
+    "formal_sha256": "32ae34ae43d90960ab8187b3c8e41787eb55746d33fffb2083d8e3419793c35f",
+    "byte_identical": false,
+    "revision_from_v1": "Explicit validated OPEN-cycle derivation and helper projection; v1 archived unchanged."
+  },
+  "counter_probe": {
+    "original_sha256": "d73eb3067f6aa370209d5a83d8f02a9d9b68ef63792c101708eb0228780c0aab",
+    "formal_sha256": "4e89d4025dab732e93a45e83222f06706dda0228cadb8c9598d39db761a04cb0",
+    "adaptation": "Formal paths plus positive OPEN fixture and terminal quantity/cycle mismatch rejection probes; v1 probe archived."
+  },
+  "strategy_file_sha256": "b7adc4eb3ee0567db72243e670d671665c806e2c4aaee46ea2734399f243411f",
+  "counter_probe_result_sha256": "b3129c779ee1bcb87d1a55ba98a6a1dc6d241a31db1fd7403096d8a293439bbb",
+  "revision": 2,
+  "prior_source": "src/compare_rebuild_v1.py",
+  "prior_source_sha256": "7dd2d6b8c1176c53ce9cf542c981346154a553cf69bd67517a5d8dd747e1f4d0",
+  "prior_receipt": "others/rebuild_analysis_source_receipt_v1.json",
+  "prior_receipt_sha256": "d8badff8e485e2e96f51cf7607ff1954ad773e2eae81f2b0061432bce773015b",
+  "revision_reason": "Public trades contains CLOSED cycles only. Classify unlisted fills as OPEN only after exact positive net quantity and terminal cycle-id reconciliation; reject mismatches. Supply a separate derived OPEN marker to frozen helper interval projection. Original public payload and complete equity/fees metrics remain intact.",
+  "failed_projection_accounts_before_cache": 1,
+  "projection_caches_before_recovery": 0
+}
