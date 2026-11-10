@@ -1,0 +1,123 @@
+{
+  "round": 7,
+  "state_schema": {
+    "account_fields": [],
+    "cycle_fields": [
+      {
+        "key": "anchor",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "allocation",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "exiting",
+        "value_type": "bool",
+        "nullable": false
+      },
+      {
+        "key": "high_water",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "entry_atr",
+        "value_type": "float",
+        "nullable": false
+      }
+    ]
+  },
+  "extra_auxiliary_inputs": [
+    {
+      "name": "soxx_open",
+      "instrument": {
+        "market": "US",
+        "asset_class": "ETF",
+        "symbol": "SOXX"
+      },
+      "source": {
+        "provider": "futu",
+        "revision": "s019-unified-window-20261110-v2"
+      },
+      "frequency": "30m",
+      "warmup_bars": 1,
+      "max_age_seconds": 604800,
+      "analysis_price": "HFQ"
+    }
+  ],
+  "candidates": [
+    {
+      "name": "trail3p5_hold5",
+      "id": "C0060",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.5,
+        "trail_atr": 3.5
+      }
+    },
+    {
+      "name": "trail4p0_hold5",
+      "id": "C0061",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.5,
+        "trail_atr": 4.0
+      }
+    },
+    {
+      "name": "trail1p5_hold7",
+      "id": "C0062",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 7,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.5,
+        "trail_atr": 1.5
+      }
+    },
+    {
+      "name": "trail2p0_hold7",
+      "id": "C0063",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 7,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.5,
+        "trail_atr": 2.0
+      }
+    }
+  ],
+  "controls": [
+    "research/S019/experiments/EX021_20261110/others/trail1p5_account.json",
+    "research/S019/experiments/EX021_20261110/others/trail2p0_account.json",
+    "research/S019/experiments/EX021_20261110/others/trail3p0_account.json"
+  ],
+  "stage": "STAGE_THREE"
+}

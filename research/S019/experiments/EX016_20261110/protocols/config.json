@@ -1,0 +1,92 @@
+{
+  "round": 1,
+  "state_schema": {
+    "account_fields": [],
+    "cycle_fields": [
+      {
+        "key": "anchor",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "allocation",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "exiting",
+        "value_type": "bool",
+        "nullable": false
+      }
+    ]
+  },
+  "extra_auxiliary_inputs": [
+    {
+      "name": "soxx_open",
+      "instrument": {
+        "market": "US",
+        "asset_class": "ETF",
+        "symbol": "SOXX"
+      },
+      "source": {
+        "provider": "futu",
+        "revision": "s019-unified-window-20261110-v2"
+      },
+      "frequency": "30m",
+      "warmup_bars": 1,
+      "max_age_seconds": 604800,
+      "analysis_price": "HFQ"
+    }
+  ],
+  "candidates": [
+    {
+      "name": "hold4",
+      "id": "C0041",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 4,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.5
+      }
+    },
+    {
+      "name": "hold6",
+      "id": "C0042",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 6,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.5
+      }
+    },
+    {
+      "name": "hold7",
+      "id": "C0043",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 7,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.5
+      }
+    }
+  ],
+  "controls": [
+    "research/S019/experiments/EX014_20261110/others/relative_quarter_half_account.json"
+  ],
+  "stage": "STAGE_THREE"
+}

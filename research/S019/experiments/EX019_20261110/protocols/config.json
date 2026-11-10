@@ -1,0 +1,113 @@
+{
+  "round": 4,
+  "state_schema": {
+    "account_fields": [],
+    "cycle_fields": [
+      {
+        "key": "anchor",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "allocation",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "exiting",
+        "value_type": "bool",
+        "nullable": false
+      }
+    ]
+  },
+  "extra_auxiliary_inputs": [
+    {
+      "name": "soxx_open",
+      "instrument": {
+        "market": "US",
+        "asset_class": "ETF",
+        "symbol": "SOXX"
+      },
+      "source": {
+        "provider": "futu",
+        "revision": "s019-unified-window-20261110-v2"
+      },
+      "frequency": "30m",
+      "warmup_bars": 1,
+      "max_age_seconds": 604800,
+      "analysis_price": "HFQ"
+    }
+  ],
+  "candidates": [
+    {
+      "name": "slot2_hold4",
+      "id": "C0050",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 4,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.5,
+        "entry_slot": 2
+      }
+    },
+    {
+      "name": "slot2_hold5",
+      "id": "C0051",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.5,
+        "entry_slot": 2
+      }
+    },
+    {
+      "name": "slot3_hold4",
+      "id": "C0052",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 4,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.5,
+        "entry_slot": 3
+      }
+    },
+    {
+      "name": "slot3_hold5",
+      "id": "C0053",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.5,
+        "entry_slot": 3
+      }
+    }
+  ],
+  "controls": [
+    "research/S019/experiments/EX014_20261110/others/relative_quarter_half_account.json",
+    "research/S019/experiments/EX016_20261110/others/hold4_account.json"
+  ],
+  "stage": "STAGE_THREE",
+  "primary_warmup": 4
+}

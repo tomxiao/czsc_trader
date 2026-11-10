@@ -117,9 +117,9 @@
       "used_rounds": 10
     },
     "latest_experiment_report": {
-      "evidence_id": "55c19766adcb46666c71d2b1d60999f19c93ec163c08fdb279b5bdb6922cbe36.json",
+      "evidence_id": "7976a37ffffcb186d5b9d1797b67adb079716e29b327f82c58cd04483996228f.json",
       "experiment": {
-        "experiment_id": "EX015_20261110",
+        "experiment_id": "EX025_20261110",
         "strategy_id": "S019",
         "type": "ExperimentRef"
       },
@@ -127,7 +127,7 @@
       "name": "experiment-report",
       "schema": "experiment_report",
       "schema_version": 1,
-      "sha256": "55c19766adcb46666c71d2b1d60999f19c93ec163c08fdb279b5bdb6922cbe36",
+      "sha256": "7976a37ffffcb186d5b9d1797b67adb079716e29b327f82c58cd04483996228f",
       "type": "EvidenceRef"
     },
     "mandate": {
@@ -140,7 +140,7 @@
       "stage": "MANDATE",
       "type": "DeliveryReference"
     },
-    "next_action": "建议以C0035为主原型进入阶段三，处理Calmar缺口与期限敏感性；等待用户批准及新增额度。",
+    "next_action": "32个新策略均未全门达标；保留C0067前沿，建议停止细调当前结构，等待用户决定机制重构或结束本路线。",
     "objective": "独立经济假设；中心净年化收益至少55%，净卡玛至少5；达标后优先提高净年化。",
     "parameter_joint_pass_rate_min": 0.8,
     "prior_sample_exposure": "2022为S018已用预热；2023-01-03至2026-10-30为反复使用开发池；2026-11-06存在决策视觉预览记录。",
@@ -150,9 +150,126 @@
       "strategy_version": "S018-v1"
     },
     "sample_selection_authority": "RSCH_WITHIN_AUTHORIZED_SCOPE",
-    "stage": "STAGE_TWO",
+    "stage": "STAGE_THREE",
+    "stage_four_approval": "NOT_REQUESTED_NO_ELIGIBLE_CANDIDATE",
     "stage_one_status": "COMPLETE",
-    "stage_three_approval": "PENDING",
+    "stage_three_approval": "APPROVED",
+    "stage_three_budget": {
+      "authorization_decision": "S019-STAGE3-20261110",
+      "authorized_rounds": 10,
+      "benchmark_accounts": 10,
+      "candidate_accounts": 32,
+      "eligible_candidates": 0,
+      "remaining_rounds": 0,
+      "rounds": [
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX016_20261110",
+          "protocol_sha256": "9c90e76dea0cc5c7ae7632a59175ece4850c44a9f74077a659ce969785deb662",
+          "round": 1
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX017_20261110",
+          "protocol_sha256": "fbc042af1ddd807f16aed3adaf061e60aeb4d30b1d7c1221cc6a56229b8f4d52",
+          "round": 2
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX018_20261110",
+          "protocol_sha256": "0a139166ccd49cd7c850b214c34f9388cf79a3446c012d406e8de8e3ab7cd093",
+          "round": 3
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 4,
+          "eligible_ids": [],
+          "experiment": "EX019_20261110",
+          "protocol_sha256": "edf4b3c4def10886627a7fa9c42dc4c0469108714510a3f0dd5eccc4202d27a2",
+          "round": 4
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX020_20261110",
+          "protocol_sha256": "a0c57ded95ba677814cc2aa552a871895780aba0141cd2afd581765171b62cf6",
+          "round": 5
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX021_20261110",
+          "protocol_sha256": "0f445e824d9cd16116fea50c78aa76a059f9d6d600250346d918a84c545900e0",
+          "round": 6
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 4,
+          "eligible_ids": [],
+          "experiment": "EX022_20261110",
+          "protocol_sha256": "dfe26a5cc7d20337996919c53565169adc925d42fcaf78fc3a4fa918adc111c0",
+          "round": 7
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX023_20261110",
+          "protocol_sha256": "99b6ba38438433e17aa8e6d7476d2eb768d18d522eb91851f4b4806ab0e6cd89",
+          "round": 8
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX024_20261110",
+          "protocol_sha256": "311e0217c7fe09b7635d75243a1d785c33a9439e1a77a0b309cd98283f3f5a57",
+          "round": 9
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX025_20261110",
+          "protocol_sha256": "940d8ef8a8957844e6fccb886b8cc1649835d8da614dbfadae39fd1197001f56",
+          "round": 10
+        }
+      ],
+      "used_rounds": 10
+    },
+    "stage_three_decision": {
+      "decision_id": "S019-STAGE3-20261110",
+      "evidence": {
+        "owner": {
+          "experiment_id": null,
+          "strategy_id": "S019",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "decisions/S019-STAGE3-20261110.json",
+        "sha256": "9d2e2385906a26050c1d5c2629b1dc1897ebadad7701000f99e889d77c063b46",
+        "type": "ResearchEvidenceRef"
+      },
+      "type": "DecisionReference"
+    },
+    "stage_three_delivery": {
+      "batch": {
+        "strategy_id": "S019",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "2cf3962a685d5475c141dd2d46f259a1ab5e06d954cd9881fb21a9ef97dbbd3e",
+      "revision": 1,
+      "stage": "CANDIDATES",
+      "type": "DeliveryReference"
+    },
+    "stage_three_status": "COMPLETE",
     "stage_two_delivery": {
       "batch": {
         "strategy_id": "S019",
@@ -171,5 +288,5 @@
     "US.MU"
   ],
   "strategy_id": "S019",
-  "updated_at": "2026-11-10T14:45:16+08:00"
+  "updated_at": "2026-11-10T15:24:05+08:00"
 }

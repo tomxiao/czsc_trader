@@ -1,0 +1,116 @@
+{
+  "round": 10,
+  "state_schema": {
+    "account_fields": [],
+    "cycle_fields": [
+      {
+        "key": "anchor",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "allocation",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "exiting",
+        "value_type": "bool",
+        "nullable": false
+      },
+      {
+        "key": "high_water",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "entry_atr",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "entry_reference",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "armed",
+        "value_type": "bool",
+        "nullable": false
+      }
+    ]
+  },
+  "extra_auxiliary_inputs": [
+    {
+      "name": "soxx_open",
+      "instrument": {
+        "market": "US",
+        "asset_class": "ETF",
+        "symbol": "SOXX"
+      },
+      "source": {
+        "provider": "futu",
+        "revision": "s019-unified-window-20261110-v2"
+      },
+      "frequency": "30m",
+      "warmup_bars": 1,
+      "max_age_seconds": 604800,
+      "analysis_price": "HFQ"
+    }
+  ],
+  "candidates": [
+    {
+      "name": "arm0p5",
+      "id": "C0070",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.5,
+        "arm_atr": 0.5
+      }
+    },
+    {
+      "name": "arm1p0",
+      "id": "C0071",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.5,
+        "arm_atr": 1.0
+      }
+    },
+    {
+      "name": "arm1p5",
+      "id": "C0072",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.5,
+        "arm_atr": 1.5
+      }
+    }
+  ],
+  "controls": [
+    "research/S019/experiments/EX014_20261110/others/relative_quarter_half_account.json",
+    "research/S019/experiments/EX024_20261110/others/trail2p5_account.json"
+  ],
+  "stage": "STAGE_THREE"
+}
