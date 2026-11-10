@@ -1,0 +1,794 @@
+{
+  "round": 1,
+  "state_schema": {
+    "account_fields": [],
+    "cycle_fields": [
+      {
+        "key": "anchor",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "allocation",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "exiting",
+        "value_type": "bool",
+        "nullable": false
+      },
+      {
+        "key": "high_water",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "entry_atr",
+        "value_type": "float",
+        "nullable": false
+      }
+    ]
+  },
+  "extra_auxiliary_inputs": [
+    {
+      "name": "soxx_open",
+      "instrument": {
+        "market": "US",
+        "asset_class": "ETF",
+        "symbol": "SOXX"
+      },
+      "source": {
+        "provider": "futu",
+        "revision": "s019-unified-window-20261110-v2"
+      },
+      "frequency": "30m",
+      "warmup_bars": 1,
+      "max_age_seconds": 604800,
+      "analysis_price": "HFQ"
+    }
+  ],
+  "candidates": [
+    {
+      "name": "trial000",
+      "id": "C0102",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.5,
+        "trail_atr": 2.5
+      }
+    },
+    {
+      "name": "trial001",
+      "id": "C0103",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 4,
+        "down_days": 2,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.9,
+        "trail_atr": 2.4
+      }
+    },
+    {
+      "name": "trial002",
+      "id": "C0104",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 7,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.35,
+        "trail_atr": 3.6
+      }
+    },
+    {
+      "name": "trial003",
+      "id": "C0105",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 6,
+        "down_days": 3,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.75,
+        "trail_atr": 3.3
+      }
+    },
+    {
+      "name": "trial004",
+      "id": "C0106",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 8,
+        "down_days": 3,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.8,
+        "trail_atr": 2.9000000000000004
+      }
+    },
+    {
+      "name": "trial005",
+      "id": "C0107",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 3,
+        "down_days": 2,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.6000000000000001,
+        "trail_atr": 4.0
+      }
+    },
+    {
+      "name": "trial006",
+      "id": "C0108",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 3,
+        "down_days": 2,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.9,
+        "trail_atr": 4.0
+      }
+    },
+    {
+      "name": "trial007",
+      "id": "C0109",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 4,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.5,
+        "trail_atr": 3.8000000000000003
+      }
+    },
+    {
+      "name": "trial008",
+      "id": "C0110",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 8,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.45,
+        "trail_atr": 1.9
+      }
+    },
+    {
+      "name": "trial009",
+      "id": "C0111",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 3,
+        "down_days": 3,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.25,
+        "trail_atr": 2.1
+      }
+    },
+    {
+      "name": "trial010",
+      "id": "C0112",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 3,
+        "down_days": 3,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.4,
+        "trail_atr": 2.1
+      }
+    },
+    {
+      "name": "trial011",
+      "id": "C0113",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 7,
+        "down_days": 2,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.35,
+        "trail_atr": 3.4000000000000004
+      }
+    },
+    {
+      "name": "trial012",
+      "id": "C0114",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.55,
+        "trail_atr": 1.9
+      }
+    },
+    {
+      "name": "trial013",
+      "id": "C0115",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 6,
+        "down_days": 2,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.65,
+        "trail_atr": 1.6
+      }
+    },
+    {
+      "name": "trial014",
+      "id": "C0116",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 3,
+        "down_days": 3,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.65,
+        "trail_atr": 2.1
+      }
+    },
+    {
+      "name": "trial015",
+      "id": "C0117",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.65,
+        "trail_atr": 4.0
+      }
+    },
+    {
+      "name": "trial016",
+      "id": "C0118",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 6,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.8,
+        "trail_atr": 2.8
+      }
+    },
+    {
+      "name": "trial017",
+      "id": "C0119",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 3,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.7,
+        "trail_atr": 3.0
+      }
+    },
+    {
+      "name": "trial018",
+      "id": "C0120",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.45,
+        "trail_atr": 2.9000000000000004
+      }
+    },
+    {
+      "name": "trial019",
+      "id": "C0121",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 6,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.8,
+        "trail_atr": 3.7
+      }
+    },
+    {
+      "name": "trial020",
+      "id": "C0122",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 3,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.3,
+        "trail_atr": 2.6
+      }
+    },
+    {
+      "name": "trial021",
+      "id": "C0123",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.5,
+        "trail_atr": 2.9000000000000004
+      }
+    },
+    {
+      "name": "trial022",
+      "id": "C0124",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.25,
+        "trail_atr": 2.1
+      }
+    },
+    {
+      "name": "trial023",
+      "id": "C0125",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 2,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.35,
+        "trail_atr": 2.9000000000000004
+      }
+    },
+    {
+      "name": "trial024",
+      "id": "C0126",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.3,
+        "trail_atr": 1.8
+      }
+    },
+    {
+      "name": "trial025",
+      "id": "C0127",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 6,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.4,
+        "trail_atr": 2.3
+      }
+    },
+    {
+      "name": "trial026",
+      "id": "C0128",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 6,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.6000000000000001,
+        "trail_atr": 3.0
+      }
+    },
+    {
+      "name": "trial027",
+      "id": "C0129",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 4,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.55,
+        "trail_atr": 2.5
+      }
+    },
+    {
+      "name": "trial028",
+      "id": "C0130",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.3,
+        "trail_atr": 2.3
+      }
+    },
+    {
+      "name": "trial029",
+      "id": "C0131",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 4,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.8,
+        "trail_atr": 1.9
+      }
+    },
+    {
+      "name": "trial030",
+      "id": "C0132",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 3,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.35,
+        "trail_atr": 1.6
+      }
+    },
+    {
+      "name": "trial031",
+      "id": "C0133",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 6,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.25,
+        "trail_atr": 2.9000000000000004
+      }
+    },
+    {
+      "name": "trial032",
+      "id": "C0134",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 8,
+        "down_days": 3,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.35,
+        "trail_atr": 2.5
+      }
+    },
+    {
+      "name": "trial033",
+      "id": "C0135",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.3,
+        "trail_atr": 2.4
+      }
+    },
+    {
+      "name": "trial034",
+      "id": "C0136",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.25,
+        "trail_atr": 2.3
+      }
+    },
+    {
+      "name": "trial035",
+      "id": "C0137",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 8,
+        "down_days": 2,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 1.0,
+        "trail_atr": 3.6
+      }
+    },
+    {
+      "name": "trial036",
+      "id": "C0138",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 2,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.25,
+        "trail_atr": 2.1
+      }
+    },
+    {
+      "name": "trial037",
+      "id": "C0139",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.3,
+        "trail_atr": 2.6
+      }
+    },
+    {
+      "name": "trial040",
+      "id": "C0142",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 4,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.3,
+        "trail_atr": 2.4
+      }
+    },
+    {
+      "name": "trial041",
+      "id": "C0143",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 6,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.3,
+        "trail_atr": 2.3
+      }
+    },
+    {
+      "name": "trial042",
+      "id": "C0144",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 6,
+        "down_days": 3,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.8,
+        "trail_atr": 2.3
+      }
+    },
+    {
+      "name": "trial043",
+      "id": "C0145",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 8,
+        "down_days": 3,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.5,
+        "trail_atr": 3.9000000000000004
+      }
+    },
+    {
+      "name": "trial044",
+      "id": "C0146",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.25,
+        "trail_atr": 2.5
+      }
+    },
+    {
+      "name": "trial045",
+      "id": "C0147",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.3,
+        "trail_atr": 2.1
+      }
+    },
+    {
+      "name": "trial046",
+      "id": "C0148",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.25,
+        "trail_atr": 2.2
+      }
+    },
+    {
+      "name": "trial047",
+      "id": "C0149",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 7,
+        "down_days": 2,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.25,
+        "trail_atr": 1.5
+      }
+    }
+  ],
+  "controls": [
+    "research/S019/experiments/EX024_20261110/others/trail2p5_account.json"
+  ],
+  "stage": "STAGE_THREE",
+  "primary_warmup": 2
+}

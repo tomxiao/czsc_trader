@@ -257,10 +257,70 @@
       "STAGE_THREE"
     ],
     "extension_status": "COMPLETE",
+    "joint_search_budget": {
+      "authorization_decision": "S019-JOINT-20261110",
+      "authorized_rounds": 10,
+      "benchmark_accounts": 3,
+      "candidate_accounts": 94,
+      "eligible_candidates": 0,
+      "proposals": 96,
+      "remaining_rounds": 8,
+      "rounds": [
+        {
+          "benchmark_accounts": 2,
+          "candidate_accounts": 46,
+          "eligible_ids": [],
+          "experiment": "EX036_20261110",
+          "parent": "C0067",
+          "proposals": 48,
+          "protocol_sha256": "8909076c5f79f45ecbc83f41582be79e9e2b0f40c95e54a28df82efffcc541a6",
+          "round": 1,
+          "unique_configurations": 46
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 48,
+          "eligible_ids": [],
+          "experiment": "EX037_20261110",
+          "parent": "C0101",
+          "proposals": 48,
+          "protocol_sha256": "f9939df8f89b2c897834412a58192c445dc5967be965f37afd2bd0a4df5e6c56",
+          "round": 2,
+          "unique_configurations": 48
+        }
+      ],
+      "unique_configurations": 94,
+      "used_rounds": 2
+    },
+    "joint_search_decision": {
+      "decision_id": "S019-JOINT-20261110",
+      "evidence": {
+        "owner": {
+          "experiment_id": null,
+          "strategy_id": "S019",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "decisions/S019-JOINT-20261110.json",
+        "sha256": "a91d882cb38846e91993e0cc5160f876e7e1b33561af971a9f62adfea01b49ce",
+        "type": "ResearchEvidenceRef"
+      },
+      "type": "DecisionReference"
+    },
+    "joint_search_delivery": {
+      "batch": {
+        "strategy_id": "S019",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "df37f0633b23a110b047fa91aee937931ab58133a496b2c48741510c624a2050",
+      "revision": 3,
+      "stage": "CANDIDATES",
+      "type": "DeliveryReference"
+    },
+    "joint_search_status": "PAIR_COMPLETE",
     "latest_experiment_report": {
-      "evidence_id": "1d22ee8aa0620062bafb98a15a96532e0f9ee072059017b97c7f53b4fda88e10.json",
+      "evidence_id": "79461dd5d0a683c5340408eb707603c57fd18720a5a57befa7fe716f1365ae6f.json",
       "experiment": {
-        "experiment_id": "EX035_20261110",
+        "experiment_id": "EX037_20261110",
         "strategy_id": "S019",
         "type": "ExperimentRef"
       },
@@ -268,7 +328,7 @@
       "name": "experiment-report",
       "schema": "experiment_report",
       "schema_version": 1,
-      "sha256": "1d22ee8aa0620062bafb98a15a96532e0f9ee072059017b97c7f53b4fda88e10",
+      "sha256": "79461dd5d0a683c5340408eb707603c57fd18720a5a57befa7fe716f1365ae6f",
       "type": "EvidenceRef"
     },
     "mandate": {
@@ -281,7 +341,7 @@
       "stage": "MANDATE",
       "type": "DeliveryReference"
     },
-    "next_action": "本次十轮完成，原目标保持。保留C0067基线、C0080机制原型及C0101研究前沿；建议后续先一轮检验成交量阈值1.2/1.3/1.5的扩边，改善消失则停止此参数方向。期限敏感性保持待解决，正式五项自检及新增实验等待对应批准。",
+    "next_action": "两轮联合搜索完成，剩余8轮额度。建议第3轮以C0196为中心研究成交跨度下边界，联合搜索成交跨度、阈值、低参与仓位、季度弱势仓位及ATR距离，固定本轮支持较好的1日下跌与5日持有，并保留C0101及C0135所提示的参数配合对照。原目标保持，阶段四尚未启动。",
     "objective": "独立经济假设；中心净年化收益至少55%，净卡玛至少5；达标后优先提高净年化。",
     "parameter_joint_pass_rate_min": 0.8,
     "prior_sample_exposure": "2022为S018已用预热；2023-01-03至2026-10-30为反复使用开发池；2026-11-06存在决策视觉预览记录。",
@@ -429,5 +489,5 @@
     "US.MU"
   ],
   "strategy_id": "S019",
-  "updated_at": "2026-11-10T16:38:31+08:00"
+  "updated_at": "2026-11-10T18:01:52+08:00"
 }

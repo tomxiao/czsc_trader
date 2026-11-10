@@ -1,0 +1,290 @@
+{
+  "prepared": {
+    "space_id": "896409da-fb6d-4884-a56c-545089d1104e",
+    "preparation_id": "aa75ec8b-6840-4b8f-8566-3642c347cfb3",
+    "manifest_sha256": "0c573bd63dc8b29e8c588962a4656a2f8311be78296afd6352f4790dab2327fc"
+  },
+  "instrument": {
+    "market": "US",
+    "asset_class": "STOCK",
+    "symbol": "MU"
+  },
+  "specification_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+  "content_identities": [
+    [
+      "bars",
+      "ad41dadecb3079de35ba238fe34681cf5bf84f0ba6e768ff0edd08dce5b044b6"
+    ],
+    [
+      "sessions",
+      "be57c40b7f7089a912d678a41bc42ab01ca9b81077e8a3a56a76fa1ecf4e8b1a"
+    ],
+    [
+      "trading_facts",
+      "4cc38cfa9ee1cf5edb12215464ca732359dfe2becbce5ec64eedf722f0e60a25"
+    ]
+  ],
+  "warmup_bars": 2,
+  "auxiliary_inputs": [
+    {
+      "input": {
+        "name": "mu_daily",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "frequency": "daily",
+        "warmup_bars": 65,
+        "max_age_seconds": 604800,
+        "analysis_price": "HFQ"
+      },
+      "bars_sha256": "868d6720dba9ff585a9fb174f49394bde63dff77aa3392cd45cd9d1c7e850a7f",
+      "sessions_sha256": "be57c40b7f7089a912d678a41bc42ab01ca9b81077e8a3a56a76fa1ecf4e8b1a"
+    },
+    {
+      "input": {
+        "name": "soxx_daily",
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SOXX"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "frequency": "daily",
+        "warmup_bars": 65,
+        "max_age_seconds": 604800,
+        "analysis_price": "HFQ"
+      },
+      "bars_sha256": "9b53d773ab3a5f9f9a8b45b7db547c147481cb06d44f95bcd132e9dec4808a2b",
+      "sessions_sha256": "be57c40b7f7089a912d678a41bc42ab01ca9b81077e8a3a56a76fa1ecf4e8b1a"
+    },
+    {
+      "input": {
+        "name": "soxx_open",
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SOXX"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "frequency": "30m",
+        "warmup_bars": 1,
+        "max_age_seconds": 604800,
+        "analysis_price": "HFQ"
+      },
+      "bars_sha256": "61f8dd39ade42bbf569bc89b130bf297ece8c0c3cd7dee626a634f74776efed3",
+      "sessions_sha256": "be57c40b7f7089a912d678a41bc42ab01ca9b81077e8a3a56a76fa1ecf4e8b1a"
+    }
+  ],
+  "request_bindings": [
+    [
+      "bars",
+      {
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "query": {
+          "product": "equity.bars",
+          "start": "2021-01-01",
+          "end": "2026-10-30",
+          "frequency": "30m",
+          "adjustment": "hfq",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "sessions",
+      {
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "query": {
+          "product": "equity.sessions",
+          "start": "2021-01-01",
+          "end": "2026-10-30",
+          "frequency": "30m",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "trading_facts",
+      {
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "query": {
+          "product": "equity.trading_facts",
+          "start": "2021-01-01",
+          "end": "2026-10-30",
+          "frequency": "30m",
+          "adjustment": "hfq",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "auxiliary:mu_daily:bars",
+      {
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "query": {
+          "product": "equity.bars",
+          "start": "2021-01-01",
+          "end": "2026-10-30",
+          "frequency": "daily",
+          "adjustment": "hfq",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "auxiliary:mu_daily:sessions",
+      {
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "query": {
+          "product": "equity.sessions",
+          "start": "2021-01-01",
+          "end": "2026-10-30",
+          "frequency": "daily",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "auxiliary:soxx_daily:bars",
+      {
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SOXX"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "query": {
+          "product": "equity.bars",
+          "start": "2021-01-01",
+          "end": "2026-10-30",
+          "frequency": "daily",
+          "adjustment": "hfq",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "auxiliary:soxx_daily:sessions",
+      {
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SOXX"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "query": {
+          "product": "equity.sessions",
+          "start": "2021-01-01",
+          "end": "2026-10-30",
+          "frequency": "daily",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "auxiliary:soxx_open:bars",
+      {
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SOXX"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "query": {
+          "product": "equity.bars",
+          "start": "2021-01-01",
+          "end": "2026-10-30",
+          "frequency": "30m",
+          "adjustment": "hfq",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "auxiliary:soxx_open:sessions",
+      {
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SOXX"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "query": {
+          "product": "equity.sessions",
+          "start": "2021-01-01",
+          "end": "2026-10-30",
+          "frequency": "30m",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ]
+  ]
+}

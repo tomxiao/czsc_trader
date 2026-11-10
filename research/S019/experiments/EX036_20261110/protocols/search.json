@@ -1,0 +1,55 @@
+{
+  "parent": "C0067",
+  "round": 1,
+  "trial_budget": 48,
+  "startup_trials": 16,
+  "seed": 20261110,
+  "batch_size": 4,
+  "candidate_start": 102,
+  "space": {
+    "down_days": {
+      "kind": "int",
+      "low": 1,
+      "high": 3,
+      "step": 1
+    },
+    "hold_days": {
+      "kind": "int",
+      "low": 3,
+      "high": 8,
+      "step": 1
+    },
+    "weak_fraction": {
+      "kind": "float",
+      "low": 0.25,
+      "high": 1.0,
+      "step": 0.05
+    },
+    "trail_atr": {
+      "kind": "float",
+      "low": 1.5,
+      "high": 4.0,
+      "step": 0.1
+    }
+  },
+  "center": {
+    "require_sector": false,
+    "exit_mode": "fixed",
+    "hold_days": 5,
+    "down_days": 1,
+    "confirm": true,
+    "information": "relative",
+    "treatment": "tilt",
+    "risk_basis": "daily",
+    "weak_fraction": 0.5,
+    "trail_atr": 2.5
+  },
+  "sampler": "TPESampler(multivariate=True, constant_liar=True, constraints_func=normalized_gates)",
+  "optuna_version": "4.9.0",
+  "objective": "MAXIMIZE_NAR_SUBJECT_TO_ALL_SIX_CENTER_GATES",
+  "center_control": "research/S019/experiments/EX024_20261110/others/trail2p5_account.json",
+  "stopping": "48 proposals, all outcomes retained; no score-based early stop",
+  "pruning": "DISABLED_FULL_CONTINUOUS_ACCOUNTS",
+  "duplicates": "reuse exact evaluated configuration within study",
+  "recovery": "Replay deterministic ask/tell batches from seed, verify saved proposals, reuse authenticated account evidence"
+}
