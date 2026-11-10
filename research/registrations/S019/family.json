@@ -260,11 +260,14 @@
     "joint_search_budget": {
       "authorization_decision": "S019-JOINT-20261110",
       "authorized_rounds": 10,
-      "benchmark_accounts": 3,
-      "candidate_accounts": 94,
+      "benchmark_accounts": 4,
+      "candidate_accounts": 142,
+      "configuration_count_basis": "unique_configurations sums within-round unique counts; exact cross-round repetition reported separately",
+      "distinct_configurations_across_rounds": 141,
       "eligible_candidates": 0,
-      "proposals": 96,
-      "remaining_rounds": 8,
+      "proposals": 144,
+      "remaining_rounds": 7,
+      "repeated_configurations_across_rounds": 1,
       "rounds": [
         {
           "benchmark_accounts": 2,
@@ -287,10 +290,21 @@
           "protocol_sha256": "f9939df8f89b2c897834412a58192c445dc5967be965f37afd2bd0a4df5e6c56",
           "round": 2,
           "unique_configurations": 48
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 48,
+          "eligible_ids": [],
+          "experiment": "EX038_20261110",
+          "parent": "C0196",
+          "proposals": 48,
+          "protocol_sha256": "9e810f0ecd2dae1a3d4e2b863c7803b72383865a479b84db2cf7496f57ca458a",
+          "round": 3,
+          "unique_configurations": 48
         }
       ],
-      "unique_configurations": 94,
-      "used_rounds": 2
+      "unique_configurations": 142,
+      "used_rounds": 3
     },
     "joint_search_decision": {
       "decision_id": "S019-JOINT-20261110",
@@ -311,16 +325,16 @@
         "strategy_id": "S019",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "df37f0633b23a110b047fa91aee937931ab58133a496b2c48741510c624a2050",
-      "revision": 3,
+      "content_sha256": "39fdd41df0fa9de7f7937bf3574a4bf48546bc879b55d0110021db9b36e076bb",
+      "revision": 4,
       "stage": "CANDIDATES",
       "type": "DeliveryReference"
     },
-    "joint_search_status": "PAIR_COMPLETE",
+    "joint_search_status": "ROUND_THREE_COMPLETE",
     "latest_experiment_report": {
-      "evidence_id": "79461dd5d0a683c5340408eb707603c57fd18720a5a57befa7fe716f1365ae6f.json",
+      "evidence_id": "4aeb22193d1daf8d495a817fdf4286d8498d31ac9c28c5cf9399cbe863bc577d.json",
       "experiment": {
-        "experiment_id": "EX037_20261110",
+        "experiment_id": "EX038_20261110",
         "strategy_id": "S019",
         "type": "ExperimentRef"
       },
@@ -328,7 +342,7 @@
       "name": "experiment-report",
       "schema": "experiment_report",
       "schema_version": 1,
-      "sha256": "79461dd5d0a683c5340408eb707603c57fd18720a5a57befa7fe716f1365ae6f",
+      "sha256": "4aeb22193d1daf8d495a817fdf4286d8498d31ac9c28c5cf9399cbe863bc577d",
       "type": "EvidenceRef"
     },
     "mandate": {
@@ -341,7 +355,7 @@
       "stage": "MANDATE",
       "type": "DeliveryReference"
     },
-    "next_action": "两轮联合搜索完成，剩余8轮额度。建议第3轮以C0196为中心研究成交跨度下边界，联合搜索成交跨度、阈值、低参与仓位、季度弱势仓位及ATR距离，固定本轮支持较好的1日下跌与5日持有，并保留C0101及C0135所提示的参数配合对照。原目标保持，阶段四尚未启动。",
+    "next_action": "本轮按48次事前预算收口，保留C0196、C0224及C0135。下一轮建议先复用账本定位C0196与C0224两段主要回撤中的仓位差异，再检验成交参与强度与缩仓规则的配合；继续使用Optuna处理适用的联合参数优化。当前暂停继续扩大单一跨度范围：3日已是事前保留多个观察值中位数的下限，1—2日尚未检验，需有新增交易路径依据再开展。新增十轮已用3轮、剩余7轮，第4轮尚未启动；原目标、样本与费用合同保持，正式参数扰动及阶段四五项自检尚未开展。",
     "objective": "独立经济假设；中心净年化收益至少55%，净卡玛至少5；达标后优先提高净年化。",
     "parameter_joint_pass_rate_min": 0.8,
     "prior_sample_exposure": "2022为S018已用预热；2023-01-03至2026-10-30为反复使用开发池；2026-11-06存在决策视觉预览记录。",
@@ -489,5 +503,5 @@
     "US.MU"
   ],
   "strategy_id": "S019",
-  "updated_at": "2026-11-10T18:01:52+08:00"
+  "updated_at": "2026-11-10T18:38:36+08:00"
 }

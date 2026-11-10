@@ -1,0 +1,232 @@
+{
+  "parent": "C0196",
+  "proposals": 48,
+  "unique_configurations": 48,
+  "duplicates": 0,
+  "eligible_ids_by_nar": [],
+  "frontier_name": "trial000",
+  "frontier": {
+    "id": "C0198",
+    "parameters": {
+      "require_sector": false,
+      "exit_mode": "fixed",
+      "hold_days": 5,
+      "down_days": 1,
+      "confirm": true,
+      "information": "relative",
+      "treatment": "tilt",
+      "risk_basis": "daily",
+      "weak_fraction": 0.5,
+      "trail_atr": 2.8,
+      "quiet_fraction": 0.35,
+      "participation_threshold": 1.25,
+      "joint_rule": "maximum",
+      "participation_days": 10
+    },
+    "account": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S019",
+        "experiment_id": "EX038_20261110"
+      },
+      "evidence_id": "57cecc1464a0e34441b71fc3ced9a1a3b47cc2a90d0c1aa0dc7d41a0229eed2e.json",
+      "sha256": "57cecc1464a0e34441b71fc3ced9a1a3b47cc2a90d0c1aa0dc7d41a0229eed2e",
+      "media_type": "application/json",
+      "name": "trial000",
+      "schema": "equity_research",
+      "schema_version": 4
+    },
+    "candidate": {
+      "nar": 0.6198366570705087,
+      "drawdown": 0.1245905228195211,
+      "bar_drawdown": 0.1373251559484695,
+      "calmar": 4.974990416954824,
+      "closed_cycles": 116,
+      "frequency_median": 6.0,
+      "frequency_coverage": 0.9982653946227233,
+      "year_returns": {
+        "2022": 0.06862043989936994,
+        "2023": 0.12246681747974786,
+        "2024": 0.2879653035180372,
+        "2025": 1.7350035035148506,
+        "2026": 1.407674621612574
+      },
+      "gates": {
+        "nar": true,
+        "calmar": false,
+        "absolute_dd": true,
+        "relative_dd": true,
+        "frequency_median": true,
+        "frequency_coverage": true
+      },
+      "eligible": false,
+      "fees": 33781.4801055025
+    },
+    "buy_hold": {
+      "nar": 0.5930831369630878,
+      "drawdown": 0.5695248274745268,
+      "bar_drawdown": 0.5832097877410136,
+      "calmar": 1.0413648507529105,
+      "closed_cycles": 0,
+      "frequency_median": 0.0,
+      "frequency_coverage": 0.0,
+      "year_returns": {
+        "2022": -0.46101403090000004,
+        "2023": 0.703127023200278,
+        "2024": -0.008298386617065723,
+        "2025": 2.344269718302019,
+        "2026": 2.0843508883998956
+      },
+      "gates": {
+        "nar": true,
+        "calmar": false,
+        "absolute_dd": false,
+        "relative_dd": false,
+        "frequency_median": false,
+        "frequency_coverage": false
+      },
+      "eligible": false,
+      "fees": 99.56309
+    },
+    "audit": {
+      "chronology": "PASS",
+      "cash_longonly_integer": "PASS",
+      "source_hash": "PASS"
+    }
+  },
+  "frontier_boundary_parameters": {},
+  "audited_span_extremes": {
+    "minimum": {
+      "account_name": "trial022",
+      "participation_days": 3
+    },
+    "maximum": {
+      "account_name": "trial003",
+      "participation_days": 20
+    }
+  },
+  "best_new_challenger": {
+    "name": "trial026",
+    "row": {
+      "id": "C0224",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.3,
+        "trail_atr": 2.4,
+        "quiet_fraction": 0.55,
+        "participation_threshold": 1.25,
+        "joint_rule": "maximum",
+        "participation_days": 3
+      },
+      "account": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S019",
+          "experiment_id": "EX038_20261110"
+        },
+        "evidence_id": "4ee635e7304c5aa24fa6f030d25535df6a455e0e02e8396ff57526f688dde412.json",
+        "sha256": "4ee635e7304c5aa24fa6f030d25535df6a455e0e02e8396ff57526f688dde412",
+        "media_type": "application/json",
+        "name": "trial026",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "candidate": {
+        "nar": 0.6302208331124366,
+        "drawdown": 0.12715840410856472,
+        "bar_drawdown": 0.1373631436495163,
+        "calmar": 4.956187029324225,
+        "closed_cycles": 117,
+        "frequency_median": 6.0,
+        "frequency_coverage": 0.9982653946227233,
+        "year_returns": {
+          "2022": 0.08530911502527094,
+          "2023": 0.17479160515465386,
+          "2024": 0.25817266073991996,
+          "2025": 1.4630425791488806,
+          "2026": 1.6550814739691746
+        },
+        "gates": {
+          "nar": true,
+          "calmar": false,
+          "absolute_dd": true,
+          "relative_dd": true,
+          "frequency_median": true,
+          "frequency_coverage": true
+        },
+        "eligible": false,
+        "fees": 39633.7004827793
+      },
+      "buy_hold": {
+        "nar": 0.5930831369630878,
+        "drawdown": 0.5695248274745268,
+        "bar_drawdown": 0.5832097877410136,
+        "calmar": 1.0413648507529105,
+        "closed_cycles": 0,
+        "frequency_median": 0.0,
+        "frequency_coverage": 0.0,
+        "year_returns": {
+          "2022": -0.46101403090000004,
+          "2023": 0.703127023200278,
+          "2024": -0.008298386617065723,
+          "2025": 2.344269718302019,
+          "2026": 2.0843508883998956
+        },
+        "gates": {
+          "nar": true,
+          "calmar": false,
+          "absolute_dd": false,
+          "relative_dd": false,
+          "frequency_median": false,
+          "frequency_coverage": false
+        },
+        "eligible": false,
+        "fees": 99.56309
+      },
+      "audit": {
+        "chronology": "PASS",
+        "cash_longonly_integer": "PASS",
+        "source_hash": "PASS"
+      }
+    }
+  },
+  "individual_gate_pass_counts": {
+    "nar": 36,
+    "calmar": 0,
+    "absolute_dd": 48,
+    "relative_dd": 48,
+    "frequency_median": 48,
+    "frequency_coverage": 48
+  },
+  "milestones": [
+    {
+      "proposals": 16,
+      "unique_configurations": 16,
+      "eligible": 0,
+      "best_eligible_nar": null
+    },
+    {
+      "proposals": 32,
+      "unique_configurations": 32,
+      "eligible": 0,
+      "best_eligible_nar": null
+    },
+    {
+      "proposals": 48,
+      "unique_configurations": 48,
+      "eligible": 0,
+      "best_eligible_nar": null
+    }
+  ],
+  "candidate_accounts": 48,
+  "benchmark_accounts": 1
+}

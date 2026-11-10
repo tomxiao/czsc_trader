@@ -1,0 +1,75 @@
+{
+  "parent": "C0196",
+  "round": 3,
+  "trial_budget": 48,
+  "startup_trials": 16,
+  "seed": 20261113,
+  "batch_size": 4,
+  "candidate_start": 198,
+  "space": {
+    "weak_fraction": {
+      "kind": "float",
+      "low": 0.25,
+      "high": 0.75,
+      "step": 0.05
+    },
+    "trail_atr": {
+      "kind": "float",
+      "low": 2.0,
+      "high": 3.5,
+      "step": 0.1
+    },
+    "participation_days": {
+      "kind": "int",
+      "low": 3,
+      "high": 20,
+      "step": 1
+    },
+    "participation_threshold": {
+      "kind": "float",
+      "low": 0.8,
+      "high": 1.5,
+      "step": 0.05
+    },
+    "quiet_fraction": {
+      "kind": "float",
+      "low": 0.2,
+      "high": 0.6,
+      "step": 0.05
+    }
+  },
+  "center": {
+    "require_sector": false,
+    "exit_mode": "fixed",
+    "hold_days": 5,
+    "down_days": 1,
+    "confirm": true,
+    "information": "relative",
+    "treatment": "tilt",
+    "risk_basis": "daily",
+    "weak_fraction": 0.5,
+    "trail_atr": 2.8,
+    "quiet_fraction": 0.35,
+    "participation_threshold": 1.25,
+    "joint_rule": "maximum",
+    "participation_days": 10
+  },
+  "sampler": "TPESampler(multivariate=True, constant_liar=True, constraints_func=normalized_gates)",
+  "optuna_version": "4.9.0",
+  "objective": "MAXIMIZE_NAR_SUBJECT_TO_ALL_SIX_CENTER_GATES",
+  "center_control": "research/S019/experiments/EX037_20261110/others/trial046_account.json",
+  "stopping": "48 proposals, all outcomes retained; no score-based early stop",
+  "pruning": "DISABLED_FULL_CONTINUOUS_ACCOUNTS",
+  "duplicates": "reuse exact evaluated configuration within study",
+  "recovery": "Replay deterministic ask/tell batches from seed, verify saved proposals, reuse authenticated account evidence",
+  "storage": "InMemoryStorage; JSON proposal and account checkpoints",
+  "fixed_parameters": {
+    "down_days": 1,
+    "hold_days": 5
+  },
+  "comparison_controls": [
+    "research/S019/experiments/EX037_20261110/others/trial046_account.json",
+    "research/S019/experiments/EX036_20261110/others/trial033_account.json",
+    "research/S019/experiments/EX035_20261110/others/threshold110_account.json"
+  ]
+}
