@@ -1,0 +1,4338 @@
+{
+  "hold3": {
+    "examples": [
+      {
+        "decision_at": "2022-01-03T14:30:00.000000Z",
+        "decision_id": "7a3904aefd7b35407134ede7bbf823ab56b40b71c6ea24f80a6f8eba823d623a",
+        "execution_end": "2022-01-03T15:00:00.000000Z",
+        "execution_start": "2022-01-03T14:30:00.000000Z",
+        "explanation": {
+          "basis": [
+            {
+              "key": "mode",
+              "text": "common"
+            },
+            {
+              "key": "execution_slot",
+              "text": "0"
+            },
+            {
+              "key": "target_weight",
+              "text": "0.0"
+            },
+            {
+              "key": "common",
+              "text": "None"
+            },
+            {
+              "key": "trend63",
+              "text": "None"
+            },
+            {
+              "key": "entry_uptrend",
+              "text": "None"
+            }
+          ],
+          "case_key": "flat",
+          "explanation": "等待下一交易日首30分钟完成，继续空仓",
+          "judgment": "等待下一交易日首30分钟完成，继续空仓",
+          "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+          "state_key": "target"
+        },
+        "limit_price": null,
+        "observed_through": "2021-12-31T21:00:00.000000Z",
+        "plan": {
+          "capital_mode": "target_equity_fraction",
+          "cycle_after": null,
+          "cycle_before": null,
+          "evidence": {
+            "desired_quantity": 0,
+            "execution_policy": {
+              "policy_type": "TARGET_POSITION",
+              "settings": {
+                "capital_mode": "target_equity_fraction"
+              }
+            },
+            "explanation": {
+              "basis": [
+                {
+                  "key": "mode",
+                  "text": "common"
+                },
+                {
+                  "key": "execution_slot",
+                  "text": "0"
+                },
+                {
+                  "key": "target_weight",
+                  "text": "0.0"
+                },
+                {
+                  "key": "common",
+                  "text": "None"
+                },
+                {
+                  "key": "trend63",
+                  "text": "None"
+                },
+                {
+                  "key": "entry_uptrend",
+                  "text": "None"
+                }
+              ],
+              "case_key": "flat",
+              "explanation": "等待下一交易日首30分钟完成，继续空仓",
+              "judgment": "等待下一交易日首30分钟完成，继续空仓",
+              "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+              "state_key": "target"
+            },
+            "fee_rate": 0.001,
+            "implementation": "1d094e3cc70d21ae06922f8672f13111354b73043c901aa2c3cb756cf45cff58",
+            "locked_quantity": null,
+            "planning_mode": "TARGET_FRACTION",
+            "planning_result": {
+              "desired_quantity": 0,
+              "planned_quantity": 0,
+              "reasons": [],
+              "status": "NO_CHANGE"
+            },
+            "reference_price": 186.7,
+            "sizing": "TARGET_FRACTION",
+            "specification_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+            "target": 0.0
+          },
+          "expected_revision": 0,
+          "legs": [],
+          "orders": [],
+          "owner": "candidate:S019:C0010:1d094e3cc70d21ae06922f8672f13111354b73043c901aa2c3cb756cf45cff58",
+          "plan_identity": "7a3904aefd7b35407134ede7bbf823ab56b40b71c6ea24f80a6f8eba823d623a",
+          "point": {
+            "decision_at": "2022-01-03T14:30:00+00:00",
+            "execution_end": "2022-01-03T15:00:00+00:00",
+            "execution_start": "2022-01-03T14:30:00+00:00",
+            "observed_through": "2021-12-31T21:00:00+00:00",
+            "precision": "BAR_INTERVAL",
+            "session_id": "2022-01-03"
+          },
+          "target_quantity": 0
+        },
+        "portfolio_revision": 0,
+        "quantity": 0,
+        "reference_price": 186.7,
+        "side": "HOLD",
+        "signal_status": "EVALUATED",
+        "target": 0.0,
+        "target_quantity": 0
+      },
+      {
+        "decision_at": "2022-01-03T15:00:00.000000Z",
+        "decision_id": "f684b3f2c65b718aa410dc429db967cd3d7c4b48a44d29f6ebf14783136d9b34",
+        "execution_end": "2022-01-03T15:30:00.000000Z",
+        "execution_start": "2022-01-03T15:00:00.000000Z",
+        "explanation": {
+          "basis": [
+            {
+              "key": "mode",
+              "text": "common"
+            },
+            {
+              "key": "execution_slot",
+              "text": "1"
+            },
+            {
+              "key": "target_weight",
+              "text": "1.0"
+            },
+            {
+              "key": "common",
+              "text": "-0.002686928315422016"
+            },
+            {
+              "key": "trend63",
+              "text": "0.31312420874947233"
+            },
+            {
+              "key": "entry_uptrend",
+              "text": "True"
+            }
+          ],
+          "case_key": "long",
+          "explanation": "入场条件满足，提交满仓目标",
+          "judgment": "入场条件满足，提交满仓目标",
+          "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+          "state_key": "target"
+        },
+        "limit_price": 189.76,
+        "observed_through": "2022-01-03T15:00:00.000000Z",
+        "plan": {
+          "capital_mode": "target_equity_fraction",
+          "cycle_after": null,
+          "cycle_before": null,
+          "evidence": {
+            "desired_quantity": 532,
+            "execution_policy": {
+              "policy_type": "TARGET_POSITION",
+              "settings": {
+                "capital_mode": "target_equity_fraction"
+              }
+            },
+            "explanation": {
+              "basis": [
+                {
+                  "key": "mode",
+                  "text": "common"
+                },
+                {
+                  "key": "execution_slot",
+                  "text": "1"
+                },
+                {
+                  "key": "target_weight",
+                  "text": "1.0"
+                },
+                {
+                  "key": "common",
+                  "text": "-0.002686928315422016"
+                },
+                {
+                  "key": "trend63",
+                  "text": "0.31312420874947233"
+                },
+                {
+                  "key": "entry_uptrend",
+                  "text": "True"
+                }
+              ],
+              "case_key": "long",
+              "explanation": "入场条件满足，提交满仓目标",
+              "judgment": "入场条件满足，提交满仓目标",
+              "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+              "state_key": "target"
+            },
+            "fee_rate": 0.001,
+            "implementation": "1d094e3cc70d21ae06922f8672f13111354b73043c901aa2c3cb756cf45cff58",
+            "locked_quantity": null,
+            "planning_mode": "TARGET_FRACTION",
+            "planning_result": {
+              "desired_quantity": 532,
+              "planned_quantity": 526,
+              "reasons": [
+                "INSUFFICIENT_CASH"
+              ],
+              "status": "CONSTRAINED"
+            },
+            "reference_price": 187.89,
+            "sizing": "TARGET_FRACTION",
+            "specification_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+            "target": 1.0
+          },
+          "expected_revision": 1,
+          "legs": [],
+          "orders": [
+            {
+              "limit_price": 189.76,
+              "order_type": "LIMIT",
+              "quantity": 526,
+              "side": "BUY"
+            }
+          ],
+          "owner": "candidate:S019:C0010:1d094e3cc70d21ae06922f8672f13111354b73043c901aa2c3cb756cf45cff58",
+          "plan_identity": "f684b3f2c65b718aa410dc429db967cd3d7c4b48a44d29f6ebf14783136d9b34",
+          "point": {
+            "decision_at": "2022-01-03T15:00:00+00:00",
+            "execution_end": "2022-01-03T15:30:00+00:00",
+            "execution_start": "2022-01-03T15:00:00+00:00",
+            "observed_through": "2022-01-03T15:00:00+00:00",
+            "precision": "BAR_INTERVAL",
+            "session_id": "2022-01-03"
+          },
+          "target_quantity": 526
+        },
+        "portfolio_revision": 1,
+        "quantity": 526,
+        "reference_price": 187.89,
+        "side": "BUY",
+        "signal_status": "EVALUATED",
+        "target": 1.0,
+        "target_quantity": 526
+      },
+      {
+        "decision_at": "2022-01-03T15:30:00.000000Z",
+        "decision_id": "dfb6c8a5e3fe00f2331a2fcc083174d0c88c1b0149fa679c110a7da2d040e741",
+        "execution_end": "2022-01-03T16:00:00.000000Z",
+        "execution_start": "2022-01-03T15:30:00.000000Z",
+        "explanation": {
+          "basis": [
+            {
+              "key": "mode",
+              "text": "common"
+            },
+            {
+              "key": "execution_slot",
+              "text": "2"
+            },
+            {
+              "key": "target_weight",
+              "text": "1.0"
+            },
+            {
+              "key": "common",
+              "text": "None"
+            },
+            {
+              "key": "trend63",
+              "text": "None"
+            },
+            {
+              "key": "entry_uptrend",
+              "text": "True"
+            }
+          ],
+          "case_key": "long",
+          "explanation": "持有至预定退出时点，延续满仓目标",
+          "judgment": "持有至预定退出时点，延续满仓目标",
+          "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+          "state_key": "target"
+        },
+        "limit_price": 191.49,
+        "observed_through": "2022-01-03T15:30:00.000000Z",
+        "plan": {
+          "capital_mode": "target_equity_fraction",
+          "cycle_after": null,
+          "cycle_before": null,
+          "evidence": {
+            "desired_quantity": 531,
+            "execution_policy": {
+              "policy_type": "TARGET_POSITION",
+              "settings": {
+                "capital_mode": "target_equity_fraction"
+              }
+            },
+            "explanation": {
+              "basis": [
+                {
+                  "key": "mode",
+                  "text": "common"
+                },
+                {
+                  "key": "execution_slot",
+                  "text": "2"
+                },
+                {
+                  "key": "target_weight",
+                  "text": "1.0"
+                },
+                {
+                  "key": "common",
+                  "text": "None"
+                },
+                {
+                  "key": "trend63",
+                  "text": "None"
+                },
+                {
+                  "key": "entry_uptrend",
+                  "text": "True"
+                }
+              ],
+              "case_key": "long",
+              "explanation": "持有至预定退出时点，延续满仓目标",
+              "judgment": "持有至预定退出时点，延续满仓目标",
+              "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+              "state_key": "target"
+            },
+            "fee_rate": 0.001,
+            "implementation": "1d094e3cc70d21ae06922f8672f13111354b73043c901aa2c3cb756cf45cff58",
+            "locked_quantity": null,
+            "planning_mode": "TARGET_FRACTION",
+            "planning_result": {
+              "desired_quantity": 531,
+              "planned_quantity": 531,
+              "reasons": [],
+              "status": "READY"
+            },
+            "reference_price": 189.6,
+            "sizing": "TARGET_FRACTION",
+            "specification_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+            "target": 1.0
+          },
+          "expected_revision": 2,
+          "legs": [],
+          "orders": [
+            {
+              "limit_price": 191.49,
+              "order_type": "LIMIT",
+              "quantity": 5,
+              "side": "BUY"
+            }
+          ],
+          "owner": "candidate:S019:C0010:1d094e3cc70d21ae06922f8672f13111354b73043c901aa2c3cb756cf45cff58",
+          "plan_identity": "dfb6c8a5e3fe00f2331a2fcc083174d0c88c1b0149fa679c110a7da2d040e741",
+          "point": {
+            "decision_at": "2022-01-03T15:30:00+00:00",
+            "execution_end": "2022-01-03T16:00:00+00:00",
+            "execution_start": "2022-01-03T15:30:00+00:00",
+            "observed_through": "2022-01-03T15:30:00+00:00",
+            "precision": "BAR_INTERVAL",
+            "session_id": "2022-01-03"
+          },
+          "target_quantity": 531
+        },
+        "portfolio_revision": 2,
+        "quantity": 5,
+        "reference_price": 189.6,
+        "side": "BUY",
+        "signal_status": "EVALUATED",
+        "target": 1.0,
+        "target_quantity": 531
+      },
+      {
+        "decision_at": "2022-01-06T14:30:00.000000Z",
+        "decision_id": "45d1d32c501be4e6fdcc2f85a0b9c0c5f36a4f0c671eced89a77007408bf5a70",
+        "execution_end": "2022-01-06T15:00:00.000000Z",
+        "execution_start": "2022-01-06T14:30:00.000000Z",
+        "explanation": {
+          "basis": [
+            {
+              "key": "mode",
+              "text": "common"
+            },
+            {
+              "key": "execution_slot",
+              "text": "0"
+            },
+            {
+              "key": "target_weight",
+              "text": "0.0"
+            },
+            {
+              "key": "common",
+              "text": "None"
+            },
+            {
+              "key": "trend63",
+              "text": "None"
+            },
+            {
+              "key": "entry_uptrend",
+              "text": "True"
+            }
+          ],
+          "case_key": "flat",
+          "explanation": "到达预定退出时点，目标清仓",
+          "judgment": "到达预定退出时点，目标清仓",
+          "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+          "state_key": "target"
+        },
+        "limit_price": null,
+        "observed_through": "2022-01-05T21:00:00.000000Z",
+        "plan": {
+          "capital_mode": "target_equity_fraction",
+          "cycle_after": null,
+          "cycle_before": null,
+          "evidence": {
+            "desired_quantity": 0,
+            "execution_policy": {
+              "policy_type": "TARGET_POSITION",
+              "settings": {
+                "capital_mode": "target_equity_fraction"
+              }
+            },
+            "explanation": {
+              "basis": [
+                {
+                  "key": "mode",
+                  "text": "common"
+                },
+                {
+                  "key": "execution_slot",
+                  "text": "0"
+                },
+                {
+                  "key": "target_weight",
+                  "text": "0.0"
+                },
+                {
+                  "key": "common",
+                  "text": "None"
+                },
+                {
+                  "key": "trend63",
+                  "text": "None"
+                },
+                {
+                  "key": "entry_uptrend",
+                  "text": "True"
+                }
+              ],
+              "case_key": "flat",
+              "explanation": "到达预定退出时点，目标清仓",
+              "judgment": "到达预定退出时点，目标清仓",
+              "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+              "state_key": "target"
+            },
+            "fee_rate": 0.001,
+            "implementation": "1d094e3cc70d21ae06922f8672f13111354b73043c901aa2c3cb756cf45cff58",
+            "locked_quantity": null,
+            "planning_mode": "TARGET_FRACTION",
+            "planning_result": {
+              "desired_quantity": 0,
+              "planned_quantity": 0,
+              "reasons": [],
+              "status": "READY"
+            },
+            "reference_price": 189.2,
+            "sizing": "TARGET_FRACTION",
+            "specification_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+            "target": 0.0
+          },
+          "expected_revision": 39,
+          "legs": [],
+          "orders": [
+            {
+              "limit_price": null,
+              "order_type": "MARKET",
+              "quantity": 531,
+              "side": "SELL"
+            }
+          ],
+          "owner": "candidate:S019:C0010:1d094e3cc70d21ae06922f8672f13111354b73043c901aa2c3cb756cf45cff58",
+          "plan_identity": "45d1d32c501be4e6fdcc2f85a0b9c0c5f36a4f0c671eced89a77007408bf5a70",
+          "point": {
+            "decision_at": "2022-01-06T14:30:00+00:00",
+            "execution_end": "2022-01-06T15:00:00+00:00",
+            "execution_start": "2022-01-06T14:30:00+00:00",
+            "observed_through": "2022-01-05T21:00:00+00:00",
+            "precision": "BAR_INTERVAL",
+            "session_id": "2022-01-06"
+          },
+          "target_quantity": 0
+        },
+        "portfolio_revision": 39,
+        "quantity": 531,
+        "reference_price": 189.2,
+        "side": "SELL",
+        "signal_status": "EVALUATED",
+        "target": 0.0,
+        "target_quantity": 0
+      },
+      {
+        "decision_at": "2022-01-11T15:00:00.000000Z",
+        "decision_id": "2a046f0dfacae8c9e151e4b1c7144d83e4ceda55078004db3b96b77e470b6fd8",
+        "execution_end": "2022-01-11T15:30:00.000000Z",
+        "execution_start": "2022-01-11T15:00:00.000000Z",
+        "explanation": {
+          "basis": [
+            {
+              "key": "mode",
+              "text": "common"
+            },
+            {
+              "key": "execution_slot",
+              "text": "1"
+            },
+            {
+              "key": "target_weight",
+              "text": "0.0"
+            },
+            {
+              "key": "common",
+              "text": "0.0003277864016789815"
+            },
+            {
+              "key": "trend63",
+              "text": "0.3573283323716101"
+            },
+            {
+              "key": "entry_uptrend",
+              "text": "None"
+            }
+          ],
+          "case_key": "flat",
+          "explanation": "入场条件未满足，继续空仓",
+          "judgment": "入场条件未满足，继续空仓",
+          "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+          "state_key": "target"
+        },
+        "limit_price": null,
+        "observed_through": "2022-01-11T15:00:00.000000Z",
+        "plan": {
+          "capital_mode": "target_equity_fraction",
+          "cycle_after": null,
+          "cycle_before": null,
+          "evidence": {
+            "desired_quantity": 0,
+            "execution_policy": {
+              "policy_type": "TARGET_POSITION",
+              "settings": {
+                "capital_mode": "target_equity_fraction"
+              }
+            },
+            "explanation": {
+              "basis": [
+                {
+                  "key": "mode",
+                  "text": "common"
+                },
+                {
+                  "key": "execution_slot",
+                  "text": "1"
+                },
+                {
+                  "key": "target_weight",
+                  "text": "0.0"
+                },
+                {
+                  "key": "common",
+                  "text": "0.0003277864016789815"
+                },
+                {
+                  "key": "trend63",
+                  "text": "0.3573283323716101"
+                },
+                {
+                  "key": "entry_uptrend",
+                  "text": "None"
+                }
+              ],
+              "case_key": "flat",
+              "explanation": "入场条件未满足，继续空仓",
+              "judgment": "入场条件未满足，继续空仓",
+              "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+              "state_key": "target"
+            },
+            "fee_rate": 0.001,
+            "implementation": "1d094e3cc70d21ae06922f8672f13111354b73043c901aa2c3cb756cf45cff58",
+            "locked_quantity": null,
+            "planning_mode": "TARGET_FRACTION",
+            "planning_result": {
+              "desired_quantity": 0,
+              "planned_quantity": 0,
+              "reasons": [],
+              "status": "NO_CHANGE"
+            },
+            "reference_price": 185.78,
+            "sizing": "TARGET_FRACTION",
+            "specification_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+            "target": 0.0
+          },
+          "expected_revision": 79,
+          "legs": [],
+          "orders": [],
+          "owner": "candidate:S019:C0010:1d094e3cc70d21ae06922f8672f13111354b73043c901aa2c3cb756cf45cff58",
+          "plan_identity": "2a046f0dfacae8c9e151e4b1c7144d83e4ceda55078004db3b96b77e470b6fd8",
+          "point": {
+            "decision_at": "2022-01-11T15:00:00+00:00",
+            "execution_end": "2022-01-11T15:30:00+00:00",
+            "execution_start": "2022-01-11T15:00:00+00:00",
+            "observed_through": "2022-01-11T15:00:00+00:00",
+            "precision": "BAR_INTERVAL",
+            "session_id": "2022-01-11"
+          },
+          "target_quantity": 0
+        },
+        "portfolio_revision": 79,
+        "quantity": 0,
+        "reference_price": 185.78,
+        "side": "HOLD",
+        "signal_status": "EVALUATED",
+        "target": 0.0,
+        "target_quantity": 0
+      }
+    ],
+    "rolling252": [
+      {
+        "start": "2022-01-03",
+        "end": "2023-01-03",
+        "metrics": {
+          "candidate": {
+            "nar": -0.44242243249548996,
+            "calmar": -0.9492453255126353,
+            "drawdown": 0.4660780733964235
+          },
+          "buy_hold": {
+            "nar": -0.45688783089999996,
+            "calmar": -0.9265442251410473,
+            "drawdown": 0.4931095769664402
+          },
+          "S018_v1": {
+            "nar": -0.188113160143921,
+            "calmar": -0.780191377610014,
+            "drawdown": 0.24111155998695377
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.01446539840451,
+          "buy_hold_calmar": -0.022701100371588012,
+          "S018_v1_nar": -0.25430927235156897,
+          "S018_v1_calmar": -0.1690539479026213
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 1,
+          "S018_v1_nar": 1,
+          "S018_v1_calmar": 1
+        }
+      },
+      {
+        "start": "2022-02-02",
+        "end": "2023-02-02",
+        "metrics": {
+          "candidate": {
+            "nar": -0.11129414763503409,
+            "calmar": -0.30645673481757224,
+            "drawdown": 0.3631643067047795
+          },
+          "buy_hold": {
+            "nar": -0.21758264581711995,
+            "calmar": -0.4474370798549586,
+            "drawdown": 0.48628657662358166
+          },
+          "S018_v1": {
+            "nar": -0.08329574617758928,
+            "calmar": -0.3454655852340564,
+            "drawdown": 0.24111155998695377
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.10628849818208586,
+          "buy_hold_calmar": 0.14098034503738638,
+          "S018_v1_nar": -0.02799840145744481,
+          "S018_v1_calmar": 0.039008850416484164
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 2,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2022-03-04",
+        "end": "2023-03-06",
+        "metrics": {
+          "candidate": {
+            "nar": -0.16689572445596124,
+            "calmar": -0.52200645036433,
+            "drawdown": 0.3197196592867344
+          },
+          "buy_hold": {
+            "nar": -0.3556901653293235,
+            "calmar": -0.7959336410128476,
+            "drawdown": 0.4468841961205433
+          },
+          "S018_v1": {
+            "nar": -0.1920307283770737,
+            "calmar": -0.7964393262084333,
+            "drawdown": 0.24111155998695377
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.18879444087336228,
+          "buy_hold_calmar": 0.27392719064851756,
+          "S018_v1_nar": 0.025135003921112453,
+          "S018_v1_calmar": 0.27443287584410325
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2022-04-04",
+        "end": "2023-04-04",
+        "metrics": {
+          "candidate": {
+            "nar": -0.06520500302274201,
+            "calmar": -0.20394430285647266,
+            "drawdown": 0.3197196592867344
+          },
+          "buy_hold": {
+            "nar": -0.24074675407191126,
+            "calmar": -0.6587475997748783,
+            "drawdown": 0.3654612998274066
+          },
+          "S018_v1": {
+            "nar": -0.19936578590372855,
+            "calmar": -0.8955430744730333,
+            "drawdown": 0.22261998510908243
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.17554175104916925,
+          "buy_hold_calmar": 0.4548032969184056,
+          "S018_v1_nar": 0.13416078288098654,
+          "S018_v1_calmar": 0.6915987716165606
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2022-05-04",
+        "end": "2023-05-04",
+        "metrics": {
+          "candidate": {
+            "nar": -0.007334690893580076,
+            "calmar": -0.022941006849385197,
+            "drawdown": 0.3197196592867344
+          },
+          "buy_hold": {
+            "nar": -0.14315754233035727,
+            "calmar": -0.4124503317147973,
+            "drawdown": 0.3470903799135465
+          },
+          "S018_v1": {
+            "nar": -0.11620072409120807,
+            "calmar": -0.6440548302637943,
+            "drawdown": 0.1804205459395657
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.1358228514367772,
+          "buy_hold_calmar": 0.38950932486541207,
+          "S018_v1_nar": 0.108866033197628,
+          "S018_v1_calmar": 0.6211138234144091
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2022-06-03",
+        "end": "2023-06-05",
+        "metrics": {
+          "candidate": {
+            "nar": 0.02848537355554215,
+            "calmar": 0.08909484521249159,
+            "drawdown": 0.3197196592867344
+          },
+          "buy_hold": {
+            "nar": -0.09396114929881572,
+            "calmar": -0.2707109004928907,
+            "drawdown": 0.3470903799135465
+          },
+          "S018_v1": {
+            "nar": -0.0665742922362409,
+            "calmar": -0.3829965267634721,
+            "drawdown": 0.1738247936576075
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.12244652285435786,
+          "buy_hold_calmar": 0.35980574570538226,
+          "S018_v1_nar": 0.09505966579178304,
+          "S018_v1_calmar": 0.47209137197596374
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2022-07-06",
+        "end": "2023-07-06",
+        "metrics": {
+          "candidate": {
+            "nar": 0.36590245413170375,
+            "calmar": 2.0400954855195397,
+            "drawdown": 0.17935555307526274
+          },
+          "buy_hold": {
+            "nar": 0.08648821562932318,
+            "calmar": 0.3520212386557581,
+            "drawdown": 0.24569033379801297
+          },
+          "S018_v1": {
+            "nar": -0.06705091963710685,
+            "calmar": -0.38573852570871353,
+            "drawdown": 0.1738247936576075
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.27941423850238056,
+          "buy_hold_calmar": 1.6880742468637817,
+          "S018_v1_nar": 0.4329533737688106,
+          "S018_v1_calmar": 2.425834011228253
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2022-08-04",
+        "end": "2023-08-04",
+        "metrics": {
+          "candidate": {
+            "nar": 0.40882785855711323,
+            "calmar": 2.2794268231302395,
+            "drawdown": 0.17935555307526274
+          },
+          "buy_hold": {
+            "nar": 0.09417724063221877,
+            "calmar": 0.38331683292694696,
+            "drawdown": 0.24569033379801297
+          },
+          "S018_v1": {
+            "nar": -0.05826067420476422,
+            "calmar": -0.33516895362766,
+            "drawdown": 0.1738247936576075
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.31465061792489446,
+          "buy_hold_calmar": 1.8961099902032925,
+          "S018_v1_nar": 0.46708853276187745,
+          "S018_v1_calmar": 2.6145957767578993
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2022-09-02",
+        "end": "2023-09-05",
+        "metrics": {
+          "candidate": {
+            "nar": 0.46023921474469986,
+            "calmar": 3.0961093364153043,
+            "drawdown": 0.14865082745351876
+          },
+          "buy_hold": {
+            "nar": 0.23154906523140384,
+            "calmar": 1.059177198153893,
+            "drawdown": 0.21861220731997
+          },
+          "S018_v1": {
+            "nar": -0.07948063368949088,
+            "calmar": -0.6040753051674014,
+            "drawdown": 0.13157404881410473
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.22869014951329603,
+          "buy_hold_calmar": 2.0369321382614114,
+          "S018_v1_nar": 0.5397198484341907,
+          "S018_v1_calmar": 3.7001846415827058
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2022-10-04",
+        "end": "2023-10-04",
+        "metrics": {
+          "candidate": {
+            "nar": 0.4801277325090547,
+            "calmar": 3.2299028584902065,
+            "drawdown": 0.14865082745351876
+          },
+          "buy_hold": {
+            "nar": 0.32123474070855584,
+            "calmar": 1.4694272778572846,
+            "drawdown": 0.21861220731997
+          },
+          "S018_v1": {
+            "nar": -0.021911356731844633,
+            "calmar": -0.33738903818041455,
+            "drawdown": 0.06494389044177484
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.15889299180049887,
+          "buy_hold_calmar": 1.760475580632922,
+          "S018_v1_nar": 0.5020390892408993,
+          "S018_v1_calmar": 3.5672918966706213
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2022-11-02",
+        "end": "2023-11-02",
+        "metrics": {
+          "candidate": {
+            "nar": 0.4050333528821688,
+            "calmar": 2.724729890984412,
+            "drawdown": 0.14865082745351876
+          },
+          "buy_hold": {
+            "nar": 0.28792550945800977,
+            "calmar": 1.3170605291798272,
+            "drawdown": 0.21861220731997
+          },
+          "S018_v1": {
+            "nar": 0.07352986343345247,
+            "calmar": 1.1322060155816402,
+            "drawdown": 0.06494389044177484
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.11710784342415903,
+          "buy_hold_calmar": 1.4076693618045848,
+          "S018_v1_nar": 0.3315034894487163,
+          "S018_v1_calmar": 1.5925238754027717
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2022-12-02",
+        "end": "2023-12-04",
+        "metrics": {
+          "candidate": {
+            "nar": 0.4493927135206155,
+            "calmar": 3.5063466445132727,
+            "drawdown": 0.12816551216458438
+          },
+          "buy_hold": {
+            "nar": 0.3418599924126975,
+            "calmar": 1.9477801791374911,
+            "drawdown": 0.1755126148598959
+          },
+          "S018_v1": {
+            "nar": 0.08958732777736889,
+            "calmar": 1.3794573618543535,
+            "drawdown": 0.06494389044177484
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.107532721107918,
+          "buy_hold_calmar": 1.5585664653757816,
+          "S018_v1_nar": 0.3598053857432466,
+          "S018_v1_calmar": 2.126889282658919
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-01-04",
+        "end": "2024-01-04",
+        "metrics": {
+          "candidate": {
+            "nar": 0.6978369073950321,
+            "calmar": 5.444810351936965,
+            "drawdown": 0.12816551216458438
+          },
+          "buy_hold": {
+            "nar": 0.6389545654538713,
+            "calmar": 3.6405050768796365,
+            "drawdown": 0.1755126148598959
+          },
+          "S018_v1": {
+            "nar": 0.10688325720959191,
+            "calmar": 1.6457784786610161,
+            "drawdown": 0.06494389044177484
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.05888234194116082,
+          "buy_hold_calmar": 1.8043052750573287,
+          "S018_v1_nar": 0.5909536501854402,
+          "S018_v1_calmar": 3.799031873275949
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-02-03",
+        "end": "2024-02-05",
+        "metrics": {
+          "candidate": {
+            "nar": 0.3680131092897039,
+            "calmar": 2.8713895265141063,
+            "drawdown": 0.12816551216458438
+          },
+          "buy_hold": {
+            "nar": 0.3784272846362555,
+            "calmar": 2.1561258427967562,
+            "drawdown": 0.1755126148598959
+          },
+          "S018_v1": {
+            "nar": 0.05064069845999586,
+            "calmar": 0.7797607768108311,
+            "drawdown": 0.06494389044177484
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.010414175346551646,
+          "buy_hold_calmar": 0.71526368371735,
+          "S018_v1_nar": 0.317372410829708,
+          "S018_v1_calmar": 2.091628749703275
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 1,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-03-07",
+        "end": "2024-03-06",
+        "metrics": {
+          "candidate": {
+            "nar": 0.7938403928212685,
+            "calmar": 6.193869001216602,
+            "drawdown": 0.12816551216458438
+          },
+          "buy_hold": {
+            "nar": 0.6780997923871976,
+            "calmar": 3.8635387714352913,
+            "drawdown": 0.1755126148598959
+          },
+          "S018_v1": {
+            "nar": 0.10916318785782497,
+            "calmar": 1.680884639267103,
+            "drawdown": 0.06494389044177484
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.11574060043407086,
+          "buy_hold_calmar": 2.330330229781311,
+          "S018_v1_nar": 0.6846772049634435,
+          "S018_v1_calmar": 4.512984361949499
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-04-05",
+        "end": "2024-04-05",
+        "metrics": {
+          "candidate": {
+            "nar": 1.0781329033525253,
+            "calmar": 8.412036008314278,
+            "drawdown": 0.12816551216458438
+          },
+          "buy_hold": {
+            "nar": 1.1485587176703023,
+            "calmar": 6.544023736340245,
+            "drawdown": 0.1755126148598959
+          },
+          "S018_v1": {
+            "nar": 0.10392061555622667,
+            "calmar": 1.6001599973348724,
+            "drawdown": 0.06494389044177484
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.07042581431777695,
+          "buy_hold_calmar": 1.8680122719740329,
+          "S018_v1_nar": 0.9742122877962986,
+          "S018_v1_calmar": 6.811876010979406
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 1,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-05-05",
+        "end": "2024-05-06",
+        "metrics": {
+          "candidate": {
+            "nar": 0.9461002326911099,
+            "calmar": 5.853199434030402,
+            "drawdown": 0.16163813370009217
+          },
+          "buy_hold": {
+            "nar": 0.9755011933409057,
+            "calmar": 5.558011850712873,
+            "drawdown": 0.1755126148598959
+          },
+          "S018_v1": {
+            "nar": 0.08154172256512271,
+            "calmar": 1.090913038410258,
+            "drawdown": 0.07474630854531727
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.029400960649795804,
+          "buy_hold_calmar": 0.2951875833175288,
+          "S018_v1_nar": 0.8645585101259872,
+          "S018_v1_calmar": 4.762286395620144
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 2,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-06-06",
+        "end": "2024-06-05",
+        "metrics": {
+          "candidate": {
+            "nar": 0.7905876619080221,
+            "calmar": 4.891096202427703,
+            "drawdown": 0.16163813370009217
+          },
+          "buy_hold": {
+            "nar": 0.9644314568834085,
+            "calmar": 5.88234413541733,
+            "drawdown": 0.16395359310527413
+          },
+          "S018_v1": {
+            "nar": 0.06792062189287829,
+            "calmar": 0.9086819565370148,
+            "drawdown": 0.07474630854531727
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.17384379497538638,
+          "buy_hold_calmar": -0.9912479329896264,
+          "S018_v1_nar": 0.7226670400151438,
+          "S018_v1_calmar": 3.9824142458906886
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 3,
+          "buy_hold_calmar": 1,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-07-07",
+        "end": "2024-07-08",
+        "metrics": {
+          "candidate": {
+            "nar": 0.8459649953362389,
+            "calmar": 5.233696875675796,
+            "drawdown": 0.16163813370009217
+          },
+          "buy_hold": {
+            "nar": 1.12399757281365,
+            "calmar": 6.855583653430116,
+            "drawdown": 0.16395359310527413
+          },
+          "S018_v1": {
+            "nar": 0.04663704766594012,
+            "calmar": 0.6239378047367378,
+            "drawdown": 0.07474630854531727
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.27803257747741106,
+          "buy_hold_calmar": -1.6218867777543204,
+          "S018_v1_nar": 0.7993279476702988,
+          "S018_v1_calmar": 4.609759070939059
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 4,
+          "buy_hold_calmar": 2,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-08-07",
+        "end": "2024-08-06",
+        "metrics": {
+          "candidate": {
+            "nar": 0.263623498247072,
+            "calmar": 0.9107172494569545,
+            "drawdown": 0.2894679972343406
+          },
+          "buy_hold": {
+            "nar": 0.2749499367733783,
+            "calmar": 0.6623793494401932,
+            "drawdown": 0.4150943670054795
+          },
+          "S018_v1": {
+            "nar": 0.013962973846403548,
+            "calmar": 0.18680486191419154,
+            "drawdown": 0.07474630854531727
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.011326438526306326,
+          "buy_hold_calmar": 0.24833790001676137,
+          "S018_v1_nar": 0.24966052440066844,
+          "S018_v1_calmar": 0.723912387542763
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 5,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-09-06",
+        "end": "2024-09-05",
+        "metrics": {
+          "candidate": {
+            "nar": 0.33902755547681074,
+            "calmar": 1.1056975595604208,
+            "drawdown": 0.30661870648569933
+          },
+          "buy_hold": {
+            "nar": 0.2736282260448142,
+            "calmar": 0.6373987377451296,
+            "drawdown": 0.4292889361733051
+          },
+          "S018_v1": {
+            "nar": 0.04497760193748124,
+            "calmar": 0.6017367655047763,
+            "drawdown": 0.07474630854531727
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.06539932943199656,
+          "buy_hold_calmar": 0.46829882181529126,
+          "S018_v1_nar": 0.2940499535393295,
+          "S018_v1_calmar": 0.5039607940556445
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-10-05",
+        "end": "2024-10-04",
+        "metrics": {
+          "candidate": {
+            "nar": 0.3535677977610576,
+            "calmar": 1.0961840705076034,
+            "drawdown": 0.32254418511786354
+          },
+          "buy_hold": {
+            "nar": 0.4992507385449352,
+            "calmar": 1.1537806535782118,
+            "drawdown": 0.4327085369273721
+          },
+          "S018_v1": {
+            "nar": 0.056194208222003716,
+            "calmar": 0.7086509135419289,
+            "drawdown": 0.0792974469490737
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.14568294078387756,
+          "buy_hold_calmar": -0.05759658307060844,
+          "S018_v1_nar": 0.2973735895390539,
+          "S018_v1_calmar": 0.3875331569656745
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 1,
+          "buy_hold_calmar": 1,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-11-03",
+        "end": "2024-11-04",
+        "metrics": {
+          "candidate": {
+            "nar": 0.46252649810498325,
+            "calmar": 1.43399422294954,
+            "drawdown": 0.32254418511786354
+          },
+          "buy_hold": {
+            "nar": 0.4425157823448411,
+            "calmar": 1.0226647837528455,
+            "drawdown": 0.4327085369273721
+          },
+          "S018_v1": {
+            "nar": 0.00952080322866422,
+            "calmar": 0.12006443580432871,
+            "drawdown": 0.0792974469490737
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.020010715760142128,
+          "buy_hold_calmar": 0.4113294391966944,
+          "S018_v1_nar": 0.45300569487631903,
+          "S018_v1_calmar": 1.3139297871452111
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-12-05",
+        "end": "2024-12-04",
+        "metrics": {
+          "candidate": {
+            "nar": 0.48642882062071613,
+            "calmar": 1.5080997986150833,
+            "drawdown": 0.32254418511786354
+          },
+          "buy_hold": {
+            "nar": 0.3884979556488861,
+            "calmar": 0.8978282665915914,
+            "drawdown": 0.4327085369273721
+          },
+          "S018_v1": {
+            "nar": 0.11116665743701826,
+            "calmar": 1.4018945339868452,
+            "drawdown": 0.0792974469490737
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.09793086497183001,
+          "buy_hold_calmar": 0.6102715320234918,
+          "S018_v1_nar": 0.37526216318369787,
+          "S018_v1_calmar": 0.1062052646282381
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2024-01-05",
+        "end": "2025-01-06",
+        "metrics": {
+          "candidate": {
+            "nar": 0.29985154798359503,
+            "calmar": 0.8403508099841334,
+            "drawdown": 0.3568171106888759
+          },
+          "buy_hold": {
+            "nar": 0.2021778310412441,
+            "calmar": 0.45449721108749513,
+            "drawdown": 0.44483844148896856
+          },
+          "S018_v1": {
+            "nar": 0.1774144088041325,
+            "calmar": 2.2373281313592774,
+            "drawdown": 0.0792974469490737
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.09767371694235094,
+          "buy_hold_calmar": 0.38585359889663823,
+          "S018_v1_nar": 0.12243713917946253,
+          "S018_v1_calmar": -1.396977321375144
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 1
+        }
+      },
+      {
+        "start": "2024-02-06",
+        "end": "2025-02-06",
+        "metrics": {
+          "candidate": {
+            "nar": 0.2754194961502323,
+            "calmar": 0.7718786120388222,
+            "drawdown": 0.3568171106888759
+          },
+          "buy_hold": {
+            "nar": 0.09072002735688955,
+            "calmar": 0.20393927074564508,
+            "drawdown": 0.44483844148896856
+          },
+          "S018_v1": {
+            "nar": 0.2418926620276347,
+            "calmar": 3.0504470362454756,
+            "drawdown": 0.0792974469490737
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.18469946879334276,
+          "buy_hold_calmar": 0.5679393412931771,
+          "S018_v1_nar": 0.033526834122597604,
+          "S018_v1_calmar": -2.2785684242066533
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 2
+        }
+      },
+      {
+        "start": "2024-03-07",
+        "end": "2025-03-10",
+        "metrics": {
+          "candidate": {
+            "nar": -0.0874118884431141,
+            "calmar": -0.2449767284824305,
+            "drawdown": 0.3568171106888759
+          },
+          "buy_hold": {
+            "nar": -0.08269417761657571,
+            "calmar": -0.18589710309158708,
+            "drawdown": 0.44483844148896856
+          },
+          "S018_v1": {
+            "nar": 0.2330658823098961,
+            "calmar": 2.9391347549887117,
+            "drawdown": 0.0792974469490737
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.004717710826538379,
+          "buy_hold_calmar": -0.05907962539084341,
+          "S018_v1_nar": -0.3204777707530102,
+          "S018_v1_calmar": -3.1841114834711424
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 1,
+          "buy_hold_calmar": 1,
+          "S018_v1_nar": 1,
+          "S018_v1_calmar": 3
+        }
+      },
+      {
+        "start": "2024-04-08",
+        "end": "2025-04-08",
+        "metrics": {
+          "candidate": {
+            "nar": -0.40608517219218265,
+            "calmar": -0.7937469530527502,
+            "drawdown": 0.5116053304272594
+          },
+          "buy_hold": {
+            "nar": -0.46020242697038916,
+            "calmar": -0.8080462953846778,
+            "drawdown": 0.5695248274745268
+          },
+          "S018_v1": {
+            "nar": 0.19563634163506594,
+            "calmar": 2.467120306668981,
+            "drawdown": 0.0792974469490737
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.0541172547782065,
+          "buy_hold_calmar": 0.014299342331927534,
+          "S018_v1_nar": -0.6017215138272486,
+          "S018_v1_calmar": -3.260867259721731
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 2,
+          "S018_v1_calmar": 4
+        }
+      },
+      {
+        "start": "2024-05-07",
+        "end": "2025-05-08",
+        "metrics": {
+          "candidate": {
+            "nar": -0.2084574949459389,
+            "calmar": -0.4074576290513799,
+            "drawdown": 0.5116053304272594
+          },
+          "buy_hold": {
+            "nar": -0.283720928010056,
+            "calmar": -0.4981713075936905,
+            "drawdown": 0.5695248274745268
+          },
+          "S018_v1": {
+            "nar": 0.35839658826855314,
+            "calmar": 4.51964851401486,
+            "drawdown": 0.0792974469490737
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.07526343306411709,
+          "buy_hold_calmar": 0.0907136785423106,
+          "S018_v1_nar": -0.566854083214492,
+          "S018_v1_calmar": -4.92710614306624
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 3,
+          "S018_v1_calmar": 5
+        }
+      },
+      {
+        "start": "2024-06-06",
+        "end": "2025-06-09",
+        "metrics": {
+          "candidate": {
+            "nar": -0.1270746106441153,
+            "calmar": -0.24838406303935665,
+            "drawdown": 0.5116053304272594
+          },
+          "buy_hold": {
+            "nar": -0.16488124991383635,
+            "calmar": -0.2895066939311105,
+            "drawdown": 0.5695248274745268
+          },
+          "S018_v1": {
+            "nar": 0.3981486304169939,
+            "calmar": 5.511968388879329,
+            "drawdown": 0.07223347492708387
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.037806639269721054,
+          "buy_hold_calmar": 0.04112263089175386,
+          "S018_v1_nar": -0.5252232410611092,
+          "S018_v1_calmar": -5.760352451918686
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 4,
+          "S018_v1_calmar": 6
+        }
+      },
+      {
+        "start": "2024-07-09",
+        "end": "2025-07-10",
+        "metrics": {
+          "candidate": {
+            "nar": -0.042756930028101214,
+            "calmar": -0.09214906999740773,
+            "drawdown": 0.46399741233746605
+          },
+          "buy_hold": {
+            "nar": -0.0537992495792714,
+            "calmar": -0.10412416014864118,
+            "drawdown": 0.5166836352146412
+          },
+          "S018_v1": {
+            "nar": 0.4568990243511486,
+            "calmar": 6.3253086579645466,
+            "drawdown": 0.07223347492708387
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.011042319551170188,
+          "buy_hold_calmar": 0.01197509015123345,
+          "S018_v1_nar": -0.4996559543792498,
+          "S018_v1_calmar": -6.4174577279619545
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 5,
+          "S018_v1_calmar": 7
+        }
+      },
+      {
+        "start": "2024-08-07",
+        "end": "2025-08-08",
+        "metrics": {
+          "candidate": {
+            "nar": 0.35503246330042937,
+            "calmar": 0.8501817446735851,
+            "drawdown": 0.41759596171609037
+          },
+          "buy_hold": {
+            "nar": 0.33478996046680587,
+            "calmar": 0.795722735873884,
+            "drawdown": 0.42073695443568115
+          },
+          "S018_v1": {
+            "nar": 0.5488234913145045,
+            "calmar": 7.5979106898638715,
+            "drawdown": 0.07223347492708387
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.0202425028336235,
+          "buy_hold_calmar": 0.054459008799701114,
+          "S018_v1_nar": -0.1937910280140751,
+          "S018_v1_calmar": -6.747728945190286
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 6,
+          "S018_v1_calmar": 8
+        }
+      },
+      {
+        "start": "2024-09-06",
+        "end": "2025-09-09",
+        "metrics": {
+          "candidate": {
+            "nar": 0.5552249032016301,
+            "calmar": 1.3510757320339448,
+            "drawdown": 0.41095024508047373
+          },
+          "buy_hold": {
+            "nar": 0.5086559747244412,
+            "calmar": 1.208964340692827,
+            "drawdown": 0.42073695443568115
+          },
+          "S018_v1": {
+            "nar": 0.7692766623170899,
+            "calmar": 10.64986369676437,
+            "drawdown": 0.07223347492708387
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.04656892847718885,
+          "buy_hold_calmar": 0.14211139134111783,
+          "S018_v1_nar": -0.21405175911545982,
+          "S018_v1_calmar": -9.298787964730426
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 7,
+          "S018_v1_calmar": 9
+        }
+      },
+      {
+        "start": "2024-10-07",
+        "end": "2025-10-08",
+        "metrics": {
+          "candidate": {
+            "nar": 0.5077202193388954,
+            "calmar": 1.235478565633832,
+            "drawdown": 0.41095024508047373
+          },
+          "buy_hold": {
+            "nar": 0.9130075245982567,
+            "calmar": 2.1700198068478196,
+            "drawdown": 0.42073695443568115
+          },
+          "S018_v1": {
+            "nar": 0.9148789082063173,
+            "calmar": 12.66558073150769,
+            "drawdown": 0.07223347492708387
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.4052873052593613,
+          "buy_hold_calmar": -0.9345412412139875,
+          "S018_v1_nar": -0.4071586888674219,
+          "S018_v1_calmar": -11.430102165873858
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 1,
+          "buy_hold_calmar": 1,
+          "S018_v1_nar": 8,
+          "S018_v1_calmar": 10
+        }
+      },
+      {
+        "start": "2024-11-05",
+        "end": "2025-11-06",
+        "metrics": {
+          "candidate": {
+            "nar": 0.5400667665781413,
+            "calmar": 1.3141901557264761,
+            "drawdown": 0.41095024508047373
+          },
+          "buy_hold": {
+            "nar": 1.3242658781375316,
+            "calmar": 3.1474912393034744,
+            "drawdown": 0.42073695443568115
+          },
+          "S018_v1": {
+            "nar": 1.019800090116532,
+            "calmar": 14.11810924430771,
+            "drawdown": 0.07223347492708387
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.7841991115593903,
+          "buy_hold_calmar": -1.8333010835769983,
+          "S018_v1_nar": -0.4797333235383907,
+          "S018_v1_calmar": -12.803919088581235
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 2,
+          "buy_hold_calmar": 2,
+          "S018_v1_nar": 9,
+          "S018_v1_calmar": 11
+        }
+      },
+      {
+        "start": "2024-12-05",
+        "end": "2025-12-08",
+        "metrics": {
+          "candidate": {
+            "nar": 0.2800891908633314,
+            "calmar": 0.6954349597990718,
+            "drawdown": 0.4027539698956981
+          },
+          "buy_hold": {
+            "nar": 1.373550299096459,
+            "calmar": 3.4308339686342397,
+            "drawdown": 0.40035464019940536
+          },
+          "S018_v1": {
+            "nar": 0.7889481197564554,
+            "calmar": 10.922195291765481,
+            "drawdown": 0.07223347492708387
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -1.0934611082331276,
+          "buy_hold_calmar": -2.735399008835168,
+          "S018_v1_nar": -0.508858928893124,
+          "S018_v1_calmar": -10.22676033196641
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 3,
+          "buy_hold_calmar": 3,
+          "S018_v1_nar": 10,
+          "S018_v1_calmar": 12
+        }
+      },
+      {
+        "start": "2025-01-07",
+        "end": "2026-01-08",
+        "metrics": {
+          "candidate": {
+            "nar": 0.7710416286803117,
+            "calmar": 1.9144234105997506,
+            "drawdown": 0.4027539698956981
+          },
+          "buy_hold": {
+            "nar": 2.2563902036651258,
+            "calmar": 5.6359786476841665,
+            "drawdown": 0.40035464019940536
+          },
+          "S018_v1": {
+            "nar": 0.783131906063272,
+            "calmar": 10.841675647666197,
+            "drawdown": 0.07223347492708387
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -1.485348574984814,
+          "buy_hold_calmar": -3.7215552370844156,
+          "S018_v1_nar": -0.012090277382960313,
+          "S018_v1_calmar": -8.927252237066446
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 4,
+          "buy_hold_calmar": 4,
+          "S018_v1_nar": 11,
+          "S018_v1_calmar": 13
+        }
+      },
+      {
+        "start": "2025-02-07",
+        "end": "2026-02-09",
+        "metrics": {
+          "candidate": {
+            "nar": 1.042953650825523,
+            "calmar": 2.9633969714652246,
+            "drawdown": 0.35194530495515897
+          },
+          "buy_hold": {
+            "nar": 3.0015394506489033,
+            "calmar": 7.774731456809652,
+            "drawdown": 0.3860634244826483
+          },
+          "S018_v1": {
+            "nar": 0.7931572695320732,
+            "calmar": 10.980466748037891,
+            "drawdown": 0.07223347492708387
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -1.9585857998233802,
+          "buy_hold_calmar": -4.811334485344428,
+          "S018_v1_nar": 0.24979638129344983,
+          "S018_v1_calmar": -8.017069776572667
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 5,
+          "buy_hold_calmar": 5,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 14
+        }
+      },
+      {
+        "start": "2025-03-11",
+        "end": "2026-03-11",
+        "metrics": {
+          "candidate": {
+            "nar": 1.270796794432882,
+            "calmar": 3.703010297258114,
+            "drawdown": 0.3431793844521147
+          },
+          "buy_hold": {
+            "nar": 3.732639575106819,
+            "calmar": 10.239169494159695,
+            "drawdown": 0.36454514960767803
+          },
+          "S018_v1": {
+            "nar": 1.019212887309998,
+            "calmar": 17.19999181361129,
+            "drawdown": 0.05925659141904005
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -2.461842780673937,
+          "buy_hold_calmar": -6.536159196901581,
+          "S018_v1_nar": 0.25158390712288403,
+          "S018_v1_calmar": -13.496981516353177
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 6,
+          "buy_hold_calmar": 6,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 15
+        }
+      },
+      {
+        "start": "2025-04-09",
+        "end": "2026-04-10",
+        "metrics": {
+          "candidate": {
+            "nar": 1.829497827222545,
+            "calmar": 6.609669690878266,
+            "drawdown": 0.2767911125343162
+          },
+          "buy_hold": {
+            "nar": 5.264303168290253,
+            "calmar": 17.477646707955184,
+            "drawdown": 0.3012020586212064
+          },
+          "S018_v1": {
+            "nar": 1.1844238583377473,
+            "calmar": 15.585487899304129,
+            "drawdown": 0.07599530191099313
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -3.4348053410677077,
+          "buy_hold_calmar": -10.867977017076917,
+          "S018_v1_nar": 0.6450739688847977,
+          "S018_v1_calmar": -8.975818208425864
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 7,
+          "buy_hold_calmar": 7,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 16
+        }
+      },
+      {
+        "start": "2025-05-09",
+        "end": "2026-05-11",
+        "metrics": {
+          "candidate": {
+            "nar": 1.491023062744218,
+            "calmar": 5.386816972164751,
+            "drawdown": 0.2767911125343162
+          },
+          "buy_hold": {
+            "nar": 8.154725761444633,
+            "calmar": 27.07393767085791,
+            "drawdown": 0.3012020586212064
+          },
+          "S018_v1": {
+            "nar": 0.8941699353710875,
+            "calmar": 11.766121232314507,
+            "drawdown": 0.07599530191099313
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -6.663702698700415,
+          "buy_hold_calmar": -21.687120698693157,
+          "S018_v1_nar": 0.5968531273731306,
+          "S018_v1_calmar": -6.379304260149756
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 8,
+          "buy_hold_calmar": 8,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 17
+        }
+      },
+      {
+        "start": "2025-06-10",
+        "end": "2026-06-10",
+        "metrics": {
+          "candidate": {
+            "nar": 1.3049719859847957,
+            "calmar": 4.7146455463703045,
+            "drawdown": 0.2767911125343162
+          },
+          "buy_hold": {
+            "nar": 6.918396923861992,
+            "calmar": 22.96928830942225,
+            "drawdown": 0.3012020586212064
+          },
+          "S018_v1": {
+            "nar": 1.0815053580387,
+            "calmar": 14.231213388761528,
+            "drawdown": 0.07599530191099313
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -5.6134249378771965,
+          "buy_hold_calmar": -18.254642763051947,
+          "S018_v1_nar": 0.22346662794609573,
+          "S018_v1_calmar": -9.516567842391224
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 9,
+          "buy_hold_calmar": 9,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 18
+        }
+      },
+      {
+        "start": "2025-07-11",
+        "end": "2026-07-13",
+        "metrics": {
+          "candidate": {
+            "nar": 1.3127051601635222,
+            "calmar": 4.742584211408792,
+            "drawdown": 0.2767911125343162
+          },
+          "buy_hold": {
+            "nar": 6.503712973276992,
+            "calmar": 21.59252497492423,
+            "drawdown": 0.3012020586212064
+          },
+          "S018_v1": {
+            "nar": 1.3699323269080486,
+            "calmar": 18.026539699947957,
+            "drawdown": 0.07599530191099313
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -5.191007813113469,
+          "buy_hold_calmar": -16.84994076351544,
+          "S018_v1_nar": -0.057227166744526325,
+          "S018_v1_calmar": -13.283955488539165
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 10,
+          "buy_hold_calmar": 10,
+          "S018_v1_nar": 1,
+          "S018_v1_calmar": 19
+        }
+      },
+      {
+        "start": "2025-08-11",
+        "end": "2026-08-11",
+        "metrics": {
+          "candidate": {
+            "nar": 0.7730461693872819,
+            "calmar": 1.9939055784250814,
+            "drawdown": 0.3877045020345873
+          },
+          "buy_hold": {
+            "nar": 6.199471990740725,
+            "calmar": 15.891089571173948,
+            "drawdown": 0.39012252514053014
+          },
+          "S018_v1": {
+            "nar": 1.5313089217107052,
+            "calmar": 16.885005995364324,
+            "drawdown": 0.09069045768364647
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -5.426425821353443,
+          "buy_hold_calmar": -13.897183992748866,
+          "S018_v1_nar": -0.7582627523234233,
+          "S018_v1_calmar": -14.891100416939242
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 11,
+          "buy_hold_calmar": 11,
+          "S018_v1_nar": 2,
+          "S018_v1_calmar": 20
+        }
+      },
+      {
+        "start": "2025-09-10",
+        "end": "2026-09-10",
+        "metrics": {
+          "candidate": {
+            "nar": 0.5905160982167885,
+            "calmar": 1.5231086951992843,
+            "drawdown": 0.3877045020345873
+          },
+          "buy_hold": {
+            "nar": 6.135248331706244,
+            "calmar": 15.726465241903684,
+            "drawdown": 0.39012252514053014
+          },
+          "S018_v1": {
+            "nar": 1.458759642468464,
+            "calmar": 16.08504003317552,
+            "drawdown": 0.09069045768364647
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -5.544732233489455,
+          "buy_hold_calmar": -14.2033565467044,
+          "S018_v1_nar": -0.8682435442516754,
+          "S018_v1_calmar": -14.561931337976237
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 12,
+          "buy_hold_calmar": 12,
+          "S018_v1_nar": 3,
+          "S018_v1_calmar": 21
+        }
+      },
+      {
+        "start": "2025-10-09",
+        "end": "2026-10-09",
+        "metrics": {
+          "candidate": {
+            "nar": 0.6462803385798612,
+            "calmar": 1.6669405054321662,
+            "drawdown": 0.3877045020345873
+          },
+          "buy_hold": {
+            "nar": 4.190168558618381,
+            "calmar": 10.7406475878546,
+            "drawdown": 0.39012252514053014
+          },
+          "S018_v1": {
+            "nar": 1.2782076740403134,
+            "calmar": 14.09418043184937,
+            "drawdown": 0.09069045768364647
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -3.5438882200385198,
+          "buy_hold_calmar": -9.073707082422434,
+          "S018_v1_nar": -0.6319273354604522,
+          "S018_v1_calmar": -12.427239926417204
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 13,
+          "buy_hold_calmar": 13,
+          "S018_v1_nar": 4,
+          "S018_v1_calmar": 22
+        }
+      }
+    ],
+    "longest_underperformance": {
+      "buy_hold_nar": 13,
+      "buy_hold_calmar": 13,
+      "S018_v1_nar": 11,
+      "S018_v1_calmar": 22
+    }
+  },
+  "hold5": {
+    "examples": [
+      {
+        "decision_at": "2022-01-03T14:30:00.000000Z",
+        "decision_id": "200508188b3791398b56c483075e62e5d9022609c3b8e6185b3e264ebd46188a",
+        "execution_end": "2022-01-03T15:00:00.000000Z",
+        "execution_start": "2022-01-03T14:30:00.000000Z",
+        "explanation": {
+          "basis": [
+            {
+              "key": "mode",
+              "text": "common"
+            },
+            {
+              "key": "execution_slot",
+              "text": "0"
+            },
+            {
+              "key": "target_weight",
+              "text": "0.0"
+            },
+            {
+              "key": "common",
+              "text": "None"
+            },
+            {
+              "key": "trend63",
+              "text": "None"
+            },
+            {
+              "key": "entry_uptrend",
+              "text": "None"
+            }
+          ],
+          "case_key": "flat",
+          "explanation": "等待下一交易日首30分钟完成，继续空仓",
+          "judgment": "等待下一交易日首30分钟完成，继续空仓",
+          "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+          "state_key": "target"
+        },
+        "limit_price": null,
+        "observed_through": "2021-12-31T21:00:00.000000Z",
+        "plan": {
+          "capital_mode": "target_equity_fraction",
+          "cycle_after": null,
+          "cycle_before": null,
+          "evidence": {
+            "desired_quantity": 0,
+            "execution_policy": {
+              "policy_type": "TARGET_POSITION",
+              "settings": {
+                "capital_mode": "target_equity_fraction"
+              }
+            },
+            "explanation": {
+              "basis": [
+                {
+                  "key": "mode",
+                  "text": "common"
+                },
+                {
+                  "key": "execution_slot",
+                  "text": "0"
+                },
+                {
+                  "key": "target_weight",
+                  "text": "0.0"
+                },
+                {
+                  "key": "common",
+                  "text": "None"
+                },
+                {
+                  "key": "trend63",
+                  "text": "None"
+                },
+                {
+                  "key": "entry_uptrend",
+                  "text": "None"
+                }
+              ],
+              "case_key": "flat",
+              "explanation": "等待下一交易日首30分钟完成，继续空仓",
+              "judgment": "等待下一交易日首30分钟完成，继续空仓",
+              "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+              "state_key": "target"
+            },
+            "fee_rate": 0.001,
+            "implementation": "58a2a8e6e9badc3002b38ea39f037efff1d60e863bab339434c95931dbd5a6b1",
+            "locked_quantity": null,
+            "planning_mode": "TARGET_FRACTION",
+            "planning_result": {
+              "desired_quantity": 0,
+              "planned_quantity": 0,
+              "reasons": [],
+              "status": "NO_CHANGE"
+            },
+            "reference_price": 186.7,
+            "sizing": "TARGET_FRACTION",
+            "specification_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+            "target": 0.0
+          },
+          "expected_revision": 0,
+          "legs": [],
+          "orders": [],
+          "owner": "candidate:S019:C0011:58a2a8e6e9badc3002b38ea39f037efff1d60e863bab339434c95931dbd5a6b1",
+          "plan_identity": "200508188b3791398b56c483075e62e5d9022609c3b8e6185b3e264ebd46188a",
+          "point": {
+            "decision_at": "2022-01-03T14:30:00+00:00",
+            "execution_end": "2022-01-03T15:00:00+00:00",
+            "execution_start": "2022-01-03T14:30:00+00:00",
+            "observed_through": "2021-12-31T21:00:00+00:00",
+            "precision": "BAR_INTERVAL",
+            "session_id": "2022-01-03"
+          },
+          "target_quantity": 0
+        },
+        "portfolio_revision": 0,
+        "quantity": 0,
+        "reference_price": 186.7,
+        "side": "HOLD",
+        "signal_status": "EVALUATED",
+        "target": 0.0,
+        "target_quantity": 0
+      },
+      {
+        "decision_at": "2022-01-03T15:00:00.000000Z",
+        "decision_id": "f18cef14e1cdc9fd00b16750fd56eddd0a4f2f5bc0049fa111e664cdb06d266f",
+        "execution_end": "2022-01-03T15:30:00.000000Z",
+        "execution_start": "2022-01-03T15:00:00.000000Z",
+        "explanation": {
+          "basis": [
+            {
+              "key": "mode",
+              "text": "common"
+            },
+            {
+              "key": "execution_slot",
+              "text": "1"
+            },
+            {
+              "key": "target_weight",
+              "text": "1.0"
+            },
+            {
+              "key": "common",
+              "text": "-0.002686928315422016"
+            },
+            {
+              "key": "trend63",
+              "text": "0.31312420874947233"
+            },
+            {
+              "key": "entry_uptrend",
+              "text": "True"
+            }
+          ],
+          "case_key": "long",
+          "explanation": "入场条件满足，提交满仓目标",
+          "judgment": "入场条件满足，提交满仓目标",
+          "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+          "state_key": "target"
+        },
+        "limit_price": 189.76,
+        "observed_through": "2022-01-03T15:00:00.000000Z",
+        "plan": {
+          "capital_mode": "target_equity_fraction",
+          "cycle_after": null,
+          "cycle_before": null,
+          "evidence": {
+            "desired_quantity": 532,
+            "execution_policy": {
+              "policy_type": "TARGET_POSITION",
+              "settings": {
+                "capital_mode": "target_equity_fraction"
+              }
+            },
+            "explanation": {
+              "basis": [
+                {
+                  "key": "mode",
+                  "text": "common"
+                },
+                {
+                  "key": "execution_slot",
+                  "text": "1"
+                },
+                {
+                  "key": "target_weight",
+                  "text": "1.0"
+                },
+                {
+                  "key": "common",
+                  "text": "-0.002686928315422016"
+                },
+                {
+                  "key": "trend63",
+                  "text": "0.31312420874947233"
+                },
+                {
+                  "key": "entry_uptrend",
+                  "text": "True"
+                }
+              ],
+              "case_key": "long",
+              "explanation": "入场条件满足，提交满仓目标",
+              "judgment": "入场条件满足，提交满仓目标",
+              "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+              "state_key": "target"
+            },
+            "fee_rate": 0.001,
+            "implementation": "58a2a8e6e9badc3002b38ea39f037efff1d60e863bab339434c95931dbd5a6b1",
+            "locked_quantity": null,
+            "planning_mode": "TARGET_FRACTION",
+            "planning_result": {
+              "desired_quantity": 532,
+              "planned_quantity": 526,
+              "reasons": [
+                "INSUFFICIENT_CASH"
+              ],
+              "status": "CONSTRAINED"
+            },
+            "reference_price": 187.89,
+            "sizing": "TARGET_FRACTION",
+            "specification_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+            "target": 1.0
+          },
+          "expected_revision": 1,
+          "legs": [],
+          "orders": [
+            {
+              "limit_price": 189.76,
+              "order_type": "LIMIT",
+              "quantity": 526,
+              "side": "BUY"
+            }
+          ],
+          "owner": "candidate:S019:C0011:58a2a8e6e9badc3002b38ea39f037efff1d60e863bab339434c95931dbd5a6b1",
+          "plan_identity": "f18cef14e1cdc9fd00b16750fd56eddd0a4f2f5bc0049fa111e664cdb06d266f",
+          "point": {
+            "decision_at": "2022-01-03T15:00:00+00:00",
+            "execution_end": "2022-01-03T15:30:00+00:00",
+            "execution_start": "2022-01-03T15:00:00+00:00",
+            "observed_through": "2022-01-03T15:00:00+00:00",
+            "precision": "BAR_INTERVAL",
+            "session_id": "2022-01-03"
+          },
+          "target_quantity": 526
+        },
+        "portfolio_revision": 1,
+        "quantity": 526,
+        "reference_price": 187.89,
+        "side": "BUY",
+        "signal_status": "EVALUATED",
+        "target": 1.0,
+        "target_quantity": 526
+      },
+      {
+        "decision_at": "2022-01-03T15:30:00.000000Z",
+        "decision_id": "08d725adcb93dbe039a013d848a3cab0ce06aa5f98d3a97644de148158730efa",
+        "execution_end": "2022-01-03T16:00:00.000000Z",
+        "execution_start": "2022-01-03T15:30:00.000000Z",
+        "explanation": {
+          "basis": [
+            {
+              "key": "mode",
+              "text": "common"
+            },
+            {
+              "key": "execution_slot",
+              "text": "2"
+            },
+            {
+              "key": "target_weight",
+              "text": "1.0"
+            },
+            {
+              "key": "common",
+              "text": "None"
+            },
+            {
+              "key": "trend63",
+              "text": "None"
+            },
+            {
+              "key": "entry_uptrend",
+              "text": "True"
+            }
+          ],
+          "case_key": "long",
+          "explanation": "持有至预定退出时点，延续满仓目标",
+          "judgment": "持有至预定退出时点，延续满仓目标",
+          "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+          "state_key": "target"
+        },
+        "limit_price": 191.49,
+        "observed_through": "2022-01-03T15:30:00.000000Z",
+        "plan": {
+          "capital_mode": "target_equity_fraction",
+          "cycle_after": null,
+          "cycle_before": null,
+          "evidence": {
+            "desired_quantity": 531,
+            "execution_policy": {
+              "policy_type": "TARGET_POSITION",
+              "settings": {
+                "capital_mode": "target_equity_fraction"
+              }
+            },
+            "explanation": {
+              "basis": [
+                {
+                  "key": "mode",
+                  "text": "common"
+                },
+                {
+                  "key": "execution_slot",
+                  "text": "2"
+                },
+                {
+                  "key": "target_weight",
+                  "text": "1.0"
+                },
+                {
+                  "key": "common",
+                  "text": "None"
+                },
+                {
+                  "key": "trend63",
+                  "text": "None"
+                },
+                {
+                  "key": "entry_uptrend",
+                  "text": "True"
+                }
+              ],
+              "case_key": "long",
+              "explanation": "持有至预定退出时点，延续满仓目标",
+              "judgment": "持有至预定退出时点，延续满仓目标",
+              "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+              "state_key": "target"
+            },
+            "fee_rate": 0.001,
+            "implementation": "58a2a8e6e9badc3002b38ea39f037efff1d60e863bab339434c95931dbd5a6b1",
+            "locked_quantity": null,
+            "planning_mode": "TARGET_FRACTION",
+            "planning_result": {
+              "desired_quantity": 531,
+              "planned_quantity": 531,
+              "reasons": [],
+              "status": "READY"
+            },
+            "reference_price": 189.6,
+            "sizing": "TARGET_FRACTION",
+            "specification_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+            "target": 1.0
+          },
+          "expected_revision": 2,
+          "legs": [],
+          "orders": [
+            {
+              "limit_price": 191.49,
+              "order_type": "LIMIT",
+              "quantity": 5,
+              "side": "BUY"
+            }
+          ],
+          "owner": "candidate:S019:C0011:58a2a8e6e9badc3002b38ea39f037efff1d60e863bab339434c95931dbd5a6b1",
+          "plan_identity": "08d725adcb93dbe039a013d848a3cab0ce06aa5f98d3a97644de148158730efa",
+          "point": {
+            "decision_at": "2022-01-03T15:30:00+00:00",
+            "execution_end": "2022-01-03T16:00:00+00:00",
+            "execution_start": "2022-01-03T15:30:00+00:00",
+            "observed_through": "2022-01-03T15:30:00+00:00",
+            "precision": "BAR_INTERVAL",
+            "session_id": "2022-01-03"
+          },
+          "target_quantity": 531
+        },
+        "portfolio_revision": 2,
+        "quantity": 5,
+        "reference_price": 189.6,
+        "side": "BUY",
+        "signal_status": "EVALUATED",
+        "target": 1.0,
+        "target_quantity": 531
+      },
+      {
+        "decision_at": "2022-01-10T14:30:00.000000Z",
+        "decision_id": "a130c2bc9e0f2a122f5ded1096bdfa328a599c6f793e74bd33fbf11cfcd9086f",
+        "execution_end": "2022-01-10T15:00:00.000000Z",
+        "execution_start": "2022-01-10T14:30:00.000000Z",
+        "explanation": {
+          "basis": [
+            {
+              "key": "mode",
+              "text": "common"
+            },
+            {
+              "key": "execution_slot",
+              "text": "0"
+            },
+            {
+              "key": "target_weight",
+              "text": "0.0"
+            },
+            {
+              "key": "common",
+              "text": "None"
+            },
+            {
+              "key": "trend63",
+              "text": "None"
+            },
+            {
+              "key": "entry_uptrend",
+              "text": "True"
+            }
+          ],
+          "case_key": "flat",
+          "explanation": "到达预定退出时点，目标清仓",
+          "judgment": "到达预定退出时点，目标清仓",
+          "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+          "state_key": "target"
+        },
+        "limit_price": null,
+        "observed_through": "2022-01-07T21:00:00.000000Z",
+        "plan": {
+          "capital_mode": "target_equity_fraction",
+          "cycle_after": null,
+          "cycle_before": null,
+          "evidence": {
+            "desired_quantity": 0,
+            "execution_policy": {
+              "policy_type": "TARGET_POSITION",
+              "settings": {
+                "capital_mode": "target_equity_fraction"
+              }
+            },
+            "explanation": {
+              "basis": [
+                {
+                  "key": "mode",
+                  "text": "common"
+                },
+                {
+                  "key": "execution_slot",
+                  "text": "0"
+                },
+                {
+                  "key": "target_weight",
+                  "text": "0.0"
+                },
+                {
+                  "key": "common",
+                  "text": "None"
+                },
+                {
+                  "key": "trend63",
+                  "text": "None"
+                },
+                {
+                  "key": "entry_uptrend",
+                  "text": "True"
+                }
+              ],
+              "case_key": "flat",
+              "explanation": "到达预定退出时点，目标清仓",
+              "judgment": "到达预定退出时点，目标清仓",
+              "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+              "state_key": "target"
+            },
+            "fee_rate": 0.001,
+            "implementation": "58a2a8e6e9badc3002b38ea39f037efff1d60e863bab339434c95931dbd5a6b1",
+            "locked_quantity": null,
+            "planning_mode": "TARGET_FRACTION",
+            "planning_result": {
+              "desired_quantity": 0,
+              "planned_quantity": 0,
+              "reasons": [],
+              "status": "READY"
+            },
+            "reference_price": 189.3,
+            "sizing": "TARGET_FRACTION",
+            "specification_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+            "target": 0.0
+          },
+          "expected_revision": 65,
+          "legs": [],
+          "orders": [
+            {
+              "limit_price": null,
+              "order_type": "MARKET",
+              "quantity": 531,
+              "side": "SELL"
+            }
+          ],
+          "owner": "candidate:S019:C0011:58a2a8e6e9badc3002b38ea39f037efff1d60e863bab339434c95931dbd5a6b1",
+          "plan_identity": "a130c2bc9e0f2a122f5ded1096bdfa328a599c6f793e74bd33fbf11cfcd9086f",
+          "point": {
+            "decision_at": "2022-01-10T14:30:00+00:00",
+            "execution_end": "2022-01-10T15:00:00+00:00",
+            "execution_start": "2022-01-10T14:30:00+00:00",
+            "observed_through": "2022-01-07T21:00:00+00:00",
+            "precision": "BAR_INTERVAL",
+            "session_id": "2022-01-10"
+          },
+          "target_quantity": 0
+        },
+        "portfolio_revision": 65,
+        "quantity": 531,
+        "reference_price": 189.3,
+        "side": "SELL",
+        "signal_status": "EVALUATED",
+        "target": 0.0,
+        "target_quantity": 0
+      },
+      {
+        "decision_at": "2022-01-18T15:00:00.000000Z",
+        "decision_id": "997decec5aad0090ee0a2d41256e251ab0f542575f236431f232074bb30b263f",
+        "execution_end": "2022-01-18T15:30:00.000000Z",
+        "execution_start": "2022-01-18T15:00:00.000000Z",
+        "explanation": {
+          "basis": [
+            {
+              "key": "mode",
+              "text": "common"
+            },
+            {
+              "key": "execution_slot",
+              "text": "1"
+            },
+            {
+              "key": "target_weight",
+              "text": "0.0"
+            },
+            {
+              "key": "common",
+              "text": "0.020312500162789307"
+            },
+            {
+              "key": "trend63",
+              "text": "0.4393626438477427"
+            },
+            {
+              "key": "entry_uptrend",
+              "text": "None"
+            }
+          ],
+          "case_key": "flat",
+          "explanation": "入场条件未满足，继续空仓",
+          "judgment": "入场条件未满足，继续空仓",
+          "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+          "state_key": "target"
+        },
+        "limit_price": null,
+        "observed_through": "2022-01-18T15:00:00.000000Z",
+        "plan": {
+          "capital_mode": "target_equity_fraction",
+          "cycle_after": null,
+          "cycle_before": null,
+          "evidence": {
+            "desired_quantity": 0,
+            "execution_policy": {
+              "policy_type": "TARGET_POSITION",
+              "settings": {
+                "capital_mode": "target_equity_fraction"
+              }
+            },
+            "explanation": {
+              "basis": [
+                {
+                  "key": "mode",
+                  "text": "common"
+                },
+                {
+                  "key": "execution_slot",
+                  "text": "1"
+                },
+                {
+                  "key": "target_weight",
+                  "text": "0.0"
+                },
+                {
+                  "key": "common",
+                  "text": "0.020312500162789307"
+                },
+                {
+                  "key": "trend63",
+                  "text": "0.4393626438477427"
+                },
+                {
+                  "key": "entry_uptrend",
+                  "text": "None"
+                }
+              ],
+              "case_key": "flat",
+              "explanation": "入场条件未满足，继续空仓",
+              "judgment": "入场条件未满足，继续空仓",
+              "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+              "state_key": "target"
+            },
+            "fee_rate": 0.001,
+            "implementation": "58a2a8e6e9badc3002b38ea39f037efff1d60e863bab339434c95931dbd5a6b1",
+            "locked_quantity": null,
+            "planning_mode": "TARGET_FRACTION",
+            "planning_result": {
+              "desired_quantity": 0,
+              "planned_quantity": 0,
+              "reasons": [],
+              "status": "NO_CHANGE"
+            },
+            "reference_price": 190.44,
+            "sizing": "TARGET_FRACTION",
+            "specification_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+            "target": 0.0
+          },
+          "expected_revision": 131,
+          "legs": [],
+          "orders": [],
+          "owner": "candidate:S019:C0011:58a2a8e6e9badc3002b38ea39f037efff1d60e863bab339434c95931dbd5a6b1",
+          "plan_identity": "997decec5aad0090ee0a2d41256e251ab0f542575f236431f232074bb30b263f",
+          "point": {
+            "decision_at": "2022-01-18T15:00:00+00:00",
+            "execution_end": "2022-01-18T15:30:00+00:00",
+            "execution_start": "2022-01-18T15:00:00+00:00",
+            "observed_through": "2022-01-18T15:00:00+00:00",
+            "precision": "BAR_INTERVAL",
+            "session_id": "2022-01-18"
+          },
+          "target_quantity": 0
+        },
+        "portfolio_revision": 131,
+        "quantity": 0,
+        "reference_price": 190.44,
+        "side": "HOLD",
+        "signal_status": "EVALUATED",
+        "target": 0.0,
+        "target_quantity": 0
+      }
+    ],
+    "rolling252": [
+      {
+        "start": "2022-01-03",
+        "end": "2023-01-03",
+        "metrics": {
+          "candidate": {
+            "nar": -0.42742044762195,
+            "calmar": -0.8703094279938278,
+            "drawdown": 0.49111319936773246
+          },
+          "buy_hold": {
+            "nar": -0.45688783089999996,
+            "calmar": -0.9265442251410473,
+            "drawdown": 0.4931095769664402
+          },
+          "S018_v1": {
+            "nar": -0.188113160143921,
+            "calmar": -0.780191377610014,
+            "drawdown": 0.24111155998695377
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.029467383278049986,
+          "buy_hold_calmar": 0.05623479714721946,
+          "S018_v1_nar": -0.23930728747802898,
+          "S018_v1_calmar": -0.09011805038381382
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 1,
+          "S018_v1_calmar": 1
+        }
+      },
+      {
+        "start": "2022-02-02",
+        "end": "2023-02-02",
+        "metrics": {
+          "candidate": {
+            "nar": -0.19233613231481383,
+            "calmar": -0.3916329932944801,
+            "drawdown": 0.49111319936773246
+          },
+          "buy_hold": {
+            "nar": -0.21758264581711995,
+            "calmar": -0.4474370798549586,
+            "drawdown": 0.48628657662358166
+          },
+          "S018_v1": {
+            "nar": -0.08329574617758928,
+            "calmar": -0.3454655852340564,
+            "drawdown": 0.24111155998695377
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.02524651350230611,
+          "buy_hold_calmar": 0.05580408656047853,
+          "S018_v1_nar": -0.10904038613722455,
+          "S018_v1_calmar": -0.04616740806042369
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 2,
+          "S018_v1_calmar": 2
+        }
+      },
+      {
+        "start": "2022-03-04",
+        "end": "2023-03-06",
+        "metrics": {
+          "candidate": {
+            "nar": -0.3474768835685982,
+            "calmar": -0.757145362021157,
+            "drawdown": 0.4589302147226104
+          },
+          "buy_hold": {
+            "nar": -0.3556901653293235,
+            "calmar": -0.7959336410128476,
+            "drawdown": 0.4468841961205433
+          },
+          "S018_v1": {
+            "nar": -0.1920307283770737,
+            "calmar": -0.7964393262084333,
+            "drawdown": 0.24111155998695377
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.008213281760725333,
+          "buy_hold_calmar": 0.03878827899169057,
+          "S018_v1_nar": -0.1554461551915245,
+          "S018_v1_calmar": 0.039293964187276265
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 3,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2022-04-04",
+        "end": "2023-04-04",
+        "metrics": {
+          "candidate": {
+            "nar": -0.21548171109565006,
+            "calmar": -0.5250467194354586,
+            "drawdown": 0.41040483278771955
+          },
+          "buy_hold": {
+            "nar": -0.24074675407191126,
+            "calmar": -0.6587475997748783,
+            "drawdown": 0.3654612998274066
+          },
+          "S018_v1": {
+            "nar": -0.19936578590372855,
+            "calmar": -0.8955430744730333,
+            "drawdown": 0.22261998510908243
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.0252650429762612,
+          "buy_hold_calmar": 0.13370088033941974,
+          "S018_v1_nar": -0.01611592519192151,
+          "S018_v1_calmar": 0.3704963550375747
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 4,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2022-05-04",
+        "end": "2023-05-04",
+        "metrics": {
+          "candidate": {
+            "nar": -0.11442694016554944,
+            "calmar": -0.3046456129881082,
+            "drawdown": 0.37560672232629877
+          },
+          "buy_hold": {
+            "nar": -0.14315754233035727,
+            "calmar": -0.4124503317147973,
+            "drawdown": 0.3470903799135465
+          },
+          "S018_v1": {
+            "nar": -0.11620072409120807,
+            "calmar": -0.6440548302637943,
+            "drawdown": 0.1804205459395657
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.028730602164807828,
+          "buy_hold_calmar": 0.10780471872668906,
+          "S018_v1_nar": 0.001773783925658634,
+          "S018_v1_calmar": 0.33940921727568607
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2022-06-03",
+        "end": "2023-06-05",
+        "metrics": {
+          "candidate": {
+            "nar": -0.0219014044401854,
+            "calmar": -0.05903410447555724,
+            "drawdown": 0.37099579361373325
+          },
+          "buy_hold": {
+            "nar": -0.09396114929881572,
+            "calmar": -0.2707109004928907,
+            "drawdown": 0.3470903799135465
+          },
+          "S018_v1": {
+            "nar": -0.0665742922362409,
+            "calmar": -0.3829965267634721,
+            "drawdown": 0.1738247936576075
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.07205974485863031,
+          "buy_hold_calmar": 0.21167679601733347,
+          "S018_v1_nar": 0.044672887796055494,
+          "S018_v1_calmar": 0.3239624222879149
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2022-07-06",
+        "end": "2023-07-06",
+        "metrics": {
+          "candidate": {
+            "nar": 0.22640664219058682,
+            "calmar": 0.9385157689852064,
+            "drawdown": 0.2412390389938729
+          },
+          "buy_hold": {
+            "nar": 0.08648821562932318,
+            "calmar": 0.3520212386557581,
+            "drawdown": 0.24569033379801297
+          },
+          "S018_v1": {
+            "nar": -0.06705091963710685,
+            "calmar": -0.38573852570871353,
+            "drawdown": 0.1738247936576075
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.13991842656126363,
+          "buy_hold_calmar": 0.5864945303294483,
+          "S018_v1_nar": 0.29345756182769367,
+          "S018_v1_calmar": 1.32425429469392
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2022-08-04",
+        "end": "2023-08-04",
+        "metrics": {
+          "candidate": {
+            "nar": 0.3760388107224859,
+            "calmar": 1.5587809182577481,
+            "drawdown": 0.2412390389938729
+          },
+          "buy_hold": {
+            "nar": 0.09417724063221877,
+            "calmar": 0.38331683292694696,
+            "drawdown": 0.24569033379801297
+          },
+          "S018_v1": {
+            "nar": -0.05826067420476422,
+            "calmar": -0.33516895362766,
+            "drawdown": 0.1738247936576075
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.28186157009026713,
+          "buy_hold_calmar": 1.1754640853308012,
+          "S018_v1_nar": 0.4342994849272501,
+          "S018_v1_calmar": 1.8939498718854082
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2022-09-02",
+        "end": "2023-09-05",
+        "metrics": {
+          "candidate": {
+            "nar": 0.5678980199087442,
+            "calmar": 2.3540883858485606,
+            "drawdown": 0.2412390389938729
+          },
+          "buy_hold": {
+            "nar": 0.23154906523140384,
+            "calmar": 1.059177198153893,
+            "drawdown": 0.21861220731997
+          },
+          "S018_v1": {
+            "nar": -0.07948063368949088,
+            "calmar": -0.6040753051674014,
+            "drawdown": 0.13157404881410473
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.3363489546773404,
+          "buy_hold_calmar": 1.2949111876946675,
+          "S018_v1_nar": 0.6473786535982351,
+          "S018_v1_calmar": 2.958163691015962
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2022-10-04",
+        "end": "2023-10-04",
+        "metrics": {
+          "candidate": {
+            "nar": 0.6613141035379544,
+            "calmar": 2.741322906508307,
+            "drawdown": 0.2412390389938729
+          },
+          "buy_hold": {
+            "nar": 0.32123474070855584,
+            "calmar": 1.4694272778572846,
+            "drawdown": 0.21861220731997
+          },
+          "S018_v1": {
+            "nar": -0.021911356731844633,
+            "calmar": -0.33738903818041455,
+            "drawdown": 0.06494389044177484
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.34007936282939855,
+          "buy_hold_calmar": 1.2718956286510223,
+          "S018_v1_nar": 0.683225460269799,
+          "S018_v1_calmar": 3.0787119446887212
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2022-11-02",
+        "end": "2023-11-02",
+        "metrics": {
+          "candidate": {
+            "nar": 0.5318032475248013,
+            "calmar": 2.204465951044965,
+            "drawdown": 0.2412390389938729
+          },
+          "buy_hold": {
+            "nar": 0.28792550945800977,
+            "calmar": 1.3170605291798272,
+            "drawdown": 0.21861220731997
+          },
+          "S018_v1": {
+            "nar": 0.07352986343345247,
+            "calmar": 1.1322060155816402,
+            "drawdown": 0.06494389044177484
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.24387773806679158,
+          "buy_hold_calmar": 0.8874054218651377,
+          "S018_v1_nar": 0.4582733840913489,
+          "S018_v1_calmar": 1.0722599354633247
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2022-12-02",
+        "end": "2023-12-04",
+        "metrics": {
+          "candidate": {
+            "nar": 0.5937833025850541,
+            "calmar": 3.962941664576926,
+            "drawdown": 0.1498339750727683
+          },
+          "buy_hold": {
+            "nar": 0.3418599924126975,
+            "calmar": 1.9477801791374911,
+            "drawdown": 0.1755126148598959
+          },
+          "S018_v1": {
+            "nar": 0.08958732777736889,
+            "calmar": 1.3794573618543535,
+            "drawdown": 0.06494389044177484
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.2519233101723566,
+          "buy_hold_calmar": 2.0151614854394353,
+          "S018_v1_nar": 0.5041959748076852,
+          "S018_v1_calmar": 2.5834843027225727
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-01-04",
+        "end": "2024-01-04",
+        "metrics": {
+          "candidate": {
+            "nar": 0.851905763380354,
+            "calmar": 6.214498091093523,
+            "drawdown": 0.137083598851094
+          },
+          "buy_hold": {
+            "nar": 0.6389545654538713,
+            "calmar": 3.6405050768796365,
+            "drawdown": 0.1755126148598959
+          },
+          "S018_v1": {
+            "nar": 0.10688325720959191,
+            "calmar": 1.6457784786610161,
+            "drawdown": 0.06494389044177484
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.21295119792648265,
+          "buy_hold_calmar": 2.5739930142138863,
+          "S018_v1_nar": 0.745022506170762,
+          "S018_v1_calmar": 4.568719612432506
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-02-03",
+        "end": "2024-02-05",
+        "metrics": {
+          "candidate": {
+            "nar": 0.49873692134675385,
+            "calmar": 3.63819541890276,
+            "drawdown": 0.137083598851094
+          },
+          "buy_hold": {
+            "nar": 0.3784272846362555,
+            "calmar": 2.1561258427967562,
+            "drawdown": 0.1755126148598959
+          },
+          "S018_v1": {
+            "nar": 0.05064069845999586,
+            "calmar": 0.7797607768108311,
+            "drawdown": 0.06494389044177484
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.12030963671049832,
+          "buy_hold_calmar": 1.4820695761060039,
+          "S018_v1_nar": 0.448096222886758,
+          "S018_v1_calmar": 2.858434642091929
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-03-07",
+        "end": "2024-03-06",
+        "metrics": {
+          "candidate": {
+            "nar": 0.8994927185685542,
+            "calmar": 6.794512840866415,
+            "drawdown": 0.13238516721293792
+          },
+          "buy_hold": {
+            "nar": 0.6780997923871976,
+            "calmar": 3.8635387714352913,
+            "drawdown": 0.1755126148598959
+          },
+          "S018_v1": {
+            "nar": 0.10916318785782497,
+            "calmar": 1.680884639267103,
+            "drawdown": 0.06494389044177484
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.22139292618135653,
+          "buy_hold_calmar": 2.9309740694311235,
+          "S018_v1_nar": 0.7903295307107292,
+          "S018_v1_calmar": 5.113628201599312
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-04-05",
+        "end": "2024-04-05",
+        "metrics": {
+          "candidate": {
+            "nar": 1.1555662253713104,
+            "calmar": 8.728819471992763,
+            "drawdown": 0.13238516721293792
+          },
+          "buy_hold": {
+            "nar": 1.1485587176703023,
+            "calmar": 6.544023736340245,
+            "drawdown": 0.1755126148598959
+          },
+          "S018_v1": {
+            "nar": 0.10392061555622667,
+            "calmar": 1.6001599973348724,
+            "drawdown": 0.06494389044177484
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.007007507701008109,
+          "buy_hold_calmar": 2.184795735652518,
+          "S018_v1_nar": 1.0516456098150837,
+          "S018_v1_calmar": 7.128659474657891
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-05-05",
+        "end": "2024-05-06",
+        "metrics": {
+          "candidate": {
+            "nar": 0.8647210109263461,
+            "calmar": 4.330944593414104,
+            "drawdown": 0.1996610652191887
+          },
+          "buy_hold": {
+            "nar": 0.9755011933409057,
+            "calmar": 5.558011850712873,
+            "drawdown": 0.1755126148598959
+          },
+          "S018_v1": {
+            "nar": 0.08154172256512271,
+            "calmar": 1.090913038410258,
+            "drawdown": 0.07474630854531727
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.11078018241455956,
+          "buy_hold_calmar": -1.2270672572987689,
+          "S018_v1_nar": 0.7831792883612234,
+          "S018_v1_calmar": 3.240031555003846
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 1,
+          "buy_hold_calmar": 1,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-06-06",
+        "end": "2024-06-05",
+        "metrics": {
+          "candidate": {
+            "nar": 0.7754652727873619,
+            "calmar": 3.883908322015878,
+            "drawdown": 0.1996610652191887
+          },
+          "buy_hold": {
+            "nar": 0.9644314568834085,
+            "calmar": 5.88234413541733,
+            "drawdown": 0.16395359310527413
+          },
+          "S018_v1": {
+            "nar": 0.06792062189287829,
+            "calmar": 0.9086819565370148,
+            "drawdown": 0.07474630854531727
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.1889661840960466,
+          "buy_hold_calmar": -1.9984358134014517,
+          "S018_v1_nar": 0.7075446508944836,
+          "S018_v1_calmar": 2.9752263654788633
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 2,
+          "buy_hold_calmar": 2,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-07-07",
+        "end": "2024-07-08",
+        "metrics": {
+          "candidate": {
+            "nar": 0.8165942130521735,
+            "calmar": 4.0899021156463995,
+            "drawdown": 0.1996610652191887
+          },
+          "buy_hold": {
+            "nar": 1.12399757281365,
+            "calmar": 6.855583653430116,
+            "drawdown": 0.16395359310527413
+          },
+          "S018_v1": {
+            "nar": 0.04663704766594012,
+            "calmar": 0.6239378047367378,
+            "drawdown": 0.07474630854531727
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.3074033597614765,
+          "buy_hold_calmar": -2.765681537783717,
+          "S018_v1_nar": 0.7699571653862334,
+          "S018_v1_calmar": 3.4659643109096616
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 3,
+          "buy_hold_calmar": 3,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-08-07",
+        "end": "2024-08-06",
+        "metrics": {
+          "candidate": {
+            "nar": 0.1739855439352176,
+            "calmar": 0.511785361881715,
+            "drawdown": 0.33995803102987054
+          },
+          "buy_hold": {
+            "nar": 0.2749499367733783,
+            "calmar": 0.6623793494401932,
+            "drawdown": 0.4150943670054795
+          },
+          "S018_v1": {
+            "nar": 0.013962973846403548,
+            "calmar": 0.18680486191419154,
+            "drawdown": 0.07474630854531727
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.10096439283816072,
+          "buy_hold_calmar": -0.1505939875584782,
+          "S018_v1_nar": 0.16002257008881404,
+          "S018_v1_calmar": 0.32498049996752343
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 4,
+          "buy_hold_calmar": 4,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-09-06",
+        "end": "2024-09-05",
+        "metrics": {
+          "candidate": {
+            "nar": 0.14547288489897903,
+            "calmar": 0.40861092058073584,
+            "drawdown": 0.3560181032171792
+          },
+          "buy_hold": {
+            "nar": 0.2736282260448142,
+            "calmar": 0.6373987377451296,
+            "drawdown": 0.4292889361733051
+          },
+          "S018_v1": {
+            "nar": 0.04497760193748124,
+            "calmar": 0.6017367655047763,
+            "drawdown": 0.07474630854531727
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.12815534114583516,
+          "buy_hold_calmar": -0.22878781716439373,
+          "S018_v1_nar": 0.10049528296149779,
+          "S018_v1_calmar": -0.19312584492404045
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 5,
+          "buy_hold_calmar": 5,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 1
+        }
+      },
+      {
+        "start": "2023-10-05",
+        "end": "2024-10-04",
+        "metrics": {
+          "candidate": {
+            "nar": 0.2707442328807146,
+            "calmar": 0.735135033523967,
+            "drawdown": 0.36829183828019496
+          },
+          "buy_hold": {
+            "nar": 0.4992507385449352,
+            "calmar": 1.1537806535782118,
+            "drawdown": 0.4327085369273721
+          },
+          "S018_v1": {
+            "nar": 0.056194208222003716,
+            "calmar": 0.7086509135419289,
+            "drawdown": 0.0792974469490737
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.2285065056642206,
+          "buy_hold_calmar": -0.41864562005424477,
+          "S018_v1_nar": 0.21455002465871087,
+          "S018_v1_calmar": 0.026484119982038146
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 6,
+          "buy_hold_calmar": 6,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-11-03",
+        "end": "2024-11-04",
+        "metrics": {
+          "candidate": {
+            "nar": 0.29368403780279917,
+            "calmar": 0.797422063910538,
+            "drawdown": 0.36829183828019496
+          },
+          "buy_hold": {
+            "nar": 0.4425157823448411,
+            "calmar": 1.0226647837528455,
+            "drawdown": 0.4327085369273721
+          },
+          "S018_v1": {
+            "nar": 0.00952080322866422,
+            "calmar": 0.12006443580432871,
+            "drawdown": 0.0792974469490737
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.14883174454204195,
+          "buy_hold_calmar": -0.22524271984230748,
+          "S018_v1_nar": 0.28416323457413495,
+          "S018_v1_calmar": 0.6773576281062094
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 7,
+          "buy_hold_calmar": 7,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 0
+        }
+      },
+      {
+        "start": "2023-12-05",
+        "end": "2024-12-04",
+        "metrics": {
+          "candidate": {
+            "nar": 0.3288532782978124,
+            "calmar": 0.8929149226696198,
+            "drawdown": 0.36829183828019496
+          },
+          "buy_hold": {
+            "nar": 0.3884979556488861,
+            "calmar": 0.8978282665915914,
+            "drawdown": 0.4327085369273721
+          },
+          "S018_v1": {
+            "nar": 0.11116665743701826,
+            "calmar": 1.4018945339868452,
+            "drawdown": 0.0792974469490737
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.059644677351073705,
+          "buy_hold_calmar": -0.004913343921971625,
+          "S018_v1_nar": 0.21768662086079416,
+          "S018_v1_calmar": -0.5089796113172254
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 8,
+          "buy_hold_calmar": 8,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 1
+        }
+      },
+      {
+        "start": "2024-01-05",
+        "end": "2025-01-06",
+        "metrics": {
+          "candidate": {
+            "nar": 0.3049604035254414,
+            "calmar": 0.8280400807943746,
+            "drawdown": 0.36829183828019496
+          },
+          "buy_hold": {
+            "nar": 0.2021778310412441,
+            "calmar": 0.45449721108749513,
+            "drawdown": 0.44483844148896856
+          },
+          "S018_v1": {
+            "nar": 0.1774144088041325,
+            "calmar": 2.2373281313592774,
+            "drawdown": 0.0792974469490737
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.10278257248419731,
+          "buy_hold_calmar": 0.3735428697068795,
+          "S018_v1_nar": 0.1275459947213089,
+          "S018_v1_calmar": -1.4092880505649028
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 2
+        }
+      },
+      {
+        "start": "2024-02-06",
+        "end": "2025-02-06",
+        "metrics": {
+          "candidate": {
+            "nar": 0.2896270312634863,
+            "calmar": 0.7864063255269297,
+            "drawdown": 0.36829183828019496
+          },
+          "buy_hold": {
+            "nar": 0.09072002735688955,
+            "calmar": 0.20393927074564508,
+            "drawdown": 0.44483844148896856
+          },
+          "S018_v1": {
+            "nar": 0.2418926620276347,
+            "calmar": 3.0504470362454756,
+            "drawdown": 0.0792974469490737
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.19890700390659677,
+          "buy_hold_calmar": 0.5824670547812846,
+          "S018_v1_nar": 0.047734369235851615,
+          "S018_v1_calmar": -2.264040710718546
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 3
+        }
+      },
+      {
+        "start": "2024-03-07",
+        "end": "2025-03-10",
+        "metrics": {
+          "candidate": {
+            "nar": 0.13447964375264054,
+            "calmar": 0.36514424099273407,
+            "drawdown": 0.36829183828019496
+          },
+          "buy_hold": {
+            "nar": -0.08269417761657571,
+            "calmar": -0.18589710309158708,
+            "drawdown": 0.44483844148896856
+          },
+          "S018_v1": {
+            "nar": 0.2330658823098961,
+            "calmar": 2.9391347549887117,
+            "drawdown": 0.0792974469490737
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.21717382136921626,
+          "buy_hold_calmar": 0.5510413440843211,
+          "S018_v1_nar": -0.09858623855725557,
+          "S018_v1_calmar": -2.5739905139959776
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 1,
+          "S018_v1_calmar": 4
+        }
+      },
+      {
+        "start": "2024-04-08",
+        "end": "2025-04-08",
+        "metrics": {
+          "candidate": {
+            "nar": -0.1164432228725728,
+            "calmar": -0.316171065360355,
+            "drawdown": 0.36829183828019496
+          },
+          "buy_hold": {
+            "nar": -0.46020242697038916,
+            "calmar": -0.8080462953846778,
+            "drawdown": 0.5695248274745268
+          },
+          "S018_v1": {
+            "nar": 0.19563634163506594,
+            "calmar": 2.467120306668981,
+            "drawdown": 0.0792974469490737
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.34375920409781635,
+          "buy_hold_calmar": 0.49187523002432276,
+          "S018_v1_nar": -0.31207956450763874,
+          "S018_v1_calmar": -2.783291372029336
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 2,
+          "S018_v1_calmar": 5
+        }
+      },
+      {
+        "start": "2024-05-07",
+        "end": "2025-05-08",
+        "metrics": {
+          "candidate": {
+            "nar": 0.283436298010445,
+            "calmar": 0.7695970112560784,
+            "drawdown": 0.36829183828019496
+          },
+          "buy_hold": {
+            "nar": -0.283720928010056,
+            "calmar": -0.4981713075936905,
+            "drawdown": 0.5695248274745268
+          },
+          "S018_v1": {
+            "nar": 0.35839658826855314,
+            "calmar": 4.51964851401486,
+            "drawdown": 0.0792974469490737
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.567157226020501,
+          "buy_hold_calmar": 1.2677683188497688,
+          "S018_v1_nar": -0.07496029025810813,
+          "S018_v1_calmar": -3.7500515027587817
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 3,
+          "S018_v1_calmar": 6
+        }
+      },
+      {
+        "start": "2024-06-06",
+        "end": "2025-06-09",
+        "metrics": {
+          "candidate": {
+            "nar": 0.444410327581364,
+            "calmar": 1.2066798158129652,
+            "drawdown": 0.36829183828019496
+          },
+          "buy_hold": {
+            "nar": -0.16488124991383635,
+            "calmar": -0.2895066939311105,
+            "drawdown": 0.5695248274745268
+          },
+          "S018_v1": {
+            "nar": 0.3981486304169939,
+            "calmar": 5.511968388879329,
+            "drawdown": 0.07223347492708387
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.6092915774952004,
+          "buy_hold_calmar": 1.4961865097440756,
+          "S018_v1_nar": 0.04626169716437012,
+          "S018_v1_calmar": -4.305288573066364
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 7
+        }
+      },
+      {
+        "start": "2024-07-09",
+        "end": "2025-07-10",
+        "metrics": {
+          "candidate": {
+            "nar": 0.5838161474458534,
+            "calmar": 2.0338674550427993,
+            "drawdown": 0.2870472930762187
+          },
+          "buy_hold": {
+            "nar": -0.0537992495792714,
+            "calmar": -0.10412416014864118,
+            "drawdown": 0.5166836352146412
+          },
+          "S018_v1": {
+            "nar": 0.4568990243511486,
+            "calmar": 6.3253086579645466,
+            "drawdown": 0.07223347492708387
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.6376153970251248,
+          "buy_hold_calmar": 2.1379916151914404,
+          "S018_v1_nar": 0.12691712309470482,
+          "S018_v1_calmar": -4.291441202921748
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 8
+        }
+      },
+      {
+        "start": "2024-08-07",
+        "end": "2025-08-08",
+        "metrics": {
+          "candidate": {
+            "nar": 1.092111783707216,
+            "calmar": 5.293730709797718,
+            "drawdown": 0.2063028596611306
+          },
+          "buy_hold": {
+            "nar": 0.33478996046680587,
+            "calmar": 0.795722735873884,
+            "drawdown": 0.42073695443568115
+          },
+          "S018_v1": {
+            "nar": 0.5488234913145045,
+            "calmar": 7.5979106898638715,
+            "drawdown": 0.07223347492708387
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.7573218232404102,
+          "buy_hold_calmar": 4.498007973923834,
+          "S018_v1_nar": 0.5432882923927116,
+          "S018_v1_calmar": -2.304179980066153
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 9
+        }
+      },
+      {
+        "start": "2024-09-06",
+        "end": "2025-09-09",
+        "metrics": {
+          "candidate": {
+            "nar": 1.3467343198249333,
+            "calmar": 6.607274446752165,
+            "drawdown": 0.20382599976408222
+          },
+          "buy_hold": {
+            "nar": 0.5086559747244412,
+            "calmar": 1.208964340692827,
+            "drawdown": 0.42073695443568115
+          },
+          "S018_v1": {
+            "nar": 0.7692766623170899,
+            "calmar": 10.64986369676437,
+            "drawdown": 0.07223347492708387
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.8380783451004921,
+          "buy_hold_calmar": 5.398310106059339,
+          "S018_v1_nar": 0.5774576575078434,
+          "S018_v1_calmar": -4.042589250012205
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 10
+        }
+      },
+      {
+        "start": "2024-10-07",
+        "end": "2025-10-08",
+        "metrics": {
+          "candidate": {
+            "nar": 1.4396665238444881,
+            "calmar": 7.063213356052838,
+            "drawdown": 0.20382599976408222
+          },
+          "buy_hold": {
+            "nar": 0.9130075245982567,
+            "calmar": 2.1700198068478196,
+            "drawdown": 0.42073695443568115
+          },
+          "S018_v1": {
+            "nar": 0.9148789082063173,
+            "calmar": 12.66558073150769,
+            "drawdown": 0.07223347492708387
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.5266589992462314,
+          "buy_hold_calmar": 4.8931935492050185,
+          "S018_v1_nar": 0.5247876156381708,
+          "S018_v1_calmar": -5.602367375454852
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 11
+        }
+      },
+      {
+        "start": "2024-11-05",
+        "end": "2025-11-06",
+        "metrics": {
+          "candidate": {
+            "nar": 1.7536760305056363,
+            "calmar": 8.603789666359656,
+            "drawdown": 0.20382599976408222
+          },
+          "buy_hold": {
+            "nar": 1.3242658781375316,
+            "calmar": 3.1474912393034744,
+            "drawdown": 0.42073695443568115
+          },
+          "S018_v1": {
+            "nar": 1.019800090116532,
+            "calmar": 14.11810924430771,
+            "drawdown": 0.07223347492708387
+          }
+        },
+        "differences": {
+          "buy_hold_nar": 0.42941015236810465,
+          "buy_hold_calmar": 5.456298427056182,
+          "S018_v1_nar": 0.7338759403891042,
+          "S018_v1_calmar": -5.514319577948054
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 0,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 12
+        }
+      },
+      {
+        "start": "2024-12-05",
+        "end": "2025-12-08",
+        "metrics": {
+          "candidate": {
+            "nar": 1.3338244129958134,
+            "calmar": 5.13179817197046,
+            "drawdown": 0.2599136537132488
+          },
+          "buy_hold": {
+            "nar": 1.373550299096459,
+            "calmar": 3.4308339686342397,
+            "drawdown": 0.40035464019940536
+          },
+          "S018_v1": {
+            "nar": 0.7889481197564554,
+            "calmar": 10.922195291765481,
+            "drawdown": 0.07223347492708387
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.039725886100645535,
+          "buy_hold_calmar": 1.7009642033362202,
+          "S018_v1_nar": 0.544876293239358,
+          "S018_v1_calmar": -5.7903971197950215
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 1,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 13
+        }
+      },
+      {
+        "start": "2025-01-07",
+        "end": "2026-01-08",
+        "metrics": {
+          "candidate": {
+            "nar": 1.6970462361741459,
+            "calmar": 6.529269285893005,
+            "drawdown": 0.2599136537132488
+          },
+          "buy_hold": {
+            "nar": 2.2563902036651258,
+            "calmar": 5.6359786476841665,
+            "drawdown": 0.40035464019940536
+          },
+          "S018_v1": {
+            "nar": 0.783131906063272,
+            "calmar": 10.841675647666197,
+            "drawdown": 0.07223347492708387
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.5593439674909799,
+          "buy_hold_calmar": 0.8932906382088381,
+          "S018_v1_nar": 0.9139143301108739,
+          "S018_v1_calmar": -4.312406361773192
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 2,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 14
+        }
+      },
+      {
+        "start": "2025-02-07",
+        "end": "2026-02-09",
+        "metrics": {
+          "candidate": {
+            "nar": 2.0474110903970546,
+            "calmar": 7.877274091402186,
+            "drawdown": 0.2599136537132488
+          },
+          "buy_hold": {
+            "nar": 3.0015394506489033,
+            "calmar": 7.774731456809652,
+            "drawdown": 0.3860634244826483
+          },
+          "S018_v1": {
+            "nar": 0.7931572695320732,
+            "calmar": 10.980466748037891,
+            "drawdown": 0.07223347492708387
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -0.9541283602518487,
+          "buy_hold_calmar": 0.10254263459253377,
+          "S018_v1_nar": 1.2542538208649814,
+          "S018_v1_calmar": -3.103192656635705
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 3,
+          "buy_hold_calmar": 0,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 15
+        }
+      },
+      {
+        "start": "2025-03-11",
+        "end": "2026-03-11",
+        "metrics": {
+          "candidate": {
+            "nar": 1.9979466445345473,
+            "calmar": 7.686963020183591,
+            "drawdown": 0.2599136537132488
+          },
+          "buy_hold": {
+            "nar": 3.732639575106819,
+            "calmar": 10.239169494159695,
+            "drawdown": 0.36454514960767803
+          },
+          "S018_v1": {
+            "nar": 1.019212887309998,
+            "calmar": 17.19999181361129,
+            "drawdown": 0.05925659141904005
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -1.7346929305722716,
+          "buy_hold_calmar": -2.5522064739761037,
+          "S018_v1_nar": 0.9787337572245494,
+          "S018_v1_calmar": -9.5130287934277
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 4,
+          "buy_hold_calmar": 1,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 16
+        }
+      },
+      {
+        "start": "2025-04-09",
+        "end": "2026-04-10",
+        "metrics": {
+          "candidate": {
+            "nar": 2.013688727971404,
+            "calmar": 6.6188763807686755,
+            "drawdown": 0.3042342252866712
+          },
+          "buy_hold": {
+            "nar": 5.264303168290253,
+            "calmar": 17.477646707955184,
+            "drawdown": 0.3012020586212064
+          },
+          "S018_v1": {
+            "nar": 1.1844238583377473,
+            "calmar": 15.585487899304129,
+            "drawdown": 0.07599530191099313
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -3.2506144403188486,
+          "buy_hold_calmar": -10.858770327186509,
+          "S018_v1_nar": 0.8292648696336569,
+          "S018_v1_calmar": -8.966611518535453
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 5,
+          "buy_hold_calmar": 2,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 17
+        }
+      },
+      {
+        "start": "2025-05-09",
+        "end": "2026-05-11",
+        "metrics": {
+          "candidate": {
+            "nar": 2.37779266784261,
+            "calmar": 7.8156646103905105,
+            "drawdown": 0.3042342252866712
+          },
+          "buy_hold": {
+            "nar": 8.154725761444633,
+            "calmar": 27.07393767085791,
+            "drawdown": 0.3012020586212064
+          },
+          "S018_v1": {
+            "nar": 0.8941699353710875,
+            "calmar": 11.766121232314507,
+            "drawdown": 0.07599530191099313
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -5.776933093602023,
+          "buy_hold_calmar": -19.2582730604674,
+          "S018_v1_nar": 1.4836227324715225,
+          "S018_v1_calmar": -3.9504566219239967
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 6,
+          "buy_hold_calmar": 3,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 18
+        }
+      },
+      {
+        "start": "2025-06-10",
+        "end": "2026-06-10",
+        "metrics": {
+          "candidate": {
+            "nar": 1.6899902113066334,
+            "calmar": 5.554898400119855,
+            "drawdown": 0.3042342252866712
+          },
+          "buy_hold": {
+            "nar": 6.918396923861992,
+            "calmar": 22.96928830942225,
+            "drawdown": 0.3012020586212064
+          },
+          "S018_v1": {
+            "nar": 1.0815053580387,
+            "calmar": 14.231213388761528,
+            "drawdown": 0.07599530191099313
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -5.228406712555358,
+          "buy_hold_calmar": -17.414389909302393,
+          "S018_v1_nar": 0.6084848532679334,
+          "S018_v1_calmar": -8.676314988641673
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 7,
+          "buy_hold_calmar": 4,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 19
+        }
+      },
+      {
+        "start": "2025-07-11",
+        "end": "2026-07-13",
+        "metrics": {
+          "candidate": {
+            "nar": 1.7765079735112947,
+            "calmar": 5.839277194527808,
+            "drawdown": 0.3042342252866712
+          },
+          "buy_hold": {
+            "nar": 6.503712973276992,
+            "calmar": 21.59252497492423,
+            "drawdown": 0.3012020586212064
+          },
+          "S018_v1": {
+            "nar": 1.3699323269080486,
+            "calmar": 18.026539699947957,
+            "drawdown": 0.07599530191099313
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -4.727204999765696,
+          "buy_hold_calmar": -15.753247780396423,
+          "S018_v1_nar": 0.4065756466032462,
+          "S018_v1_calmar": -12.187262505420149
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 8,
+          "buy_hold_calmar": 5,
+          "S018_v1_nar": 0,
+          "S018_v1_calmar": 20
+        }
+      },
+      {
+        "start": "2025-08-11",
+        "end": "2026-08-11",
+        "metrics": {
+          "candidate": {
+            "nar": 1.322712060957444,
+            "calmar": 3.6995828232098775,
+            "drawdown": 0.357530057891721
+          },
+          "buy_hold": {
+            "nar": 6.199471990740725,
+            "calmar": 15.891089571173948,
+            "drawdown": 0.39012252514053014
+          },
+          "S018_v1": {
+            "nar": 1.5313089217107052,
+            "calmar": 16.885005995364324,
+            "drawdown": 0.09069045768364647
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -4.876759929783281,
+          "buy_hold_calmar": -12.19150674796407,
+          "S018_v1_nar": -0.20859686075326112,
+          "S018_v1_calmar": -13.185423172154447
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 9,
+          "buy_hold_calmar": 6,
+          "S018_v1_nar": 1,
+          "S018_v1_calmar": 21
+        }
+      },
+      {
+        "start": "2025-09-10",
+        "end": "2026-09-10",
+        "metrics": {
+          "candidate": {
+            "nar": 1.2231492262487529,
+            "calmar": 3.4211087970096967,
+            "drawdown": 0.357530057891721
+          },
+          "buy_hold": {
+            "nar": 6.135248331706244,
+            "calmar": 15.726465241903684,
+            "drawdown": 0.39012252514053014
+          },
+          "S018_v1": {
+            "nar": 1.458759642468464,
+            "calmar": 16.08504003317552,
+            "drawdown": 0.09069045768364647
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -4.912099105457491,
+          "buy_hold_calmar": -12.305356444893988,
+          "S018_v1_nar": -0.23561041621971102,
+          "S018_v1_calmar": -12.663931236165823
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 10,
+          "buy_hold_calmar": 7,
+          "S018_v1_nar": 2,
+          "S018_v1_calmar": 22
+        }
+      },
+      {
+        "start": "2025-10-09",
+        "end": "2026-10-09",
+        "metrics": {
+          "candidate": {
+            "nar": 1.0298750018364164,
+            "calmar": 2.880527046898857,
+            "drawdown": 0.357530057891721
+          },
+          "buy_hold": {
+            "nar": 4.190168558618381,
+            "calmar": 10.7406475878546,
+            "drawdown": 0.39012252514053014
+          },
+          "S018_v1": {
+            "nar": 1.2782076740403134,
+            "calmar": 14.09418043184937,
+            "drawdown": 0.09069045768364647
+          }
+        },
+        "differences": {
+          "buy_hold_nar": -3.1602935567819643,
+          "buy_hold_calmar": -7.860120540955743,
+          "S018_v1_nar": -0.248332672203897,
+          "S018_v1_calmar": -11.213653384950513
+        },
+        "consecutive_underperformance": {
+          "buy_hold_nar": 11,
+          "buy_hold_calmar": 8,
+          "S018_v1_nar": 3,
+          "S018_v1_calmar": 23
+        }
+      }
+    ],
+    "longest_underperformance": {
+      "buy_hold_nar": 11,
+      "buy_hold_calmar": 8,
+      "S018_v1_nar": 4,
+      "S018_v1_calmar": 23
+    }
+  }
+}

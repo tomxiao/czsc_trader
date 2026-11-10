@@ -1,0 +1,93 @@
+{
+  "round": 9,
+  "state_schema": {
+    "account_fields": [],
+    "cycle_fields": [
+      {
+        "key": "anchor",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "allocation",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "exiting",
+        "value_type": "bool",
+        "nullable": false
+      }
+    ]
+  },
+  "extra_auxiliary_inputs": [
+    {
+      "name": "soxx_open",
+      "instrument": {
+        "market": "US",
+        "asset_class": "ETF",
+        "symbol": "SOXX"
+      },
+      "source": {
+        "provider": "futu",
+        "revision": "s019-unified-window-20261110-v2"
+      },
+      "frequency": "30m",
+      "warmup_bars": 1,
+      "max_age_seconds": 604800,
+      "analysis_price": "HFQ"
+    }
+  ],
+  "candidates": [
+    {
+      "name": "relative_quarter_half",
+      "id": "C0035",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.5
+      }
+    },
+    {
+      "name": "relative_quarter_quarter",
+      "id": "C0036",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "daily",
+        "weak_fraction": 0.25
+      }
+    },
+    {
+      "name": "joint_relative",
+      "id": "C0037",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt",
+        "risk_basis": "joint",
+        "weak_fraction": 0.5
+      }
+    }
+  ],
+  "controls": [
+    "research/S019/experiments/EX008_20261110/others/down1_confirm_account.json",
+    "research/S019/experiments/EX010_20261110/others/quarter_half_account.json",
+    "research/S019/experiments/EX013_20261110/others/relative_tilt_account.json"
+  ]
+}

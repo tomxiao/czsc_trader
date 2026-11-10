@@ -1,0 +1,14 @@
+{
+  "round": 2,
+  "state_schema": {"account_fields": [], "cycle_fields": [
+    {"key": "anchor", "value_type": "float", "nullable": false},
+    {"key": "exiting", "value_type": "bool", "nullable": false}
+  ]},
+  "candidates": [
+    {"name": "down_fixed", "id": "C0012", "parameters": {"require_sector": false, "exit_mode": "fixed", "hold_days": 5}},
+    {"name": "sector_fixed", "id": "C0013", "parameters": {"require_sector": true, "exit_mode": "fixed", "hold_days": 5}},
+    {"name": "down_repair", "id": "C0014", "parameters": {"require_sector": false, "exit_mode": "repair", "hold_days": 5}},
+    {"name": "sector_repair", "id": "C0015", "parameters": {"require_sector": true, "exit_mode": "repair", "hold_days": 5}}
+  ],
+  "controls": ["research/S019/experiments/EX006_20261110/others/hold5_account.json"]
+}

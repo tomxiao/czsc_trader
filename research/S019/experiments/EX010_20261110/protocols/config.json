@@ -1,0 +1,67 @@
+{
+  "round": 5,
+  "state_schema": {
+    "account_fields": [],
+    "cycle_fields": [
+      {
+        "key": "anchor",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "allocation",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "exiting",
+        "value_type": "bool",
+        "nullable": false
+      }
+    ]
+  },
+  "candidates": [
+    {
+      "name": "quarter_half",
+      "id": "C0022",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "risk_mode": "trend",
+        "down_alloc": 0.5
+      }
+    },
+    {
+      "name": "quarter_quarter",
+      "id": "C0023",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "risk_mode": "trend",
+        "down_alloc": 0.25
+      }
+    },
+    {
+      "name": "vol_budget",
+      "id": "C0024",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "risk_mode": "vol",
+        "vol_target": 0.4
+      }
+    }
+  ],
+  "controls": [
+    "research/S019/experiments/EX008_20261110/others/down1_confirm_account.json"
+  ]
+}

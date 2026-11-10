@@ -25,10 +25,101 @@
       "history_start": "2021-01-01",
       "start": "2022-01-03"
     },
+    "experiment_budget": {
+      "authorization_quote": "授权10轮实验额度，你自主推进阶段二研究，争取产出达标原型",
+      "authorized_rounds": 10,
+      "benchmark_accounts": 10,
+      "candidate_accounts": 31,
+      "eligible_prototypes": 0,
+      "remaining_rounds": 0,
+      "rounds": [
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 2,
+          "eligible_ids": [],
+          "experiment": "EX006_20261110",
+          "protocol_sha256": "874f81cdcd14db3de5258cd4394fdd1e265a6621c73fa8922a060896509b0758",
+          "round": 1
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 4,
+          "eligible_ids": [],
+          "experiment": "EX007_20261110",
+          "protocol_sha256": "09b083982299160c0c1fe81397135e6dc0b5fdf32ddec9a8d44362954e95dcac",
+          "round": 2
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX008_20261110",
+          "protocol_sha256": "2e5767bc347a86c4519ac99c01062e7011aaa1934b646df069d48ad946f20c1b",
+          "round": 3
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX009_20261110",
+          "protocol_sha256": "dd0bdf352c2170bb5ffdce15a16e27fcb7125e99946e9c1c56ac967098a60924",
+          "round": 4
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX010_20261110",
+          "protocol_sha256": "2611c4c292a6c2490fb3c5533787e28375486eba0edbea6b2446c3519653781e",
+          "round": 5
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX011_20261110",
+          "protocol_sha256": "70a0fb5eace96e313f0605dda5a30ecdaddda0f332d6f09ed81862214fc88038",
+          "round": 6
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX012_20261110",
+          "protocol_sha256": "10b2f66ec6fb661cfdbe18e8dfba5e6d0518ce31173aab33c968ce5b461be7c6",
+          "round": 7
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 4,
+          "eligible_ids": [],
+          "experiment": "EX013_20261110",
+          "protocol_sha256": "3244a76f3efc943de0794df4ca35892f626e485c88a041592e386b00b08b6c31",
+          "round": 8
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX014_20261110",
+          "protocol_sha256": "bc220b9983119cb7ee8bd0707a1db8a82911841279930a824b7d0ca495eb7847",
+          "round": 9
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX015_20261110",
+          "protocol_sha256": "45dbcf8e717b3df15f54cda038cce93376c2f717eada4b7472ae14549ebb6018",
+          "round": 10
+        }
+      ],
+      "used_rounds": 10
+    },
     "latest_experiment_report": {
-      "evidence_id": "8f1f63e0badc74f9e55d36c0393288fda92d5948034737d55652fd0cfcf1b555.json",
+      "evidence_id": "55c19766adcb46666c71d2b1d60999f19c93ec163c08fdb279b5bdb6922cbe36.json",
       "experiment": {
-        "experiment_id": "EX005_20261110",
+        "experiment_id": "EX015_20261110",
         "strategy_id": "S019",
         "type": "ExperimentRef"
       },
@@ -36,7 +127,7 @@
       "name": "experiment-report",
       "schema": "experiment_report",
       "schema_version": 1,
-      "sha256": "8f1f63e0badc74f9e55d36c0393288fda92d5948034737d55652fd0cfcf1b555",
+      "sha256": "55c19766adcb46666c71d2b1d60999f19c93ec163c08fdb279b5bdb6922cbe36",
       "type": "EvidenceRef"
     },
     "mandate": {
@@ -49,7 +140,7 @@
       "stage": "MANDATE",
       "type": "DeliveryReference"
     },
-    "next_action": "阶段二继续比较行业回落后1/3/5日持有及连续下跌损失路径；首轮四原型均未达标，暂缓阶段三。",
+    "next_action": "建议以C0035为主原型进入阶段三，处理Calmar缺口与期限敏感性；等待用户批准及新增额度。",
     "objective": "独立经济假设；中心净年化收益至少55%，净卡玛至少5；达标后优先提高净年化。",
     "parameter_joint_pass_rate_min": 0.8,
     "prior_sample_exposure": "2022为S018已用预热；2023-01-03至2026-10-30为反复使用开发池；2026-11-06存在决策视觉预览记录。",
@@ -60,7 +151,19 @@
     },
     "sample_selection_authority": "RSCH_WITHIN_AUTHORIZED_SCOPE",
     "stage": "STAGE_TWO",
-    "stage_one_status": "COMPLETE"
+    "stage_one_status": "COMPLETE",
+    "stage_three_approval": "PENDING",
+    "stage_two_delivery": {
+      "batch": {
+        "strategy_id": "S019",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "96ada5b59c64af07197adf3894f986abeda7739aae86b08ee493b5ecb7c1ffa2",
+      "revision": 1,
+      "stage": "PROTOTYPES",
+      "type": "DeliveryReference"
+    },
+    "stage_two_status": "COMPLETE"
   },
   "research_state": "RESEARCHING",
   "schema_version": 2,
@@ -68,5 +171,5 @@
     "US.MU"
   ],
   "strategy_id": "S019",
-  "updated_at": "2026-11-10T13:32:52+08:00"
+  "updated_at": "2026-11-10T14:45:16+08:00"
 }

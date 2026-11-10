@@ -1,0 +1,98 @@
+{
+  "round": 8,
+  "state_schema": {
+    "account_fields": [],
+    "cycle_fields": [
+      {
+        "key": "anchor",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "allocation",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "exiting",
+        "value_type": "bool",
+        "nullable": false
+      }
+    ]
+  },
+  "extra_auxiliary_inputs": [
+    {
+      "name": "soxx_open",
+      "instrument": {
+        "market": "US",
+        "asset_class": "ETF",
+        "symbol": "SOXX"
+      },
+      "source": {
+        "provider": "futu",
+        "revision": "s019-unified-window-20261110-v2"
+      },
+      "frequency": "30m",
+      "warmup_bars": 1,
+      "max_age_seconds": 604800,
+      "analysis_price": "HFQ"
+    }
+  ],
+  "candidates": [
+    {
+      "name": "sector_gate",
+      "id": "C0031",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "sector",
+        "treatment": "gate"
+      }
+    },
+    {
+      "name": "relative_gate",
+      "id": "C0032",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "gate"
+      }
+    },
+    {
+      "name": "sector_tilt",
+      "id": "C0033",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "sector",
+        "treatment": "tilt"
+      }
+    },
+    {
+      "name": "relative_tilt",
+      "id": "C0034",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true,
+        "information": "relative",
+        "treatment": "tilt"
+      }
+    }
+  ],
+  "controls": [
+    "research/S019/experiments/EX008_20261110/others/down1_confirm_account.json"
+  ]
+}

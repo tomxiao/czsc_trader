@@ -1,0 +1,251 @@
+{
+  "quarter_half": {
+    "id": "C0022",
+    "parameters": {
+      "require_sector": false,
+      "exit_mode": "fixed",
+      "hold_days": 5,
+      "down_days": 1,
+      "confirm": true,
+      "risk_mode": "trend",
+      "down_alloc": 0.5
+    },
+    "account": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S019",
+        "experiment_id": "EX010_20261110"
+      },
+      "evidence_id": "9d2eaa511a3947c6737852d77a309b43b920fd2239af45b5ad83cbe01dca6894.json",
+      "sha256": "9d2eaa511a3947c6737852d77a309b43b920fd2239af45b5ad83cbe01dca6894",
+      "media_type": "application/json",
+      "name": "quarter_half",
+      "schema": "equity_research",
+      "schema_version": 4
+    },
+    "candidate": {
+      "nar": 0.5991854906191187,
+      "drawdown": 0.21539714283603806,
+      "bar_drawdown": 0.2318544269442281,
+      "calmar": 2.7817708384146176,
+      "closed_cycles": 115,
+      "frequency_median": 6.0,
+      "frequency_coverage": 0.9982653946227233,
+      "year_returns": {
+        "2022": 0.016495056483833093,
+        "2023": 0.06634054629793318,
+        "2024": 0.3499449352911699,
+        "2025": 1.515672978425862,
+        "2026": 1.5982736966923388
+      },
+      "gates": {
+        "nar": true,
+        "calmar": false,
+        "absolute_dd": true,
+        "relative_dd": true,
+        "frequency_median": true,
+        "frequency_coverage": true
+      },
+      "eligible": false,
+      "fees": 47686.155548916
+    },
+    "buy_hold": {
+      "nar": 0.5930831369630878,
+      "drawdown": 0.5695248274745268,
+      "bar_drawdown": 0.5832097877410136,
+      "calmar": 1.0413648507529105,
+      "closed_cycles": 0,
+      "frequency_median": 0.0,
+      "frequency_coverage": 0.0,
+      "year_returns": {
+        "2022": -0.46101403090000004,
+        "2023": 0.703127023200278,
+        "2024": -0.008298386617065723,
+        "2025": 2.344269718302019,
+        "2026": 2.0843508883998956
+      },
+      "gates": {
+        "nar": true,
+        "calmar": false,
+        "absolute_dd": false,
+        "relative_dd": false,
+        "frequency_median": false,
+        "frequency_coverage": false
+      },
+      "eligible": false,
+      "fees": 99.56309
+    },
+    "audit": {
+      "chronology": "PASS",
+      "cash_longonly_integer": "PASS",
+      "source_hash": "PASS"
+    }
+  },
+  "quarter_quarter": {
+    "id": "C0023",
+    "parameters": {
+      "require_sector": false,
+      "exit_mode": "fixed",
+      "hold_days": 5,
+      "down_days": 1,
+      "confirm": true,
+      "risk_mode": "trend",
+      "down_alloc": 0.25
+    },
+    "account": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S019",
+        "experiment_id": "EX010_20261110"
+      },
+      "evidence_id": "87333a277efbb13e57bbc12e98aa93ead1c734f55791ffb51ab7493f913e08c4.json",
+      "sha256": "87333a277efbb13e57bbc12e98aa93ead1c734f55791ffb51ab7493f913e08c4",
+      "media_type": "application/json",
+      "name": "quarter_quarter",
+      "schema": "equity_research",
+      "schema_version": 4
+    },
+    "candidate": {
+      "nar": 0.5349119579726844,
+      "drawdown": 0.21486659725855461,
+      "bar_drawdown": 0.23131667126163957,
+      "calmar": 2.4895072793888517,
+      "closed_cycles": 115,
+      "frequency_median": 6.0,
+      "frequency_coverage": 0.9982653946227233,
+      "year_returns": {
+        "2022": 0.022531650471951936,
+        "2023": 0.025548018495318514,
+        "2024": 0.36892759236478323,
+        "2025": 1.2128364489969266,
+        "2026": 1.4717829044464432
+      },
+      "gates": {
+        "nar": false,
+        "calmar": false,
+        "absolute_dd": true,
+        "relative_dd": true,
+        "frequency_median": true,
+        "frequency_coverage": true
+      },
+      "eligible": false,
+      "fees": 38704.1339931966
+    },
+    "buy_hold": {
+      "nar": 0.5930831369630878,
+      "drawdown": 0.5695248274745268,
+      "bar_drawdown": 0.5832097877410136,
+      "calmar": 1.0413648507529105,
+      "closed_cycles": 0,
+      "frequency_median": 0.0,
+      "frequency_coverage": 0.0,
+      "year_returns": {
+        "2022": -0.46101403090000004,
+        "2023": 0.703127023200278,
+        "2024": -0.008298386617065723,
+        "2025": 2.344269718302019,
+        "2026": 2.0843508883998956
+      },
+      "gates": {
+        "nar": true,
+        "calmar": false,
+        "absolute_dd": false,
+        "relative_dd": false,
+        "frequency_median": false,
+        "frequency_coverage": false
+      },
+      "eligible": false,
+      "fees": 99.56309
+    },
+    "audit": {
+      "chronology": "PASS",
+      "cash_longonly_integer": "PASS",
+      "source_hash": "PASS"
+    }
+  },
+  "vol_budget": {
+    "id": "C0024",
+    "parameters": {
+      "require_sector": false,
+      "exit_mode": "fixed",
+      "hold_days": 5,
+      "down_days": 1,
+      "confirm": true,
+      "risk_mode": "vol",
+      "vol_target": 0.4
+    },
+    "account": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S019",
+        "experiment_id": "EX010_20261110"
+      },
+      "evidence_id": "cc64997c8c93ce5a61c204913497ff1e34dbe22122233a84064db3a2d6e99e04.json",
+      "sha256": "cc64997c8c93ce5a61c204913497ff1e34dbe22122233a84064db3a2d6e99e04",
+      "media_type": "application/json",
+      "name": "vol_budget",
+      "schema": "equity_research",
+      "schema_version": 4
+    },
+    "candidate": {
+      "nar": 0.44412078053115467,
+      "drawdown": 0.22404874974956357,
+      "bar_drawdown": 0.23403434051361727,
+      "calmar": 1.9822506531617894,
+      "closed_cycles": 115,
+      "frequency_median": 6.0,
+      "frequency_coverage": 0.9982653946227233,
+      "year_returns": {
+        "2022": 0.06401000386539701,
+        "2023": 0.15458463170713999,
+        "2024": 0.40748950695497976,
+        "2025": 1.1339642151245717,
+        "2026": 0.5871323186780364
+      },
+      "gates": {
+        "nar": false,
+        "calmar": false,
+        "absolute_dd": true,
+        "relative_dd": true,
+        "frequency_median": true,
+        "frequency_coverage": true
+      },
+      "eligible": false,
+      "fees": 35609.7830389877
+    },
+    "buy_hold": {
+      "nar": 0.5930831369630878,
+      "drawdown": 0.5695248274745268,
+      "bar_drawdown": 0.5832097877410136,
+      "calmar": 1.0413648507529105,
+      "closed_cycles": 0,
+      "frequency_median": 0.0,
+      "frequency_coverage": 0.0,
+      "year_returns": {
+        "2022": -0.46101403090000004,
+        "2023": 0.703127023200278,
+        "2024": -0.008298386617065723,
+        "2025": 2.344269718302019,
+        "2026": 2.0843508883998956
+      },
+      "gates": {
+        "nar": true,
+        "calmar": false,
+        "absolute_dd": false,
+        "relative_dd": false,
+        "frequency_median": false,
+        "frequency_coverage": false
+      },
+      "eligible": false,
+      "fees": 99.56309
+    },
+    "audit": {
+      "chronology": "PASS",
+      "cash_longonly_integer": "PASS",
+      "source_hash": "PASS"
+    }
+  }
+}

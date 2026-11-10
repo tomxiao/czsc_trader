@@ -1,0 +1,114 @@
+{
+  "runtime_kind": "ACCOUNT_REPLAY",
+  "instrument": {
+    "market": "US",
+    "asset_class": "STOCK",
+    "symbol": "MU"
+  },
+  "execution_spec": {
+    "market": {
+      "rule_version": "US_EQUITY_V1"
+    },
+    "decision_clock": "30m",
+    "account": {
+      "currency": "USD",
+      "cash_availability": "IMMEDIATE_RESEARCH",
+      "allow_short": false,
+      "allow_negative_cash": false
+    },
+    "quantity_step": 1,
+    "price_tick": 0.01,
+    "buy_premium": 0.01,
+    "slippage_bp": 0.0,
+    "execution": "BAR_RANGE_V1",
+    "inclusive_touch": false,
+    "data_latency_seconds": 0
+  },
+  "warmup_bars": 2,
+  "entrypoint": "strategy:step",
+  "source_files": [
+    "strategy.py"
+  ],
+  "source_sha256": "4779d4763caea535db565745cff819bd8087c0cd1b2db0bee5ea0fde44a4713b",
+  "parameters_json": "{\"exit_mode\":\"repair\",\"hold_days\":5,\"require_sector\":false}",
+  "dependencies": [
+    {
+      "name": "numpy",
+      "version": "2.5.2"
+    },
+    {
+      "name": "pandas",
+      "version": "3.0.5"
+    }
+  ],
+  "contract_version": 4,
+  "parameter_schema_json": "{\"exit_mode\":{\"type\":\"string\"},\"hold_days\":{\"type\":\"integer\"},\"require_sector\":{\"type\":\"boolean\"}}",
+  "feedback_mode": "CONFIRMED_EXECUTION",
+  "analysis_price": "HFQ",
+  "explanation_cases": [
+    "flat",
+    "long"
+  ],
+  "auxiliary_inputs": [
+    {
+      "name": "mu_daily",
+      "instrument": {
+        "market": "US",
+        "asset_class": "STOCK",
+        "symbol": "MU"
+      },
+      "source": {
+        "provider": "futu",
+        "revision": "s019-unified-window-20261110-v2"
+      },
+      "frequency": "daily",
+      "warmup_bars": 65,
+      "max_age_seconds": 604800,
+      "analysis_price": "HFQ"
+    },
+    {
+      "name": "soxx_daily",
+      "instrument": {
+        "market": "US",
+        "asset_class": "ETF",
+        "symbol": "SOXX"
+      },
+      "source": {
+        "provider": "futu",
+        "revision": "s019-unified-window-20261110-v2"
+      },
+      "frequency": "daily",
+      "warmup_bars": 65,
+      "max_age_seconds": 604800,
+      "analysis_price": "HFQ"
+    }
+  ],
+  "session_context": true,
+  "feature_graph": {
+    "nodes": [],
+    "outputs": [],
+    "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+  },
+  "state_schema": {
+    "account_fields": [],
+    "cycle_fields": [
+      {
+        "key": "anchor",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "exiting",
+        "value_type": "bool",
+        "nullable": false
+      }
+    ]
+  },
+  "computation": "STATEFUL_STEP",
+  "execution_policy": {
+    "policy_type": "TARGET_POSITION",
+    "settings": {
+      "capital_mode": "target_equity_fraction"
+    }
+  }
+}

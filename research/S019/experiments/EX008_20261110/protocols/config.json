@@ -1,0 +1,56 @@
+{
+  "round": 3,
+  "state_schema": {
+    "account_fields": [],
+    "cycle_fields": [
+      {
+        "key": "anchor",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "exiting",
+        "value_type": "bool",
+        "nullable": false
+      }
+    ]
+  },
+  "candidates": [
+    {
+      "name": "down1",
+      "id": "C0016",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": false
+      }
+    },
+    {
+      "name": "down1_confirm",
+      "id": "C0017",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 1,
+        "confirm": true
+      }
+    },
+    {
+      "name": "down2_confirm",
+      "id": "C0018",
+      "parameters": {
+        "require_sector": false,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "down_days": 2,
+        "confirm": true
+      }
+    }
+  ],
+  "controls": [
+    "research/S019/experiments/EX007_20261110/others/down_fixed_account.json"
+  ]
+}
