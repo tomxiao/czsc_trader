@@ -1,0 +1,35 @@
+{
+  "max_workers": 2,
+  "native_threads": 1,
+  "requested": [
+    "all",
+    "common",
+    "trend_filter",
+    "adaptive_exit"
+  ],
+  "preparation_seconds": 4.887677300008363,
+  "evaluation_seconds": 6.058564099992509,
+  "total_seconds": 10.94783930000267,
+  "failures": [
+    {
+      "mode": "all",
+      "status": "UNKNOWN",
+      "error": "EvaluationError(code='BrokenProcessPool', message='A process in the process pool was terminated abruptly while the future was running or pending.')"
+    },
+    {
+      "mode": "common",
+      "status": "CANCELLED",
+      "error": "EvaluationError(code='CancelledError', message='task was not submitted: broken process pool')"
+    },
+    {
+      "mode": "trend_filter",
+      "status": "CANCELLED",
+      "error": "EvaluationError(code='CancelledError', message='task was not submitted: broken process pool')"
+    },
+    {
+      "mode": "adaptive_exit",
+      "status": "CANCELLED",
+      "error": "EvaluationError(code='CancelledError', message='task was not submitted: broken process pool')"
+    }
+  ]
+}

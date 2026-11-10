@@ -1,0 +1,162 @@
+{
+  "prepared": {
+    "space_id": "896409da-fb6d-4884-a56c-545089d1104e",
+    "preparation_id": "992fe8cd-8be0-4479-9884-deb082b7b00b",
+    "manifest_sha256": "60d9ef76cb3fa14457aabf9c88966d21c07e0ae67469bf118f84e2c729ec54a4"
+  },
+  "instrument": {
+    "market": "US",
+    "asset_class": "STOCK",
+    "symbol": "MU"
+  },
+  "specification_hash": "3d7aca6e0affd8be4c639cedb070ab621ad1b30ec24aa5966530fdc73be9a8bf",
+  "content_identities": [
+    [
+      "bars",
+      "868d6720dba9ff585a9fb174f49394bde63dff77aa3392cd45cd9d1c7e850a7f"
+    ],
+    [
+      "sessions",
+      "be57c40b7f7089a912d678a41bc42ab01ca9b81077e8a3a56a76fa1ecf4e8b1a"
+    ],
+    [
+      "trading_facts",
+      "47c2ae8e7251de716862ef4e71d878b1bc473e8ec4072c69b6319cb197f27545"
+    ]
+  ],
+  "warmup_bars": 63,
+  "auxiliary_inputs": [
+    {
+      "input": {
+        "name": "soxx_hfq",
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SOXX"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "frequency": "daily",
+        "warmup_bars": 63,
+        "max_age_seconds": 604800,
+        "analysis_price": "HFQ"
+      },
+      "bars_sha256": "9b53d773ab3a5f9f9a8b45b7db547c147481cb06d44f95bcd132e9dec4808a2b",
+      "sessions_sha256": "be57c40b7f7089a912d678a41bc42ab01ca9b81077e8a3a56a76fa1ecf4e8b1a"
+    }
+  ],
+  "request_bindings": [
+    [
+      "bars",
+      {
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "query": {
+          "product": "equity.bars",
+          "start": "2021-01-01",
+          "end": "2026-10-30",
+          "frequency": "daily",
+          "adjustment": "hfq",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "sessions",
+      {
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "query": {
+          "product": "equity.sessions",
+          "start": "2021-01-01",
+          "end": "2026-10-30",
+          "frequency": "daily",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "trading_facts",
+      {
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "query": {
+          "product": "equity.trading_facts",
+          "start": "2021-01-01",
+          "end": "2026-10-30",
+          "frequency": "daily",
+          "adjustment": "hfq",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "auxiliary:soxx_hfq:bars",
+      {
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SOXX"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "query": {
+          "product": "equity.bars",
+          "start": "2021-01-01",
+          "end": "2026-10-30",
+          "frequency": "daily",
+          "adjustment": "hfq",
+          "session": "REGULAR"
+        }
+      }
+    ],
+    [
+      "auxiliary:soxx_hfq:sessions",
+      {
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SOXX"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "query": {
+          "product": "equity.sessions",
+          "start": "2021-01-01",
+          "end": "2026-10-30",
+          "frequency": "daily",
+          "adjustment": "none",
+          "session": "REGULAR"
+        }
+      }
+    ]
+  ]
+}

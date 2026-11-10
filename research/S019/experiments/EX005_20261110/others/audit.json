@@ -1,0 +1,1463 @@
+{
+  "all": {
+    "account_sha256": "07330ab2451ce9a9c95c12f559338e0a3db95bc0fc4adbad4bd58b5f35bd8ccc",
+    "cycles": 1212,
+    "closed_cycles": 1211,
+    "same_day_exits": 0,
+    "entry_signal_price_clock": "PASS",
+    "liquidation_clock": "PASS",
+    "chronology": "PASS",
+    "bar_max_drawdown": 0.8345470489405441,
+    "examples": [
+      {
+        "day": "2022-01-03",
+        "same_day_exit": false,
+        "entry_decision": {
+          "decision_at": "2022-01-03T15:00:00.000000Z",
+          "decision_id": "cfe63d09b27e6f7c4b0a1ffb752a5173792737388dc0cddb73d51f3f144534c3",
+          "execution_end": "2022-01-03T15:30:00.000000Z",
+          "execution_start": "2022-01-03T15:00:00.000000Z",
+          "explanation": {
+            "basis": [
+              {
+                "key": "mode",
+                "text": "all"
+              },
+              {
+                "key": "execution_slot",
+                "text": "1"
+              },
+              {
+                "key": "target_weight",
+                "text": "1.0"
+              },
+              {
+                "key": "common",
+                "text": "-0.002686928315422016"
+              },
+              {
+                "key": "trend63",
+                "text": "0.31312420874947233"
+              },
+              {
+                "key": "entry_uptrend",
+                "text": "True"
+              }
+            ],
+            "case_key": "long",
+            "explanation": "入场条件满足，提交满仓目标",
+            "judgment": "入场条件满足，提交满仓目标",
+            "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+            "state_key": "target"
+          },
+          "limit_price": 189.76,
+          "observed_through": "2022-01-03T15:00:00.000000Z",
+          "plan": {
+            "capital_mode": "target_equity_fraction",
+            "cycle_after": null,
+            "cycle_before": null,
+            "evidence": {
+              "desired_quantity": 532,
+              "execution_policy": {
+                "policy_type": "TARGET_POSITION",
+                "settings": {
+                  "capital_mode": "target_equity_fraction"
+                }
+              },
+              "explanation": {
+                "basis": [
+                  {
+                    "key": "mode",
+                    "text": "all"
+                  },
+                  {
+                    "key": "execution_slot",
+                    "text": "1"
+                  },
+                  {
+                    "key": "target_weight",
+                    "text": "1.0"
+                  },
+                  {
+                    "key": "common",
+                    "text": "-0.002686928315422016"
+                  },
+                  {
+                    "key": "trend63",
+                    "text": "0.31312420874947233"
+                  },
+                  {
+                    "key": "entry_uptrend",
+                    "text": "True"
+                  }
+                ],
+                "case_key": "long",
+                "explanation": "入场条件满足，提交满仓目标",
+                "judgment": "入场条件满足，提交满仓目标",
+                "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+                "state_key": "target"
+              },
+              "fee_rate": 0.001,
+              "implementation": "08f548e69db7b53f401f6230ec60e806bc5ef722c1f1c26abe175dc3b4cd94e7",
+              "locked_quantity": null,
+              "planning_mode": "TARGET_FRACTION",
+              "planning_result": {
+                "desired_quantity": 532,
+                "planned_quantity": 526,
+                "reasons": [
+                  "INSUFFICIENT_CASH"
+                ],
+                "status": "CONSTRAINED"
+              },
+              "reference_price": 187.89,
+              "sizing": "TARGET_FRACTION",
+              "specification_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+              "target": 1.0
+            },
+            "expected_revision": 1,
+            "legs": [],
+            "orders": [
+              {
+                "limit_price": 189.76,
+                "order_type": "LIMIT",
+                "quantity": 526,
+                "side": "BUY"
+              }
+            ],
+            "owner": "candidate:S019:C0006:08f548e69db7b53f401f6230ec60e806bc5ef722c1f1c26abe175dc3b4cd94e7",
+            "plan_identity": "cfe63d09b27e6f7c4b0a1ffb752a5173792737388dc0cddb73d51f3f144534c3",
+            "point": {
+              "decision_at": "2022-01-03T15:00:00+00:00",
+              "execution_end": "2022-01-03T15:30:00+00:00",
+              "execution_start": "2022-01-03T15:00:00+00:00",
+              "observed_through": "2022-01-03T15:00:00+00:00",
+              "precision": "BAR_INTERVAL",
+              "session_id": "2022-01-03"
+            },
+            "target_quantity": 526
+          },
+          "portfolio_revision": 1,
+          "quantity": 526,
+          "reference_price": 187.89,
+          "side": "BUY",
+          "signal_status": "EVALUATED",
+          "target": 1.0,
+          "target_quantity": 526
+        },
+        "exit_fill": {
+          "account_revision": 13,
+          "cycle_id": "cfe63d09b27e6f7c4b0a1ffb752a5173792737388dc0cddb73d51f3f144534c3:0",
+          "executed_at": "2022-01-04T14:30:00.000000Z",
+          "fees": 101.7396,
+          "fill_id": "66d36de91dffaea9e03d0778ca02faa6b483cbb0e612dda9b360782c3dee518f:0",
+          "interval_end": "2022-01-04T15:00:00.000000Z",
+          "interval_start": "2022-01-04T14:30:00.000000Z",
+          "order_id": "66d36de91dffaea9e03d0778ca02faa6b483cbb0e612dda9b360782c3dee518f:0",
+          "price": 191.6,
+          "quantity": 531,
+          "quote_interval_end": "2022-01-04T15:00:00.000000Z",
+          "quote_interval_start": "2022-01-04T14:30:00.000000Z",
+          "quote_source": "DECISION_BAR",
+          "side": "SELL",
+          "time_precision": "MODEL_BAR_OPEN"
+        }
+      },
+      {
+        "day": "2022-01-04",
+        "same_day_exit": false,
+        "entry_decision": {
+          "decision_at": "2022-01-04T15:00:00.000000Z",
+          "decision_id": "8bf7ebd49a39cfe522fad2dcaafc214ec2457f54b8695483c38d74a1e56a7229",
+          "execution_end": "2022-01-04T15:30:00.000000Z",
+          "execution_start": "2022-01-04T15:00:00.000000Z",
+          "explanation": {
+            "basis": [
+              {
+                "key": "mode",
+                "text": "all"
+              },
+              {
+                "key": "execution_slot",
+                "text": "1"
+              },
+              {
+                "key": "target_weight",
+                "text": "1.0"
+              },
+              {
+                "key": "common",
+                "text": "0.017745004498076797"
+              },
+              {
+                "key": "trend63",
+                "text": "0.3567590497737556"
+              },
+              {
+                "key": "entry_uptrend",
+                "text": "True"
+              }
+            ],
+            "case_key": "long",
+            "explanation": "入场条件满足，提交满仓目标",
+            "judgment": "入场条件满足，提交满仓目标",
+            "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+            "state_key": "target"
+          },
+          "limit_price": 193.25,
+          "observed_through": "2022-01-04T15:00:00.000000Z",
+          "plan": {
+            "capital_mode": "target_equity_fraction",
+            "cycle_after": null,
+            "cycle_before": null,
+            "evidence": {
+              "desired_quantity": 531,
+              "execution_policy": {
+                "policy_type": "TARGET_POSITION",
+                "settings": {
+                  "capital_mode": "target_equity_fraction"
+                }
+              },
+              "explanation": {
+                "basis": [
+                  {
+                    "key": "mode",
+                    "text": "all"
+                  },
+                  {
+                    "key": "execution_slot",
+                    "text": "1"
+                  },
+                  {
+                    "key": "target_weight",
+                    "text": "1.0"
+                  },
+                  {
+                    "key": "common",
+                    "text": "0.017745004498076797"
+                  },
+                  {
+                    "key": "trend63",
+                    "text": "0.3567590497737556"
+                  },
+                  {
+                    "key": "entry_uptrend",
+                    "text": "True"
+                  }
+                ],
+                "case_key": "long",
+                "explanation": "入场条件满足，提交满仓目标",
+                "judgment": "入场条件满足，提交满仓目标",
+                "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+                "state_key": "target"
+              },
+              "fee_rate": 0.001,
+              "implementation": "08f548e69db7b53f401f6230ec60e806bc5ef722c1f1c26abe175dc3b4cd94e7",
+              "locked_quantity": null,
+              "planning_mode": "TARGET_FRACTION",
+              "planning_result": {
+                "desired_quantity": 531,
+                "planned_quantity": 526,
+                "reasons": [
+                  "INSUFFICIENT_CASH"
+                ],
+                "status": "CONSTRAINED"
+              },
+              "reference_price": 191.34,
+              "sizing": "TARGET_FRACTION",
+              "specification_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+              "target": 1.0
+            },
+            "expected_revision": 14,
+            "legs": [],
+            "orders": [
+              {
+                "limit_price": 193.25,
+                "order_type": "LIMIT",
+                "quantity": 526,
+                "side": "BUY"
+              }
+            ],
+            "owner": "candidate:S019:C0006:08f548e69db7b53f401f6230ec60e806bc5ef722c1f1c26abe175dc3b4cd94e7",
+            "plan_identity": "8bf7ebd49a39cfe522fad2dcaafc214ec2457f54b8695483c38d74a1e56a7229",
+            "point": {
+              "decision_at": "2022-01-04T15:00:00+00:00",
+              "execution_end": "2022-01-04T15:30:00+00:00",
+              "execution_start": "2022-01-04T15:00:00+00:00",
+              "observed_through": "2022-01-04T15:00:00+00:00",
+              "precision": "BAR_INTERVAL",
+              "session_id": "2022-01-04"
+            },
+            "target_quantity": 526
+          },
+          "portfolio_revision": 14,
+          "quantity": 526,
+          "reference_price": 191.34,
+          "side": "BUY",
+          "signal_status": "EVALUATED",
+          "target": 1.0,
+          "target_quantity": 526
+        },
+        "exit_fill": {
+          "account_revision": 26,
+          "cycle_id": "8bf7ebd49a39cfe522fad2dcaafc214ec2457f54b8695483c38d74a1e56a7229:0",
+          "executed_at": "2022-01-05T14:30:00.000000Z",
+          "fees": 101.50596,
+          "fill_id": "4c02625dc4fee7a95c70496e8eba387cbd62e8a0a1de99db6ce780587facad54:0",
+          "interval_end": "2022-01-05T15:00:00.000000Z",
+          "interval_start": "2022-01-05T14:30:00.000000Z",
+          "order_id": "4c02625dc4fee7a95c70496e8eba387cbd62e8a0a1de99db6ce780587facad54:0",
+          "price": 191.16,
+          "quantity": 531,
+          "quote_interval_end": "2022-01-05T15:00:00.000000Z",
+          "quote_interval_start": "2022-01-05T14:30:00.000000Z",
+          "quote_source": "DECISION_BAR",
+          "side": "SELL",
+          "time_precision": "MODEL_BAR_OPEN"
+        }
+      }
+    ],
+    "target_checks": {
+      "nar_ge_55pct": false,
+      "calmar_ge_5": false,
+      "drawdown_le_25pct": false,
+      "drawdown_le_80pct_buyhold": false,
+      "rolling60_median_ge_6": true,
+      "rolling60_coverage_ge_90pct": true
+    },
+    "paid_fees": 104915.4289241918
+  },
+  "common": {
+    "account_sha256": "53ef4275b59ea1a1e21266f24dfacb4b42e3aceaa467e1f8cde3870a42457452",
+    "cycles": 562,
+    "closed_cycles": 561,
+    "same_day_exits": 0,
+    "entry_signal_price_clock": "PASS",
+    "liquidation_clock": "PASS",
+    "chronology": "PASS",
+    "bar_max_drawdown": 0.4347483910417339,
+    "examples": [
+      {
+        "day": "2022-01-03",
+        "same_day_exit": false,
+        "entry_decision": {
+          "decision_at": "2022-01-03T15:00:00.000000Z",
+          "decision_id": "a5335bf3e9411ba034982bb5806fdbd868a3314a63dc5ce519f9394165a317b8",
+          "execution_end": "2022-01-03T15:30:00.000000Z",
+          "execution_start": "2022-01-03T15:00:00.000000Z",
+          "explanation": {
+            "basis": [
+              {
+                "key": "mode",
+                "text": "common"
+              },
+              {
+                "key": "execution_slot",
+                "text": "1"
+              },
+              {
+                "key": "target_weight",
+                "text": "1.0"
+              },
+              {
+                "key": "common",
+                "text": "-0.002686928315422016"
+              },
+              {
+                "key": "trend63",
+                "text": "0.31312420874947233"
+              },
+              {
+                "key": "entry_uptrend",
+                "text": "True"
+              }
+            ],
+            "case_key": "long",
+            "explanation": "入场条件满足，提交满仓目标",
+            "judgment": "入场条件满足，提交满仓目标",
+            "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+            "state_key": "target"
+          },
+          "limit_price": 189.76,
+          "observed_through": "2022-01-03T15:00:00.000000Z",
+          "plan": {
+            "capital_mode": "target_equity_fraction",
+            "cycle_after": null,
+            "cycle_before": null,
+            "evidence": {
+              "desired_quantity": 532,
+              "execution_policy": {
+                "policy_type": "TARGET_POSITION",
+                "settings": {
+                  "capital_mode": "target_equity_fraction"
+                }
+              },
+              "explanation": {
+                "basis": [
+                  {
+                    "key": "mode",
+                    "text": "common"
+                  },
+                  {
+                    "key": "execution_slot",
+                    "text": "1"
+                  },
+                  {
+                    "key": "target_weight",
+                    "text": "1.0"
+                  },
+                  {
+                    "key": "common",
+                    "text": "-0.002686928315422016"
+                  },
+                  {
+                    "key": "trend63",
+                    "text": "0.31312420874947233"
+                  },
+                  {
+                    "key": "entry_uptrend",
+                    "text": "True"
+                  }
+                ],
+                "case_key": "long",
+                "explanation": "入场条件满足，提交满仓目标",
+                "judgment": "入场条件满足，提交满仓目标",
+                "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+                "state_key": "target"
+              },
+              "fee_rate": 0.001,
+              "implementation": "badc43f3d821b2ef6a7385a0a8194bfe9698b9374d69875923ebae6e844fc68a",
+              "locked_quantity": null,
+              "planning_mode": "TARGET_FRACTION",
+              "planning_result": {
+                "desired_quantity": 532,
+                "planned_quantity": 526,
+                "reasons": [
+                  "INSUFFICIENT_CASH"
+                ],
+                "status": "CONSTRAINED"
+              },
+              "reference_price": 187.89,
+              "sizing": "TARGET_FRACTION",
+              "specification_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+              "target": 1.0
+            },
+            "expected_revision": 1,
+            "legs": [],
+            "orders": [
+              {
+                "limit_price": 189.76,
+                "order_type": "LIMIT",
+                "quantity": 526,
+                "side": "BUY"
+              }
+            ],
+            "owner": "candidate:S019:C0007:badc43f3d821b2ef6a7385a0a8194bfe9698b9374d69875923ebae6e844fc68a",
+            "plan_identity": "a5335bf3e9411ba034982bb5806fdbd868a3314a63dc5ce519f9394165a317b8",
+            "point": {
+              "decision_at": "2022-01-03T15:00:00+00:00",
+              "execution_end": "2022-01-03T15:30:00+00:00",
+              "execution_start": "2022-01-03T15:00:00+00:00",
+              "observed_through": "2022-01-03T15:00:00+00:00",
+              "precision": "BAR_INTERVAL",
+              "session_id": "2022-01-03"
+            },
+            "target_quantity": 526
+          },
+          "portfolio_revision": 1,
+          "quantity": 526,
+          "reference_price": 187.89,
+          "side": "BUY",
+          "signal_status": "EVALUATED",
+          "target": 1.0,
+          "target_quantity": 526
+        },
+        "exit_fill": {
+          "account_revision": 13,
+          "cycle_id": "a5335bf3e9411ba034982bb5806fdbd868a3314a63dc5ce519f9394165a317b8:0",
+          "executed_at": "2022-01-04T14:30:00.000000Z",
+          "fees": 101.7396,
+          "fill_id": "7a99fb3cd9a88c2276b30e04ea7b3886b6dc6897d2b78df53ad68a68cf0c3236:0",
+          "interval_end": "2022-01-04T15:00:00.000000Z",
+          "interval_start": "2022-01-04T14:30:00.000000Z",
+          "order_id": "7a99fb3cd9a88c2276b30e04ea7b3886b6dc6897d2b78df53ad68a68cf0c3236:0",
+          "price": 191.6,
+          "quantity": 531,
+          "quote_interval_end": "2022-01-04T15:00:00.000000Z",
+          "quote_interval_start": "2022-01-04T14:30:00.000000Z",
+          "quote_source": "DECISION_BAR",
+          "side": "SELL",
+          "time_precision": "MODEL_BAR_OPEN"
+        }
+      },
+      {
+        "day": "2022-01-05",
+        "same_day_exit": false,
+        "entry_decision": {
+          "decision_at": "2022-01-05T15:00:00.000000Z",
+          "decision_id": "d40165b163b9392c0222f7886aef69d7664ba1ed974b12f5490ac14efa51c6be",
+          "execution_end": "2022-01-05T15:30:00.000000Z",
+          "execution_start": "2022-01-05T15:00:00.000000Z",
+          "explanation": {
+            "basis": [
+              {
+                "key": "mode",
+                "text": "common"
+              },
+              {
+                "key": "execution_slot",
+                "text": "1"
+              },
+              {
+                "key": "target_weight",
+                "text": "1.0"
+              },
+              {
+                "key": "common",
+                "text": "-0.0028445511853706917"
+              },
+              {
+                "key": "trend63",
+                "text": "0.36742209631728073"
+              },
+              {
+                "key": "entry_uptrend",
+                "text": "True"
+              }
+            ],
+            "case_key": "long",
+            "explanation": "入场条件满足，提交满仓目标",
+            "judgment": "入场条件满足，提交满仓目标",
+            "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+            "state_key": "target"
+          },
+          "limit_price": 197.47,
+          "observed_through": "2022-01-05T15:00:00.000000Z",
+          "plan": {
+            "capital_mode": "target_equity_fraction",
+            "cycle_after": null,
+            "cycle_before": null,
+            "evidence": {
+              "desired_quantity": 520,
+              "execution_policy": {
+                "policy_type": "TARGET_POSITION",
+                "settings": {
+                  "capital_mode": "target_equity_fraction"
+                }
+              },
+              "explanation": {
+                "basis": [
+                  {
+                    "key": "mode",
+                    "text": "common"
+                  },
+                  {
+                    "key": "execution_slot",
+                    "text": "1"
+                  },
+                  {
+                    "key": "target_weight",
+                    "text": "1.0"
+                  },
+                  {
+                    "key": "common",
+                    "text": "-0.0028445511853706917"
+                  },
+                  {
+                    "key": "trend63",
+                    "text": "0.36742209631728073"
+                  },
+                  {
+                    "key": "entry_uptrend",
+                    "text": "True"
+                  }
+                ],
+                "case_key": "long",
+                "explanation": "入场条件满足，提交满仓目标",
+                "judgment": "入场条件满足，提交满仓目标",
+                "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+                "state_key": "target"
+              },
+              "fee_rate": 0.001,
+              "implementation": "badc43f3d821b2ef6a7385a0a8194bfe9698b9374d69875923ebae6e844fc68a",
+              "locked_quantity": null,
+              "planning_mode": "TARGET_FRACTION",
+              "planning_result": {
+                "desired_quantity": 520,
+                "planned_quantity": 514,
+                "reasons": [
+                  "INSUFFICIENT_CASH"
+                ],
+                "status": "CONSTRAINED"
+              },
+              "reference_price": 195.52,
+              "sizing": "TARGET_FRACTION",
+              "specification_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+              "target": 1.0
+            },
+            "expected_revision": 27,
+            "legs": [],
+            "orders": [
+              {
+                "limit_price": 197.47,
+                "order_type": "LIMIT",
+                "quantity": 514,
+                "side": "BUY"
+              }
+            ],
+            "owner": "candidate:S019:C0007:badc43f3d821b2ef6a7385a0a8194bfe9698b9374d69875923ebae6e844fc68a",
+            "plan_identity": "d40165b163b9392c0222f7886aef69d7664ba1ed974b12f5490ac14efa51c6be",
+            "point": {
+              "decision_at": "2022-01-05T15:00:00+00:00",
+              "execution_end": "2022-01-05T15:30:00+00:00",
+              "execution_start": "2022-01-05T15:00:00+00:00",
+              "observed_through": "2022-01-05T15:00:00+00:00",
+              "precision": "BAR_INTERVAL",
+              "session_id": "2022-01-05"
+            },
+            "target_quantity": 514
+          },
+          "portfolio_revision": 27,
+          "quantity": 514,
+          "reference_price": 195.52,
+          "side": "BUY",
+          "signal_status": "EVALUATED",
+          "target": 1.0,
+          "target_quantity": 514
+        },
+        "exit_fill": {
+          "account_revision": 39,
+          "cycle_id": "d40165b163b9392c0222f7886aef69d7664ba1ed974b12f5490ac14efa51c6be:0",
+          "executed_at": "2022-01-06T14:30:00.000000Z",
+          "fees": 98.9261748,
+          "fill_id": "d407f6fc94d7d07611f4ed4564b252203b0e0ac7bce5fdbd9b1deeee16c8829f:0",
+          "interval_end": "2022-01-06T15:00:00.000000Z",
+          "interval_start": "2022-01-06T14:30:00.000000Z",
+          "order_id": "d407f6fc94d7d07611f4ed4564b252203b0e0ac7bce5fdbd9b1deeee16c8829f:0",
+          "price": 190.6092,
+          "quantity": 519,
+          "quote_interval_end": "2022-01-06T15:00:00.000000Z",
+          "quote_interval_start": "2022-01-06T14:30:00.000000Z",
+          "quote_source": "DECISION_BAR",
+          "side": "SELL",
+          "time_precision": "MODEL_BAR_OPEN"
+        }
+      }
+    ],
+    "target_checks": {
+      "nar_ge_55pct": false,
+      "calmar_ge_5": false,
+      "drawdown_le_25pct": false,
+      "drawdown_le_80pct_buyhold": true,
+      "rolling60_median_ge_6": true,
+      "rolling60_coverage_ge_90pct": true
+    },
+    "paid_fees": 146476.3028123888
+  },
+  "trend_filter": {
+    "account_sha256": "1e6c2e301d8d1959082b87cf577c122e6170de6a0b7dbd56065aa752548a2a26",
+    "cycles": 349,
+    "closed_cycles": 348,
+    "same_day_exits": 0,
+    "entry_signal_price_clock": "PASS",
+    "liquidation_clock": "PASS",
+    "chronology": "PASS",
+    "bar_max_drawdown": 0.3228739687522101,
+    "examples": [
+      {
+        "day": "2022-01-03",
+        "same_day_exit": false,
+        "entry_decision": {
+          "decision_at": "2022-01-03T15:00:00.000000Z",
+          "decision_id": "c16452c2747660fcd772cc9a2874dc54c4d51b24409f4e37280942a99a31b9bc",
+          "execution_end": "2022-01-03T15:30:00.000000Z",
+          "execution_start": "2022-01-03T15:00:00.000000Z",
+          "explanation": {
+            "basis": [
+              {
+                "key": "mode",
+                "text": "trend_filter"
+              },
+              {
+                "key": "execution_slot",
+                "text": "1"
+              },
+              {
+                "key": "target_weight",
+                "text": "1.0"
+              },
+              {
+                "key": "common",
+                "text": "-0.002686928315422016"
+              },
+              {
+                "key": "trend63",
+                "text": "0.31312420874947233"
+              },
+              {
+                "key": "entry_uptrend",
+                "text": "True"
+              }
+            ],
+            "case_key": "long",
+            "explanation": "入场条件满足，提交满仓目标",
+            "judgment": "入场条件满足，提交满仓目标",
+            "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+            "state_key": "target"
+          },
+          "limit_price": 189.76,
+          "observed_through": "2022-01-03T15:00:00.000000Z",
+          "plan": {
+            "capital_mode": "target_equity_fraction",
+            "cycle_after": null,
+            "cycle_before": null,
+            "evidence": {
+              "desired_quantity": 532,
+              "execution_policy": {
+                "policy_type": "TARGET_POSITION",
+                "settings": {
+                  "capital_mode": "target_equity_fraction"
+                }
+              },
+              "explanation": {
+                "basis": [
+                  {
+                    "key": "mode",
+                    "text": "trend_filter"
+                  },
+                  {
+                    "key": "execution_slot",
+                    "text": "1"
+                  },
+                  {
+                    "key": "target_weight",
+                    "text": "1.0"
+                  },
+                  {
+                    "key": "common",
+                    "text": "-0.002686928315422016"
+                  },
+                  {
+                    "key": "trend63",
+                    "text": "0.31312420874947233"
+                  },
+                  {
+                    "key": "entry_uptrend",
+                    "text": "True"
+                  }
+                ],
+                "case_key": "long",
+                "explanation": "入场条件满足，提交满仓目标",
+                "judgment": "入场条件满足，提交满仓目标",
+                "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+                "state_key": "target"
+              },
+              "fee_rate": 0.001,
+              "implementation": "888af0de41f6e5f852e73a9ac5d5f9bcd6f7e2b05e8dc6cef61fa048c443b852",
+              "locked_quantity": null,
+              "planning_mode": "TARGET_FRACTION",
+              "planning_result": {
+                "desired_quantity": 532,
+                "planned_quantity": 526,
+                "reasons": [
+                  "INSUFFICIENT_CASH"
+                ],
+                "status": "CONSTRAINED"
+              },
+              "reference_price": 187.89,
+              "sizing": "TARGET_FRACTION",
+              "specification_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+              "target": 1.0
+            },
+            "expected_revision": 1,
+            "legs": [],
+            "orders": [
+              {
+                "limit_price": 189.76,
+                "order_type": "LIMIT",
+                "quantity": 526,
+                "side": "BUY"
+              }
+            ],
+            "owner": "candidate:S019:C0008:888af0de41f6e5f852e73a9ac5d5f9bcd6f7e2b05e8dc6cef61fa048c443b852",
+            "plan_identity": "c16452c2747660fcd772cc9a2874dc54c4d51b24409f4e37280942a99a31b9bc",
+            "point": {
+              "decision_at": "2022-01-03T15:00:00+00:00",
+              "execution_end": "2022-01-03T15:30:00+00:00",
+              "execution_start": "2022-01-03T15:00:00+00:00",
+              "observed_through": "2022-01-03T15:00:00+00:00",
+              "precision": "BAR_INTERVAL",
+              "session_id": "2022-01-03"
+            },
+            "target_quantity": 526
+          },
+          "portfolio_revision": 1,
+          "quantity": 526,
+          "reference_price": 187.89,
+          "side": "BUY",
+          "signal_status": "EVALUATED",
+          "target": 1.0,
+          "target_quantity": 526
+        },
+        "exit_fill": {
+          "account_revision": 13,
+          "cycle_id": "c16452c2747660fcd772cc9a2874dc54c4d51b24409f4e37280942a99a31b9bc:0",
+          "executed_at": "2022-01-04T14:30:00.000000Z",
+          "fees": 101.7396,
+          "fill_id": "378e98532f49b64301e263cd03945a836004b353a7b51147263466b49bd99b9e:0",
+          "interval_end": "2022-01-04T15:00:00.000000Z",
+          "interval_start": "2022-01-04T14:30:00.000000Z",
+          "order_id": "378e98532f49b64301e263cd03945a836004b353a7b51147263466b49bd99b9e:0",
+          "price": 191.6,
+          "quantity": 531,
+          "quote_interval_end": "2022-01-04T15:00:00.000000Z",
+          "quote_interval_start": "2022-01-04T14:30:00.000000Z",
+          "quote_source": "DECISION_BAR",
+          "side": "SELL",
+          "time_precision": "MODEL_BAR_OPEN"
+        }
+      },
+      {
+        "day": "2022-01-05",
+        "same_day_exit": false,
+        "entry_decision": {
+          "decision_at": "2022-01-05T15:00:00.000000Z",
+          "decision_id": "8cd7e86273cba250e978e69ca246a901e35d74847286f660fb6f8a225d3e6cb4",
+          "execution_end": "2022-01-05T15:30:00.000000Z",
+          "execution_start": "2022-01-05T15:00:00.000000Z",
+          "explanation": {
+            "basis": [
+              {
+                "key": "mode",
+                "text": "trend_filter"
+              },
+              {
+                "key": "execution_slot",
+                "text": "1"
+              },
+              {
+                "key": "target_weight",
+                "text": "1.0"
+              },
+              {
+                "key": "common",
+                "text": "-0.0028445511853706917"
+              },
+              {
+                "key": "trend63",
+                "text": "0.36742209631728073"
+              },
+              {
+                "key": "entry_uptrend",
+                "text": "True"
+              }
+            ],
+            "case_key": "long",
+            "explanation": "入场条件满足，提交满仓目标",
+            "judgment": "入场条件满足，提交满仓目标",
+            "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+            "state_key": "target"
+          },
+          "limit_price": 197.47,
+          "observed_through": "2022-01-05T15:00:00.000000Z",
+          "plan": {
+            "capital_mode": "target_equity_fraction",
+            "cycle_after": null,
+            "cycle_before": null,
+            "evidence": {
+              "desired_quantity": 520,
+              "execution_policy": {
+                "policy_type": "TARGET_POSITION",
+                "settings": {
+                  "capital_mode": "target_equity_fraction"
+                }
+              },
+              "explanation": {
+                "basis": [
+                  {
+                    "key": "mode",
+                    "text": "trend_filter"
+                  },
+                  {
+                    "key": "execution_slot",
+                    "text": "1"
+                  },
+                  {
+                    "key": "target_weight",
+                    "text": "1.0"
+                  },
+                  {
+                    "key": "common",
+                    "text": "-0.0028445511853706917"
+                  },
+                  {
+                    "key": "trend63",
+                    "text": "0.36742209631728073"
+                  },
+                  {
+                    "key": "entry_uptrend",
+                    "text": "True"
+                  }
+                ],
+                "case_key": "long",
+                "explanation": "入场条件满足，提交满仓目标",
+                "judgment": "入场条件满足，提交满仓目标",
+                "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+                "state_key": "target"
+              },
+              "fee_rate": 0.001,
+              "implementation": "888af0de41f6e5f852e73a9ac5d5f9bcd6f7e2b05e8dc6cef61fa048c443b852",
+              "locked_quantity": null,
+              "planning_mode": "TARGET_FRACTION",
+              "planning_result": {
+                "desired_quantity": 520,
+                "planned_quantity": 514,
+                "reasons": [
+                  "INSUFFICIENT_CASH"
+                ],
+                "status": "CONSTRAINED"
+              },
+              "reference_price": 195.52,
+              "sizing": "TARGET_FRACTION",
+              "specification_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+              "target": 1.0
+            },
+            "expected_revision": 27,
+            "legs": [],
+            "orders": [
+              {
+                "limit_price": 197.47,
+                "order_type": "LIMIT",
+                "quantity": 514,
+                "side": "BUY"
+              }
+            ],
+            "owner": "candidate:S019:C0008:888af0de41f6e5f852e73a9ac5d5f9bcd6f7e2b05e8dc6cef61fa048c443b852",
+            "plan_identity": "8cd7e86273cba250e978e69ca246a901e35d74847286f660fb6f8a225d3e6cb4",
+            "point": {
+              "decision_at": "2022-01-05T15:00:00+00:00",
+              "execution_end": "2022-01-05T15:30:00+00:00",
+              "execution_start": "2022-01-05T15:00:00+00:00",
+              "observed_through": "2022-01-05T15:00:00+00:00",
+              "precision": "BAR_INTERVAL",
+              "session_id": "2022-01-05"
+            },
+            "target_quantity": 514
+          },
+          "portfolio_revision": 27,
+          "quantity": 514,
+          "reference_price": 195.52,
+          "side": "BUY",
+          "signal_status": "EVALUATED",
+          "target": 1.0,
+          "target_quantity": 514
+        },
+        "exit_fill": {
+          "account_revision": 39,
+          "cycle_id": "8cd7e86273cba250e978e69ca246a901e35d74847286f660fb6f8a225d3e6cb4:0",
+          "executed_at": "2022-01-06T14:30:00.000000Z",
+          "fees": 98.9261748,
+          "fill_id": "6e8d11628340086c396eaa97d496cd528aa27b4b2bf8d2e62de1239f9c5dfd71:0",
+          "interval_end": "2022-01-06T15:00:00.000000Z",
+          "interval_start": "2022-01-06T14:30:00.000000Z",
+          "order_id": "6e8d11628340086c396eaa97d496cd528aa27b4b2bf8d2e62de1239f9c5dfd71:0",
+          "price": 190.6092,
+          "quantity": 519,
+          "quote_interval_end": "2022-01-06T15:00:00.000000Z",
+          "quote_interval_start": "2022-01-06T14:30:00.000000Z",
+          "quote_source": "DECISION_BAR",
+          "side": "SELL",
+          "time_precision": "MODEL_BAR_OPEN"
+        }
+      }
+    ],
+    "target_checks": {
+      "nar_ge_55pct": false,
+      "calmar_ge_5": false,
+      "drawdown_le_25pct": false,
+      "drawdown_le_80pct_buyhold": true,
+      "rolling60_median_ge_6": true,
+      "rolling60_coverage_ge_90pct": false
+    },
+    "paid_fees": 94660.7180357908
+  },
+  "adaptive_exit": {
+    "account_sha256": "850516ce6d47803ff9ee54101b94be977ccd969aac639caeebf8bc716672fa7c",
+    "cycles": 562,
+    "closed_cycles": 561,
+    "same_day_exits": 213,
+    "entry_signal_price_clock": "PASS",
+    "liquidation_clock": "PASS",
+    "chronology": "PASS",
+    "bar_max_drawdown": 0.39464167590494603,
+    "examples": [
+      {
+        "day": "2022-01-03",
+        "same_day_exit": false,
+        "entry_decision": {
+          "decision_at": "2022-01-03T15:00:00.000000Z",
+          "decision_id": "97f45c210ca2574e755ec37426aed0abb227847977f9510ce2efaf7d3e5b8022",
+          "execution_end": "2022-01-03T15:30:00.000000Z",
+          "execution_start": "2022-01-03T15:00:00.000000Z",
+          "explanation": {
+            "basis": [
+              {
+                "key": "mode",
+                "text": "adaptive_exit"
+              },
+              {
+                "key": "execution_slot",
+                "text": "1"
+              },
+              {
+                "key": "target_weight",
+                "text": "1.0"
+              },
+              {
+                "key": "common",
+                "text": "-0.002686928315422016"
+              },
+              {
+                "key": "trend63",
+                "text": "0.31312420874947233"
+              },
+              {
+                "key": "entry_uptrend",
+                "text": "True"
+              }
+            ],
+            "case_key": "long",
+            "explanation": "入场条件满足，提交满仓目标",
+            "judgment": "入场条件满足，提交满仓目标",
+            "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+            "state_key": "target"
+          },
+          "limit_price": 189.76,
+          "observed_through": "2022-01-03T15:00:00.000000Z",
+          "plan": {
+            "capital_mode": "target_equity_fraction",
+            "cycle_after": null,
+            "cycle_before": null,
+            "evidence": {
+              "desired_quantity": 532,
+              "execution_policy": {
+                "policy_type": "TARGET_POSITION",
+                "settings": {
+                  "capital_mode": "target_equity_fraction"
+                }
+              },
+              "explanation": {
+                "basis": [
+                  {
+                    "key": "mode",
+                    "text": "adaptive_exit"
+                  },
+                  {
+                    "key": "execution_slot",
+                    "text": "1"
+                  },
+                  {
+                    "key": "target_weight",
+                    "text": "1.0"
+                  },
+                  {
+                    "key": "common",
+                    "text": "-0.002686928315422016"
+                  },
+                  {
+                    "key": "trend63",
+                    "text": "0.31312420874947233"
+                  },
+                  {
+                    "key": "entry_uptrend",
+                    "text": "True"
+                  }
+                ],
+                "case_key": "long",
+                "explanation": "入场条件满足，提交满仓目标",
+                "judgment": "入场条件满足，提交满仓目标",
+                "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+                "state_key": "target"
+              },
+              "fee_rate": 0.001,
+              "implementation": "35e991367da2a8d8d1abe1c72509e4930890133453336cb8cfd0365d6a1480ae",
+              "locked_quantity": null,
+              "planning_mode": "TARGET_FRACTION",
+              "planning_result": {
+                "desired_quantity": 532,
+                "planned_quantity": 526,
+                "reasons": [
+                  "INSUFFICIENT_CASH"
+                ],
+                "status": "CONSTRAINED"
+              },
+              "reference_price": 187.89,
+              "sizing": "TARGET_FRACTION",
+              "specification_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+              "target": 1.0
+            },
+            "expected_revision": 1,
+            "legs": [],
+            "orders": [
+              {
+                "limit_price": 189.76,
+                "order_type": "LIMIT",
+                "quantity": 526,
+                "side": "BUY"
+              }
+            ],
+            "owner": "candidate:S019:C0009:35e991367da2a8d8d1abe1c72509e4930890133453336cb8cfd0365d6a1480ae",
+            "plan_identity": "97f45c210ca2574e755ec37426aed0abb227847977f9510ce2efaf7d3e5b8022",
+            "point": {
+              "decision_at": "2022-01-03T15:00:00+00:00",
+              "execution_end": "2022-01-03T15:30:00+00:00",
+              "execution_start": "2022-01-03T15:00:00+00:00",
+              "observed_through": "2022-01-03T15:00:00+00:00",
+              "precision": "BAR_INTERVAL",
+              "session_id": "2022-01-03"
+            },
+            "target_quantity": 526
+          },
+          "portfolio_revision": 1,
+          "quantity": 526,
+          "reference_price": 187.89,
+          "side": "BUY",
+          "signal_status": "EVALUATED",
+          "target": 1.0,
+          "target_quantity": 526
+        },
+        "exit_fill": {
+          "account_revision": 13,
+          "cycle_id": "97f45c210ca2574e755ec37426aed0abb227847977f9510ce2efaf7d3e5b8022:0",
+          "executed_at": "2022-01-04T14:30:00.000000Z",
+          "fees": 101.7396,
+          "fill_id": "1cd94c40f8147a9630f5f0a7cc3065ce9cf346526ba1c15d22dca6f6a3ef68a3:0",
+          "interval_end": "2022-01-04T15:00:00.000000Z",
+          "interval_start": "2022-01-04T14:30:00.000000Z",
+          "order_id": "1cd94c40f8147a9630f5f0a7cc3065ce9cf346526ba1c15d22dca6f6a3ef68a3:0",
+          "price": 191.6,
+          "quantity": 531,
+          "quote_interval_end": "2022-01-04T15:00:00.000000Z",
+          "quote_interval_start": "2022-01-04T14:30:00.000000Z",
+          "quote_source": "DECISION_BAR",
+          "side": "SELL",
+          "time_precision": "MODEL_BAR_OPEN"
+        }
+      },
+      {
+        "day": "2022-01-05",
+        "same_day_exit": false,
+        "entry_decision": {
+          "decision_at": "2022-01-05T15:00:00.000000Z",
+          "decision_id": "3f95cdaf1632f7c3a101f2693da334626201c3da298cd1697f0bb217b4b15467",
+          "execution_end": "2022-01-05T15:30:00.000000Z",
+          "execution_start": "2022-01-05T15:00:00.000000Z",
+          "explanation": {
+            "basis": [
+              {
+                "key": "mode",
+                "text": "adaptive_exit"
+              },
+              {
+                "key": "execution_slot",
+                "text": "1"
+              },
+              {
+                "key": "target_weight",
+                "text": "1.0"
+              },
+              {
+                "key": "common",
+                "text": "-0.0028445511853706917"
+              },
+              {
+                "key": "trend63",
+                "text": "0.36742209631728073"
+              },
+              {
+                "key": "entry_uptrend",
+                "text": "True"
+              }
+            ],
+            "case_key": "long",
+            "explanation": "入场条件满足，提交满仓目标",
+            "judgment": "入场条件满足，提交满仓目标",
+            "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+            "state_key": "target"
+          },
+          "limit_price": 197.47,
+          "observed_through": "2022-01-05T15:00:00.000000Z",
+          "plan": {
+            "capital_mode": "target_equity_fraction",
+            "cycle_after": null,
+            "cycle_before": null,
+            "evidence": {
+              "desired_quantity": 520,
+              "execution_policy": {
+                "policy_type": "TARGET_POSITION",
+                "settings": {
+                  "capital_mode": "target_equity_fraction"
+                }
+              },
+              "explanation": {
+                "basis": [
+                  {
+                    "key": "mode",
+                    "text": "adaptive_exit"
+                  },
+                  {
+                    "key": "execution_slot",
+                    "text": "1"
+                  },
+                  {
+                    "key": "target_weight",
+                    "text": "1.0"
+                  },
+                  {
+                    "key": "common",
+                    "text": "-0.0028445511853706917"
+                  },
+                  {
+                    "key": "trend63",
+                    "text": "0.36742209631728073"
+                  },
+                  {
+                    "key": "entry_uptrend",
+                    "text": "True"
+                  }
+                ],
+                "case_key": "long",
+                "explanation": "入场条件满足，提交满仓目标",
+                "judgment": "入场条件满足，提交满仓目标",
+                "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+                "state_key": "target"
+              },
+              "fee_rate": 0.001,
+              "implementation": "35e991367da2a8d8d1abe1c72509e4930890133453336cb8cfd0365d6a1480ae",
+              "locked_quantity": null,
+              "planning_mode": "TARGET_FRACTION",
+              "planning_result": {
+                "desired_quantity": 520,
+                "planned_quantity": 514,
+                "reasons": [
+                  "INSUFFICIENT_CASH"
+                ],
+                "status": "CONSTRAINED"
+              },
+              "reference_price": 195.52,
+              "sizing": "TARGET_FRACTION",
+              "specification_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+              "target": 1.0
+            },
+            "expected_revision": 27,
+            "legs": [],
+            "orders": [
+              {
+                "limit_price": 197.47,
+                "order_type": "LIMIT",
+                "quantity": 514,
+                "side": "BUY"
+              }
+            ],
+            "owner": "candidate:S019:C0009:35e991367da2a8d8d1abe1c72509e4930890133453336cb8cfd0365d6a1480ae",
+            "plan_identity": "3f95cdaf1632f7c3a101f2693da334626201c3da298cd1697f0bb217b4b15467",
+            "point": {
+              "decision_at": "2022-01-05T15:00:00+00:00",
+              "execution_end": "2022-01-05T15:30:00+00:00",
+              "execution_start": "2022-01-05T15:00:00+00:00",
+              "observed_through": "2022-01-05T15:00:00+00:00",
+              "precision": "BAR_INTERVAL",
+              "session_id": "2022-01-05"
+            },
+            "target_quantity": 514
+          },
+          "portfolio_revision": 27,
+          "quantity": 514,
+          "reference_price": 195.52,
+          "side": "BUY",
+          "signal_status": "EVALUATED",
+          "target": 1.0,
+          "target_quantity": 514
+        },
+        "exit_fill": {
+          "account_revision": 39,
+          "cycle_id": "3f95cdaf1632f7c3a101f2693da334626201c3da298cd1697f0bb217b4b15467:0",
+          "executed_at": "2022-01-06T14:30:00.000000Z",
+          "fees": 98.9261748,
+          "fill_id": "cdb0a30fa120c9f006de4118320db501164884e703ede757b9688b3e50e13102:0",
+          "interval_end": "2022-01-06T15:00:00.000000Z",
+          "interval_start": "2022-01-06T14:30:00.000000Z",
+          "order_id": "cdb0a30fa120c9f006de4118320db501164884e703ede757b9688b3e50e13102:0",
+          "price": 190.6092,
+          "quantity": 519,
+          "quote_interval_end": "2022-01-06T15:00:00.000000Z",
+          "quote_interval_start": "2022-01-06T14:30:00.000000Z",
+          "quote_source": "DECISION_BAR",
+          "side": "SELL",
+          "time_precision": "MODEL_BAR_OPEN"
+        }
+      },
+      {
+        "day": "2022-03-07",
+        "same_day_exit": true,
+        "entry_decision": {
+          "decision_at": "2022-03-07T15:00:00.000000Z",
+          "decision_id": "61a3e22259b861e7fb96ac4293b9a6f787b0456e52e1e1e786a426fbc6a5989d",
+          "execution_end": "2022-03-07T15:30:00.000000Z",
+          "execution_start": "2022-03-07T15:00:00.000000Z",
+          "explanation": {
+            "basis": [
+              {
+                "key": "mode",
+                "text": "adaptive_exit"
+              },
+              {
+                "key": "execution_slot",
+                "text": "1"
+              },
+              {
+                "key": "target_weight",
+                "text": "1.0"
+              },
+              {
+                "key": "common",
+                "text": "-0.024312107890825902"
+              },
+              {
+                "key": "trend63",
+                "text": "-0.010484454085321837"
+              },
+              {
+                "key": "entry_uptrend",
+                "text": "False"
+              }
+            ],
+            "case_key": "long",
+            "explanation": "入场条件满足，提交满仓目标",
+            "judgment": "入场条件满足，提交满仓目标",
+            "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+            "state_key": "target"
+          },
+          "limit_price": 161.31,
+          "observed_through": "2022-03-07T15:00:00.000000Z",
+          "plan": {
+            "capital_mode": "target_equity_fraction",
+            "cycle_after": null,
+            "cycle_before": null,
+            "evidence": {
+              "desired_quantity": 500,
+              "execution_policy": {
+                "policy_type": "TARGET_POSITION",
+                "settings": {
+                  "capital_mode": "target_equity_fraction"
+                }
+              },
+              "explanation": {
+                "basis": [
+                  {
+                    "key": "mode",
+                    "text": "adaptive_exit"
+                  },
+                  {
+                    "key": "execution_slot",
+                    "text": "1"
+                  },
+                  {
+                    "key": "target_weight",
+                    "text": "1.0"
+                  },
+                  {
+                    "key": "common",
+                    "text": "-0.024312107890825902"
+                  },
+                  {
+                    "key": "trend63",
+                    "text": "-0.010484454085321837"
+                  },
+                  {
+                    "key": "entry_uptrend",
+                    "text": "False"
+                  }
+                ],
+                "case_key": "long",
+                "explanation": "入场条件满足，提交满仓目标",
+                "judgment": "入场条件满足，提交满仓目标",
+                "next_watch": "关注成交回报，并按交易日历检查下一入场或退出时点。",
+                "state_key": "target"
+              },
+              "fee_rate": 0.001,
+              "implementation": "35e991367da2a8d8d1abe1c72509e4930890133453336cb8cfd0365d6a1480ae",
+              "locked_quantity": null,
+              "planning_mode": "TARGET_FRACTION",
+              "planning_result": {
+                "desired_quantity": 500,
+                "planned_quantity": 495,
+                "reasons": [
+                  "INSUFFICIENT_CASH"
+                ],
+                "status": "CONSTRAINED"
+              },
+              "reference_price": 159.72,
+              "sizing": "TARGET_FRACTION",
+              "specification_hash": "cc778dfdba77564b45d5a9f82131761f82f1df2e9b79e81bdea9585d4a7d6b76",
+              "target": 1.0
+            },
+            "expected_revision": 560,
+            "legs": [],
+            "orders": [
+              {
+                "limit_price": 161.31,
+                "order_type": "LIMIT",
+                "quantity": 495,
+                "side": "BUY"
+              }
+            ],
+            "owner": "candidate:S019:C0009:35e991367da2a8d8d1abe1c72509e4930890133453336cb8cfd0365d6a1480ae",
+            "plan_identity": "61a3e22259b861e7fb96ac4293b9a6f787b0456e52e1e1e786a426fbc6a5989d",
+            "point": {
+              "decision_at": "2022-03-07T15:00:00+00:00",
+              "execution_end": "2022-03-07T15:30:00+00:00",
+              "execution_start": "2022-03-07T15:00:00+00:00",
+              "observed_through": "2022-03-07T15:00:00+00:00",
+              "precision": "BAR_INTERVAL",
+              "session_id": "2022-03-07"
+            },
+            "target_quantity": 495
+          },
+          "portfolio_revision": 560,
+          "quantity": 495,
+          "reference_price": 159.72,
+          "side": "BUY",
+          "signal_status": "EVALUATED",
+          "target": 1.0,
+          "target_quantity": 495
+        },
+        "exit_fill": {
+          "account_revision": 571,
+          "cycle_id": "61a3e22259b861e7fb96ac4293b9a6f787b0456e52e1e1e786a426fbc6a5989d:0",
+          "executed_at": "2022-03-07T20:30:00.000000Z",
+          "fees": 76.55,
+          "fill_id": "655b288fc2e531399c5f344cc3f9a4d7862625dace88e19f299c500e5d4d9742:0",
+          "interval_end": "2022-03-07T21:00:00.000000Z",
+          "interval_start": "2022-03-07T20:30:00.000000Z",
+          "order_id": "655b288fc2e531399c5f344cc3f9a4d7862625dace88e19f299c500e5d4d9742:0",
+          "price": 153.1,
+          "quantity": 500,
+          "quote_interval_end": "2022-03-07T21:00:00.000000Z",
+          "quote_interval_start": "2022-03-07T20:30:00.000000Z",
+          "quote_source": "DECISION_BAR",
+          "side": "SELL",
+          "time_precision": "MODEL_BAR_OPEN"
+        }
+      }
+    ],
+    "target_checks": {
+      "nar_ge_55pct": false,
+      "calmar_ge_5": false,
+      "drawdown_le_25pct": false,
+      "drawdown_le_80pct_buyhold": true,
+      "rolling60_median_ge_6": true,
+      "rolling60_coverage_ge_90pct": true
+    },
+    "paid_fees": 156278.2412333865
+  }
+}
