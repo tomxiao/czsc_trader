@@ -1,0 +1,375 @@
+{
+  "verification": "PASSED",
+  "checks": [
+    "source/protocol/inventory hash bindings",
+    "all 238 published accounts represented",
+    "236 unique implementations share 1212-session calendar and identical benchmark returns",
+    "center account refs exactly match approved centers",
+    "all 252 Sharpe proxy splits retain 236 candidates",
+    "bootstrap point differences match published center metrics"
+  ],
+  "completion": {
+    "status": "COMPLETE",
+    "elapsed_seconds": 979.0074110999994,
+    "published_accounts": 238,
+    "unique_implementations": 236,
+    "new_strategy_accounts": 0,
+    "source_sha256": "2b88636eb612273343bf30dbf91d30385cf56c0168fbe1df9b6d1f5018483228",
+    "protocol_sha256": "218ff2c8d9d6dae75a10b368d0ae6a1c4eecb893afc72b9f58ff5f2966ee9c32"
+  },
+  "exact_repeats": {
+    "C0067": [
+      "C0102"
+    ],
+    "C0196": [
+      "C0198"
+    ]
+  },
+  "selection_summary": {
+    "type": "SelectionStabilityResult",
+    "request_sha256": "0ff38e9e635d7c39785e0725ebf413a225c8935ed5f534015884f0d26727620a",
+    "status": "COMPLETE",
+    "planned_windows": 4,
+    "selected_windows": 2,
+    "no_eligible_windows": 2,
+    "insufficient_selection_windows": 0,
+    "observation_incomplete_windows": 0,
+    "ranking_incomplete_windows": 0,
+    "passed_observations": 0,
+    "failed_observations": 2,
+    "indeterminate_observations": 0,
+    "primary_min": 0.07585327682869573,
+    "primary_median": 0.4294644190474437,
+    "primary_max": 0.7830755612661917,
+    "worst_pairs": [
+      "2023-to-2024"
+    ],
+    "limitations": [
+      "Protocols fixed after center results were known, before these statistical diagnostics.",
+      "Fixed researched candidates and previously seen history; no independent or prospective validation.",
+      "Four following-year observations are few; 2026 is incomplete.",
+      "Full-window center eligibility remains empty; user-authorized frontier comparison preserves that fact.",
+      "Sharpe PBO and DSR are auxiliary diagnostics, not NAR/Calmar selection-error or future failure probabilities.",
+      "Search controls and exact reruns are counted explicitly; no count is asserted to be independent trials.",
+      "Calendar block resampling changes chronology; results are conditional diagnostic intervals, not guarantees.",
+      "RETROSPECTIVE_FIXED_CANDIDATES_NOT_INDEPENDENT_SEARCH_VALIDATION",
+      "OVERLAPPING_WINDOWS_ARE_NOT_INDEPENDENT_SAMPLES"
+    ],
+    "primary_distribution": {
+      "type": "SelectionDistribution",
+      "available_observations": 2,
+      "total_observations": 2,
+      "minimum": 0.07585327682869573,
+      "median": 0.4294644190474437,
+      "maximum": 0.7830755612661917
+    },
+    "excess_distribution": {
+      "type": "SelectionDistribution",
+      "available_observations": 2,
+      "total_observations": 2,
+      "minimum": -2.1056306254478248,
+      "median": -1.0107394810010313,
+      "maximum": 0.08415166344576219
+    },
+    "change_distribution": {
+      "type": "SelectionDistribution",
+      "available_observations": 2,
+      "total_observations": 2,
+      "minimum": -0.8589279756224757,
+      "median": -0.6107769053973956,
+      "maximum": -0.3626258351723155
+    },
+    "formula_version": "selection-stability-v1"
+  },
+  "selection_windows": [
+    {
+      "type": "SelectionDecision",
+      "pair_id": "2022-to-2023",
+      "selection_window_id": "2022",
+      "status": "NO_ELIGIBLE_CANDIDATE",
+      "eligible": [],
+      "selected": []
+    },
+    {
+      "type": "SelectionDecision",
+      "pair_id": "2023-to-2024",
+      "selection_window_id": "2023",
+      "status": "SELECTED",
+      "eligible": [
+        {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S019-C0010",
+          "content_sha256": "1d094e3cc70d21ae06922f8672f13111354b73043c901aa2c3cb756cf45cff58"
+        },
+        {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S019-C0011",
+          "content_sha256": "58a2a8e6e9badc3002b38ea39f037efff1d60e863bab339434c95931dbd5a6b1"
+        }
+      ],
+      "selected": [
+        {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S019-C0011",
+          "content_sha256": "58a2a8e6e9badc3002b38ea39f037efff1d60e863bab339434c95931dbd5a6b1"
+        }
+      ]
+    },
+    {
+      "type": "SelectionDecision",
+      "pair_id": "2024-to-2025",
+      "selection_window_id": "2024",
+      "status": "NO_ELIGIBLE_CANDIDATE",
+      "eligible": [],
+      "selected": []
+    },
+    {
+      "type": "SelectionDecision",
+      "pair_id": "2025-to-2026",
+      "selection_window_id": "2025",
+      "status": "SELECTED",
+      "eligible": [
+        {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S019-C0050",
+          "content_sha256": "c6f78d40d0e982200b77bb8463bad49e365186400661cd3fc2503476f231d63d"
+        },
+        {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S019-C0051",
+          "content_sha256": "bd5f2c24b9961d751ae47f62c0e44b37bf5845256deb07bb01e1254a4fab1f2e"
+        }
+      ],
+      "selected": [
+        {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S019-C0051",
+          "content_sha256": "bd5f2c24b9961d751ae47f62c0e44b37bf5845256deb07bb01e1254a4fab1f2e"
+        }
+      ]
+    }
+  ],
+  "selection_observations": [
+    {
+      "type": "SelectionObservation",
+      "pair_id": "2023-to-2024",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S019-C0011",
+        "content_sha256": "58a2a8e6e9badc3002b38ea39f037efff1d60e863bab339434c95931dbd5a6b1"
+      },
+      "observation_window_id": "2024",
+      "acceptance_status": "FAILED",
+      "primary_value": 0.07585327682869573,
+      "benchmark_primary_value": -0.008298386617066453,
+      "excess_primary": 0.08415166344576219,
+      "primary_change": -0.8589279756224757,
+      "rank_min": 2,
+      "rank_max": 2,
+      "reference_size": 2,
+      "rank_reason": null,
+      "failed_targets": [
+        "center-nar",
+        "center-calmar",
+        "center-risk",
+        "center-relative-risk"
+      ]
+    },
+    {
+      "type": "SelectionObservation",
+      "pair_id": "2025-to-2026",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S019-C0051",
+        "content_sha256": "bd5f2c24b9961d751ae47f62c0e44b37bf5845256deb07bb01e1254a4fab1f2e"
+      },
+      "observation_window_id": "2026",
+      "acceptance_status": "FAILED",
+      "primary_value": 0.7830755612661917,
+      "benchmark_primary_value": 2.8887061867140162,
+      "excess_primary": -2.1056306254478248,
+      "primary_change": -0.3626258351723155,
+      "rank_min": 2,
+      "rank_max": 2,
+      "reference_size": 2,
+      "rank_reason": null,
+      "failed_targets": [
+        "center-calmar",
+        "center-risk",
+        "center-frequency"
+      ]
+    }
+  ],
+  "bootstrap_comparisons": [
+    {
+      "champion_id": "C0135",
+      "comparator_id": "MU_BUY_HOLD",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.1783350827827732,
+        "lower_95": -0.6845043850038399,
+        "upper_95": 0.7419725599821467,
+        "probability_favorable": 0.6858
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": 0.39572946134427145,
+        "lower_95": 0.14150608758312958,
+        "upper_95": 0.5713541461359392,
+        "probability_favorable": 0.9998
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": 3.3972933075302265,
+        "lower_95": -0.04733371266492369,
+        "upper_95": 6.0790125119605385,
+        "probability_favorable": 0.9724
+      }
+    },
+    {
+      "champion_id": "C0224",
+      "comparator_id": "MU_BUY_HOLD",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.03713769614934814,
+        "lower_95": -0.9121189453115649,
+        "upper_95": 0.5880251932047833,
+        "probability_favorable": 0.5361
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": 0.44236642336596144,
+        "lower_95": 0.21143753498262377,
+        "upper_95": 0.6300180440464574,
+        "probability_favorable": 1.0
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": 3.914822178571299,
+        "lower_95": 0.256259497796878,
+        "upper_95": 6.748862395575414,
+        "probability_favorable": 0.9837
+      }
+    },
+    {
+      "champion_id": "C0135",
+      "comparator_id": "C0224",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.14119738663342507,
+        "lower_95": -0.0034125303655427527,
+        "upper_95": 0.3829193583010087,
+        "probability_favorable": 0.9717
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": -0.04663696202168999,
+        "lower_95": -0.12245208029972372,
+        "upper_95": -0.012935325954014965,
+        "probability_favorable": 0.0038
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": -0.5175288710410726,
+        "lower_95": -2.0187787857114823,
+        "upper_95": 0.8599946298843071,
+        "probability_favorable": 0.2234
+      }
+    }
+  ],
+  "sharpe_proxy": {
+    "PBO_SHARPE_PROXY": {
+      "status": "AVAILABLE",
+      "block_count": 10,
+      "candidate_count": 236,
+      "pbo": 0.4087301587301587,
+      "median_validation_percentile": 0.5638297872340425,
+      "median_logit": 0.256724624647109
+    },
+    "EFFECTIVE_TRIAL_COUNT": {
+      "status": "AVAILABLE",
+      "value": 1.7521984852668944
+    },
+    "DSR_SHARPE_PROXY_C0135": {
+      "RAW": {
+        "status": "AVAILABLE",
+        "observations": 1212,
+        "trial_count": 238.0,
+        "observed_sharpe": 1.915814234357764,
+        "trial_sharpe_mean": 1.5325804619659462,
+        "trial_sharpe_std": 0.3771787305860737,
+        "expected_max_sharpe": 2.5969429891630034,
+        "skew": 1.9290529265916743,
+        "pearson_kurtosis": 20.67460062388854,
+        "test_statistic": -1.6302851724153729,
+        "probability": 0.051520619946624054
+      },
+      "EFFECTIVE": {
+        "status": "AVAILABLE",
+        "observations": 1212,
+        "trial_count": 1.7521984852668944,
+        "observed_sharpe": 1.915814234357764,
+        "trial_sharpe_mean": 1.5325804619659462,
+        "trial_sharpe_std": 0.3771787305860737,
+        "expected_max_sharpe": 1.6797701924401123,
+        "skew": 1.9290529265916743,
+        "pearson_kurtosis": 20.67460062388854,
+        "test_statistic": 0.5649726264828954,
+        "probability": 0.7139538084348542
+      }
+    },
+    "DSR_SHARPE_PROXY_C0224": {
+      "RAW": {
+        "status": "AVAILABLE",
+        "observations": 1212,
+        "trial_count": 238.0,
+        "observed_sharpe": 1.9683930316493947,
+        "trial_sharpe_mean": 1.5325804619659462,
+        "trial_sharpe_std": 0.3771787305860737,
+        "expected_max_sharpe": 2.5969429891630034,
+        "skew": 2.6007547371948716,
+        "pearson_kurtosis": 26.690325761170516,
+        "test_statistic": -1.5638935035748411,
+        "probability": 0.058921290205096157
+      },
+      "EFFECTIVE": {
+        "status": "AVAILABLE",
+        "observations": 1212,
+        "trial_count": 1.7521984852668944,
+        "observed_sharpe": 1.9683930316493947,
+        "trial_sharpe_mean": 1.5325804619659462,
+        "trial_sharpe_std": 0.3771787305860737,
+        "expected_max_sharpe": 1.6797701924401123,
+        "skew": 2.6007547371948716,
+        "pearson_kurtosis": 26.690325761170516,
+        "test_statistic": 0.7181217305435105,
+        "probability": 0.7636588837808702
+      }
+    }
+  },
+  "actual_nar_gated_adaptive_selection_bias": "NOT_ESTIMATED",
+  "limitations": [
+    "Protocols fixed after center results were known, before these statistical diagnostics.",
+    "Fixed researched candidates and previously seen history; no independent or prospective validation.",
+    "Four following-year observations are few; 2026 is incomplete.",
+    "Full-window center eligibility remains empty; user-authorized frontier comparison preserves that fact.",
+    "Sharpe PBO and DSR are auxiliary diagnostics, not NAR/Calmar selection-error or future failure probabilities.",
+    "Search controls and exact reruns are counted explicitly; no count is asserted to be independent trials.",
+    "Calendar block resampling changes chronology; results are conditional diagnostic intervals, not guarantees."
+  ]
+}

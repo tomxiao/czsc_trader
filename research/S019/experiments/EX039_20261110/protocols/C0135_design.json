@@ -1,0 +1,702 @@
+{
+  "type": "ParameterNeighborhoodDesign",
+  "center": {
+    "type": "AssessmentCandidate",
+    "candidate_id": "S019-C0135",
+    "content_sha256": "7ba0ec1fad52303d495097f79082b3d28a1cf3faa0b11cbed8e72901ae9c3df1"
+  },
+  "protocol": {
+    "type": "ParameterNeighborhoodProtocol",
+    "purpose": "LOCAL_SENSITIVITY",
+    "max_combinations": 1000000,
+    "quantile_method": "LINEAR",
+    "version": "parameter-cartesian-neighborhood-v2"
+  },
+  "space": {
+    "type": "ParameterNeighborhoodSpace",
+    "axes": [
+      {
+        "type": "ParameterAxis",
+        "name": "confirm",
+        "center": true,
+        "domain": {
+          "type": "BooleanDomain"
+        },
+        "rule": {
+          "type": "ExplicitValues",
+          "values": [
+            true
+          ]
+        },
+        "payload_path": [
+          "confirm"
+        ],
+        "unit": "fixed_structure"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "down_days",
+        "center": 1,
+        "domain": {
+          "type": "IntegerDomain",
+          "lower": 1,
+          "upper": 64,
+          "step": 1,
+          "origin": 0
+        },
+        "rule": {
+          "type": "BoundedLocalStep",
+          "limit": {
+            "type": "RelativeChangeLimit",
+            "fraction": 0.05
+          }
+        },
+        "payload_path": [
+          "down_days"
+        ],
+        "unit": "trading_sessions"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "exit_mode",
+        "center": "fixed",
+        "domain": {
+          "type": "CategoricalDomain",
+          "values": [
+            "fixed"
+          ]
+        },
+        "rule": {
+          "type": "ExplicitValues",
+          "values": [
+            "fixed"
+          ]
+        },
+        "payload_path": [
+          "exit_mode"
+        ],
+        "unit": "fixed_structure"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "hold_days",
+        "center": 5,
+        "domain": {
+          "type": "IntegerDomain",
+          "lower": 1,
+          "upper": 65,
+          "step": 1,
+          "origin": 0
+        },
+        "rule": {
+          "type": "BoundedLocalStep",
+          "limit": {
+            "type": "RelativeChangeLimit",
+            "fraction": 0.05
+          }
+        },
+        "payload_path": [
+          "hold_days"
+        ],
+        "unit": "trading_sessions"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "information",
+        "center": "relative",
+        "domain": {
+          "type": "CategoricalDomain",
+          "values": [
+            "relative"
+          ]
+        },
+        "rule": {
+          "type": "ExplicitValues",
+          "values": [
+            "relative"
+          ]
+        },
+        "payload_path": [
+          "information"
+        ],
+        "unit": "fixed_structure"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "require_sector",
+        "center": false,
+        "domain": {
+          "type": "BooleanDomain"
+        },
+        "rule": {
+          "type": "ExplicitValues",
+          "values": [
+            false
+          ]
+        },
+        "payload_path": [
+          "require_sector"
+        ],
+        "unit": "fixed_structure"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "risk_basis",
+        "center": "daily",
+        "domain": {
+          "type": "CategoricalDomain",
+          "values": [
+            "daily"
+          ]
+        },
+        "rule": {
+          "type": "ExplicitValues",
+          "values": [
+            "daily"
+          ]
+        },
+        "payload_path": [
+          "risk_basis"
+        ],
+        "unit": "fixed_structure"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "trail_atr",
+        "center": 2.4,
+        "domain": {
+          "type": "RealDomain",
+          "lower": 0.0,
+          "upper": 1.7976931348623157e+308,
+          "lower_closed": false,
+          "upper_closed": true,
+          "quantum": null,
+          "origin": 0.0
+        },
+        "rule": {
+          "type": "BoundedLocalStep",
+          "limit": {
+            "type": "RelativeChangeLimit",
+            "fraction": 0.05
+          }
+        },
+        "payload_path": [
+          "trail_atr"
+        ],
+        "unit": "ratio"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "treatment",
+        "center": "tilt",
+        "domain": {
+          "type": "CategoricalDomain",
+          "values": [
+            "tilt"
+          ]
+        },
+        "rule": {
+          "type": "ExplicitValues",
+          "values": [
+            "tilt"
+          ]
+        },
+        "payload_path": [
+          "treatment"
+        ],
+        "unit": "fixed_structure"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "weak_fraction",
+        "center": 0.3,
+        "domain": {
+          "type": "RealDomain",
+          "lower": 0.0,
+          "upper": 1.0,
+          "lower_closed": false,
+          "upper_closed": true,
+          "quantum": null,
+          "origin": 0.0
+        },
+        "rule": {
+          "type": "BoundedLocalStep",
+          "limit": {
+            "type": "RelativeChangeLimit",
+            "fraction": 0.05
+          }
+        },
+        "payload_path": [
+          "weak_fraction"
+        ],
+        "unit": "ratio"
+      }
+    ],
+    "mapping_sha256": "75c5f6003eae2b5ace0b12eeb34ae07812ca843f7e5753d38b03a57ccd265a8c",
+    "feasibility_sha256": "f4315884dbbefa018d3616c568911f9ac1d4dd81d23649a6821f02650f29d673"
+  },
+  "points": [
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 0,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 1,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 2,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 3,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 4,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 5,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 6,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 7,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    }
+  ],
+  "generated_combinations": 576,
+  "rejections": [
+    {
+      "type": "NeighborhoodRejection",
+      "reason": "DUPLICATE",
+      "count": 567
+    },
+    {
+      "type": "NeighborhoodRejection",
+      "reason": "CENTER",
+      "count": 1
+    }
+  ],
+  "constraint_exclusions": []
+}

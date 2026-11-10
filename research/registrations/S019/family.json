@@ -3,6 +3,7 @@
   "created_by": "RSCH",
   "name": "MU独立多周期只做多择时研究",
   "research_intent": {
+    "active_experiment": null,
     "authorization_source": "当前会话用户明确提出独立研究，确认55%与卡玛5及默认回撤/频率，并指示新开研究分支，然后继续。",
     "branch": "codex/mu-independent-research",
     "confirmed_center_targets": {
@@ -355,7 +356,7 @@
       "stage": "MANDATE",
       "type": "DeliveryReference"
     },
-    "next_action": "本轮按48次事前预算收口，保留C0196、C0224及C0135。下一轮建议先复用账本定位C0196与C0224两段主要回撤中的仓位差异，再检验成交参与强度与缩仓规则的配合；继续使用Optuna处理适用的联合参数优化。当前暂停继续扩大单一跨度范围：3日已是事前保留多个观察值中位数的下限，1—2日尚未检验，需有新增交易路径依据再开展。新增十轮已用3轮、剩余7轮，第4轮尚未启动；原目标、样本与费用合同保持，正式参数扰动及阶段四五项自检尚未开展。",
+    "next_action": "阶段四已完成，两个指定中心均未通过原目标。建议复用不利路径研究仓位和退出协作，等待用户决定后续阶段；7轮优化额度保留。",
     "objective": "独立经济假设；中心净年化收益至少55%，净卡玛至少5；达标后优先提高净年化。",
     "parameter_joint_pass_rate_min": 0.8,
     "prior_sample_exposure": "2022为S018已用预热；2023-01-03至2026-10-30为反复使用开发池；2026-11-06存在决策视觉预览记录。",
@@ -365,8 +366,37 @@
       "strategy_version": "S018-v1"
     },
     "sample_selection_authority": "RSCH_WITHIN_AUTHORIZED_SCOPE",
-    "stage": "STAGE_THREE",
-    "stage_four_approval": "NOT_REQUESTED_NO_ELIGIBLE_CANDIDATE",
+    "stage": "STAGE_FOUR",
+    "stage_four_approval": {
+      "decision_id": "S019-STAGE4-20261110",
+      "evidence": {
+        "owner": {
+          "experiment_id": null,
+          "strategy_id": "S019",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "decisions/S019-STAGE4-20261110.json",
+        "sha256": "4a633e7cc0585bec6e7de9d11a01bf947b55cd582da52e86bb2671ef3cb34c57",
+        "type": "ResearchEvidenceRef"
+      },
+      "type": "DecisionReference"
+    },
+    "stage_four_candidates": [
+      "C0135",
+      "C0224"
+    ],
+    "stage_four_delivery": {
+      "batch": {
+        "strategy_id": "S019",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "54ced297003c24f2528c2b876caff14de18c52dbb0a76afc4229cf7073db267a",
+      "revision": 1,
+      "stage": "ASSESSMENT",
+      "type": "DeliveryReference"
+    },
+    "stage_four_research_acceptance": "FAILED",
+    "stage_four_status": "COMPLETE",
     "stage_one_status": "COMPLETE",
     "stage_three_approval": "APPROVED",
     "stage_three_budget": {
@@ -503,5 +533,5 @@
     "US.MU"
   ],
   "strategy_id": "S019",
-  "updated_at": "2026-11-10T18:38:36+08:00"
+  "updated_at": "2026-11-10T19:48:39+08:00"
 }

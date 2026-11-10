@@ -1,0 +1,6428 @@
+{
+  "type": "ParameterNeighborhoodDesign",
+  "center": {
+    "type": "AssessmentCandidate",
+    "candidate_id": "S019-C0224",
+    "content_sha256": "8037f3badb251de7bb9a674d05cfb40b5baf2a0cb7bc24c5703b57791d8f1383"
+  },
+  "protocol": {
+    "type": "ParameterNeighborhoodProtocol",
+    "purpose": "LOCAL_SENSITIVITY",
+    "max_combinations": 1000000,
+    "quantile_method": "LINEAR",
+    "version": "parameter-cartesian-neighborhood-v2"
+  },
+  "space": {
+    "type": "ParameterNeighborhoodSpace",
+    "axes": [
+      {
+        "type": "ParameterAxis",
+        "name": "confirm",
+        "center": true,
+        "domain": {
+          "type": "BooleanDomain"
+        },
+        "rule": {
+          "type": "ExplicitValues",
+          "values": [
+            true
+          ]
+        },
+        "payload_path": [
+          "confirm"
+        ],
+        "unit": "fixed_structure"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "down_days",
+        "center": 1,
+        "domain": {
+          "type": "IntegerDomain",
+          "lower": 1,
+          "upper": 64,
+          "step": 1,
+          "origin": 0
+        },
+        "rule": {
+          "type": "BoundedLocalStep",
+          "limit": {
+            "type": "RelativeChangeLimit",
+            "fraction": 0.05
+          }
+        },
+        "payload_path": [
+          "down_days"
+        ],
+        "unit": "trading_sessions"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "exit_mode",
+        "center": "fixed",
+        "domain": {
+          "type": "CategoricalDomain",
+          "values": [
+            "fixed"
+          ]
+        },
+        "rule": {
+          "type": "ExplicitValues",
+          "values": [
+            "fixed"
+          ]
+        },
+        "payload_path": [
+          "exit_mode"
+        ],
+        "unit": "fixed_structure"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "hold_days",
+        "center": 5,
+        "domain": {
+          "type": "IntegerDomain",
+          "lower": 1,
+          "upper": 65,
+          "step": 1,
+          "origin": 0
+        },
+        "rule": {
+          "type": "BoundedLocalStep",
+          "limit": {
+            "type": "RelativeChangeLimit",
+            "fraction": 0.05
+          }
+        },
+        "payload_path": [
+          "hold_days"
+        ],
+        "unit": "trading_sessions"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "information",
+        "center": "relative",
+        "domain": {
+          "type": "CategoricalDomain",
+          "values": [
+            "relative"
+          ]
+        },
+        "rule": {
+          "type": "ExplicitValues",
+          "values": [
+            "relative"
+          ]
+        },
+        "payload_path": [
+          "information"
+        ],
+        "unit": "fixed_structure"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "joint_rule",
+        "center": "maximum",
+        "domain": {
+          "type": "CategoricalDomain",
+          "values": [
+            "maximum"
+          ]
+        },
+        "rule": {
+          "type": "ExplicitValues",
+          "values": [
+            "maximum"
+          ]
+        },
+        "payload_path": [
+          "joint_rule"
+        ],
+        "unit": "fixed_structure"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "participation_days",
+        "center": 3,
+        "domain": {
+          "type": "IntegerDomain",
+          "lower": 1,
+          "upper": 64,
+          "step": 1,
+          "origin": 0
+        },
+        "rule": {
+          "type": "BoundedLocalStep",
+          "limit": {
+            "type": "RelativeChangeLimit",
+            "fraction": 0.05
+          }
+        },
+        "payload_path": [
+          "participation_days"
+        ],
+        "unit": "trading_sessions"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "participation_threshold",
+        "center": 1.25,
+        "domain": {
+          "type": "RealDomain",
+          "lower": 0.0,
+          "upper": 1.7976931348623157e+308,
+          "lower_closed": false,
+          "upper_closed": true,
+          "quantum": null,
+          "origin": 0.0
+        },
+        "rule": {
+          "type": "BoundedLocalStep",
+          "limit": {
+            "type": "RelativeChangeLimit",
+            "fraction": 0.05
+          }
+        },
+        "payload_path": [
+          "participation_threshold"
+        ],
+        "unit": "ratio"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "quiet_fraction",
+        "center": 0.55,
+        "domain": {
+          "type": "RealDomain",
+          "lower": 0.0,
+          "upper": 1.0,
+          "lower_closed": false,
+          "upper_closed": true,
+          "quantum": null,
+          "origin": 0.0
+        },
+        "rule": {
+          "type": "BoundedLocalStep",
+          "limit": {
+            "type": "RelativeChangeLimit",
+            "fraction": 0.05
+          }
+        },
+        "payload_path": [
+          "quiet_fraction"
+        ],
+        "unit": "ratio"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "require_sector",
+        "center": false,
+        "domain": {
+          "type": "BooleanDomain"
+        },
+        "rule": {
+          "type": "ExplicitValues",
+          "values": [
+            false
+          ]
+        },
+        "payload_path": [
+          "require_sector"
+        ],
+        "unit": "fixed_structure"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "risk_basis",
+        "center": "daily",
+        "domain": {
+          "type": "CategoricalDomain",
+          "values": [
+            "daily"
+          ]
+        },
+        "rule": {
+          "type": "ExplicitValues",
+          "values": [
+            "daily"
+          ]
+        },
+        "payload_path": [
+          "risk_basis"
+        ],
+        "unit": "fixed_structure"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "trail_atr",
+        "center": 2.4,
+        "domain": {
+          "type": "RealDomain",
+          "lower": 0.0,
+          "upper": 1.7976931348623157e+308,
+          "lower_closed": false,
+          "upper_closed": true,
+          "quantum": null,
+          "origin": 0.0
+        },
+        "rule": {
+          "type": "BoundedLocalStep",
+          "limit": {
+            "type": "RelativeChangeLimit",
+            "fraction": 0.05
+          }
+        },
+        "payload_path": [
+          "trail_atr"
+        ],
+        "unit": "ratio"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "treatment",
+        "center": "tilt",
+        "domain": {
+          "type": "CategoricalDomain",
+          "values": [
+            "tilt"
+          ]
+        },
+        "rule": {
+          "type": "ExplicitValues",
+          "values": [
+            "tilt"
+          ]
+        },
+        "payload_path": [
+          "treatment"
+        ],
+        "unit": "fixed_structure"
+      },
+      {
+        "type": "ParameterAxis",
+        "name": "weak_fraction",
+        "center": 0.3,
+        "domain": {
+          "type": "RealDomain",
+          "lower": 0.0,
+          "upper": 1.0,
+          "lower_closed": false,
+          "upper_closed": true,
+          "quantum": null,
+          "origin": 0.0
+        },
+        "rule": {
+          "type": "BoundedLocalStep",
+          "limit": {
+            "type": "RelativeChangeLimit",
+            "fraction": 0.05
+          }
+        },
+        "payload_path": [
+          "weak_fraction"
+        ],
+        "unit": "ratio"
+      }
+    ],
+    "mapping_sha256": "ac54ed4cb82cce4206ca2171a323824148f0984d4598f8bfd6c9364c33547bc0",
+    "feasibility_sha256": "f4315884dbbefa018d3616c568911f9ac1d4dd81d23649a6821f02650f29d673"
+  },
+  "points": [
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 0,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 1,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 2,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 3,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 4,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 5,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 6,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 7,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 8,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 9,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 10,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 11,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 12,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 13,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 14,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 15,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 16,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 17,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 18,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 19,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 20,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 21,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 22,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 23,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 24,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 25,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.25
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 26,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 27,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 28,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 29,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 30,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 31,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 32,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 33,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 34,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 35,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 36,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 37,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 38,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 39,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 40,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 41,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 42,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 43,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 44,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 45,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 46,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 47,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 48,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 49,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 50,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 51,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 52,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.1875
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 53,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 54,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 55,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 56,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 57,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 58,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 59,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 60,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 61,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.55
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 62,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 63,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 64,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 65,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 66,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 67,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 68,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 69,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 70,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5225
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 71,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 72,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 73,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.4
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 74,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 75,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 76,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.28
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 77,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.3
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 78,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.285
+        }
+      ]
+    },
+    {
+      "type": "ParameterNeighborhoodPoint",
+      "index": 79,
+      "values": [
+        {
+          "type": "NamedParameterValue",
+          "name": "confirm",
+          "value": true
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "down_days",
+          "value": 1
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "exit_mode",
+          "value": "fixed"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "hold_days",
+          "value": 5
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "information",
+          "value": "relative"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "joint_rule",
+          "value": "maximum"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_days",
+          "value": 3
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "participation_threshold",
+          "value": 1.3125
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "quiet_fraction",
+          "value": 0.5775
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "require_sector",
+          "value": false
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "risk_basis",
+          "value": "daily"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "trail_atr",
+          "value": 2.52
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "treatment",
+          "value": "tilt"
+        },
+        {
+          "type": "NamedParameterValue",
+          "name": "weak_fraction",
+          "value": 0.315
+        }
+      ]
+    }
+  ],
+  "generated_combinations": 10368,
+  "rejections": [
+    {
+      "type": "NeighborhoodRejection",
+      "reason": "DUPLICATE",
+      "count": 10287
+    },
+    {
+      "type": "NeighborhoodRejection",
+      "reason": "CENTER",
+      "count": 1
+    }
+  ],
+  "constraint_exclusions": []
+}

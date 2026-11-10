@@ -1,0 +1,70 @@
+{
+  "version": "S019-stage-four-statistics-v1",
+  "centers": [
+    "C0135",
+    "C0224"
+  ],
+  "inventory_sha256": "f422550c555baab5d270ef98cc9f04f72e5abaf2a357422fb194e027fb072c26",
+  "sample": {
+    "start": "2022-01-03",
+    "end": "2026-10-30",
+    "sessions": 1212,
+    "status": "SEEN_DEVELOPMENT_HISTORY"
+  },
+  "bootstrap": {
+    "method": "SE paired_stationary_bootstrap",
+    "repetitions": 10000,
+    "mean_block_length": 21,
+    "seed": 20261110,
+    "interval": "percentile_95",
+    "comparisons": [
+      "C0135-minus-MU_BUY_HOLD",
+      "C0224-minus-MU_BUY_HOLD",
+      "C0135-minus-C0224"
+    ],
+    "metrics": [
+      "NAR",
+      "MDD",
+      "Calmar"
+    ],
+    "mdd_sign": "SE returns negative maximum drawdown; positive difference means smaller drawdown magnitude"
+  },
+  "selection": {
+    "method": "TDR project_selection_window_facts then SE assess_selection_stability",
+    "windows": [
+      "2022->2023",
+      "2023->2024",
+      "2024->2025",
+      "2025->2026_through_10_30"
+    ],
+    "rule": "All six original center gates in selection year, then unrounded NAR descending; ties all retained",
+    "observation": "Lock the selection-period eligible set; evaluate following-year target status without reselecting",
+    "source_grouping": "Separate by exact TDR context/scenario when needed; no fabricated common identity",
+    "max_window_facts": 10000,
+    "max_source_bytes": 25000000000,
+    "max_shared_bytes": 5000000000
+  },
+  "search_bias_proxy": {
+    "method": "SE cscv_pbo and deflated_sharpe_ratio",
+    "objective": "SHARPE_PROXY",
+    "blocks": 10,
+    "split_count": 252,
+    "raw_trial_count": "actual published standard account evaluations in compatible group, repeats included",
+    "effective_trials": "SE return-correlation eigenvalue participation ratio",
+    "target_selection_bias_status": "NOT_ESTIMATED_FOR_NAR_WITH_HARD_GATES_AND_ADAPTIVE_HUMAN_SELECTION"
+  },
+  "resources": {
+    "processes": 1,
+    "native_threads": 1,
+    "new_strategy_accounts": 0
+  },
+  "limitations": [
+    "Protocols fixed after center results were known, before these statistical diagnostics.",
+    "Fixed researched candidates and previously seen history; no independent or prospective validation.",
+    "Four following-year observations are few; 2026 is incomplete.",
+    "Full-window center eligibility remains empty; user-authorized frontier comparison preserves that fact.",
+    "Sharpe PBO and DSR are auxiliary diagnostics, not NAR/Calmar selection-error or future failure probabilities.",
+    "Search controls and exact reruns are counted explicitly; no count is asserted to be independent trials.",
+    "Calendar block resampling changes chronology; results are conditional diagnostic intervals, not guarantees."
+  ]
+}

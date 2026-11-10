@@ -1,0 +1,197 @@
+{
+  "status": "PASS",
+  "new_replays": 0,
+  "evidence": {
+    "C0135_STRESS": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S019",
+        "experiment_id": "EX039_20261110"
+      },
+      "evidence_id": "fe094c9047fb6764ee9e00c83a7225609933409f774c582624844573afba842c.json",
+      "sha256": "fe094c9047fb6764ee9e00c83a7225609933409f774c582624844573afba842c",
+      "media_type": "application/json",
+      "name": "C0135_STRESS",
+      "schema": "equity_research",
+      "schema_version": 4
+    },
+    "C0135_P000": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S019",
+        "experiment_id": "EX039_20261110"
+      },
+      "evidence_id": "588d8adfe2eb36c86e2546ebd98cbea08483d3628d741e6110a27693f1e56758.json",
+      "sha256": "588d8adfe2eb36c86e2546ebd98cbea08483d3628d741e6110a27693f1e56758",
+      "media_type": "application/json",
+      "name": "C0135_P000",
+      "schema": "equity_research",
+      "schema_version": 4
+    },
+    "C0224_STRESS": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S019",
+        "experiment_id": "EX039_20261110"
+      },
+      "evidence_id": "5077021cecc9cb7898ffce180a586fe7f36f0c3ef70c6e27fadad3bc7688e21a.json",
+      "sha256": "5077021cecc9cb7898ffce180a586fe7f36f0c3ef70c6e27fadad3bc7688e21a",
+      "media_type": "application/json",
+      "name": "C0224_STRESS",
+      "schema": "equity_research",
+      "schema_version": 4
+    },
+    "C0224_P000": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S019",
+        "experiment_id": "EX039_20261110"
+      },
+      "evidence_id": "af1e5bfa9377ec3674f21edd66478eeda681854ec900fdd821595b1b684ac973.json",
+      "sha256": "af1e5bfa9377ec3674f21edd66478eeda681854ec900fdd821595b1b684ac973",
+      "media_type": "application/json",
+      "name": "C0224_P000",
+      "schema": "equity_research",
+      "schema_version": 4
+    }
+  },
+  "cause": "Benchmark identity includes baseline.definition.warmup_bars; exact identity caching yields two warmups times two fee rates, four buy-hold replays. Original execution estimate is retained.",
+  "source_locations": [
+    "src/czsc_trader/research_tools/equity_replay.py:240",
+    "src/czsc_trader/research_tools/equity_replay.py:414"
+  ],
+  "pairs": [
+    {
+      "accounts": [
+        "C0135_STRESS",
+        "C0224_STRESS"
+      ],
+      "warmup_bars": [
+        2,
+        900
+      ],
+      "only_identity_difference": "definition.warmup_bars",
+      "benchmark_result_sha256": [
+        "641f0463efa8bd80e3c1d08073a3ebecb70af2fccb87dade1aed96a5f839607c",
+        "2348d23c2143a1203d6d3d88198245b8967419b64f987640539a11f0b384af85"
+      ],
+      "fee_rate": 0.002,
+      "economic_checks": {
+        "account_daily": true,
+        "account_points": true,
+        "fills": true,
+        "orders": true,
+        "account_entries": true,
+        "trades": true,
+        "metrics": true,
+        "data_quality": true,
+        "price_basis": true,
+        "quantity_basis": true
+      },
+      "daily_count": 1212,
+      "bar_count": 15702,
+      "fills_count": 1,
+      "summary_metrics_equal": true,
+      "benchmark_summary": {
+        "nar": 0.5930480147097801,
+        "drawdown": 0.5698708374873833,
+        "bar_drawdown": 0.5835577544211188,
+        "calmar": 1.040670930494684,
+        "closed_cycles": 0,
+        "frequency_median": 0.0,
+        "frequency_coverage": 0.0,
+        "year_returns": {
+          "2022": -0.4620096618,
+          "2023": 0.7044282640241661,
+          "2024": -0.008307396908279086,
+          "2025": 2.346836421589889,
+          "2026": 2.0850327628763745
+        },
+        "gates": {
+          "nar": true,
+          "calmar": false,
+          "absolute_dd": false,
+          "relative_dd": false,
+          "frequency_median": false,
+          "frequency_coverage": false
+        },
+        "eligible": false,
+        "fees": 199.12618
+      },
+      "excluded_identity_fields": [
+        "cycle_id",
+        "decision_id",
+        "order_id",
+        "fill_id"
+      ]
+    },
+    {
+      "accounts": [
+        "C0135_P000",
+        "C0224_P000"
+      ],
+      "warmup_bars": [
+        2,
+        900
+      ],
+      "only_identity_difference": "definition.warmup_bars",
+      "benchmark_result_sha256": [
+        "ad2205b499b4b03589afcb6cc9f394f08b3d676b37977e9054747e8607b615b0",
+        "69b1aa4d1286ab5c4f143ed08b37ccf3ecc72f16e9a6b704fa548e2990b435ba"
+      ],
+      "fee_rate": 0.001,
+      "economic_checks": {
+        "account_daily": true,
+        "account_points": true,
+        "fills": true,
+        "orders": true,
+        "account_entries": true,
+        "trades": true,
+        "metrics": true,
+        "data_quality": true,
+        "price_basis": true,
+        "quantity_basis": true
+      },
+      "daily_count": 1212,
+      "bar_count": 15702,
+      "fills_count": 1,
+      "summary_metrics_equal": true,
+      "benchmark_summary": {
+        "nar": 0.5930831369630878,
+        "drawdown": 0.5695248274745268,
+        "bar_drawdown": 0.5832097877410136,
+        "calmar": 1.0413648507529105,
+        "closed_cycles": 0,
+        "frequency_median": 0.0,
+        "frequency_coverage": 0.0,
+        "year_returns": {
+          "2022": -0.46101403090000004,
+          "2023": 0.703127023200278,
+          "2024": -0.008298386617065723,
+          "2025": 2.344269718302019,
+          "2026": 2.0843508883998956
+        },
+        "gates": {
+          "nar": true,
+          "calmar": false,
+          "absolute_dd": false,
+          "relative_dd": false,
+          "frequency_median": false,
+          "frequency_coverage": false
+        },
+        "eligible": false,
+        "fees": 99.56309
+      },
+      "excluded_identity_fields": [
+        "cycle_id",
+        "decision_id",
+        "order_id",
+        "fill_id"
+      ]
+    }
+  ]
+}

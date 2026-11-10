@@ -1,0 +1,151 @@
+{
+  "protocol": {
+    "method": "SE paired_stationary_bootstrap",
+    "repetitions": 10000,
+    "mean_block_length": 21,
+    "seed": 20261110,
+    "interval": "percentile_95",
+    "comparisons": [
+      "C0135-minus-MU_BUY_HOLD",
+      "C0224-minus-MU_BUY_HOLD",
+      "C0135-minus-C0224"
+    ],
+    "metrics": [
+      "NAR",
+      "MDD",
+      "Calmar"
+    ],
+    "mdd_sign": "SE returns negative maximum drawdown; positive difference means smaller drawdown magnitude"
+  },
+  "comparisons": [
+    {
+      "champion_id": "C0135",
+      "comparator_id": "MU_BUY_HOLD",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.1783350827827732,
+        "lower_95": -0.6845043850038399,
+        "upper_95": 0.7419725599821467,
+        "probability_favorable": 0.6858
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": 0.39572946134427145,
+        "lower_95": 0.14150608758312958,
+        "upper_95": 0.5713541461359392,
+        "probability_favorable": 0.9998
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": 3.3972933075302265,
+        "lower_95": -0.04733371266492369,
+        "upper_95": 6.0790125119605385,
+        "probability_favorable": 0.9724
+      }
+    },
+    {
+      "champion_id": "C0224",
+      "comparator_id": "MU_BUY_HOLD",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.03713769614934814,
+        "lower_95": -0.9121189453115649,
+        "upper_95": 0.5880251932047833,
+        "probability_favorable": 0.5361
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": 0.44236642336596144,
+        "lower_95": 0.21143753498262377,
+        "upper_95": 0.6300180440464574,
+        "probability_favorable": 1.0
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": 3.914822178571299,
+        "lower_95": 0.256259497796878,
+        "upper_95": 6.748862395575414,
+        "probability_favorable": 0.9837
+      }
+    },
+    {
+      "champion_id": "C0135",
+      "comparator_id": "C0224",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.14119738663342507,
+        "lower_95": -0.0034125303655427527,
+        "upper_95": 0.3829193583010087,
+        "probability_favorable": 0.9717
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": -0.04663696202168999,
+        "lower_95": -0.12245208029972372,
+        "upper_95": -0.012935325954014965,
+        "probability_favorable": 0.0038
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": -0.5175288710410726,
+        "lower_95": -2.0187787857114823,
+        "upper_95": 0.8599946298843071,
+        "probability_favorable": 0.2234
+      }
+    }
+  ],
+  "source_references": [
+    {
+      "evidence_id": "52dd14f76fb273f716906382186c82dc09834dfacf9e7837b2fb9d6b07fba64e.json",
+      "experiment": {
+        "experiment_id": "EX036_20261110",
+        "strategy_id": "S019",
+        "type": "ExperimentRef"
+      },
+      "media_type": "application/json",
+      "name": "trial033",
+      "schema": "equity_research",
+      "schema_version": 4,
+      "sha256": "52dd14f76fb273f716906382186c82dc09834dfacf9e7837b2fb9d6b07fba64e",
+      "type": "EvidenceRef"
+    },
+    {
+      "evidence_id": "4ee635e7304c5aa24fa6f030d25535df6a455e0e02e8396ff57526f688dde412.json",
+      "experiment": {
+        "experiment_id": "EX038_20261110",
+        "strategy_id": "S019",
+        "type": "ExperimentRef"
+      },
+      "media_type": "application/json",
+      "name": "trial026",
+      "schema": "equity_research",
+      "schema_version": 4,
+      "sha256": "4ee635e7304c5aa24fa6f030d25535df6a455e0e02e8396ff57526f688dde412",
+      "type": "EvidenceRef"
+    }
+  ],
+  "limitations": [
+    "Protocols fixed after center results were known, before these statistical diagnostics.",
+    "Fixed researched candidates and previously seen history; no independent or prospective validation.",
+    "Four following-year observations are few; 2026 is incomplete.",
+    "Full-window center eligibility remains empty; user-authorized frontier comparison preserves that fact.",
+    "Sharpe PBO and DSR are auxiliary diagnostics, not NAR/Calmar selection-error or future failure probabilities.",
+    "Search controls and exact reruns are counted explicitly; no count is asserted to be independent trials.",
+    "Calendar block resampling changes chronology; results are conditional diagnostic intervals, not guarantees."
+  ]
+}
