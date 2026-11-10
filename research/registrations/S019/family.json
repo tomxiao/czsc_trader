@@ -19,16 +19,48 @@
       "maximum": "daily",
       "minimum": "30m"
     },
-    "next_action": "完成阶段一草案审阅，确认自定义稳健性、数据及样本安排后申请阶段二推进。",
+    "development": {
+      "end": "2026-10-30",
+      "exposure": "SEEN_S018_DAILY_WINDOW",
+      "history_start": "2022-01-03",
+      "start": "2023-01-03"
+    },
+    "latest_experiment_report": {
+      "evidence_id": "ac391a549b3b1674d38bc4b56193b9c586958f6162de2b7a91bb22116f85abc5.json",
+      "experiment": {
+        "experiment_id": "EX002_20261110",
+        "strategy_id": "S019",
+        "type": "ExperimentRef"
+      },
+      "media_type": "application/json",
+      "name": "experiment-report",
+      "schema": "experiment_report",
+      "schema_version": 1,
+      "sha256": "ac391a549b3b1674d38bc4b56193b9c586958f6162de2b7a91bb22116f85abc5",
+      "type": "EvidenceRef"
+    },
+    "mandate": {
+      "batch": {
+        "strategy_id": "S019",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "e7743b8d516094c0d215b96041a2932176a215908bd33e341e55c530aa479556",
+      "revision": 1,
+      "stage": "MANDATE",
+      "type": "DeliveryReference"
+    },
+    "next_action": "保持阶段二，拆分行业共同下跌后机会的成交后日内及隔夜贡献，形成完整仓位原型及同条件账户对照。",
     "objective": "独立经济假设；中心净年化收益至少55%，净卡玛至少5；达标后优先提高净年化。",
+    "parameter_joint_pass_rate_min": 0.8,
     "prior_sample_exposure": "2022为S018已用预热；2023-01-03至2026-10-30为反复使用开发池；2026-11-06存在决策视觉预览记录。",
     "reference_release": {
       "release_hash": "80a7ca699f5814ad3e9162de1828d9848b5a0e7077857eb92002aec10c3f631e",
       "runtime_candidate": "C9397",
       "strategy_version": "S018-v1"
     },
-    "stage": "STAGE_ONE",
-    "stage_one_status": "DRAFT_PENDING_REVIEW"
+    "sample_selection_authority": "RSCH_WITHIN_AUTHORIZED_SCOPE",
+    "stage": "STAGE_TWO",
+    "stage_one_status": "COMPLETE"
   },
   "research_state": "RESEARCHING",
   "schema_version": 2,
@@ -36,5 +68,5 @@
     "US.MU"
   ],
   "strategy_id": "S019",
-  "updated_at": "2026-11-10T12:21:07+08:00"
+  "updated_at": "2026-11-10T12:44:26+08:00"
 }

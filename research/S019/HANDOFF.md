@@ -1,45 +1,25 @@
-# S019 研究交接
+# S019 独立MU研究交接
 
-阶段一接续入口为[研究约定审阅稿](materials/stage1_agreement.md)。中心目标已确认，新增稳健性建议和阶段二推进待审阅。
+2026-11-10，RSCH，分支 `codex/mu-independent-research`。阶段一完成并发布，用户已认可其余约定及阶段二首轮推进，明确参数扰动通过率≥80%，数据样本用途由RSCH决定。阶段二首轮EX002已完成。
 
-## 当前身份
+## 目标与授权
 
-- 策略族：`S019 / MU独立多周期只做多择时研究`；
-- 初始范围：`["US.MU"]`；
-- 研究状态：`RESEARCHING`；
-- 当前没有候选、冻结版本或PTE账户。
+- 中心NAR≥55%，Calmar≥5；最大回撤≤25%且≤同条件买持的80%；滚动60交易日闭合交易数中位数≥6笔，至少90%完整窗口有≥3笔闭合交易。
+- 合法局部邻域联合通过率≥80%，实际要求为ceil(0.8×N)个。每个通过点NAR≥50%、Calmar≥4.5、回撤≤买持的90%；全部点回撤≤25%。费用压力按已确认协议执行。
+- 决策周期30分钟至日线，达标后按NAR降序。合同见[阶段一约定](materials/stage1_agreement.md)。
+- RSCH选定2022预热、2023-01-03至2026-10-30已见开发池，范围内用途调整事前留证。
 
-## 研究意图
+## 正式成果
 
-```json
-{
-  "stage": "STAGE_ONE",
-  "stage_one_status": "DRAFT_PENDING_REVIEW",
-  "objective": "独立经济假设；中心净年化收益至少55%，净卡玛至少5；达标后优先提高净年化。",
-  "confirmed_center_targets": {
-    "net_annual_return_min": 0.55,
-    "net_calmar_min": 5.0,
-    "drawdown_max": 0.25,
-    "drawdown_buyhold_multiplier_max": 0.8,
-    "frequency_window_sessions": 60,
-    "frequency_median_min": 6,
-    "frequency_coverage_min_cycles": 3,
-    "frequency_coverage_min_fraction": 0.9
-  },
-  "decision_interval": {
-    "minimum": "30m",
-    "maximum": "daily"
-  },
-  "branch": "codex/mu-independent-research",
-  "reference_release": {
-    "strategy_version": "S018-v1",
-    "runtime_candidate": "C9397",
-    "release_hash": "80a7ca699f5814ad3e9162de1828d9848b5a0e7077857eb92002aec10c3f631e"
-  },
-  "prior_sample_exposure": "2022为S018已用预热；2023-01-03至2026-10-30为反复使用开发池；2026-11-06存在决策视觉预览记录。",
-  "authorization_source": "当前会话用户明确提出独立研究，确认55%与卡玛5及默认回撤/频率，并指示新开研究分支，然后继续。",
-  "next_action": "完成阶段一草案审阅，确认自定义稳健性、数据及样本安排后申请阶段二推进。"
-}
-```
+- [MANDATE/1](deliveries/MANDATE/1/report.md)及[EX001发布记录](experiments/EX001_20261110/others/publication.json)保存确认依据、阶段二决定和报告核验。
+- [EX001](experiments/EX001_20261110/report.md)准备两标的各1212根日线、15702根30分钟柱。开收盘逐日一致，少量高低价粒度差异已留证。正式数据由本批次DFLS管理，远端同步状态另核验。
+- [EX002](experiments/EX002_20261110/report.md)比较961日、3种入场时钟及1/5/20日标签，共2883条时钟机会记录，0个完整策略账户。
+- 全窗口隔夜增长因子9.333、首30分钟0.923、其余日内2.034。2024年隔夜与日内方向差异突出。
+- 等待首30分钟相对开盘30分钟，在两者均成交日期上的1日净收益平均差仅+0.0060个百分点，年度方向有变化。
+- 行业共同项非正组等待入场后的1日机会均值0.493%，正组−0.109%，四个年份保持该排序。非正组含2个零共同项，报告已更正组名。个股剩余项的增量随年份与期限变化。
 
-研究意图是可演化的人类语义。阶段目标和推进由用户确认；完成技术检验并取得用户对冻结计划的明确批准后，通过TDR公共冻结接口发布策略版本。
+## 下一步
+
+保持阶段二，研究行业共同下跌后机会的成交后日内与下一段隔夜贡献，结合反例确定参与理由、持有与退出表达，再做完整账户及同条件对照。全部诊断属于已见窗口。
+
+正式账户前需准备动态交易事实；正式纯NAR排序的公共比较契约需要DEV评审。阶段二成果形成后按用户批准进入后续阶段。
