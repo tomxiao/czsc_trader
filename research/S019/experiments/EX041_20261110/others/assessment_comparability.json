@@ -1,0 +1,104 @@
+{
+  "status": "PASS",
+  "standard_account_context_sha256": "3bb84709567758f11906869a6cda6dcf9c8481515ccf0b67924f3f0e9cff337c",
+  "metric_version": "equity-assessment-v4:SESSION_CLOSE:MAX_SINGLE",
+  "common_sample_and_benchmark_curve": true,
+  "common_nonparameter_definition": true,
+  "same_declared_local_rules_domains_and_full_80_point_pattern": true,
+  "native_exact_neighborhood_identity_equal": false,
+  "common_feasibility_identity": true,
+  "geometry_check": "Every active axis normalized coordinate is -0.05/0/+0.05 within 1e-12 floating representation tolerance; all 3^4-1 distinct combinations are present. Native exact shape identities remain unchanged.",
+  "designs": [
+    {
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S019-C0367",
+        "content_sha256": "5303ed68fbca534d21c1f9435668827ee13a3fa86633b6296f343a9d863bca15"
+      },
+      "design_sha256": "ddc6ab93486dab7dbb5b8cd53125298cb753a8e330ea1dd40faae5e32d5a6012",
+      "native_comparison_sha256": "64ec033717b72a935e9d9cea6a6d3e0f8538beca35d4b6ae7febfafe343fec95",
+      "feasibility_sha256": "c68ce74c4cfac5ab277087f224a385495ea7171621a226a967c6f1e01e6fb38f",
+      "active_axes": [
+        "participation_threshold",
+        "quiet_fraction",
+        "trail_atr",
+        "weak_fraction"
+      ],
+      "complete_relative_three_level_pattern": true,
+      "maximum_relative_float_error_from_declared_level": 1.249000902703301e-16
+    },
+    {
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S019-C0355",
+        "content_sha256": "5bc24fba4873c5179ec70f40726bd94a504220180cae615786e4549d92b0eb8c"
+      },
+      "design_sha256": "691ac23b83d011ec49829c0e78e7c5e406273adabbe063172cd5307f8ad3b213",
+      "native_comparison_sha256": "0fec4e90dd547bc68736295231dd89e63d3de0502adac87662dea1056918646c",
+      "feasibility_sha256": "c68ce74c4cfac5ab277087f224a385495ea7171621a226a967c6f1e01e6fb38f",
+      "active_axes": [
+        "participation_threshold",
+        "quiet_fraction",
+        "trail_atr",
+        "weak_fraction"
+      ],
+      "complete_relative_three_level_pattern": true,
+      "maximum_relative_float_error_from_declared_level": 1.249000902703301e-16
+    },
+    {
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S019-C0264",
+        "content_sha256": "7137c04b85514a543f8cc1778b58f6e4218f512253049c24a242e8043aecd693"
+      },
+      "design_sha256": "b0e28988bc138e56b684ce4cc06ef3c8eed6f8182fc7ce6e02e8c54b3c4e1210",
+      "native_comparison_sha256": "2d65ad8053319ad7db93036b83a9f76455f54fa92dc4f588732be85591cde3d8",
+      "feasibility_sha256": "c68ce74c4cfac5ab277087f224a385495ea7171621a226a967c6f1e01e6fb38f",
+      "active_axes": [
+        "participation_threshold",
+        "quiet_fraction",
+        "trail_atr",
+        "weak_fraction"
+      ],
+      "complete_relative_three_level_pattern": true,
+      "maximum_relative_float_error_from_declared_level": 1.249000902703301e-16
+    }
+  ],
+  "native_rows": [
+    {
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S019-C0264",
+        "content_sha256": "7137c04b85514a543f8cc1778b58f6e4218f512253049c24a242e8043aecd693"
+      },
+      "status": "TARGET_NOT_MET",
+      "reasons": [
+        "PARAMETER_JOINT_COUNT_NOT_MET"
+      ]
+    },
+    {
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S019-C0355",
+        "content_sha256": "5bc24fba4873c5179ec70f40726bd94a504220180cae615786e4549d92b0eb8c"
+      },
+      "status": "TARGET_NOT_MET",
+      "reasons": [
+        "PARAMETER_JOINT_COUNT_NOT_MET"
+      ]
+    },
+    {
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S019-C0367",
+        "content_sha256": "5303ed68fbca534d21c1f9435668827ee13a3fa86633b6296f343a9d863bca15"
+      },
+      "status": "TARGET_NOT_MET",
+      "reasons": [
+        "PARAMETER_JOINT_COUNT_NOT_MET",
+        "TARGET_NOT_MET"
+      ]
+    }
+  ],
+  "interpretation": "Native v4 additionally compares exact local-shape and feasibility identities to order parameter-quantile metrics. The approved NAR rule compares common standard accounts after each full original acceptance check; native parameter-ranking identity differences are retained and do not replace that rule. The 1e-12 check only diagnoses floating representation of declared grid levels, never changes performance gates or native output."
+}

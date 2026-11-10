@@ -383,9 +383,9 @@
     },
     "joint_search_status": "ROUND_FOUR_COMPLETE",
     "latest_experiment_report": {
-      "evidence_id": "0c489cc13a25cf74c7b463e02470616c05f528fa5c4f4a9f052cce1b771333a6.json",
+      "evidence_id": "9b7c87062c903eaf24df0be7e21910db10573dec574bf1eea366946a8a2a8f7f.json",
       "experiment": {
-        "experiment_id": "EX040_20261110",
+        "experiment_id": "EX041_20261110",
         "strategy_id": "S019",
         "type": "ExperimentRef"
       },
@@ -393,7 +393,7 @@
       "name": "experiment-report",
       "schema": "experiment_report",
       "schema_version": 1,
-      "sha256": "0c489cc13a25cf74c7b463e02470616c05f528fa5c4f4a9f052cce1b771333a6",
+      "sha256": "9b7c87062c903eaf24df0be7e21910db10573dec574bf1eea366946a8a2a8f7f",
       "type": "EvidenceRef"
     },
     "mandate": {
@@ -406,8 +406,8 @@
       "stage": "MANDATE",
       "type": "DeliveryReference"
     },
-    "next_action": "建议将全部中心达标实现纳入阶段四，复用已有账户并估算完整点集后，按用户批准的范围执行；重点比较最高NAR及最高Calmar配置，检验ATR敏感性、费用压力和已见样本风险。剩余6轮优化额度保留。",
-    "next_stage_four_approval": "PENDING_USER_APPROVAL",
+    "next_action": "建议回阶段二，优先比较ATR硬退出及参与阈值仓位跳变的替代表达，保留C0355作为完整账户对照；原硬门目标和剩余6轮额度保持，等待用户批准研究方向。",
+    "next_stage_four_approval": "APPROVED_THREE_CANDIDATES",
     "objective": "独立经济假设；中心净年化收益至少55%，净卡玛至少5；达标后优先提高净年化。",
     "parameter_joint_pass_rate_min": 0.8,
     "prior_sample_exposure": "2022为S018已用预热；2023-01-03至2026-10-30为反复使用开发池；2026-11-06存在决策视觉预览记录。",
@@ -417,36 +417,58 @@
       "strategy_version": "S018-v1"
     },
     "sample_selection_authority": "RSCH_WITHIN_AUTHORIZED_SCOPE",
-    "stage": "STAGE_THREE",
+    "stage": "STAGE_FOUR",
     "stage_four_approval": {
-      "decision_id": "S019-STAGE4-20261110",
+      "decision_id": "S019-STAGE4-THREE-20261110",
       "evidence": {
         "owner": {
           "experiment_id": null,
           "strategy_id": "S019",
           "type": "ResearchEvidenceOwner"
         },
-        "path": "decisions/S019-STAGE4-20261110.json",
-        "sha256": "4a633e7cc0585bec6e7de9d11a01bf947b55cd582da52e86bb2671ef3cb34c57",
+        "path": "decisions/S019-STAGE4-THREE-20261110.json",
+        "sha256": "60f214660507f6427091e2ae1e475ee854f5c69780bd6b473dd6704f08cbdb94",
         "type": "ResearchEvidenceRef"
       },
       "type": "DecisionReference"
     },
     "stage_four_candidates": [
-      "C0135",
-      "C0224"
+      "C0367",
+      "C0355",
+      "C0264"
+    ],
+    "stage_four_deferred_candidates": [
+      "C0375",
+      "C0368",
+      "C0373",
+      "C0362",
+      "C0359",
+      "C0365",
+      "C0379",
+      "C0360",
+      "C0351",
+      "C0300",
+      "C0298",
+      "C0299",
+      "C0341",
+      "C0282",
+      "C0280",
+      "C0281",
+      "C0262",
+      "C0263"
     ],
     "stage_four_delivery": {
       "batch": {
         "strategy_id": "S019",
         "type": "ResearchBatchRef"
       },
-      "content_sha256": "54ced297003c24f2528c2b876caff14de18c52dbb0a76afc4229cf7073db267a",
-      "revision": 1,
+      "content_sha256": "7897d3ce0e2f064299a85d742835e6a1d4e1e86e1c8617d0d64bcafd86a1a87c",
+      "revision": 2,
       "stage": "ASSESSMENT",
       "type": "DeliveryReference"
     },
-    "stage_four_research_acceptance": "FAILED",
+    "stage_four_qualified_candidates": [],
+    "stage_four_research_acceptance": "FAILED_WITHIN_APPROVED_SCOPE",
     "stage_four_status": "COMPLETE",
     "stage_one_status": "COMPLETE",
     "stage_three_approval": "APPROVED",
@@ -584,5 +606,5 @@
     "US.MU"
   ],
   "strategy_id": "S019",
-  "updated_at": "2026-11-10T20:47:38+08:00"
+  "updated_at": "2026-11-10T22:53:58+08:00"
 }

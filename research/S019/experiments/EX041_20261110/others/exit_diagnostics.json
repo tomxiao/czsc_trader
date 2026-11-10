@@ -1,0 +1,3272 @@
+{
+  "schema": "S019-EX041-actual-exit-diagnostics-v1",
+  "centers": {
+    "C0367": {
+      "accounts": {
+        "CENTER": {
+          "reference": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX040_20261110"
+            },
+            "evidence_id": "0d11dfceecb5cbf52a313668388b6a926c55e7b2d55e7ec107422044757a52da.json",
+            "sha256": "0d11dfceecb5cbf52a313668388b6a926c55e7b2d55e7ec107422044757a52da",
+            "media_type": "application/json",
+            "name": "trial033",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "candidate_id": "C0367",
+          "content_sha256": "5303ed68fbca534d21c1f9435668827ee13a3fa86633b6296f343a9d863bca15",
+          "strategy_source_sha256": "41020197605c01bb90a11a255541de961a70ebb342f49869b445220f20f7723a",
+          "parameters": {
+            "confirm": true,
+            "down_days": 1,
+            "exit_mode": "fixed",
+            "hold_days": 5,
+            "information": "relative",
+            "joint_rule": "maximum",
+            "participation_days": 3,
+            "participation_threshold": 1.2125,
+            "quiet_fraction": 0.735,
+            "require_sector": false,
+            "risk_basis": "daily",
+            "trail_atr": 2.43,
+            "treatment": "tilt",
+            "weak_fraction": 0.415
+          },
+          "metrics": {
+            "nar": 0.7343644505623783,
+            "drawdown": 0.14661074802202467,
+            "bar_drawdown": 0.1598207086704878,
+            "calmar": 5.008940070696986,
+            "closed_cycles": 117,
+            "frequency_median": 6.0,
+            "frequency_coverage": 0.9982653946227233,
+            "year_returns": {
+              "2022": 0.09377501645430097,
+              "2023": 0.15468342888891895,
+              "2024": 0.29533888523163765,
+              "2025": 1.6878979720656804,
+              "2026": 2.2133953102390276
+            },
+            "gates": {
+              "nar": true,
+              "calmar": true,
+              "absolute_dd": true,
+              "relative_dd": true,
+              "frequency_median": true,
+              "frequency_coverage": true
+            },
+            "eligible": true,
+            "fees": 54988.4338223886
+          },
+          "mdd_episode": {
+            "peak": "2026-10-07",
+            "trough": "2026-10-30",
+            "recovery": null,
+            "magnitude": 0.14661074802202467
+          },
+          "exit_reason_counts": {
+            "达到固定持有期限，退出": 108,
+            "已完成价格触及跟踪线，退出": 9
+          },
+          "yearly": {
+            "2022": {
+              "return": 0.09377501645430031,
+              "log_growth": 0.08963503061491071
+            },
+            "2023": {
+              "return": 0.15468342888891806,
+              "log_growth": 0.14382621886283956
+            },
+            "2024": {
+              "return": 0.2953388852316381,
+              "log_growth": 0.2587723483548743
+            },
+            "2025": {
+              "return": 1.6878979720656768,
+              "log_growth": 0.9887594651197211
+            },
+            "2026": {
+              "return": 2.2133953102390294,
+              "log_growth": 1.1673281071871298
+            }
+          }
+        },
+        "P002": {
+          "reference": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX041_20261110"
+            },
+            "evidence_id": "db2e53167c5bc3dad11cfb6213cc9feb44f50be64690973ac51efa6c22668c54.json",
+            "sha256": "db2e53167c5bc3dad11cfb6213cc9feb44f50be64690973ac51efa6c22668c54",
+            "media_type": "application/json",
+            "name": "C0367_P002",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "candidate_id": "C0384",
+          "content_sha256": "c283fdc4c886ceb160ff2597166cddf9fc3c9ae93cc731f023ef21b337234a23",
+          "strategy_source_sha256": "41020197605c01bb90a11a255541de961a70ebb342f49869b445220f20f7723a",
+          "parameters": {
+            "confirm": true,
+            "down_days": 1,
+            "exit_mode": "fixed",
+            "hold_days": 5,
+            "information": "relative",
+            "joint_rule": "maximum",
+            "participation_days": 3,
+            "participation_threshold": 1.2125,
+            "quiet_fraction": 0.735,
+            "require_sector": false,
+            "risk_basis": "daily",
+            "trail_atr": 2.3085,
+            "treatment": "tilt",
+            "weak_fraction": 0.415
+          },
+          "metrics": {
+            "nar": 0.6725746895885931,
+            "drawdown": 0.16360515332040815,
+            "bar_drawdown": 0.16360515332040815,
+            "calmar": 4.110962741322745,
+            "closed_cycles": 117,
+            "frequency_median": 6.0,
+            "frequency_coverage": 0.9982653946227233,
+            "year_returns": {
+              "2022": 0.09768485712630204,
+              "2023": 0.11480027509548352,
+              "2024": 0.26741586975041853,
+              "2025": 1.3816974471764265,
+              "2026": 2.212902210334199
+            },
+            "gates": {
+              "nar": true,
+              "calmar": false,
+              "absolute_dd": true,
+              "relative_dd": true,
+              "frequency_median": true,
+              "frequency_coverage": true
+            },
+            "eligible": false,
+            "fees": 48307.5469235887
+          },
+          "mdd_episode": {
+            "peak": "2022-11-30",
+            "trough": "2023-04-25",
+            "recovery": "2023-11-03",
+            "magnitude": 0.16360515332040815
+          },
+          "exit_reason_counts": {
+            "达到固定持有期限，退出": 105,
+            "已完成价格触及跟踪线，退出": 12
+          },
+          "yearly": {
+            "2022": {
+              "return": 0.09768485712630093,
+              "log_growth": 0.09320328652287717
+            },
+            "2023": {
+              "return": 0.11480027509548418,
+              "log_growth": 0.10867526339229627
+            },
+            "2024": {
+              "return": 0.26741586975041987,
+              "log_growth": 0.23698007932992676
+            },
+            "2025": {
+              "return": 1.3816974471764287,
+              "log_growth": 0.8678134465671264
+            },
+            "2026": {
+              "return": 2.2129022103341938,
+              "log_growth": 1.167174644044715
+            }
+          }
+        },
+        "P005": {
+          "reference": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX041_20261110"
+            },
+            "evidence_id": "b53b5d54f5b07b8eb13645b97d11d959f4204c4f546ae062085f8e0b5a3e3127.json",
+            "sha256": "b53b5d54f5b07b8eb13645b97d11d959f4204c4f546ae062085f8e0b5a3e3127",
+            "media_type": "application/json",
+            "name": "C0367_P005",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "candidate_id": "C0387",
+          "content_sha256": "2da965592ae5da5c90c42f3bab2a50430d2295000c106dfe20576a3b39ee4e81",
+          "strategy_source_sha256": "41020197605c01bb90a11a255541de961a70ebb342f49869b445220f20f7723a",
+          "parameters": {
+            "confirm": true,
+            "down_days": 1,
+            "exit_mode": "fixed",
+            "hold_days": 5,
+            "information": "relative",
+            "joint_rule": "maximum",
+            "participation_days": 3,
+            "participation_threshold": 1.2125,
+            "quiet_fraction": 0.735,
+            "require_sector": false,
+            "risk_basis": "daily",
+            "trail_atr": 2.5515,
+            "treatment": "tilt",
+            "weak_fraction": 0.415
+          },
+          "metrics": {
+            "nar": 0.7224224027971005,
+            "drawdown": 0.17967968726169758,
+            "bar_drawdown": 0.19236781045993312,
+            "calmar": 4.020612534487084,
+            "closed_cycles": 116,
+            "frequency_median": 6.0,
+            "frequency_coverage": 0.9982653946227233,
+            "year_returns": {
+              "2022": 0.10868901461830105,
+              "2023": 0.1578561655060049,
+              "2024": 0.2956854314804396,
+              "2025": 1.683881840711837,
+              "2026": 2.061907166649436
+            },
+            "gates": {
+              "nar": true,
+              "calmar": false,
+              "absolute_dd": true,
+              "relative_dd": true,
+              "frequency_median": true,
+              "frequency_coverage": true
+            },
+            "eligible": false,
+            "fees": 55118.6814763045
+          },
+          "mdd_episode": {
+            "peak": "2026-10-07",
+            "trough": "2026-10-30",
+            "recovery": null,
+            "magnitude": 0.17967968726169758
+          },
+          "exit_reason_counts": {
+            "达到固定持有期限，退出": 110,
+            "已完成价格触及跟踪线，退出": 6
+          },
+          "yearly": {
+            "2022": {
+              "return": 0.10868901461830127,
+              "log_growth": 0.10317824940244291
+            },
+            "2023": {
+              "return": 0.15785616550600579,
+              "log_growth": 0.14657016202858197
+            },
+            "2024": {
+              "return": 0.2956854314804387,
+              "log_growth": 0.25903984584506146
+            },
+            "2025": {
+              "return": 1.6838818407118366,
+              "log_growth": 0.987264194560577
+            },
+            "2026": {
+              "return": 2.061907166649438,
+              "log_growth": 1.1190379788952411
+            }
+          }
+        }
+      },
+      "comparisons": {
+        "P002": {
+          "identical_closed_timing": false,
+          "common_entries": 117,
+          "changed_exit_count": 5,
+          "activity_state_changes": 74,
+          "largest_cycle_contribution_deltas": [
+            {
+              "entry_at": "2025-11-19T15:00:00.000000Z",
+              "left_exit": "2025-11-21T16:00:00.000000Z",
+              "right_exit": "2025-11-26T14:30:00.000000Z",
+              "normalized_pnl_delta": -0.11392447995458166,
+              "trade_return_delta": -0.1463186157
+            },
+            {
+              "entry_at": "2023-03-31T14:00:00.000000Z",
+              "left_exit": "2023-04-05T15:30:00.000000Z",
+              "right_exit": "2023-04-10T13:30:00.000000Z",
+              "normalized_pnl_delta": -0.0347790343005984,
+              "trade_return_delta": -0.0779445827
+            },
+            {
+              "entry_at": "2024-07-24T14:00:00.000000Z",
+              "left_exit": "2024-07-30T17:00:00.000000Z",
+              "right_exit": "2024-07-31T13:30:00.000000Z",
+              "normalized_pnl_delta": -0.021420296638703085,
+              "trade_return_delta": -0.0618899643
+            },
+            {
+              "entry_at": "2022-12-12T15:00:00.000000Z",
+              "left_exit": "2022-12-15T17:00:00.000000Z",
+              "right_exit": "2022-12-15T18:00:00.000000Z",
+              "normalized_pnl_delta": 0.0018399018933751218,
+              "trade_return_delta": 0.005818789699999997
+            },
+            {
+              "entry_at": "2022-08-18T14:00:00.000000Z",
+              "left_exit": "2022-08-23T16:30:00.000000Z",
+              "right_exit": "2022-08-24T14:00:00.000000Z",
+              "normalized_pnl_delta": 0.00165913360236122,
+              "trade_return_delta": 0.0031300555000000063
+            }
+          ],
+          "log_growth_difference": -0.1744744502825341,
+          "top10_days_absolute_log_difference_share": 0.9579319239200647,
+          "largest_daily_log_differences": [
+            {
+              "session": "2025-11-24",
+              "difference": -0.05626513401430077
+            },
+            {
+              "session": "2025-11-21",
+              "difference": -0.04734111651729618
+            },
+            {
+              "session": "2024-07-31",
+              "difference": -0.020702026626172355
+            },
+            {
+              "session": "2023-04-10",
+              "difference": -0.017692072349038076
+            },
+            {
+              "session": "2025-11-26",
+              "difference": -0.015607661928078638
+            }
+          ],
+          "changed_exits": [
+            {
+              "entry_at": "2022-08-18T14:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2022-08-18T14:00:00.000000Z",
+                "exit_at": "2022-08-23T16:30:00.000000Z",
+                "recorded_exit_at": "2022-08-23T17:00:00.000000Z",
+                "exit_order_id": "9040cc799e9b0edaaf934cc30008c64e3187441c989b57ce4cfe3fc39a68dca0:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "6",
+                  "price": "116.7866",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "128.55",
+                  "held": "3",
+                  "recovered": "False",
+                  "high_water": "127.37",
+                  "entry_atr": "4.544285714071428",
+                  "trail_price": "116.87951642906611",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -2918.7772286,
+                "net_return": -0.0612350807,
+                "entry_account_equity": 108074.2823512302,
+                "pnl_over_entry_equity": -0.027007139581221338
+              },
+              "center": {
+                "entry_at": "2022-08-18T14:00:00.000000Z",
+                "exit_at": "2022-08-24T14:00:00.000000Z",
+                "recorded_exit_at": "2022-08-24T14:30:00.000000Z",
+                "exit_order_id": "cca6611b6ad2cd40afafc2462ce987433dbe6dc93f812a4e35111804e296ed8f:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "1",
+                  "price": "116.23",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "128.55",
+                  "held": "4",
+                  "recovered": "False",
+                  "high_water": "127.37",
+                  "entry_atr": "4.544285714071428",
+                  "trail_price": "116.32738571480644",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -3098.086902,
+                "net_return": -0.0643651362,
+                "entry_account_equity": 108074.2823512302,
+                "pnl_over_entry_equity": -0.028666273183582558
+              }
+            },
+            {
+              "entry_at": "2022-12-12T15:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2022-12-12T15:00:00.000000Z",
+                "exit_at": "2022-12-15T17:00:00.000000Z",
+                "recorded_exit_at": "2022-12-15T17:30:00.000000Z",
+                "exit_order_id": "ca8a27cc285345d04900943d18286f102be6e1db7f0655eab04d30b708312b79:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "5",
+                  "price": "105.66",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "111.46",
+                  "held": "3",
+                  "recovered": "False",
+                  "high_water": "115.1",
+                  "entry_atr": "4.0223714285714305",
+                  "trail_price": "105.81435555714285",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -1122.9259626,
+                "net_return": -0.0299636543,
+                "entry_account_equity": 113177.0158690302,
+                "pnl_over_entry_equity": -0.009921855192749237
+              },
+              "center": {
+                "entry_at": "2022-12-12T15:00:00.000000Z",
+                "exit_at": "2022-12-15T18:00:00.000000Z",
+                "recorded_exit_at": "2022-12-15T18:30:00.000000Z",
+                "exit_order_id": "7934a607771f5f7a8c0953bf9a47e645628175915fc648cc5dd3e0c01977af1a:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "7",
+                  "price": "105.06",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "111.46",
+                  "held": "3",
+                  "recovered": "False",
+                  "high_water": "115.1",
+                  "entry_atr": "4.0223714285714305",
+                  "trail_price": "105.32563742857141",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -1328.9081388,
+                "net_return": -0.035782444,
+                "entry_account_equity": 112985.5113542301,
+                "pnl_over_entry_equity": -0.011761757086124359
+              }
+            },
+            {
+              "entry_at": "2023-03-31T14:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2023-03-31T14:00:00.000000Z",
+                "exit_at": "2023-04-05T15:30:00.000000Z",
+                "recorded_exit_at": "2023-04-05T16:00:00.000000Z",
+                "exit_order_id": "287488ca08034cde90edf6afec8f1a5b54df5bbdbc5ba67c01fea91a23145eae:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "4",
+                  "price": "113.84",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "128.37",
+                  "held": "3",
+                  "recovered": "False",
+                  "high_water": "124.23",
+                  "entry_atr": "4.498557142785712",
+                  "trail_price": "113.84508083587919",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -3341.4620756,
+                "net_return": -0.0699261395,
+                "entry_account_equity": 107074.6312124303,
+                "pnl_over_entry_equity": -0.03120685112583502
+              },
+              "center": {
+                "entry_at": "2023-03-31T14:00:00.000000Z",
+                "exit_at": "2023-04-10T13:30:00.000000Z",
+                "recorded_exit_at": "2023-04-10T14:00:00.000000Z",
+                "exit_order_id": "28710924e43b9f92843f4f4aae52b5a9983554b448cf8eaa1297e2f7a3c69d57:0",
+                "exit_reason": "达到固定持有期限，退出",
+                "exit_facts": {
+                  "slot": "0",
+                  "price": "118.64",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "128.37",
+                  "held": "5",
+                  "recovered": "False",
+                  "high_water": "124.23",
+                  "entry_atr": "4.498557142785712",
+                  "trail_price": "113.29850614303072",
+                  "stopped": "False",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": 381.1090888,
+                "net_return": 0.0080184432,
+                "entry_account_equity": 106688.0028696301,
+                "pnl_over_entry_equity": 0.0035721831747633813
+              }
+            },
+            {
+              "entry_at": "2024-07-24T14:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2024-07-24T14:00:00.000000Z",
+                "exit_at": "2024-07-30T17:00:00.000000Z",
+                "recorded_exit_at": "2024-07-30T17:30:00.000000Z",
+                "exit_order_id": "edc518ad15395de9c2b1f1a00079ce182c846fb9a9e281b114aa62347a5714e1:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "7",
+                  "price": "207.25",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "233.23",
+                  "held": "4",
+                  "recovered": "False",
+                  "high_water": "230.27",
+                  "entry_atr": "9.590714285857132",
+                  "trail_price": "208.12983607109882",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -3784.7588324,
+                "net_return": -0.0814321648,
+                "entry_account_equity": 134036.1289707494,
+                "pnl_over_entry_equity": -0.028236855700495084
+              },
+              "center": {
+                "entry_at": "2024-07-24T14:00:00.000000Z",
+                "exit_at": "2024-07-31T13:30:00.000000Z",
+                "recorded_exit_at": "2024-07-31T14:00:00.000000Z",
+                "exit_order_id": "3b8d59c266357b92a7ad8207884543a2ab3dbe4f5f78e5a2486e978ad31aaebf:0",
+                "exit_reason": "达到固定持有期限，退出",
+                "exit_facts": {
+                  "slot": "0",
+                  "price": "207.79",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "233.23",
+                  "held": "5",
+                  "recovered": "False",
+                  "high_water": "230.27",
+                  "entry_atr": "9.590714285857132",
+                  "trail_price": "206.96456428536717",
+                  "stopped": "False",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -942.6475224,
+                "net_return": -0.0195422005,
+                "entry_account_equity": 138287.8830587273,
+                "pnl_over_entry_equity": -0.006816559061791999
+              }
+            },
+            {
+              "entry_at": "2025-11-19T15:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2025-11-19T15:00:00.000000Z",
+                "exit_at": "2025-11-21T16:00:00.000000Z",
+                "recorded_exit_at": "2025-11-21T16:30:00.000000Z",
+                "exit_order_id": "e8df5f0f2a1a6bc6cbaed879429e0e76bcfeb458c8cc5e758cf882c2171c6573:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "3",
+                  "price": "393.0",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "487.72",
+                  "held": "2",
+                  "recovered": "False",
+                  "high_water": "469.01",
+                  "entry_atr": "31.801414285642863",
+                  "trail_price": "395.59643512159346",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -38491.6083988,
+                "net_return": -0.1484731587,
+                "entry_account_equity": 332900.6388361814,
+                "pnl_over_entry_equity": -0.11562491599104896
+              },
+              "center": {
+                "entry_at": "2025-11-19T15:00:00.000000Z",
+                "exit_at": "2025-11-26T14:30:00.000000Z",
+                "recorded_exit_at": "2025-11-26T15:00:00.000000Z",
+                "exit_order_id": "de4683ef8871b028145b86f2a0cbab62f928920076944af1e57a4f731f192ddf:0",
+                "exit_reason": "达到固定持有期限，退出",
+                "exit_facts": {
+                  "slot": "0",
+                  "price": "452.88",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "487.72",
+                  "held": "5",
+                  "recovered": "False",
+                  "high_water": "469.01",
+                  "entry_atr": "31.801414285642863",
+                  "trail_price": "391.7325632858878",
+                  "stopped": "False",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -596.9394828,
+                "net_return": -0.002154543,
+                "entry_account_equity": 351050.8304917824,
+                "pnl_over_entry_equity": -0.0017004360364672986
+              }
+            }
+          ],
+          "perturbed_only_entries": [],
+          "center_only_entries": []
+        },
+        "P005": {
+          "identical_closed_timing": false,
+          "common_entries": 115,
+          "changed_exit_count": 6,
+          "activity_state_changes": 106,
+          "largest_cycle_contribution_deltas": [
+            {
+              "entry_at": "2026-10-06T14:00:00.000000Z",
+              "left_exit": "2026-10-13T13:30:00.000000Z",
+              "right_exit": "2026-10-12T14:00:00.000000Z",
+              "normalized_pnl_delta": -0.03658964717328621,
+              "trade_return_delta": -0.046054947
+            },
+            {
+              "entry_at": "2026-02-02T15:00:00.000000Z",
+              "left_exit": "2026-02-04T17:00:00.000000Z",
+              "right_exit": "2026-02-04T16:00:00.000000Z",
+              "normalized_pnl_delta": -0.008455213470680983,
+              "trade_return_delta": -0.010165196599999995
+            },
+            {
+              "entry_at": "2023-01-25T15:00:00.000000Z",
+              "left_exit": "2023-02-01T14:30:00.000000Z",
+              "right_exit": "2023-01-31T15:00:00.000000Z",
+              "normalized_pnl_delta": 0.007012025573593879,
+              "trade_return_delta": 0.0219777304
+            },
+            {
+              "entry_at": "2022-08-18T14:00:00.000000Z",
+              "left_exit": "2022-08-25T13:30:00.000000Z",
+              "right_exit": "2022-08-24T14:00:00.000000Z",
+              "normalized_pnl_delta": 0.0060016422583500685,
+              "trade_return_delta": 0.013721611700000004
+            },
+            {
+              "entry_at": "2025-01-23T15:00:00.000000Z",
+              "left_exit": "2025-01-27T15:30:00.000000Z",
+              "right_exit": "2025-01-27T15:00:00.000000Z",
+              "normalized_pnl_delta": -0.0016236657349804964,
+              "trade_return_delta": 0.0010270710000000044
+            }
+          ],
+          "log_growth_difference": -0.033230739407570944,
+          "top10_days_absolute_log_difference_share": 0.8354323733366226,
+          "largest_daily_log_differences": [
+            {
+              "session": "2026-10-13",
+              "difference": -0.04232318390004743
+            },
+            {
+              "session": "2022-12-29",
+              "difference": -0.012636372357098491
+            },
+            {
+              "session": "2026-02-04",
+              "difference": -0.009124109070938358
+            },
+            {
+              "session": "2022-12-28",
+              "difference": 0.005999368666514515
+            },
+            {
+              "session": "2023-01-31",
+              "difference": 0.005788273215964975
+            }
+          ],
+          "changed_exits": [
+            {
+              "entry_at": "2022-08-18T14:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2022-08-18T14:00:00.000000Z",
+                "exit_at": "2022-08-25T13:30:00.000000Z",
+                "recorded_exit_at": "2022-08-25T14:00:00.000000Z",
+                "exit_order_id": "e4a32567d9f05b13dcc8d44deaec9572b45a29051545284fbf3c3d59c7067d3d:0",
+                "exit_reason": "达到固定持有期限，退出",
+                "exit_facts": {
+                  "slot": "0",
+                  "price": "117.45",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "128.55",
+                  "held": "5",
+                  "recovered": "False",
+                  "high_water": "127.37",
+                  "entry_atr": "4.544285714071428",
+                  "trail_price": "115.77525500054676",
+                  "stopped": "False",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -2449.463722,
+                "net_return": -0.0506435245,
+                "entry_account_equity": 108074.2823512302,
+                "pnl_over_entry_equity": -0.02266463092523249
+              },
+              "center": {
+                "entry_at": "2022-08-18T14:00:00.000000Z",
+                "exit_at": "2022-08-24T14:00:00.000000Z",
+                "recorded_exit_at": "2022-08-24T14:30:00.000000Z",
+                "exit_order_id": "cca6611b6ad2cd40afafc2462ce987433dbe6dc93f812a4e35111804e296ed8f:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "1",
+                  "price": "116.23",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "128.55",
+                  "held": "4",
+                  "recovered": "False",
+                  "high_water": "127.37",
+                  "entry_atr": "4.544285714071428",
+                  "trail_price": "116.32738571480644",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -3098.086902,
+                "net_return": -0.0643651362,
+                "entry_account_equity": 108074.2823512302,
+                "pnl_over_entry_equity": -0.028666273183582558
+              }
+            },
+            {
+              "entry_at": "2022-12-12T15:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2022-12-12T15:00:00.000000Z",
+                "exit_at": "2022-12-16T18:00:00.000000Z",
+                "recorded_exit_at": "2022-12-16T18:30:00.000000Z",
+                "exit_order_id": "5334139fc1ffa0e99c9d17b17540a9fc23ff9b4929e38a8a5c2a49b5d488a156:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "7",
+                  "price": "104.62",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "111.46",
+                  "held": "4",
+                  "recovered": "False",
+                  "high_water": "115.1",
+                  "entry_atr": "4.0223714285714305",
+                  "trail_price": "104.83691929999999",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -1471.4516788,
+                "net_return": -0.0386292312,
+                "entry_account_equity": 113683.5807406302,
+                "pnl_over_entry_equity": -0.012943396655996666
+              },
+              "center": {
+                "entry_at": "2022-12-12T15:00:00.000000Z",
+                "exit_at": "2022-12-15T18:00:00.000000Z",
+                "recorded_exit_at": "2022-12-15T18:30:00.000000Z",
+                "exit_order_id": "7934a607771f5f7a8c0953bf9a47e645628175915fc648cc5dd3e0c01977af1a:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "7",
+                  "price": "105.06",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "111.46",
+                  "held": "3",
+                  "recovered": "False",
+                  "high_water": "115.1",
+                  "entry_atr": "4.0223714285714305",
+                  "trail_price": "105.32563742857141",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -1328.9081388,
+                "net_return": -0.035782444,
+                "entry_account_equity": 112985.5113542301,
+                "pnl_over_entry_equity": -0.011761757086124359
+              }
+            },
+            {
+              "entry_at": "2023-01-25T15:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2023-01-25T15:00:00.000000Z",
+                "exit_at": "2023-02-01T14:30:00.000000Z",
+                "recorded_exit_at": "2023-02-01T15:00:00.000000Z",
+                "exit_order_id": "7a7d94eb34fabb06189fb727343edbc2b7eb9b56c1dd2ac969ecebff21c5c127:0",
+                "exit_reason": "达到固定持有期限，退出",
+                "exit_facts": {
+                  "slot": "0",
+                  "price": "121.89",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "124.93",
+                  "held": "5",
+                  "recovered": "False",
+                  "high_water": "129.7",
+                  "entry_atr": "4.1217428571428565",
+                  "trail_price": "119.18337309999998",
+                  "stopped": "False",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -334.37082,
+                "net_return": -0.0090096002,
+                "entry_account_equity": 111408.4176490302,
+                "pnl_over_entry_equity": -0.0030013066073101224
+              },
+              "center": {
+                "entry_at": "2023-01-25T15:00:00.000000Z",
+                "exit_at": "2023-01-31T15:00:00.000000Z",
+                "recorded_exit_at": "2023-01-31T15:30:00.000000Z",
+                "exit_order_id": "d177d7d3740dd9d5e614efee1c8d5fcd59c6c5d0d1efb17e1105005401d4501c:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "1",
+                  "price": "119.67",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "124.93",
+                  "held": "4",
+                  "recovered": "False",
+                  "high_water": "129.7",
+                  "entry_atr": "4.1217428571428565",
+                  "trail_price": "119.68416485714285",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -1105.35606,
+                "net_return": -0.0309873306,
+                "entry_account_equity": 110388.4341426301,
+                "pnl_over_entry_equity": -0.010013332180904002
+              }
+            },
+            {
+              "entry_at": "2025-01-23T15:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2025-01-23T15:00:00.000000Z",
+                "exit_at": "2025-01-27T15:30:00.000000Z",
+                "recorded_exit_at": "2025-01-27T16:00:00.000000Z",
+                "exit_order_id": "735036f6556528e1db897b646f306fd124125e1b62ebca290cfaeeacc0549634:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "2",
+                  "price": "190.07",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "221.89",
+                  "held": "2",
+                  "recovered": "False",
+                  "high_water": "215.11",
+                  "entry_atr": "9.49854285714286",
+                  "trail_price": "190.8744679",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -6002.6393,
+                "net_return": -0.1011329975,
+                "entry_account_equity": 176283.9827074084,
+                "pnl_over_entry_equity": -0.03405096258780938
+              },
+              "center": {
+                "entry_at": "2025-01-23T15:00:00.000000Z",
+                "exit_at": "2025-01-27T15:00:00.000000Z",
+                "recorded_exit_at": "2025-01-27T15:30:00.000000Z",
+                "exit_order_id": "be077dc2cf3b85fce131e079cc6de0cbd31c28fa837d0a864edc92ab50577bf1:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "1",
+                  "price": "191.13",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "221.89",
+                  "held": "2",
+                  "recovered": "False",
+                  "high_water": "215.11",
+                  "entry_atr": "9.49854285714286",
+                  "trail_price": "192.02854085714287",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -5622.58594,
+                "net_return": -0.1021600685,
+                "entry_account_equity": 173390.5223589273,
+                "pnl_over_entry_equity": -0.032427296852828885
+              }
+            },
+            {
+              "entry_at": "2026-02-02T15:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2026-02-02T15:00:00.000000Z",
+                "exit_at": "2026-02-04T17:00:00.000000Z",
+                "recorded_exit_at": "2026-02-04T17:30:00.000000Z",
+                "exit_order_id": "89e11d13da48314fd69d1b09df70807ad4fd6e71d11b23fcd3133de9a1bb33bb:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "5",
+                  "price": "765.18",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "875.63",
+                  "held": "2",
+                  "recovered": "False",
+                  "high_water": "887.4556",
+                  "entry_atr": "45.487100000000005",
+                  "trail_price": "771.3952643499999",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -37249.4420416001,
+                "net_return": -0.09644288,
+                "entry_account_equity": 499069.5892322736,
+                "pnl_over_entry_equity": -0.074637771656056
+              },
+              "center": {
+                "entry_at": "2026-02-02T15:00:00.000000Z",
+                "exit_at": "2026-02-04T16:00:00.000000Z",
+                "recorded_exit_at": "2026-02-04T16:30:00.000000Z",
+                "exit_order_id": "f105f921dbe79b576d93419a5b60698a9d4d260062a4e1b93334ff2e091c562a:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "3",
+                  "price": "774.67",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "875.63",
+                  "held": "2",
+                  "recovered": "False",
+                  "high_water": "887.4556",
+                  "entry_atr": "45.487100000000005",
+                  "trail_price": "776.921947",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -32536.5807598,
+                "net_return": -0.0862776834,
+                "entry_account_equity": 491618.6628607824,
+                "pnl_over_entry_equity": -0.06618255818537502
+              }
+            },
+            {
+              "entry_at": "2026-10-06T14:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2026-10-06T14:00:00.000000Z",
+                "exit_at": "2026-10-13T13:30:00.000000Z",
+                "recorded_exit_at": "2026-10-13T14:00:00.000000Z",
+                "exit_order_id": "6152c0c4d4e82eee79af22449ee23d1a9b7919f6144919fdf9a07bc06a9cf5b4:0",
+                "exit_reason": "达到固定持有期限，退出",
+                "exit_facts": {
+                  "slot": "0",
+                  "price": "1982.73",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "2154.43",
+                  "held": "5",
+                  "recovered": "False",
+                  "high_water": "2181.1646",
+                  "entry_atr": "83.71927142864284",
+                  "trail_price": "1967.554878949818",
+                  "stopped": "False",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -152814.9258097913,
+                "net_return": -0.1198618684,
+                "entry_account_equity": 1642665.4436656856,
+                "pnl_over_entry_equity": -0.0930286361103315
+              },
+              "center": {
+                "entry_at": "2026-10-06T14:00:00.000000Z",
+                "exit_at": "2026-10-12T14:00:00.000000Z",
+                "recorded_exit_at": "2026-10-12T14:30:00.000000Z",
+                "exit_order_id": "6688badf41bc4eda7e8b8079557761d21f46e6cb028cf947269f0b7bc5286f38:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "1",
+                  "price": "1977.53",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "2154.43",
+                  "held": "4",
+                  "recovered": "False",
+                  "high_water": "2181.1646",
+                  "entry_atr": "83.71927142864284",
+                  "trail_price": "1977.726770428398",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -92129.8241153969,
+                "net_return": -0.0738069214,
+                "entry_account_equity": 1632379.067211194,
+                "pnl_over_entry_equity": -0.0564389889370453
+              }
+            }
+          ],
+          "perturbed_only_entries": [
+            {
+              "entry_at": "2022-12-20T15:00:00.000000Z",
+              "exit_at": "2022-12-28T14:30:00.000000Z",
+              "recorded_exit_at": "2022-12-28T15:00:00.000000Z",
+              "exit_order_id": "db03070574235f187c9057d36cfd07dd16542ac77592ea29a2c385b6fff51957:0",
+              "exit_reason": "达到固定持有期限，退出",
+              "exit_facts": {
+                "slot": "0",
+                "price": "101.1",
+                "exit_mode": "fixed",
+                "require_sector": "False",
+                "anchor": "105.2",
+                "held": "5",
+                "recovered": "False",
+                "high_water": "104.68",
+                "entry_atr": "4.306557142857144",
+                "trail_price": "93.69181945000001",
+                "stopped": "False",
+                "target_weight": "0.0"
+              },
+              "net_pnl": -1343.2276,
+              "net_return": -0.0347928309,
+              "entry_account_equity": 112212.1290618301,
+              "pnl_over_entry_equity": -0.01197043146075472
+            }
+          ],
+          "center_only_entries": [
+            {
+              "entry_at": "2022-12-16T15:00:00.000000Z",
+              "exit_at": "2022-12-23T14:30:00.000000Z",
+              "recorded_exit_at": "2022-12-23T15:00:00.000000Z",
+              "exit_order_id": "6654da2fc958231d4a6fa36f599c7beccad5d8be2909f7d9456a621b1a7fcae9:0",
+              "exit_reason": "达到固定持有期限，退出",
+              "exit_facts": {
+                "slot": "0",
+                "price": "99.92",
+                "exit_mode": "fixed",
+                "require_sector": "False",
+                "anchor": "110.24",
+                "held": "5",
+                "recovered": "False",
+                "high_water": "105.7",
+                "entry_atr": "4.673800000000001",
+                "trail_price": "94.342666",
+                "stopped": "False",
+                "target_weight": "0.0"
+              },
+              "net_pnl": -3029.14521,
+              "net_return": -0.0594672478,
+              "entry_account_equity": 111656.6032154301,
+              "pnl_over_entry_equity": -0.027129118410987044
+            },
+            {
+              "entry_at": "2022-12-23T15:00:00.000000Z",
+              "exit_at": "2023-01-03T14:30:00.000000Z",
+              "recorded_exit_at": "2023-01-03T15:00:00.000000Z",
+              "exit_order_id": "066b88eaf89da2d5c274eb34fdbb57fe8cb504c97531e862a68e663ff5f57508:0",
+              "exit_reason": "达到固定持有期限，退出",
+              "exit_facts": {
+                "slot": "0",
+                "price": "101.25",
+                "exit_mode": "fixed",
+                "require_sector": "False",
+                "anchor": "103.44",
+                "held": "5",
+                "recovered": "False",
+                "high_water": "102.55",
+                "entry_atr": "3.6415571428571423",
+                "trail_price": "93.70101614285714",
+                "stopped": "False",
+                "target_weight": "0.0"
+              },
+              "net_pnl": 1225.95914,
+              "net_return": 0.0250929132,
+              "entry_account_equity": 108627.4580054301,
+              "pnl_over_entry_equity": 0.011285904710563293
+            }
+          ]
+        }
+      }
+    },
+    "C0355": {
+      "accounts": {
+        "CENTER": {
+          "reference": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX040_20261110"
+            },
+            "evidence_id": "44d92a77eadeee74916491d9678b948e7bb5104b0a8c01808837e8603f6ae4ea.json",
+            "sha256": "44d92a77eadeee74916491d9678b948e7bb5104b0a8c01808837e8603f6ae4ea",
+            "media_type": "application/json",
+            "name": "trial021",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "candidate_id": "C0355",
+          "content_sha256": "5bc24fba4873c5179ec70f40726bd94a504220180cae615786e4549d92b0eb8c",
+          "strategy_source_sha256": "41020197605c01bb90a11a255541de961a70ebb342f49869b445220f20f7723a",
+          "parameters": {
+            "confirm": true,
+            "down_days": 1,
+            "exit_mode": "fixed",
+            "hold_days": 5,
+            "information": "relative",
+            "joint_rule": "maximum",
+            "participation_days": 3,
+            "participation_threshold": 1.175,
+            "quiet_fraction": 0.645,
+            "require_sector": false,
+            "risk_basis": "daily",
+            "trail_atr": 2.42,
+            "treatment": "tilt",
+            "weak_fraction": 0.3
+          },
+          "metrics": {
+            "nar": 0.7105884623365648,
+            "drawdown": 0.13716986337410975,
+            "bar_drawdown": 0.15487302033676786,
+            "calmar": 5.180354086950891,
+            "closed_cycles": 117,
+            "frequency_median": 6.0,
+            "frequency_coverage": 0.9982653946227233,
+            "year_returns": {
+              "2022": 0.09298762835346097,
+              "2023": 0.15070033269118333,
+              "2024": 0.2836175281796005,
+              "2025": 1.678900022477575,
+              "2026": 2.057379777540772
+            },
+            "gates": {
+              "nar": true,
+              "calmar": true,
+              "absolute_dd": true,
+              "relative_dd": true,
+              "frequency_median": true,
+              "frequency_coverage": true
+            },
+            "eligible": true,
+            "fees": 50258.603283779
+          },
+          "mdd_episode": {
+            "peak": "2026-10-07",
+            "trough": "2026-10-30",
+            "recovery": null,
+            "magnitude": 0.13716986337410975
+          },
+          "exit_reason_counts": {
+            "达到固定持有期限，退出": 108,
+            "已完成价格触及跟踪线，退出": 9
+          },
+          "yearly": {
+            "2022": {
+              "return": 0.0929876283534623,
+              "log_growth": 0.08891489014906254
+            },
+            "2023": {
+              "return": 0.15070033269118377,
+              "log_growth": 0.1403707419679289
+            },
+            "2024": {
+              "return": 0.28361752817959984,
+              "log_growth": 0.24968228564459216
+            },
+            "2025": {
+              "return": 1.6789000224775705,
+              "log_growth": 0.9854062708954308
+            },
+            "2026": {
+              "return": 2.057379777540769,
+              "log_growth": 1.1175582672961502
+            }
+          }
+        },
+        "P002": {
+          "reference": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX041_20261110"
+            },
+            "evidence_id": "a969a63592deced99eea6da63f4d293277671cab29b13a7e93e5f39b81e18c21.json",
+            "sha256": "a969a63592deced99eea6da63f4d293277671cab29b13a7e93e5f39b81e18c21",
+            "media_type": "application/json",
+            "name": "C0355_P002",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "candidate_id": "C0464",
+          "content_sha256": "8f4785e5f068087f488e314b47b9a0af705f3bb22e4c7b241975b85332677b8e",
+          "strategy_source_sha256": "41020197605c01bb90a11a255541de961a70ebb342f49869b445220f20f7723a",
+          "parameters": {
+            "confirm": true,
+            "down_days": 1,
+            "exit_mode": "fixed",
+            "hold_days": 5,
+            "information": "relative",
+            "joint_rule": "maximum",
+            "participation_days": 3,
+            "participation_threshold": 1.175,
+            "quiet_fraction": 0.645,
+            "require_sector": false,
+            "risk_basis": "daily",
+            "trail_atr": 2.299,
+            "treatment": "tilt",
+            "weak_fraction": 0.3
+          },
+          "metrics": {
+            "nar": 0.6616634757940023,
+            "drawdown": 0.1371870384182512,
+            "bar_drawdown": 0.15486947015122265,
+            "calmar": 4.823075732393502,
+            "closed_cycles": 117,
+            "frequency_median": 6.0,
+            "frequency_coverage": 0.9982653946227233,
+            "year_returns": {
+              "2022": 0.09631925409945996,
+              "2023": 0.12162171723396242,
+              "2024": 0.2657867028839016,
+              "2025": 1.4185936727009136,
+              "2026": 2.0549230309176254
+            },
+            "gates": {
+              "nar": true,
+              "calmar": false,
+              "absolute_dd": true,
+              "relative_dd": true,
+              "frequency_median": true,
+              "frequency_coverage": true
+            },
+            "eligible": false,
+            "fees": 45272.4893291891
+          },
+          "mdd_episode": {
+            "peak": "2026-10-07",
+            "trough": "2026-10-30",
+            "recovery": null,
+            "magnitude": 0.1371870384182512
+          },
+          "exit_reason_counts": {
+            "达到固定持有期限，退出": 105,
+            "已完成价格触及跟踪线，退出": 12
+          },
+          "yearly": {
+            "2022": {
+              "return": 0.09631925409946085,
+              "log_growth": 0.09195843634579393
+            },
+            "2023": {
+              "return": 0.12162171723396042,
+              "log_growth": 0.11477559983716122
+            },
+            "2024": {
+              "return": 0.26578670288390116,
+              "log_growth": 0.23569382839308453
+            },
+            "2025": {
+              "return": 1.4185936727009136,
+              "log_growth": 0.8831862442657704
+            },
+            "2026": {
+              "return": 2.0549230309176214,
+              "log_growth": 1.1167543978438554
+            }
+          }
+        },
+        "P005": {
+          "reference": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX041_20261110"
+            },
+            "evidence_id": "0c58245c2c1f93f6da1421fd819d4d4fea64fed194aa7ece774f4d520e5182a9.json",
+            "sha256": "0c58245c2c1f93f6da1421fd819d4d4fea64fed194aa7ece774f4d520e5182a9",
+            "media_type": "application/json",
+            "name": "C0355_P005",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "candidate_id": "C0467",
+          "content_sha256": "2a913204dfab7eceee191d3455ee62872141387b7cb57857e0ac8c5e714280f1",
+          "strategy_source_sha256": "41020197605c01bb90a11a255541de961a70ebb342f49869b445220f20f7723a",
+          "parameters": {
+            "confirm": true,
+            "down_days": 1,
+            "exit_mode": "fixed",
+            "hold_days": 5,
+            "information": "relative",
+            "joint_rule": "maximum",
+            "participation_days": 3,
+            "participation_threshold": 1.175,
+            "quiet_fraction": 0.645,
+            "require_sector": false,
+            "risk_basis": "daily",
+            "trail_atr": 2.541,
+            "treatment": "tilt",
+            "weak_fraction": 0.3
+          },
+          "metrics": {
+            "nar": 0.6975708841169952,
+            "drawdown": 0.16654366132500997,
+            "bar_drawdown": 0.1778785806637777,
+            "calmar": 4.188516564168032,
+            "closed_cycles": 116,
+            "frequency_median": 6.0,
+            "frequency_coverage": 0.9982653946227233,
+            "year_returns": {
+              "2022": 0.10439901638345894,
+              "2023": 0.15217203865733286,
+              "2024": 0.28376676791281863,
+              "2025": 1.6757554650794675,
+              "2026": 1.9159961751043464
+            },
+            "gates": {
+              "nar": true,
+              "calmar": false,
+              "absolute_dd": true,
+              "relative_dd": true,
+              "frequency_median": true,
+              "frequency_coverage": true
+            },
+            "eligible": false,
+            "fees": 50087.881456189
+          },
+          "mdd_episode": {
+            "peak": "2026-10-07",
+            "trough": "2026-10-30",
+            "recovery": null,
+            "magnitude": 0.16654366132500997
+          },
+          "exit_reason_counts": {
+            "达到固定持有期限，退出": 110,
+            "已完成价格触及跟踪线，退出": 6
+          },
+          "yearly": {
+            "2022": {
+              "return": 0.10439901638345828,
+              "log_growth": 0.0993013104391476
+            },
+            "2023": {
+              "return": 0.15217203865733153,
+              "log_growth": 0.14164889023599175
+            },
+            "2024": {
+              "return": 0.2837667679128184,
+              "log_growth": 0.24979854384061975
+            },
+            "2025": {
+              "return": 1.6757554650794644,
+              "log_growth": 0.9842317573279742
+            },
+            "2026": {
+              "return": 1.915996175104349,
+              "log_growth": 1.0702115024529406
+            }
+          }
+        }
+      },
+      "comparisons": {
+        "P002": {
+          "identical_closed_timing": false,
+          "common_entries": 117,
+          "changed_exit_count": 5,
+          "activity_state_changes": 75,
+          "largest_cycle_contribution_deltas": [
+            {
+              "entry_at": "2025-11-19T15:00:00.000000Z",
+              "left_exit": "2025-11-21T15:30:00.000000Z",
+              "right_exit": "2025-11-26T14:30:00.000000Z",
+              "normalized_pnl_delta": -0.0969960028974069,
+              "trade_return_delta": -0.140732696
+            },
+            {
+              "entry_at": "2023-03-31T14:00:00.000000Z",
+              "left_exit": "2023-04-05T15:30:00.000000Z",
+              "right_exit": "2023-04-10T13:30:00.000000Z",
+              "normalized_pnl_delta": -0.025250962200136617,
+              "trade_return_delta": -0.07777922649999999
+            },
+            {
+              "entry_at": "2024-07-24T14:00:00.000000Z",
+              "left_exit": "2024-07-30T17:00:00.000000Z",
+              "right_exit": "2024-07-31T13:30:00.000000Z",
+              "normalized_pnl_delta": -0.013738329206931871,
+              "trade_return_delta": -0.0628213864
+            },
+            {
+              "entry_at": "2022-12-12T15:00:00.000000Z",
+              "left_exit": "2022-12-15T17:00:00.000000Z",
+              "right_exit": "2022-12-15T18:00:00.000000Z",
+              "normalized_pnl_delta": 0.0018205676643552153,
+              "trade_return_delta": 0.0053767173
+            },
+            {
+              "entry_at": "2022-08-18T14:00:00.000000Z",
+              "left_exit": "2022-08-23T16:30:00.000000Z",
+              "right_exit": "2022-08-24T14:00:00.000000Z",
+              "normalized_pnl_delta": 0.0012025588946353721,
+              "trade_return_delta": 0.003090902700000002
+            }
+          ],
+          "log_growth_difference": -0.1395639492674989,
+          "top10_days_absolute_log_difference_share": 0.9527781919285533,
+          "largest_daily_log_differences": [
+            {
+              "session": "2025-11-24",
+              "difference": -0.04949017239228791
+            },
+            {
+              "session": "2025-11-21",
+              "difference": -0.03711307964200587
+            },
+            {
+              "session": "2025-11-26",
+              "difference": -0.01370291537674931
+            },
+            {
+              "session": "2024-07-31",
+              "difference": -0.013197779638905416
+            },
+            {
+              "session": "2023-04-10",
+              "difference": -0.01279794084518185
+            }
+          ],
+          "changed_exits": [
+            {
+              "entry_at": "2022-08-18T14:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2022-08-18T14:00:00.000000Z",
+                "exit_at": "2022-08-23T16:30:00.000000Z",
+                "recorded_exit_at": "2022-08-23T17:00:00.000000Z",
+                "exit_order_id": "5cc9bc62751044611bf4339e2ce0052ca7581bfed273a8db4c4172b0b6d0ef24:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "6",
+                  "price": "116.7866",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "128.55",
+                  "held": "3",
+                  "recovered": "False",
+                  "high_water": "127.37",
+                  "entry_atr": "4.544285714071428",
+                  "trail_price": "116.92268714334979",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -2108.5157986,
+                "net_return": -0.0609505475,
+                "entry_account_equity": 107597.2915565461,
+                "pnl_over_entry_equity": -0.01959636500229099
+              },
+              "center": {
+                "entry_at": "2022-08-18T14:00:00.000000Z",
+                "exit_at": "2022-08-24T14:00:00.000000Z",
+                "recorded_exit_at": "2022-08-24T14:30:00.000000Z",
+                "exit_order_id": "30cdb21a6d31f847ebde112097bbb638da514a81506735d183dd687ab8787e8f:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "1",
+                  "price": "116.23",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "128.55",
+                  "held": "4",
+                  "recovered": "False",
+                  "high_water": "127.37",
+                  "entry_atr": "4.544285714071428",
+                  "trail_price": "116.37282857194715",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -2237.9078786,
+                "net_return": -0.0640414502,
+                "entry_account_equity": 107597.2915565461,
+                "pnl_over_entry_equity": -0.020798923896926363
+              }
+            },
+            {
+              "entry_at": "2022-12-12T15:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2022-12-12T15:00:00.000000Z",
+                "exit_at": "2022-12-15T17:00:00.000000Z",
+                "recorded_exit_at": "2022-12-15T17:30:00.000000Z",
+                "exit_order_id": "2d75a28b853854bb97552f9de24c6b3ad284324798fab3caac8291a55f0f50e6:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "5",
+                  "price": "105.66",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "111.46",
+                  "held": "3",
+                  "recovered": "False",
+                  "high_water": "115.1",
+                  "entry_atr": "4.0223714285714305",
+                  "trail_price": "105.85256808571428",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -1095.4264588,
+                "net_return": -0.0301099706,
+                "entry_account_equity": 112361.296667546,
+                "pnl_over_entry_equity": -0.009749143978296565
+              },
+              "center": {
+                "entry_at": "2022-12-12T15:00:00.000000Z",
+                "exit_at": "2022-12-15T18:00:00.000000Z",
+                "recorded_exit_at": "2022-12-15T18:30:00.000000Z",
+                "exit_order_id": "61b6162b1f2048a0e2609e13b12c60fad4633fd0074464fb2233b87be70810c3:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "7",
+                  "price": "105.06",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "111.46",
+                  "held": "3",
+                  "recovered": "False",
+                  "high_water": "115.1",
+                  "entry_atr": "4.0223714285714305",
+                  "trail_price": "105.36586114285713",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -1298.4299688,
+                "net_return": -0.0354866879,
+                "entry_account_equity": 112226.6491079461,
+                "pnl_over_entry_equity": -0.01156971164265178
+              }
+            },
+            {
+              "entry_at": "2023-03-31T14:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2023-03-31T14:00:00.000000Z",
+                "exit_at": "2023-04-05T15:30:00.000000Z",
+                "recorded_exit_at": "2023-04-05T16:00:00.000000Z",
+                "exit_order_id": "0ef7adffd48da44b2cc24e36da89359cfc18ba67b098e3d954a3fe8b0d9ff3db:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "4",
+                  "price": "113.84",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "128.37",
+                  "held": "3",
+                  "recovered": "False",
+                  "high_water": "124.23",
+                  "entry_atr": "4.498557142785712",
+                  "trail_price": "113.88781712873565",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -2439.817941,
+                "net_return": -0.0698896676,
+                "entry_account_equity": 107859.540891546,
+                "pnl_over_entry_equity": -0.022620325664590622
+              },
+              "center": {
+                "entry_at": "2023-03-31T14:00:00.000000Z",
+                "exit_at": "2023-04-10T13:30:00.000000Z",
+                "recorded_exit_at": "2023-04-10T14:00:00.000000Z",
+                "exit_order_id": "121d3f5286279515bc09a514c7129d9e94666ce3d787ade71dd11eb4b9f45378:0",
+                "exit_reason": "达到固定持有期限，退出",
+                "exit_facts": {
+                  "slot": "0",
+                  "price": "118.64",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "128.37",
+                  "held": "5",
+                  "recovered": "False",
+                  "high_water": "124.23",
+                  "entry_atr": "4.498557142785712",
+                  "trail_price": "113.34349171445858",
+                  "stopped": "False",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": 282.8989714,
+                "net_return": 0.0078895589,
+                "entry_account_equity": 107540.1210229461,
+                "pnl_over_entry_equity": 0.0026306365355459956
+              }
+            },
+            {
+              "entry_at": "2024-07-24T14:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2024-07-24T14:00:00.000000Z",
+                "exit_at": "2024-07-30T17:00:00.000000Z",
+                "recorded_exit_at": "2024-07-30T17:30:00.000000Z",
+                "exit_order_id": "8b8ea43079a9afec00056c2f77595f54b56cbab0ed970363823e2b85f70d969f:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "7",
+                  "price": "207.25",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "233.23",
+                  "held": "4",
+                  "recovered": "False",
+                  "high_water": "230.27",
+                  "entry_atr": "9.590714285857132",
+                  "trail_price": "208.22094785681446",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -2371.6200124,
+                "net_return": -0.0811343557,
+                "entry_account_equity": 132246.737460071,
+                "pnl_over_entry_equity": -0.017933296941378678
+              },
+              "center": {
+                "entry_at": "2024-07-24T14:00:00.000000Z",
+                "exit_at": "2024-07-31T13:30:00.000000Z",
+                "recorded_exit_at": "2024-07-31T14:00:00.000000Z",
+                "exit_order_id": "e5a17cec925ee3f0f2fb91f75c66f4b4dc9c2e7f95852e714ca9418ac18d7539:0",
+                "exit_reason": "达到固定持有期限，退出",
+                "exit_facts": {
+                  "slot": "0",
+                  "price": "207.79",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "233.23",
+                  "held": "5",
+                  "recovered": "False",
+                  "high_water": "230.27",
+                  "entry_atr": "9.590714285857132",
+                  "trail_price": "207.06047142822575",
+                  "stopped": "False",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -567.4191824,
+                "net_return": -0.0183129693,
+                "entry_account_equity": 135261.870488457,
+                "pnl_over_entry_equity": -0.004194967734446807
+              }
+            },
+            {
+              "entry_at": "2025-11-19T15:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2025-11-19T15:00:00.000000Z",
+                "exit_at": "2025-11-21T15:30:00.000000Z",
+                "recorded_exit_at": "2025-11-21T16:00:00.000000Z",
+                "exit_order_id": "978f892044f3f4e2e96cefa74086b232c62d4144e1234f7dcf8f42f22091cb9e:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "2",
+                  "price": "395.604",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "487.72",
+                  "held": "2",
+                  "recovered": "False",
+                  "high_water": "469.01",
+                  "entry_atr": "31.801414285642863",
+                  "trail_price": "395.89854855730704",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -32640.4650588,
+                "net_return": -0.142361046,
+                "entry_account_equity": 332559.4250338049,
+                "pnl_over_entry_equity": -0.09814927078215292
+              },
+              "center": {
+                "entry_at": "2025-11-19T15:00:00.000000Z",
+                "exit_at": "2025-11-26T14:30:00.000000Z",
+                "recorded_exit_at": "2025-11-26T15:00:00.000000Z",
+                "exit_order_id": "792380552292e95e4a65b72cc96d3834e5c4303ce2f19715abc57343e2c2f649:0",
+                "exit_reason": "达到固定持有期限，退出",
+                "exit_facts": {
+                  "slot": "0",
+                  "price": "452.88",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "487.72",
+                  "held": "5",
+                  "recovered": "False",
+                  "high_water": "469.01",
+                  "entry_atr": "31.801414285642863",
+                  "trail_price": "392.05057742874425",
+                  "stopped": "False",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -397.8412655999,
+                "net_return": -0.00162835,
+                "entry_account_equity": 344968.6502694149,
+                "pnl_over_entry_equity": -0.0011532678847460268
+              }
+            }
+          ],
+          "perturbed_only_entries": [],
+          "center_only_entries": []
+        },
+        "P005": {
+          "identical_closed_timing": false,
+          "common_entries": 115,
+          "changed_exit_count": 6,
+          "activity_state_changes": 106,
+          "largest_cycle_contribution_deltas": [
+            {
+              "entry_at": "2026-10-06T14:00:00.000000Z",
+              "left_exit": "2026-10-13T13:30:00.000000Z",
+              "right_exit": "2026-10-12T14:00:00.000000Z",
+              "normalized_pnl_delta": -0.03232127654672435,
+              "trade_return_delta": -0.04543596650000001
+            },
+            {
+              "entry_at": "2026-02-02T15:00:00.000000Z",
+              "left_exit": "2026-02-04T17:00:00.000000Z",
+              "right_exit": "2026-02-04T16:00:00.000000Z",
+              "normalized_pnl_delta": -0.011229560642782854,
+              "trade_return_delta": -0.011229056500000001
+            },
+            {
+              "entry_at": "2023-01-25T15:00:00.000000Z",
+              "left_exit": "2023-02-01T14:30:00.000000Z",
+              "right_exit": "2023-01-31T15:00:00.000000Z",
+              "normalized_pnl_delta": 0.004456175297761382,
+              "trade_return_delta": 0.021929983899999998
+            },
+            {
+              "entry_at": "2022-08-18T14:00:00.000000Z",
+              "left_exit": "2022-08-25T13:30:00.000000Z",
+              "right_exit": "2022-08-24T14:00:00.000000Z",
+              "normalized_pnl_delta": 0.004366208323683573,
+              "trade_return_delta": 0.013780122800000003
+            },
+            {
+              "entry_at": "2022-12-12T15:00:00.000000Z",
+              "left_exit": "2022-12-16T18:00:00.000000Z",
+              "right_exit": "2022-12-15T18:00:00.000000Z",
+              "normalized_pnl_delta": -0.0011109934623452066,
+              "trade_return_delta": -0.002803257400000002
+            }
+          ],
+          "log_growth_difference": -0.036740451656490265,
+          "top10_days_absolute_log_difference_share": 0.8442597918082405,
+          "largest_daily_log_differences": [
+            {
+              "session": "2026-10-13",
+              "difference": -0.03704136963309222
+            },
+            {
+              "session": "2026-02-04",
+              "difference": -0.012417952914547031
+            },
+            {
+              "session": "2022-12-29",
+              "difference": -0.009138613164588399
+            },
+            {
+              "session": "2022-12-28",
+              "difference": 0.0044453355555791815
+            },
+            {
+              "session": "2022-12-22",
+              "difference": 0.003656522830057668
+            }
+          ],
+          "changed_exits": [
+            {
+              "entry_at": "2022-08-18T14:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2022-08-18T14:00:00.000000Z",
+                "exit_at": "2022-08-25T13:30:00.000000Z",
+                "recorded_exit_at": "2022-08-25T14:00:00.000000Z",
+                "exit_order_id": "ac2539d5e450cf248daa90a8ca2c2da6536aece63534886f0efc4c5516dbebf0:0",
+                "exit_reason": "达到固定持有期限，退出",
+                "exit_facts": {
+                  "slot": "0",
+                  "price": "117.45",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "128.55",
+                  "held": "5",
+                  "recovered": "False",
+                  "high_water": "127.37",
+                  "entry_atr": "4.544285714071428",
+                  "trail_price": "115.8229700005445",
+                  "stopped": "False",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -1768.1156886,
+                "net_return": -0.0502613274,
+                "entry_account_equity": 107597.2915565461,
+                "pnl_over_entry_equity": -0.01643271557324279
+              },
+              "center": {
+                "entry_at": "2022-08-18T14:00:00.000000Z",
+                "exit_at": "2022-08-24T14:00:00.000000Z",
+                "recorded_exit_at": "2022-08-24T14:30:00.000000Z",
+                "exit_order_id": "30cdb21a6d31f847ebde112097bbb638da514a81506735d183dd687ab8787e8f:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "1",
+                  "price": "116.23",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "128.55",
+                  "held": "4",
+                  "recovered": "False",
+                  "high_water": "127.37",
+                  "entry_atr": "4.544285714071428",
+                  "trail_price": "116.37282857194715",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -2237.9078786,
+                "net_return": -0.0640414502,
+                "entry_account_equity": 107597.2915565461,
+                "pnl_over_entry_equity": -0.020798923896926363
+              }
+            },
+            {
+              "entry_at": "2022-12-12T15:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2022-12-12T15:00:00.000000Z",
+                "exit_at": "2022-12-16T18:00:00.000000Z",
+                "recorded_exit_at": "2022-12-16T18:30:00.000000Z",
+                "exit_order_id": "01d5c1d83a7f2eae72bde83764ba71a8fc704107730fb9a39313579a10631acb:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "7",
+                  "price": "104.62",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "111.46",
+                  "held": "4",
+                  "recovered": "False",
+                  "high_water": "115.1",
+                  "entry_atr": "4.0223714285714305",
+                  "trail_price": "104.87915419999999",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -1429.2549088,
+                "net_return": -0.0382899453,
+                "entry_account_equity": 112710.996507346,
+                "pnl_over_entry_equity": -0.012680705104996987
+              },
+              "center": {
+                "entry_at": "2022-12-12T15:00:00.000000Z",
+                "exit_at": "2022-12-15T18:00:00.000000Z",
+                "recorded_exit_at": "2022-12-15T18:30:00.000000Z",
+                "exit_order_id": "61b6162b1f2048a0e2609e13b12c60fad4633fd0074464fb2233b87be70810c3:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "7",
+                  "price": "105.06",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "111.46",
+                  "held": "3",
+                  "recovered": "False",
+                  "high_water": "115.1",
+                  "entry_atr": "4.0223714285714305",
+                  "trail_price": "105.36586114285713",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -1298.4299688,
+                "net_return": -0.0354866879,
+                "entry_account_equity": 112226.6491079461,
+                "pnl_over_entry_equity": -0.01156971164265178
+              }
+            },
+            {
+              "entry_at": "2023-01-25T15:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2023-01-25T15:00:00.000000Z",
+                "exit_at": "2023-02-01T14:30:00.000000Z",
+                "recorded_exit_at": "2023-02-01T15:00:00.000000Z",
+                "exit_order_id": "3e9de6ecdfe5b158dfb4e230b92b852b830b7ddc0d0227549017e05c4bcee607:0",
+                "exit_reason": "达到固定持有期限，退出",
+                "exit_facts": {
+                  "slot": "0",
+                  "price": "121.89",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "124.93",
+                  "held": "5",
+                  "recovered": "False",
+                  "high_water": "129.7",
+                  "entry_atr": "4.1217428571428565",
+                  "trail_price": "119.2266514",
+                  "stopped": "False",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -207.16631,
+                "net_return": -0.0087664143,
+                "entry_account_equity": 110783.443315546,
+                "pnl_over_entry_equity": -0.0018700114728328616
+              },
+              "center": {
+                "entry_at": "2023-01-25T15:00:00.000000Z",
+                "exit_at": "2023-01-31T15:00:00.000000Z",
+                "recorded_exit_at": "2023-01-31T15:30:00.000000Z",
+                "exit_order_id": "8e8f2e4646d1fb6d3dd86b452194e78773464b2dbbe31a89bae0ab9fbeec083b:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "1",
+                  "price": "119.67",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "124.93",
+                  "held": "4",
+                  "recovered": "False",
+                  "high_water": "129.7",
+                  "entry_atr": "4.1217428571428565",
+                  "trail_price": "119.72538228571428",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -695.77634,
+                "net_return": -0.0306963982,
+                "entry_account_equity": 109983.5280289461,
+                "pnl_over_entry_equity": -0.006326186770594244
+              }
+            },
+            {
+              "entry_at": "2025-01-23T15:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2025-01-23T15:00:00.000000Z",
+                "exit_at": "2025-01-27T15:30:00.000000Z",
+                "recorded_exit_at": "2025-01-27T16:00:00.000000Z",
+                "exit_order_id": "75cc6aaa06c2b09bcb2ffb27f420cffda8b8784f21078e35a5f67464b510c115:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "2",
+                  "price": "190.07",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "221.89",
+                  "held": "2",
+                  "recovered": "False",
+                  "high_water": "215.11",
+                  "entry_atr": "9.49854285714286",
+                  "trail_price": "190.9742026",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -3694.9623784,
+                "net_return": -0.0997030226,
+                "entry_account_equity": 171389.0554194488,
+                "pnl_over_entry_equity": -0.021558916754381652
+              },
+              "center": {
+                "entry_at": "2025-01-23T15:00:00.000000Z",
+                "exit_at": "2025-01-27T15:00:00.000000Z",
+                "recorded_exit_at": "2025-01-27T15:30:00.000000Z",
+                "exit_order_id": "e7a86edd7d06e87c030ff478ce272d6b08ce1d7c9a727dc132740a91441b73e3:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "1",
+                  "price": "191.13",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "221.89",
+                  "held": "2",
+                  "recovered": "False",
+                  "high_water": "215.11",
+                  "entry_atr": "9.49854285714286",
+                  "trail_price": "192.1235262857143",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -3486.72688,
+                "net_return": -0.1015398296,
+                "entry_account_equity": 169389.316407257,
+                "pnl_over_entry_equity": -0.020584101488531785
+              }
+            },
+            {
+              "entry_at": "2026-02-02T15:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2026-02-02T15:00:00.000000Z",
+                "exit_at": "2026-02-04T17:00:00.000000Z",
+                "recorded_exit_at": "2026-02-04T17:30:00.000000Z",
+                "exit_order_id": "c2055fc604f8740843c7fd80aa8ab271e7664e3878fcd787310e1c44c5af76f0:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "5",
+                  "price": "765.18",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "875.63",
+                  "held": "2",
+                  "recovered": "False",
+                  "high_water": "887.4556",
+                  "entry_atr": "45.487100000000005",
+                  "trail_price": "771.8728788999999",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -48774.24349,
+                "net_return": -0.1011582596,
+                "entry_account_equity": 482171.2457130098,
+                "pnl_over_entry_equity": -0.1011554378732709
+              },
+              "center": {
+                "entry_at": "2026-02-02T15:00:00.000000Z",
+                "exit_at": "2026-02-04T16:00:00.000000Z",
+                "recorded_exit_at": "2026-02-04T16:30:00.000000Z",
+                "exit_order_id": "71f7972ace7f1c7cd95b246cb49ba146a7ddd813f08812d5e1d12b98a25078ac:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "3",
+                  "price": "774.67",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "875.63",
+                  "held": "2",
+                  "recovered": "False",
+                  "high_water": "887.4556",
+                  "entry_atr": "45.487100000000005",
+                  "trail_price": "777.376818",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -42901.31989,
+                "net_return": -0.0899292031,
+                "entry_account_equity": 477074.2439358149,
+                "pnl_over_entry_equity": -0.08992587723048805
+              }
+            },
+            {
+              "entry_at": "2026-10-06T14:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2026-10-06T14:00:00.000000Z",
+                "exit_at": "2026-10-13T13:30:00.000000Z",
+                "recorded_exit_at": "2026-10-13T14:00:00.000000Z",
+                "exit_order_id": "69cf8dbf0e5100dd5e94d3f495ee748c298e168b002458e6e4ff40ba872f96df:0",
+                "exit_reason": "达到固定持有期限，退出",
+                "exit_facts": {
+                  "slot": "0",
+                  "price": "1982.73",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "2154.43",
+                  "held": "5",
+                  "recovered": "False",
+                  "high_water": "2181.1646",
+                  "entry_atr": "83.71927142864284",
+                  "trail_price": "1968.4339312998186",
+                  "stopped": "False",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -123657.9204433928,
+                "net_return": -0.1182561535,
+                "entry_account_equity": 1510209.0395554223,
+                "pnl_over_entry_equity": -0.08188132715706391
+              },
+              "center": {
+                "entry_at": "2026-10-06T14:00:00.000000Z",
+                "exit_at": "2026-10-12T14:00:00.000000Z",
+                "recorded_exit_at": "2026-10-12T14:30:00.000000Z",
+                "exit_order_id": "f4ee195d83ead406db59ce6d3fce1cbd33afbf7efb40773db29e20128a076fa5:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "1",
+                  "price": "1977.53",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "2154.43",
+                  "held": "4",
+                  "recovered": "False",
+                  "high_water": "2181.1646",
+                  "entry_atr": "83.71927142864284",
+                  "trail_price": "1978.5639631426843",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -75004.0978003937,
+                "net_return": -0.072820187,
+                "entry_account_equity": 1513398.329434834,
+                "pnl_over_entry_equity": -0.04956005061033956
+              }
+            }
+          ],
+          "perturbed_only_entries": [
+            {
+              "entry_at": "2022-12-20T15:00:00.000000Z",
+              "exit_at": "2022-12-28T14:30:00.000000Z",
+              "recorded_exit_at": "2022-12-28T15:00:00.000000Z",
+              "exit_order_id": "7ad1d0c39ec90efdfe0245031feebdcdb3ff0b1611f90b2002f97c03b9d88611:0",
+              "exit_reason": "达到固定持有期限，退出",
+              "exit_facts": {
+                "slot": "0",
+                "price": "101.1",
+                "exit_mode": "fixed",
+                "require_sector": "False",
+                "anchor": "105.2",
+                "held": "5",
+                "recovered": "False",
+                "high_water": "104.68",
+                "entry_atr": "4.306557142857144",
+                "trail_price": "93.73703830000001",
+                "stopped": "False",
+                "target_weight": "0.0"
+              },
+              "net_pnl": -841.8399602,
+              "net_return": -0.0344993797,
+              "entry_account_equity": 111281.741598546,
+              "pnl_over_entry_equity": -0.007564942353589112
+            }
+          ],
+          "center_only_entries": [
+            {
+              "entry_at": "2022-12-16T15:00:00.000000Z",
+              "exit_at": "2022-12-23T14:30:00.000000Z",
+              "recorded_exit_at": "2022-12-23T15:00:00.000000Z",
+              "exit_order_id": "c5b785227cf11ed9ba619c7fe7ae8ddb0781a4b576c44b55b5a7d0b2051873cc:0",
+              "exit_reason": "达到固定持有期限，退出",
+              "exit_facts": {
+                "slot": "0",
+                "price": "99.92",
+                "exit_mode": "fixed",
+                "require_sector": "False",
+                "anchor": "110.24",
+                "held": "5",
+                "recovered": "False",
+                "high_water": "105.7",
+                "entry_atr": "4.673800000000001",
+                "trail_price": "94.389404",
+                "stopped": "False",
+                "target_weight": "0.0"
+              },
+              "net_pnl": -2176.2781138,
+              "net_return": -0.0583209476,
+              "entry_account_equity": 110928.2191391461,
+              "pnl_over_entry_equity": -0.019618796106968248
+            },
+            {
+              "entry_at": "2022-12-23T15:00:00.000000Z",
+              "exit_at": "2023-01-03T14:30:00.000000Z",
+              "recorded_exit_at": "2023-01-03T15:00:00.000000Z",
+              "exit_order_id": "a38e35276ddae22f5015e313739f8c82579d4a60a3ebe8effd3b9eb788b29096:0",
+              "exit_reason": "达到固定持有期限，退出",
+              "exit_facts": {
+                "slot": "0",
+                "price": "101.25",
+                "exit_mode": "fixed",
+                "require_sector": "False",
+                "anchor": "103.44",
+                "held": "5",
+                "recovered": "False",
+                "high_water": "102.55",
+                "entry_atr": "3.6415571428571423",
+                "trail_price": "93.73743171428572",
+                "stopped": "False",
+                "target_weight": "0.0"
+              },
+              "net_pnl": 890.53856,
+              "net_return": 0.0248788749,
+              "entry_account_equity": 108751.9410253461,
+              "pnl_over_entry_equity": 0.008188714165501175
+            }
+          ]
+        }
+      }
+    },
+    "C0264": {
+      "accounts": {
+        "CENTER": {
+          "reference": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX041_20261110"
+            },
+            "evidence_id": "6bb242e8d68e39bcf82d6840f0db1a050b661291d228259e3de78dfe88a4884b.json",
+            "sha256": "6bb242e8d68e39bcf82d6840f0db1a050b661291d228259e3de78dfe88a4884b",
+            "media_type": "application/json",
+            "name": "C0264_CENTER",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "candidate_id": "C0264",
+          "content_sha256": "7137c04b85514a543f8cc1778b58f6e4218f512253049c24a242e8043aecd693",
+          "strategy_source_sha256": "41020197605c01bb90a11a255541de961a70ebb342f49869b445220f20f7723a",
+          "parameters": {
+            "confirm": true,
+            "down_days": 1,
+            "exit_mode": "fixed",
+            "hold_days": 5,
+            "information": "relative",
+            "joint_rule": "maximum",
+            "participation_days": 3,
+            "participation_threshold": 1.25,
+            "quiet_fraction": 0.5225,
+            "require_sector": false,
+            "risk_basis": "daily",
+            "trail_atr": 2.4,
+            "treatment": "tilt",
+            "weak_fraction": 0.315
+          },
+          "metrics": {
+            "nar": 0.6220904490346699,
+            "drawdown": 0.12415255752305887,
+            "bar_drawdown": 0.13735249762484625,
+            "calmar": 5.010693790332342,
+            "closed_cycles": 117,
+            "frequency_median": 6.0,
+            "frequency_coverage": 0.9982653946227233,
+            "year_returns": {
+              "2022": 0.07987012782720004,
+              "2023": 0.1768452232088995,
+              "2024": 0.26086317928641445,
+              "2025": 1.4453247777961695,
+              "2026": 1.6137596547537076
+            },
+            "gates": {
+              "nar": true,
+              "calmar": true,
+              "absolute_dd": true,
+              "relative_dd": true,
+              "frequency_median": true,
+              "frequency_coverage": true
+            },
+            "eligible": true,
+            "fees": 38429.9839443834
+          },
+          "mdd_episode": {
+            "peak": "2026-10-07",
+            "trough": "2026-10-30",
+            "recovery": null,
+            "magnitude": 0.12415255752305887
+          },
+          "exit_reason_counts": {
+            "达到固定持有期限，退出": 107,
+            "已完成价格触及跟踪线，退出": 10
+          },
+          "yearly": {
+            "2022": {
+              "return": 0.07987012782720204,
+              "log_growth": 0.07684078189342508
+            },
+            "2023": {
+              "return": 0.17684522320889928,
+              "log_growth": 0.16283731853417005
+            },
+            "2024": {
+              "return": 0.2608631792864129,
+              "log_growth": 0.23179654934062016
+            },
+            "2025": {
+              "return": 1.445324777796169,
+              "log_growth": 0.8941779475597196
+            },
+            "2026": {
+              "return": 1.6137596547537076,
+              "log_growth": 0.9607896655860054
+            }
+          }
+        },
+        "P002": {
+          "reference": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX041_20261110"
+            },
+            "evidence_id": "d5c382f1d04b081832688587bdd87e368d5b04d018d41bc861e8b74da2a0cea2.json",
+            "sha256": "d5c382f1d04b081832688587bdd87e368d5b04d018d41bc861e8b74da2a0cea2",
+            "media_type": "application/json",
+            "name": "C0264_P002",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "candidate_id": "C0544",
+          "content_sha256": "9089aac34dfb7f2e3470744b13f5128cc922c1429a8ac51cc42e7bc573852464",
+          "strategy_source_sha256": "41020197605c01bb90a11a255541de961a70ebb342f49869b445220f20f7723a",
+          "parameters": {
+            "confirm": true,
+            "down_days": 1,
+            "exit_mode": "fixed",
+            "hold_days": 5,
+            "information": "relative",
+            "joint_rule": "maximum",
+            "participation_days": 3,
+            "participation_threshold": 1.25,
+            "quiet_fraction": 0.5225,
+            "require_sector": false,
+            "risk_basis": "daily",
+            "trail_atr": 2.28,
+            "treatment": "tilt",
+            "weak_fraction": 0.315
+          },
+          "metrics": {
+            "nar": 0.5841335329814998,
+            "drawdown": 0.1310533218897585,
+            "bar_drawdown": 0.1373755034192623,
+            "calmar": 4.457220347858641,
+            "closed_cycles": 118,
+            "frequency_median": 6.0,
+            "frequency_coverage": 0.9982653946227233,
+            "year_returns": {
+              "2022": 0.07560962320319997,
+              "2023": 0.14610057657002518,
+              "2024": 0.2607159029078301,
+              "2025": 1.2505725886423726,
+              "2026": 1.6128572987829641
+            },
+            "gates": {
+              "nar": true,
+              "calmar": false,
+              "absolute_dd": true,
+              "relative_dd": true,
+              "frequency_median": true,
+              "frequency_coverage": true
+            },
+            "eligible": false,
+            "fees": 35387.3299051895
+          },
+          "mdd_episode": {
+            "peak": "2022-11-30",
+            "trough": "2023-04-25",
+            "recovery": "2023-05-26",
+            "magnitude": 0.1310533218897585
+          },
+          "exit_reason_counts": {
+            "达到固定持有期限，退出": 106,
+            "已完成价格触及跟踪线，退出": 12
+          },
+          "yearly": {
+            "2022": {
+              "return": 0.07560962320320197,
+              "log_growth": 0.07288759219590603
+            },
+            "2023": {
+              "return": 0.1461005765700243,
+              "log_growth": 0.13636537759169626
+            },
+            "2024": {
+              "return": 0.26071590290782964,
+              "log_growth": 0.23167973652297608
+            },
+            "2025": {
+              "return": 1.2505725886423757,
+              "log_growth": 0.8111846676818637
+            },
+            "2026": {
+              "return": 1.612857298782962,
+              "log_growth": 0.9604443730238263
+            }
+          }
+        },
+        "P005": {
+          "reference": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX041_20261110"
+            },
+            "evidence_id": "fa53a5ace863988351e9b44e45fd90f4d7d4e857bd7ec2bb2ef6eedebeda0a61.json",
+            "sha256": "fa53a5ace863988351e9b44e45fd90f4d7d4e857bd7ec2bb2ef6eedebeda0a61",
+            "media_type": "application/json",
+            "name": "C0264_P005",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "candidate_id": "C0547",
+          "content_sha256": "b7e52f3b2beeb77d7615fdc9ae40a35c03480a15fe06d551d9306269007cdb7c",
+          "strategy_source_sha256": "41020197605c01bb90a11a255541de961a70ebb342f49869b445220f20f7723a",
+          "parameters": {
+            "confirm": true,
+            "down_days": 1,
+            "exit_mode": "fixed",
+            "hold_days": 5,
+            "information": "relative",
+            "joint_rule": "maximum",
+            "participation_days": 3,
+            "participation_threshold": 1.25,
+            "quiet_fraction": 0.5225,
+            "require_sector": false,
+            "risk_basis": "daily",
+            "trail_atr": 2.52,
+            "treatment": "tilt",
+            "weak_fraction": 0.315
+          },
+          "metrics": {
+            "nar": 0.6171200595282631,
+            "drawdown": 0.1482980400589221,
+            "bar_drawdown": 0.1576879236842329,
+            "calmar": 4.161350070999371,
+            "closed_cycles": 117,
+            "frequency_median": 6.0,
+            "frequency_coverage": 0.9982653946227233,
+            "year_returns": {
+              "2022": 0.08433014020520213,
+              "2023": 0.18162504986249206,
+              "2024": 0.2756808486107942,
+              "2025": 1.4452287408543278,
+              "2026": 1.5249230330048662
+            },
+            "gates": {
+              "nar": true,
+              "calmar": false,
+              "absolute_dd": true,
+              "relative_dd": true,
+              "frequency_median": true,
+              "frequency_coverage": true
+            },
+            "eligible": false,
+            "fees": 38826.9952655093
+          },
+          "mdd_episode": {
+            "peak": "2026-10-07",
+            "trough": "2026-10-30",
+            "recovery": null,
+            "magnitude": 0.1482980400589221
+          },
+          "exit_reason_counts": {
+            "达到固定持有期限，退出": 111,
+            "已完成价格触及跟踪线，退出": 6
+          },
+          "yearly": {
+            "2022": {
+              "return": 0.08433014020520302,
+              "log_growth": 0.08096241403414225
+            },
+            "2023": {
+              "return": 0.1816250498624905,
+              "log_growth": 0.16689065196164682
+            },
+            "2024": {
+              "return": 0.27568084861079667,
+              "log_growth": 0.24348003499413678
+            },
+            "2025": {
+              "return": 1.4452287408543274,
+              "log_growth": 0.8941386730925291
+            },
+            "2026": {
+              "return": 1.5249230330048649,
+              "log_growth": 0.926210580284467
+            }
+          }
+        }
+      },
+      "comparisons": {
+        "P002": {
+          "identical_closed_timing": false,
+          "common_entries": 116,
+          "changed_exit_count": 4,
+          "activity_state_changes": 142,
+          "largest_cycle_contribution_deltas": [
+            {
+              "entry_at": "2025-11-19T15:00:00.000000Z",
+              "left_exit": "2025-11-21T15:30:00.000000Z",
+              "right_exit": "2025-11-26T14:30:00.000000Z",
+              "normalized_pnl_delta": -0.07949877272291377,
+              "trade_return_delta": -0.1391736409
+            },
+            {
+              "entry_at": "2023-03-31T14:00:00.000000Z",
+              "left_exit": "2023-04-05T15:00:00.000000Z",
+              "right_exit": "2023-04-10T13:30:00.000000Z",
+              "normalized_pnl_delta": -0.02632546919859325,
+              "trade_return_delta": -0.07680030930000001
+            },
+            {
+              "entry_at": "2022-08-18T14:00:00.000000Z",
+              "left_exit": "2022-08-22T19:30:00.000000Z",
+              "right_exit": "2022-08-24T14:00:00.000000Z",
+              "normalized_pnl_delta": 0.0017201177359952198,
+              "trade_return_delta": 0.0038873711999999963
+            },
+            {
+              "entry_at": "2022-12-12T15:00:00.000000Z",
+              "left_exit": "2022-12-15T17:00:00.000000Z",
+              "right_exit": "2022-12-15T17:30:00.000000Z",
+              "normalized_pnl_delta": 0.00043236342891559386,
+              "trade_return_delta": 0.0020465846000000017
+            },
+            {
+              "entry_at": "2026-07-02T14:00:00.000000Z",
+              "left_exit": "2026-07-10T13:30:00.000000Z",
+              "right_exit": "2026-07-10T13:30:00.000000Z",
+              "normalized_pnl_delta": 0.00034722269036273345,
+              "trade_return_delta": 0.0008819275999999987
+            }
+          ],
+          "log_growth_difference": -0.11388051589767165,
+          "top10_days_absolute_log_difference_share": 0.8694824280203339,
+          "largest_daily_log_differences": [
+            {
+              "session": "2025-11-24",
+              "difference": -0.04019045191238396
+            },
+            {
+              "session": "2025-11-21",
+              "difference": -0.030092182736188043
+            },
+            {
+              "session": "2023-04-10",
+              "difference": -0.013423511695627175
+            },
+            {
+              "session": "2025-11-26",
+              "difference": -0.011103370451075973
+            },
+            {
+              "session": "2022-08-26",
+              "difference": -0.00975041203952024
+            }
+          ],
+          "changed_exits": [
+            {
+              "entry_at": "2022-08-18T14:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2022-08-18T14:00:00.000000Z",
+                "exit_at": "2022-08-22T19:30:00.000000Z",
+                "recorded_exit_at": "2022-08-22T20:00:00.000000Z",
+                "exit_order_id": "415809ab422c11f3d42c4df3f5ef4db0fd96d12cb28b5d31cb21df77c64a10e8:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "12",
+                  "price": "116.9698",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "128.55",
+                  "held": "2",
+                  "recovered": "False",
+                  "high_water": "127.37",
+                  "entry_atr": "4.544285714071428",
+                  "trail_price": "117.00902857191716",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -2147.7443786,
+                "net_return": -0.0601140942,
+                "entry_account_equity": 106926.8338737201,
+                "pnl_over_entry_equity": -0.020086112164664598
+              },
+              "center": {
+                "entry_at": "2022-08-18T14:00:00.000000Z",
+                "exit_at": "2022-08-24T14:00:00.000000Z",
+                "recorded_exit_at": "2022-08-24T14:30:00.000000Z",
+                "exit_order_id": "cad1e8096354a87d2ca3e7422ee2990df0174de0339f9d533cdcb472843f400e:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "1",
+                  "price": "116.23",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "128.55",
+                  "held": "4",
+                  "recovered": "False",
+                  "high_water": "127.37",
+                  "entry_atr": "4.544285714071428",
+                  "trail_price": "116.46371428622858",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -2331.671122,
+                "net_return": -0.0640014654,
+                "entry_account_equity": 106926.8338737201,
+                "pnl_over_entry_equity": -0.021806229900659817
+              }
+            },
+            {
+              "entry_at": "2022-12-12T15:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2022-12-12T15:00:00.000000Z",
+                "exit_at": "2022-12-15T17:00:00.000000Z",
+                "recorded_exit_at": "2022-12-15T17:30:00.000000Z",
+                "exit_order_id": "dc4e56607bbe0643b1d4c23233a96c5b9d2d4b9fb7ce203026a6a4a0c3b6d284:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "5",
+                  "price": "105.66",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "111.46",
+                  "held": "3",
+                  "recovered": "False",
+                  "high_water": "115.1",
+                  "entry_atr": "4.0223714285714305",
+                  "trail_price": "105.92899314285714",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -587.9783492,
+                "net_return": -0.0300632576,
+                "entry_account_equity": 109838.3458085201,
+                "pnl_over_entry_equity": -0.005353124583877254
+              },
+              "center": {
+                "entry_at": "2022-12-12T15:00:00.000000Z",
+                "exit_at": "2022-12-15T17:30:00.000000Z",
+                "recorded_exit_at": "2022-12-15T18:00:00.000000Z",
+                "exit_order_id": "b009274069e359b11ffb0fb5571a517466fa1e4752032127d51e8022791f661e:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "6",
+                  "price": "105.38",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "111.46",
+                  "held": "3",
+                  "recovered": "False",
+                  "high_water": "115.1",
+                  "entry_atr": "4.0223714285714305",
+                  "trail_price": "105.44630857142856",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -638.2671692,
+                "net_return": -0.0321098422,
+                "entry_account_equity": 110322.0969067201,
+                "pnl_over_entry_equity": -0.005785488012792848
+              }
+            },
+            {
+              "entry_at": "2023-03-31T14:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2023-03-31T14:00:00.000000Z",
+                "exit_at": "2023-04-05T15:00:00.000000Z",
+                "recorded_exit_at": "2023-04-05T15:30:00.000000Z",
+                "exit_order_id": "ce4de7cc07e0e3271be185e670db6ef10f2819fe1046254acd1957467ef77de0:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "3",
+                  "price": "113.9",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "128.37",
+                  "held": "3",
+                  "recovered": "False",
+                  "high_water": "124.23",
+                  "entry_atr": "4.498557142785712",
+                  "trail_price": "113.97328971444858",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -2503.1142286,
+                "net_return": -0.0690164181,
+                "entry_account_equity": 105974.7972667202,
+                "pnl_over_entry_equity": -0.02361990108176471
+              },
+              "center": {
+                "entry_at": "2023-03-31T14:00:00.000000Z",
+                "exit_at": "2023-04-10T13:30:00.000000Z",
+                "recorded_exit_at": "2023-04-10T14:00:00.000000Z",
+                "exit_order_id": "4ed03cd9de7247ee02942b512c1c580fe034f92a8ebec1b324507bad63a28807:0",
+                "exit_reason": "达到固定持有期限，退出",
+                "exit_facts": {
+                  "slot": "0",
+                  "price": "118.64",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "128.37",
+                  "held": "5",
+                  "recovered": "False",
+                  "high_water": "124.23",
+                  "entry_atr": "4.498557142785712",
+                  "trail_price": "113.4334628573143",
+                  "stopped": "False",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": 287.8167312,
+                "net_return": 0.0077838912,
+                "entry_account_equity": 106379.4067537201,
+                "pnl_over_entry_equity": 0.0027055681168285423
+              }
+            },
+            {
+              "entry_at": "2025-11-19T15:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2025-11-19T15:00:00.000000Z",
+                "exit_at": "2025-11-21T15:30:00.000000Z",
+                "recorded_exit_at": "2025-11-21T16:00:00.000000Z",
+                "exit_order_id": "564ed5050458cb057b344a7534efb880d477181ee85847bf5087b93f6edb566b:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "2",
+                  "price": "395.604",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "487.72",
+                  "held": "2",
+                  "recovered": "False",
+                  "high_water": "469.01",
+                  "entry_atr": "31.801414285642863",
+                  "trail_price": "396.50277542873425",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -24270.4966212,
+                "net_return": -0.1402230464,
+                "entry_account_equity": 302932.0789791277,
+                "pnl_over_entry_equity": -0.08011860844513684
+              },
+              "center": {
+                "entry_at": "2025-11-19T15:00:00.000000Z",
+                "exit_at": "2025-11-26T14:30:00.000000Z",
+                "recorded_exit_at": "2025-11-26T15:00:00.000000Z",
+                "exit_order_id": "494dbb5f09da200b46812ce437789576f62f70a55e037027848eac9c872bfb43:0",
+                "exit_reason": "达到固定持有期限，退出",
+                "exit_facts": {
+                  "slot": "0",
+                  "price": "452.88",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "487.72",
+                  "held": "5",
+                  "recovered": "False",
+                  "high_water": "469.01",
+                  "entry_atr": "31.801414285642863",
+                  "trail_price": "392.68660571445713",
+                  "stopped": "False",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -193.5977965999,
+                "net_return": -0.0010494055,
+                "entry_account_equity": 312337.2688259268,
+                "pnl_over_entry_equity": -0.0006198357222230715
+              }
+            }
+          ],
+          "perturbed_only_entries": [
+            {
+              "entry_at": "2022-08-23T14:00:00.000000Z",
+              "exit_at": "2022-08-30T13:30:00.000000Z",
+              "recorded_exit_at": "2022-08-30T14:00:00.000000Z",
+              "exit_order_id": "421f249a66eb425cd938cd8359735f5c4a32a9f2e97d99c9a18d21935f5c6953:0",
+              "exit_reason": "达到固定持有期限，退出",
+              "exit_facts": {
+                "slot": "0",
+                "price": "114.85",
+                "exit_mode": "fixed",
+                "require_sector": "False",
+                "anchor": "121.85",
+                "held": "5",
+                "recovered": "False",
+                "high_water": "123.23",
+                "entry_atr": "4.764671428357141",
+                "trail_price": "112.36654914334572",
+                "stopped": "False",
+                "target_weight": "0.0"
+              },
+              "net_pnl": -437.4781654,
+              "net_return": -0.0226141586,
+              "entry_account_equity": 104779.0894951201,
+              "pnl_over_entry_equity": -0.004175243051910417
+            },
+            {
+              "entry_at": "2022-08-31T14:00:00.000000Z",
+              "exit_at": "2022-09-08T13:30:00.000000Z",
+              "recorded_exit_at": "2022-09-08T14:00:00.000000Z",
+              "exit_order_id": "96c08883aec57df02c63bb26179b84ef73f1573a527db560773a0e50d8946e88:0",
+              "exit_reason": "达到固定持有期限，退出",
+              "exit_facts": {
+                "slot": "0",
+                "price": "110.83",
+                "exit_mode": "fixed",
+                "require_sector": "False",
+                "anchor": "114.85",
+                "held": "5",
+                "recovered": "False",
+                "high_water": "117.35",
+                "entry_atr": "4.587257142785711",
+                "trail_price": "106.89105371444857",
+                "stopped": "False",
+                "target_weight": "0.0"
+              },
+              "net_pnl": -1077.846392,
+              "net_return": -0.0299879728,
+              "entry_account_equity": 104341.6113297202,
+              "pnl_over_entry_equity": -0.010329976490338049
+            }
+          ],
+          "center_only_entries": [
+            {
+              "entry_at": "2022-08-29T14:00:00.000000Z",
+              "exit_at": "2022-09-06T13:30:00.000000Z",
+              "recorded_exit_at": "2022-09-06T14:00:00.000000Z",
+              "exit_order_id": "5fe6963769a23b90b574d7920b81829c3d68ccdba16e95eeeb612ce981b6a3b0:0",
+              "exit_reason": "达到固定持有期限，退出",
+              "exit_facts": {
+                "slot": "0",
+                "price": "113.49",
+                "exit_mode": "fixed",
+                "require_sector": "False",
+                "anchor": "123.23",
+                "held": "5",
+                "recovered": "False",
+                "high_water": "117.35",
+                "entry_atr": "4.932999999928569",
+                "trail_price": "105.51080000017143",
+                "stopped": "False",
+                "target_weight": "0.0"
+              },
+              "net_pnl": -873.912176,
+              "net_return": -0.0240936685,
+              "entry_account_equity": 104595.1627517201,
+              "pnl_over_entry_equity": -0.008355187305118738
+            }
+          ]
+        },
+        "P005": {
+          "identical_closed_timing": false,
+          "common_entries": 117,
+          "changed_exit_count": 6,
+          "activity_state_changes": 48,
+          "largest_cycle_contribution_deltas": [
+            {
+              "entry_at": "2026-10-06T14:00:00.000000Z",
+              "left_exit": "2026-10-13T13:30:00.000000Z",
+              "right_exit": "2026-10-12T14:00:00.000000Z",
+              "normalized_pnl_delta": -0.02640058418177666,
+              "trade_return_delta": -0.0441820376
+            },
+            {
+              "entry_at": "2024-07-24T14:00:00.000000Z",
+              "left_exit": "2024-07-31T13:30:00.000000Z",
+              "right_exit": "2024-07-30T17:00:00.000000Z",
+              "normalized_pnl_delta": 0.011646905652755963,
+              "trade_return_delta": 0.059911729799999994
+            },
+            {
+              "entry_at": "2026-02-02T15:00:00.000000Z",
+              "left_exit": "2026-02-04T17:00:00.000000Z",
+              "right_exit": "2026-02-04T16:00:00.000000Z",
+              "normalized_pnl_delta": -0.00606936393154741,
+              "trade_return_delta": -0.009731273099999993
+            },
+            {
+              "entry_at": "2022-08-18T14:00:00.000000Z",
+              "left_exit": "2022-08-25T13:30:00.000000Z",
+              "right_exit": "2022-08-24T14:00:00.000000Z",
+              "normalized_pnl_delta": 0.004582317948164955,
+              "trade_return_delta": 0.013770935599999999
+            },
+            {
+              "entry_at": "2023-01-25T15:00:00.000000Z",
+              "left_exit": "2023-02-01T14:30:00.000000Z",
+              "right_exit": "2023-01-31T15:00:00.000000Z",
+              "normalized_pnl_delta": 0.0038235439592244356,
+              "trade_return_delta": 0.022323370100000003
+            }
+          ],
+          "log_growth_difference": -0.014759908547018157,
+          "top10_days_absolute_log_difference_share": 0.8997486320688879,
+          "largest_daily_log_differences": [
+            {
+              "session": "2026-10-13",
+              "difference": -0.029876796723597568
+            },
+            {
+              "session": "2024-07-31",
+              "difference": 0.011192629308873098
+            },
+            {
+              "session": "2026-02-04",
+              "difference": -0.006447170479770101
+            },
+            {
+              "session": "2022-08-24",
+              "difference": 0.0034374488341793394
+            },
+            {
+              "session": "2023-01-31",
+              "difference": 0.0031203386898461722
+            }
+          ],
+          "changed_exits": [
+            {
+              "entry_at": "2022-08-18T14:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2022-08-18T14:00:00.000000Z",
+                "exit_at": "2022-08-25T13:30:00.000000Z",
+                "recorded_exit_at": "2022-08-25T14:00:00.000000Z",
+                "exit_order_id": "582f844b8740e26e2cf3c67ddb7acc15138cc4592fe9de2bf8803b586885f425:0",
+                "exit_reason": "达到固定持有期限，退出",
+                "exit_facts": {
+                  "slot": "0",
+                  "price": "117.45",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "128.55",
+                  "held": "5",
+                  "recovered": "False",
+                  "high_water": "127.37",
+                  "entry_atr": "4.544285714071428",
+                  "trail_price": "115.91840000054",
+                  "stopped": "False",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -1841.698372,
+                "net_return": -0.0502305298,
+                "entry_account_equity": 106926.8338737201,
+                "pnl_over_entry_equity": -0.017223911952494862
+              },
+              "center": {
+                "entry_at": "2022-08-18T14:00:00.000000Z",
+                "exit_at": "2022-08-24T14:00:00.000000Z",
+                "recorded_exit_at": "2022-08-24T14:30:00.000000Z",
+                "exit_order_id": "cad1e8096354a87d2ca3e7422ee2990df0174de0339f9d533cdcb472843f400e:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "1",
+                  "price": "116.23",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "128.55",
+                  "held": "4",
+                  "recovered": "False",
+                  "high_water": "127.37",
+                  "entry_atr": "4.544285714071428",
+                  "trail_price": "116.46371428622858",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -2331.671122,
+                "net_return": -0.0640014654,
+                "entry_account_equity": 106926.8338737201,
+                "pnl_over_entry_equity": -0.021806229900659817
+              }
+            },
+            {
+              "entry_at": "2022-12-12T15:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2022-12-12T15:00:00.000000Z",
+                "exit_at": "2022-12-15T19:30:00.000000Z",
+                "recorded_exit_at": "2022-12-15T20:00:00.000000Z",
+                "exit_order_id": "7877e3225f89e2a6136f7caadc401042acc369b104e413a1fddcfdcecf8c9e10:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "10",
+                  "price": "104.94",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "111.46",
+                  "held": "3",
+                  "recovered": "False",
+                  "high_water": "115.1",
+                  "entry_atr": "4.0223714285714305",
+                  "trail_price": "104.96362399999998",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -714.2872992,
+                "net_return": -0.0349614178,
+                "entry_account_equity": 110851.3788347202,
+                "pnl_over_entry_equity": -0.006443648303779828
+              },
+              "center": {
+                "entry_at": "2022-12-12T15:00:00.000000Z",
+                "exit_at": "2022-12-15T17:30:00.000000Z",
+                "recorded_exit_at": "2022-12-15T18:00:00.000000Z",
+                "exit_order_id": "b009274069e359b11ffb0fb5571a517466fa1e4752032127d51e8022791f661e:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "6",
+                  "price": "105.38",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "111.46",
+                  "held": "3",
+                  "recovered": "False",
+                  "high_water": "115.1",
+                  "entry_atr": "4.0223714285714305",
+                  "trail_price": "105.44630857142856",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -638.2671692,
+                "net_return": -0.0321098422,
+                "entry_account_equity": 110322.0969067201,
+                "pnl_over_entry_equity": -0.005785488012792848
+              }
+            },
+            {
+              "entry_at": "2023-01-25T15:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2023-01-25T15:00:00.000000Z",
+                "exit_at": "2023-02-01T14:30:00.000000Z",
+                "recorded_exit_at": "2023-02-01T15:00:00.000000Z",
+                "exit_order_id": "05125da0674b05d1aa059c6aad7f22d9557b9dbd24f27ea8278762747dea8ef9:0",
+                "exit_reason": "达到固定持有期限，退出",
+                "exit_facts": {
+                  "slot": "0",
+                  "price": "121.89",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "124.93",
+                  "held": "5",
+                  "recovered": "False",
+                  "high_water": "129.7",
+                  "entry_atr": "4.1217428571428565",
+                  "trail_price": "119.31320799999999",
+                  "stopped": "False",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -171.04159,
+                "net_return": -0.0083756133,
+                "entry_account_equity": 109078.8220341202,
+                "pnl_over_entry_equity": -0.0015680549790544828
+              },
+              "center": {
+                "entry_at": "2023-01-25T15:00:00.000000Z",
+                "exit_at": "2023-01-31T15:00:00.000000Z",
+                "recorded_exit_at": "2023-01-31T15:30:00.000000Z",
+                "exit_order_id": "169163acdb9636584a0cac5c472a6e47dd6dcb9d18ed4d16e5e03612fc80d2e4:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "1",
+                  "price": "119.67",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "124.93",
+                  "held": "4",
+                  "recovered": "False",
+                  "high_water": "129.7",
+                  "entry_atr": "4.1217428571428565",
+                  "trail_price": "119.80781714285713",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -585.68009,
+                "net_return": -0.0306989834,
+                "entry_account_equity": 108628.2745999201,
+                "pnl_over_entry_equity": -0.005391598938278918
+              }
+            },
+            {
+              "entry_at": "2024-07-24T14:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2024-07-24T14:00:00.000000Z",
+                "exit_at": "2024-07-31T13:30:00.000000Z",
+                "recorded_exit_at": "2024-07-31T14:00:00.000000Z",
+                "exit_order_id": "80951ea025cf7a77cee68a2cef865aa6628c3259f6a862cf0d1949aca4a94805:0",
+                "exit_reason": "达到固定持有期限，退出",
+                "exit_facts": {
+                  "slot": "0",
+                  "price": "207.79",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "233.23",
+                  "held": "5",
+                  "recovered": "False",
+                  "high_water": "230.27",
+                  "entry_atr": "9.590714285857132",
+                  "trail_price": "206.10139999964002",
+                  "stopped": "False",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -495.4023824,
+                "net_return": -0.0184095241,
+                "entry_account_equity": 138521.9406990131,
+                "pnl_over_entry_equity": -0.0035763459557387614
+              },
+              "center": {
+                "entry_at": "2024-07-24T14:00:00.000000Z",
+                "exit_at": "2024-07-30T17:00:00.000000Z",
+                "recorded_exit_at": "2024-07-30T17:30:00.000000Z",
+                "exit_order_id": "f6d4d06e1e5c55e608482291210878e4b8ec37fc03d55a52614eba2a6fee9391:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "7",
+                  "price": "207.25",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "233.23",
+                  "held": "4",
+                  "recovered": "False",
+                  "high_water": "230.27",
+                  "entry_atr": "9.590714285857132",
+                  "trail_price": "207.25228571394288",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -2091.9868402,
+                "net_return": -0.0783212539,
+                "entry_account_equity": 137420.4995096219,
+                "pnl_over_entry_equity": -0.015223251608494725
+              }
+            },
+            {
+              "entry_at": "2026-02-02T15:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2026-02-02T15:00:00.000000Z",
+                "exit_at": "2026-02-04T17:00:00.000000Z",
+                "recorded_exit_at": "2026-02-04T17:30:00.000000Z",
+                "exit_order_id": "7f07c13d6e36ea63448e21f3d5e6c829ea6d7d5adb556688b62503f6d15215eb:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "5",
+                  "price": "765.18",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "875.63",
+                  "held": "2",
+                  "recovered": "False",
+                  "high_water": "887.4556",
+                  "entry_atr": "45.487100000000005",
+                  "trail_price": "772.8281079999999",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -23062.2407116,
+                "net_return": -0.0931480384,
+                "entry_account_equity": 432855.7665440128,
+                "pnl_over_entry_equity": -0.05327927336103776
+              },
+              "center": {
+                "entry_at": "2026-02-02T15:00:00.000000Z",
+                "exit_at": "2026-02-04T16:00:00.000000Z",
+                "recorded_exit_at": "2026-02-04T16:30:00.000000Z",
+                "exit_order_id": "79e1f5c5a8ab02439c36d119498341836ffcc59434ddbfee7a32d77d3638ac18:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "3",
+                  "price": "774.67",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "875.63",
+                  "held": "2",
+                  "recovered": "False",
+                  "high_water": "887.4556",
+                  "entry_atr": "45.487100000000005",
+                  "trail_price": "778.28656",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -20033.7352398,
+                "net_return": -0.0834167653,
+                "entry_account_equity": 424354.4518915268,
+                "pnl_over_entry_equity": -0.04720990942949035
+              }
+            },
+            {
+              "entry_at": "2026-10-06T14:00:00.000000Z",
+              "perturbed": {
+                "entry_at": "2026-10-06T14:00:00.000000Z",
+                "exit_at": "2026-10-13T13:30:00.000000Z",
+                "recorded_exit_at": "2026-10-13T14:00:00.000000Z",
+                "exit_order_id": "4a63d5b66788a2b644d21b1d2b3abeae8f425a94b4a3d95ba3330ab1fa8e022f:0",
+                "exit_reason": "达到固定持有期限，退出",
+                "exit_facts": {
+                  "slot": "0",
+                  "price": "1982.73",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "2154.43",
+                  "held": "5",
+                  "recovered": "False",
+                  "high_water": "2181.1646",
+                  "entry_atr": "83.71927142864284",
+                  "trail_price": "1970.19203599982",
+                  "stopped": "False",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -78021.2326555928,
+                "net_return": -0.1154505372,
+                "entry_account_equity": 1172826.894758425,
+                "pnl_over_entry_equity": -0.06652408211670774
+              },
+              "center": {
+                "entry_at": "2026-10-06T14:00:00.000000Z",
+                "exit_at": "2026-10-12T14:00:00.000000Z",
+                "recorded_exit_at": "2026-10-12T14:30:00.000000Z",
+                "exit_order_id": "a4ecfbe4df294cfa4a6e0af84d07e3e688efc06fdb213839dafee4d983b0d070:0",
+                "exit_reason": "已完成价格触及跟踪线，退出",
+                "exit_facts": {
+                  "slot": "1",
+                  "price": "1977.53",
+                  "exit_mode": "fixed",
+                  "require_sector": "False",
+                  "anchor": "2154.43",
+                  "held": "4",
+                  "recovered": "False",
+                  "high_water": "2181.1646",
+                  "entry_atr": "83.71927142864284",
+                  "trail_price": "1980.2383485712573",
+                  "stopped": "True",
+                  "target_weight": "0.0"
+                },
+                "net_pnl": -46440.1114013949,
+                "net_return": -0.0712684996,
+                "entry_account_equity": 1157429.2818813447,
+                "pnl_over_entry_equity": -0.04012349793493108
+              }
+            }
+          ],
+          "perturbed_only_entries": [],
+          "center_only_entries": []
+        }
+      }
+    }
+  },
+  "new_strategy_accounts": 0,
+  "plan": {
+    "labels": [
+      "CENTER",
+      "P002",
+      "P005"
+    ],
+    "comparison": "Pure ATR -5%/+5%; all other effective parameters equal.",
+    "alignment": "Actual fills -> order -> decision; exact common entry times; preserve unmatched cycles.",
+    "contribution": "Ledger net PnL / entry account equity; additive daily log differences for full path."
+  },
+  "runs": [
+    {
+      "centers": [
+        "C0367"
+      ],
+      "elapsed_seconds": 19.18962940000347,
+      "new_strategy_accounts": 0
+    },
+    {
+      "centers": [
+        "C0355"
+      ],
+      "elapsed_seconds": 36.88960759999463,
+      "new_strategy_accounts": 0
+    },
+    {
+      "centers": [
+        "C0264"
+      ],
+      "elapsed_seconds": 37.08202899999742,
+      "new_strategy_accounts": 0
+    },
+    {
+      "centers": [
+        "C0264"
+      ],
+      "elapsed_seconds": 0.2617530999996234,
+      "new_strategy_accounts": 0
+    }
+  ],
+  "status": "COMPLETE",
+  "source_sha256": "28e2c0f66c47f53fce2453e3a1d82f080e981dfcbf79bf11da18e194f70f2c89",
+  "helper_sha256": "0ae06df8694d6c53ce7580487a77d87efc666ba5d90242f4bf7c2c6d4ff29b4d",
+  "helper_path": "research\\S019\\experiments\\EX040_20261110\\src\\prior_diagnostics.py",
+  "public_reader_sha256": "20d7bf58f82816ccd19f1697d88240aacf28274fc1a81dd6558ef67daecebb2f",
+  "source_revisions": [
+    {
+      "previous_sha256": "1575878dc7cdf309ab1e5f6dc10b43c4b7a73a8c882e118264efff05737ea59f",
+      "current_sha256": "28e2c0f66c47f53fce2453e3a1d82f080e981dfcbf79bf11da18e194f70f2c89",
+      "change": "Explicit finalization metadata: COMPLETE only when all three fixed centers are present; account count and report status added. Analysis and cached numerical results unchanged."
+    }
+  ],
+  "account_count": 9,
+  "planned_centers": [
+    "C0367",
+    "C0355",
+    "C0264"
+  ]
+}

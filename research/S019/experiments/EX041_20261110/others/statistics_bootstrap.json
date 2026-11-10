@@ -1,0 +1,276 @@
+{
+  "protocol": {
+    "repetitions": 10000,
+    "mean_block_length": 21,
+    "seed": 20261110,
+    "interval": "percentile_95",
+    "pairs": [
+      [
+        "C0367",
+        "MU_BUY_HOLD"
+      ],
+      [
+        "C0355",
+        "MU_BUY_HOLD"
+      ],
+      [
+        "C0264",
+        "MU_BUY_HOLD"
+      ],
+      [
+        "C0367",
+        "C0355"
+      ],
+      [
+        "C0367",
+        "C0264"
+      ],
+      [
+        "C0355",
+        "C0264"
+      ]
+    ],
+    "metrics": [
+      "NAR",
+      "negative_MDD",
+      "Calmar"
+    ],
+    "mdd_sign": "Positive difference means smaller MDD magnitude."
+  },
+  "comparisons": [
+    {
+      "champion_id": "C0367",
+      "comparator_id": "MU_BUY_HOLD",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.14128131359929053,
+        "lower_95": -0.7470453663184281,
+        "upper_95": 0.6963876470151206,
+        "probability_favorable": 0.649
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": 0.4229140794525018,
+        "lower_95": 0.18295027298628522,
+        "upper_95": 0.6046626279463262,
+        "probability_favorable": 0.9999
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": 3.967575219944079,
+        "lower_95": 0.27102515852476167,
+        "upper_95": 6.984663272834447,
+        "probability_favorable": 0.9852
+      }
+    },
+    {
+      "champion_id": "C0355",
+      "comparator_id": "MU_BUY_HOLD",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.1175053253734768,
+        "lower_95": -0.7838660673168176,
+        "upper_95": 0.6863240044936536,
+        "probability_favorable": 0.6239
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": 0.4323549641004166,
+        "lower_95": 0.1890730421098858,
+        "upper_95": 0.6139982339977281,
+        "probability_favorable": 0.9998
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": 4.138989236197978,
+        "lower_95": 0.18018712447880517,
+        "upper_95": 6.915300638721803,
+        "probability_favorable": 0.982
+      }
+    },
+    {
+      "champion_id": "C0264",
+      "comparator_id": "MU_BUY_HOLD",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.02900731207158258,
+        "lower_95": -0.9235545400682775,
+        "upper_95": 0.5799275690531176,
+        "probability_favorable": 0.5277
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": 0.4453722699514675,
+        "lower_95": 0.213812712099672,
+        "upper_95": 0.6314639296455021,
+        "probability_favorable": 1.0
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": 3.969328939579434,
+        "lower_95": 0.26432544867104,
+        "upper_95": 6.754661303781727,
+        "probability_favorable": 0.9835
+      }
+    },
+    {
+      "champion_id": "C0367",
+      "comparator_id": "C0355",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.023775988225813727,
+        "lower_95": -0.020287834551882964,
+        "upper_95": 0.0787239184192726,
+        "probability_favorable": 0.8456
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": -0.009440884647914816,
+        "lower_95": -0.03663006250557635,
+        "upper_95": 0.024224610098812088,
+        "probability_favorable": 0.2539
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": -0.17141401625389907,
+        "lower_95": -0.8459429490764917,
+        "upper_95": 1.1339537264311512,
+        "probability_favorable": 0.4029
+      }
+    },
+    {
+      "champion_id": "C0367",
+      "comparator_id": "C0264",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.11227400152770795,
+        "lower_95": 0.00864782041878941,
+        "upper_95": 0.3073716552355408,
+        "probability_favorable": 0.9871
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": -0.02245819049896569,
+        "lower_95": -0.06321208301052933,
+        "upper_95": -0.002216557797758898,
+        "probability_favorable": 0.0155
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": -0.0017537196353547557,
+        "lower_95": -0.9758003324013835,
+        "upper_95": 1.205436742298724,
+        "probability_favorable": 0.4733
+      }
+    },
+    {
+      "champion_id": "C0355",
+      "comparator_id": "C0264",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.08849801330189422,
+        "lower_95": -0.008159136006981043,
+        "upper_95": 0.2679365550942971,
+        "probability_favorable": 0.9575
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": -0.013017305851050875,
+        "lower_95": -0.061074375007319305,
+        "upper_95": 0.0045317985219978,
+        "probability_favorable": 0.0534
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": 0.16966029661854432,
+        "lower_95": -1.324290567136481,
+        "upper_95": 1.2934569213770333,
+        "probability_favorable": 0.544
+      }
+    }
+  ],
+  "center_references": [
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S019",
+        "experiment_id": "EX040_20261110"
+      },
+      "evidence_id": "0d11dfceecb5cbf52a313668388b6a926c55e7b2d55e7ec107422044757a52da.json",
+      "sha256": "0d11dfceecb5cbf52a313668388b6a926c55e7b2d55e7ec107422044757a52da",
+      "media_type": "application/json",
+      "name": "trial033",
+      "schema": "equity_research",
+      "schema_version": 4
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S019",
+        "experiment_id": "EX040_20261110"
+      },
+      "evidence_id": "44d92a77eadeee74916491d9678b948e7bb5104b0a8c01808837e8603f6ae4ea.json",
+      "sha256": "44d92a77eadeee74916491d9678b948e7bb5104b0a8c01808837e8603f6ae4ea",
+      "media_type": "application/json",
+      "name": "trial021",
+      "schema": "equity_research",
+      "schema_version": 4
+    },
+    {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S019",
+        "experiment_id": "EX039_20261110"
+      },
+      "evidence_id": "78dafb450625016484aa0929bf8b76abb66238050a0135f41a2fffb06de68379.json",
+      "sha256": "78dafb450625016484aa0929bf8b76abb66238050a0135f41a2fffb06de68379",
+      "media_type": "application/json",
+      "name": "C0224_P010",
+      "schema": "equity_research",
+      "schema_version": 4
+    }
+  ],
+  "limitations": [
+    "Frozen after center choice and before EX041 statistical calculations.",
+    "EX039 selfcheck fed EX040 optimization: all 88 reviewed standard neighbors included; 81 imported observations are reused inputs.",
+    "Fixed hindsight candidate universe on repeatedly seen development history; no independent validation.",
+    "Four overlapping annual pairs; 2026 is incomplete; annual gates diagnose sensitivity, formal center gates retain the original full window.",
+    "Stationary block resampling rearranges chronology and conditions on observed history.",
+    "Sharpe proxy PBO/DSR address a different selection objective; actual NAR-plus-hard-gates adaptive selection bias remains NOT_ESTIMATED.",
+    "Published account count and correlation effective count are diagnostic assumptions, not independent choices.",
+    "Current EX041 neighborhoods and all fee-stress accounts are excluded from the prior standard selection universe."
+  ]
+}

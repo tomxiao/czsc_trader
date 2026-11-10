@@ -1,0 +1,533 @@
+{
+  "verification": "PASSED",
+  "source_sha256": "dc4253bc51ab2c04b57f35a0e97bf795b3b81e8640183ab3d57cd0589b22dd96",
+  "checks": [
+    "Source/protocol/inventory/output hashes",
+    "Published EX039 reuse bindings",
+    "374 account evaluations and 371 exact implementations",
+    "All calendars and benchmark daily returns identical",
+    "3 approved center identities and metrics agree within 1e-10",
+    "6 bootstrap pairs",
+    "Complete 371-source annual selection facts",
+    "252 Sharpe proxy splits retain every implementation"
+  ],
+  "completion": {
+    "status": "COMPLETE",
+    "elapsed_seconds": 538.2259478823398,
+    "successful_attempt_seconds": 16.529905700008385,
+    "prior_attempt_log_wall_seconds": 521.6960508823395,
+    "center_bootstrap_seconds": 11.808577800009516,
+    "selection_incremental_seconds": 2.0147712000034517,
+    "remaining_extraction_proxy_seconds": 2.7065575999877183,
+    "reused_implementations": 236,
+    "incremental_unique_implementations": 135,
+    "new_alias_accounts_verified": 1,
+    "published_accounts": 374,
+    "unique_implementations": 371,
+    "new_strategy_accounts": 0,
+    "source_sha256": "02b742b3cc350afb80289f2184a029c4c57eb61d71b175a6c6fc92c6caaa948a",
+    "protocol_sha256": "b4d18e0436011c29f8ba64739cff9a7260e99ce9f2ea5171d5a1fababbdc61dc",
+    "output_sha256": {
+      "statistics_bootstrap.json": "a44916e8b555ba64d3f7ec85dc6fd58586feea3aade247f78d2ea5198fb19d24",
+      "statistics_incremental_projection.json": "1bc644de1a18626d96dd7069b9950b649e30afeb5fb0690d2e1a2b13523fa912",
+      "statistics_incremental_request.json": "0800e9f69f9eca8eb6f4a57f15293694c52d903f3cc3201e15a5ba3f80cde6ba",
+      "statistics_inventory.json": "c1053149621b00c902d262330a6996c1d71d8fa03351cbfc6ba246956622963b",
+      "statistics_returns.json": "d9c0f4eab1cec15360120d348615eecfb27b3b097704edf968a7055f1eb2b8bb",
+      "statistics_search_bias.json": "a0240758e09614967424c23909a6b3ba30364ad02de5283db1ad6b9e387e06dd",
+      "statistics_selection.json": "03329b2e477b75153c9fdc1aecfa790210e5e8483c7074b16c7127b1e3f2ced6",
+      "statistics_technical_note.json": "eb54964e324043e87c0281cb0513d307dc070c6f7974d6f162e06746986e21da"
+    }
+  },
+  "history": {
+    "EX005_to_EX038": 238,
+    "EX039_reviewed_standard_neighborhood": 88,
+    "EX040_imported_observations": 81,
+    "EX040_new_proposals_and_accounts": 48,
+    "imported_observations_create_new_trials": false,
+    "EX041_selfcheck_points": "EXCLUDED_FROM_PRIOR_SELECTION_UNIVERSE"
+  },
+  "aliases": [
+    {
+      "canonical": "C0067",
+      "alias": "C0102",
+      "status": "REUSED_PUBLISHED_EX039_VERIFICATION"
+    },
+    {
+      "canonical": "C0196",
+      "alias": "C0198",
+      "status": "REUSED_PUBLISHED_EX039_VERIFICATION"
+    },
+    {
+      "canonical": "C0300",
+      "alias": "C0334",
+      "status": "EXACT_DAILY_EQUIVALENCE_VERIFIED"
+    }
+  ],
+  "selection_summary": {
+    "type": "SelectionStabilityResult",
+    "request_sha256": "f76f2b99c611094d5df80658d3e0ed579f63cedc38635dfbff43cf4059f2f0ca",
+    "status": "COMPLETE",
+    "planned_windows": 4,
+    "selected_windows": 2,
+    "no_eligible_windows": 2,
+    "insufficient_selection_windows": 0,
+    "observation_incomplete_windows": 0,
+    "ranking_incomplete_windows": 0,
+    "passed_observations": 0,
+    "failed_observations": 2,
+    "indeterminate_observations": 0,
+    "primary_min": 0.07585327682869573,
+    "primary_median": 0.4294644190474437,
+    "primary_max": 0.7830755612661917,
+    "worst_pairs": [
+      "2023-to-2024"
+    ],
+    "limitations": [
+      "Frozen after center choice and before EX041 statistical calculations.",
+      "EX039 selfcheck fed EX040 optimization: all 88 reviewed standard neighbors included; 81 imported observations are reused inputs.",
+      "Fixed hindsight candidate universe on repeatedly seen development history; no independent validation.",
+      "Four overlapping annual pairs; 2026 is incomplete; annual gates diagnose sensitivity, formal center gates retain the original full window.",
+      "Stationary block resampling rearranges chronology and conditions on observed history.",
+      "Sharpe proxy PBO/DSR address a different selection objective; actual NAR-plus-hard-gates adaptive selection bias remains NOT_ESTIMATED.",
+      "Published account count and correlation effective count are diagnostic assumptions, not independent choices.",
+      "Current EX041 neighborhoods and all fee-stress accounts are excluded from the prior standard selection universe.",
+      "RETROSPECTIVE_FIXED_CANDIDATES_NOT_INDEPENDENT_SEARCH_VALIDATION",
+      "OVERLAPPING_WINDOWS_ARE_NOT_INDEPENDENT_SAMPLES"
+    ],
+    "primary_distribution": {
+      "type": "SelectionDistribution",
+      "available_observations": 2,
+      "total_observations": 2,
+      "minimum": 0.07585327682869573,
+      "median": 0.4294644190474437,
+      "maximum": 0.7830755612661917
+    },
+    "excess_distribution": {
+      "type": "SelectionDistribution",
+      "available_observations": 2,
+      "total_observations": 2,
+      "minimum": -2.1056306254478248,
+      "median": -1.0107394810010313,
+      "maximum": 0.08415166344576219
+    },
+    "change_distribution": {
+      "type": "SelectionDistribution",
+      "available_observations": 2,
+      "total_observations": 2,
+      "minimum": -0.8589279756224757,
+      "median": -0.6107769053973956,
+      "maximum": -0.3626258351723155
+    },
+    "formula_version": "selection-stability-v1"
+  },
+  "selection_windows": [
+    {
+      "type": "SelectionDecision",
+      "pair_id": "2022-to-2023",
+      "selection_window_id": "2022",
+      "status": "NO_ELIGIBLE_CANDIDATE",
+      "eligible": [],
+      "selected": []
+    },
+    {
+      "type": "SelectionDecision",
+      "pair_id": "2023-to-2024",
+      "selection_window_id": "2023",
+      "status": "SELECTED",
+      "eligible": [
+        {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S019-C0010",
+          "content_sha256": "1d094e3cc70d21ae06922f8672f13111354b73043c901aa2c3cb756cf45cff58"
+        },
+        {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S019-C0011",
+          "content_sha256": "58a2a8e6e9badc3002b38ea39f037efff1d60e863bab339434c95931dbd5a6b1"
+        }
+      ],
+      "selected": [
+        {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S019-C0011",
+          "content_sha256": "58a2a8e6e9badc3002b38ea39f037efff1d60e863bab339434c95931dbd5a6b1"
+        }
+      ]
+    },
+    {
+      "type": "SelectionDecision",
+      "pair_id": "2024-to-2025",
+      "selection_window_id": "2024",
+      "status": "NO_ELIGIBLE_CANDIDATE",
+      "eligible": [],
+      "selected": []
+    },
+    {
+      "type": "SelectionDecision",
+      "pair_id": "2025-to-2026",
+      "selection_window_id": "2025",
+      "status": "SELECTED",
+      "eligible": [
+        {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S019-C0050",
+          "content_sha256": "c6f78d40d0e982200b77bb8463bad49e365186400661cd3fc2503476f231d63d"
+        },
+        {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S019-C0051",
+          "content_sha256": "bd5f2c24b9961d751ae47f62c0e44b37bf5845256deb07bb01e1254a4fab1f2e"
+        }
+      ],
+      "selected": [
+        {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S019-C0051",
+          "content_sha256": "bd5f2c24b9961d751ae47f62c0e44b37bf5845256deb07bb01e1254a4fab1f2e"
+        }
+      ]
+    }
+  ],
+  "selection_observations": [
+    {
+      "type": "SelectionObservation",
+      "pair_id": "2023-to-2024",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S019-C0011",
+        "content_sha256": "58a2a8e6e9badc3002b38ea39f037efff1d60e863bab339434c95931dbd5a6b1"
+      },
+      "observation_window_id": "2024",
+      "acceptance_status": "FAILED",
+      "primary_value": 0.07585327682869573,
+      "benchmark_primary_value": -0.008298386617066453,
+      "excess_primary": 0.08415166344576219,
+      "primary_change": -0.8589279756224757,
+      "rank_min": 2,
+      "rank_max": 2,
+      "reference_size": 2,
+      "rank_reason": null,
+      "failed_targets": [
+        "center-nar",
+        "center-calmar",
+        "center-risk",
+        "center-relative-risk"
+      ]
+    },
+    {
+      "type": "SelectionObservation",
+      "pair_id": "2025-to-2026",
+      "candidate": {
+        "type": "AssessmentCandidate",
+        "candidate_id": "S019-C0051",
+        "content_sha256": "bd5f2c24b9961d751ae47f62c0e44b37bf5845256deb07bb01e1254a4fab1f2e"
+      },
+      "observation_window_id": "2026",
+      "acceptance_status": "FAILED",
+      "primary_value": 0.7830755612661917,
+      "benchmark_primary_value": 2.8887061867140162,
+      "excess_primary": -2.1056306254478248,
+      "primary_change": -0.3626258351723155,
+      "rank_min": 2,
+      "rank_max": 2,
+      "reference_size": 2,
+      "rank_reason": null,
+      "failed_targets": [
+        "center-calmar",
+        "center-risk",
+        "center-frequency"
+      ]
+    }
+  ],
+  "bootstrap_comparisons": [
+    {
+      "champion_id": "C0367",
+      "comparator_id": "MU_BUY_HOLD",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.14128131359929053,
+        "lower_95": -0.7470453663184281,
+        "upper_95": 0.6963876470151206,
+        "probability_favorable": 0.649
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": 0.4229140794525018,
+        "lower_95": 0.18295027298628522,
+        "upper_95": 0.6046626279463262,
+        "probability_favorable": 0.9999
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": 3.967575219944079,
+        "lower_95": 0.27102515852476167,
+        "upper_95": 6.984663272834447,
+        "probability_favorable": 0.9852
+      }
+    },
+    {
+      "champion_id": "C0355",
+      "comparator_id": "MU_BUY_HOLD",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.1175053253734768,
+        "lower_95": -0.7838660673168176,
+        "upper_95": 0.6863240044936536,
+        "probability_favorable": 0.6239
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": 0.4323549641004166,
+        "lower_95": 0.1890730421098858,
+        "upper_95": 0.6139982339977281,
+        "probability_favorable": 0.9998
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": 4.138989236197978,
+        "lower_95": 0.18018712447880517,
+        "upper_95": 6.915300638721803,
+        "probability_favorable": 0.982
+      }
+    },
+    {
+      "champion_id": "C0264",
+      "comparator_id": "MU_BUY_HOLD",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.02900731207158258,
+        "lower_95": -0.9235545400682775,
+        "upper_95": 0.5799275690531176,
+        "probability_favorable": 0.5277
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": 0.4453722699514675,
+        "lower_95": 0.213812712099672,
+        "upper_95": 0.6314639296455021,
+        "probability_favorable": 1.0
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": 3.969328939579434,
+        "lower_95": 0.26432544867104,
+        "upper_95": 6.754661303781727,
+        "probability_favorable": 0.9835
+      }
+    },
+    {
+      "champion_id": "C0367",
+      "comparator_id": "C0355",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.023775988225813727,
+        "lower_95": -0.020287834551882964,
+        "upper_95": 0.0787239184192726,
+        "probability_favorable": 0.8456
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": -0.009440884647914816,
+        "lower_95": -0.03663006250557635,
+        "upper_95": 0.024224610098812088,
+        "probability_favorable": 0.2539
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": -0.17141401625389907,
+        "lower_95": -0.8459429490764917,
+        "upper_95": 1.1339537264311512,
+        "probability_favorable": 0.4029
+      }
+    },
+    {
+      "champion_id": "C0367",
+      "comparator_id": "C0264",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.11227400152770795,
+        "lower_95": 0.00864782041878941,
+        "upper_95": 0.3073716552355408,
+        "probability_favorable": 0.9871
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": -0.02245819049896569,
+        "lower_95": -0.06321208301052933,
+        "upper_95": -0.002216557797758898,
+        "probability_favorable": 0.0155
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": -0.0017537196353547557,
+        "lower_95": -0.9758003324013835,
+        "upper_95": 1.205436742298724,
+        "probability_favorable": 0.4733
+      }
+    },
+    {
+      "champion_id": "C0355",
+      "comparator_id": "C0264",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.08849801330189422,
+        "lower_95": -0.008159136006981043,
+        "upper_95": 0.2679365550942971,
+        "probability_favorable": 0.9575
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": -0.013017305851050875,
+        "lower_95": -0.061074375007319305,
+        "upper_95": 0.0045317985219978,
+        "probability_favorable": 0.0534
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": 0.16966029661854432,
+        "lower_95": -1.324290567136481,
+        "upper_95": 1.2934569213770333,
+        "probability_favorable": 0.544
+      }
+    }
+  ],
+  "sharpe_proxy": {
+    "PBO_SHARPE_PROXY": {
+      "status": "AVAILABLE",
+      "block_count": 10,
+      "candidate_count": 371,
+      "pbo": 0.6984126984126984,
+      "median_validation_percentile": 0.3783783783783784,
+      "median_logit": -0.496436886313891
+    },
+    "EFFECTIVE_TRIAL_COUNT": {
+      "status": "AVAILABLE",
+      "value": 1.4703161418214867
+    },
+    "DSR_SHARPE_PROXY_C0367": {
+      "RAW": {
+        "status": "AVAILABLE",
+        "observations": 1212,
+        "trial_count": 374.0,
+        "observed_sharpe": 1.9846348224351282,
+        "trial_sharpe_mean": 1.674725419294857,
+        "trial_sharpe_std": 0.3562088834400635,
+        "expected_max_sharpe": 2.730579951587075,
+        "skew": 2.5189346017734247,
+        "pearson_kurtosis": 25.512249405067823,
+        "test_statistic": -1.8505078627341291,
+        "probability": 0.0321201929209407
+      },
+      "EFFECTIVE": {
+        "status": "AVAILABLE",
+        "observations": 1212,
+        "trial_count": 1.4703161418214867,
+        "observed_sharpe": 1.9846348224351282,
+        "trial_sharpe_mean": 1.674725419294857,
+        "trial_sharpe_std": 0.3562088834400635,
+        "expected_max_sharpe": 1.7427864285676713,
+        "skew": 2.5189346017734247,
+        "pearson_kurtosis": 25.512249405067823,
+        "test_statistic": 0.5999668567447493,
+        "probability": 0.7257358379920466
+      }
+    },
+    "DSR_SHARPE_PROXY_C0355": {
+      "RAW": {
+        "status": "AVAILABLE",
+        "observations": 1212,
+        "trial_count": 374.0,
+        "observed_sharpe": 1.976990388571127,
+        "trial_sharpe_mean": 1.674725419294857,
+        "trial_sharpe_std": 0.3562088834400635,
+        "expected_max_sharpe": 2.730579951587075,
+        "skew": 2.6648728834746263,
+        "pearson_kurtosis": 27.907208970420182,
+        "test_statistic": -1.8796235669563381,
+        "probability": 0.030079699529432947
+      },
+      "EFFECTIVE": {
+        "status": "AVAILABLE",
+        "observations": 1212,
+        "trial_count": 1.4703161418214867,
+        "observed_sharpe": 1.976990388571127,
+        "trial_sharpe_mean": 1.674725419294857,
+        "trial_sharpe_std": 0.3562088834400635,
+        "expected_max_sharpe": 1.7427864285676713,
+        "skew": 2.6648728834746263,
+        "pearson_kurtosis": 27.907208970420182,
+        "test_statistic": 0.584157881559831,
+        "probability": 0.7204429522417379
+      }
+    },
+    "DSR_SHARPE_PROXY_C0264": {
+      "RAW": {
+        "status": "AVAILABLE",
+        "observations": 1212,
+        "trial_count": 374.0,
+        "observed_sharpe": 1.9650330608423234,
+        "trial_sharpe_mean": 1.674725419294857,
+        "trial_sharpe_std": 0.3562088834400635,
+        "expected_max_sharpe": 2.730579951587075,
+        "skew": 2.6524802647490016,
+        "pearson_kurtosis": 27.300530900644084,
+        "test_statistic": -1.9094984419237024,
+        "probability": 0.028098911266943707
+      },
+      "EFFECTIVE": {
+        "status": "AVAILABLE",
+        "observations": 1212,
+        "trial_count": 1.4703161418214867,
+        "observed_sharpe": 1.9650330608423234,
+        "trial_sharpe_mean": 1.674725419294857,
+        "trial_sharpe_std": 0.3562088834400635,
+        "expected_max_sharpe": 1.7427864285676713,
+        "skew": 2.6524802647490016,
+        "pearson_kurtosis": 27.300530900644084,
+        "test_statistic": 0.5543482746541971,
+        "probability": 0.7103297408568512
+      }
+    }
+  },
+  "actual_nar_gated_adaptive_selection_bias": "NOT_ESTIMATED",
+  "limitations": [
+    "Frozen after center choice and before EX041 statistical calculations.",
+    "EX039 selfcheck fed EX040 optimization: all 88 reviewed standard neighbors included; 81 imported observations are reused inputs.",
+    "Fixed hindsight candidate universe on repeatedly seen development history; no independent validation.",
+    "Four overlapping annual pairs; 2026 is incomplete; annual gates diagnose sensitivity, formal center gates retain the original full window.",
+    "Stationary block resampling rearranges chronology and conditions on observed history.",
+    "Sharpe proxy PBO/DSR address a different selection objective; actual NAR-plus-hard-gates adaptive selection bias remains NOT_ESTIMATED.",
+    "Published account count and correlation effective count are diagnostic assumptions, not independent choices.",
+    "Current EX041 neighborhoods and all fee-stress accounts are excluded from the prior standard selection universe."
+  ]
+}
