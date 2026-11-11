@@ -402,13 +402,19 @@ class PortfolioHistoricalExecutor(_EquityAccount):
                     raise ValueError('cycle budget cannot be rebuilt while active')
             if plan.cycle_after is not None and plan.target_quantity > plan.cycle_after.target_quantity:
                 raise ValueError('plan quantity exceeds declared cycle target')
-        sequence = tuple((leg.sequence, leg.order, leg) for leg in plan.legs) if plan.legs else tuple(
-            (index, order, None) for index, order in enumerate(plan.orders))
+        instructions = plan.orders
+        sequence = ()
+        leg_quotes = None
+        if plan.legs:
+            instructions = tuple(leg.order for leg in plan.legs)
+            sequence = tuple((leg.sequence, leg.order, leg) for leg in plan.legs)
+            leg_quotes = {}
+        elif instructions:
+            sequence = tuple((index, order, None) for index, order in enumerate(instructions))
         if plan.orders and len({order.side for order in plan.orders}) > 1:
             raise ValueError("mixed-side execution requires observed checkpoint dependency legs")
         projected = self.quantity
         previous_checkpoint = None
-        leg_quotes = {}
         for _, order, leg in sequence:
             if order.quantity % self.spec.quantity_step:
                 full_exit = (order.side is OrderSide.SELL and order.quantity == projected
@@ -461,15 +467,17 @@ class PortfolioHistoricalExecutor(_EquityAccount):
             'signal_status': signal_status, 'plan': plan_facts}
         decision["explanation"] = plan_facts['evidence'].get("explanation")
         decision["target"] = plan_facts['evidence']['target']
-        instructions = tuple(order for _, order, _ in sequence)
-        sides = {order.side.value for order in instructions}
         decision['reference_price'] = float(evidence['reference_price'])
-        decision['quantity'] = sum(order.quantity for order in instructions)
-        decision['side'] = next(iter(sides)) if len(sides) == 1 else 'MIXED' if sides else 'HOLD'
-        decision['limit_price'] = (float(instructions[0].limit_price)
-            if len(instructions) == 1 and instructions[0].order_type is OrderType.LIMIT else None)
+        if instructions:
+            sides = {order.side.value for order in instructions}
+            decision['quantity'] = sum(order.quantity for order in instructions)
+            decision['side'] = next(iter(sides)) if len(sides) == 1 else 'MIXED'
+            decision['limit_price'] = (float(instructions[0].limit_price)
+                if len(instructions) == 1 and instructions[0].order_type is OrderType.LIMIT else None)
+            consumed, outcomes = {}, {}
+        else:
+            decision.update(quantity=0, side='HOLD', limit_price=None)
         self.rows['decisions'].append(decision)
-        consumed, outcomes = {}, {}
         for number, order, leg in sequence:
             identity = f'{plan.plan_identity}:{number}'
             reason, price, precision = 'NOT_TRADABLE', None, None

@@ -68,14 +68,19 @@ def plan_account_decision(decision, point, account, reference, spec, *, owner,
             raise ValueError('TARGET_POSITION requires an explicit supported capital mode without cycle budget')
         if mode == 'full_available_cash' and decision.target not in (0,1):
             raise ValueError('full_available_cash supports flat/long only')
-        step, tick = spec.quantity_step, Decimal(str(spec.price_tick))
-        equity = Decimal(str(account.cash)) + Decimal(str(account.receivable)) + account.quantity * Decimal(str(reference))
-        desired = int(equity * Decimal(str(decision.target)) / Decimal(str(reference)) / step) * step
+        step = spec.quantity_step
+        if decision.target == 0:
+            desired = 0
+        else:
+            quote = Decimal(str(reference))
+            equity = Decimal(str(account.cash)) + Decimal(str(account.receivable)) + account.quantity * quote
+            desired = int(equity * Decimal(str(decision.target)) / quote / step) * step
         if mode == 'full_available_cash' and account.quantity and decision.target:
             desired = account.quantity
         if decision.target > 0 and not account.quantity and desired == 0:
             reasons.append(PlanningConstraint.BELOW_MINIMUM_UNIT)
         if desired > account.quantity:
+            tick = Decimal(str(spec.price_tick))
             price = (Decimal(str(reference)) * (1+Decimal(str(spec.buy_premium))) / tick).to_integral_value(rounding=ROUND_FLOOR) * tick
             if price <= 0:
                 reasons.append(PlanningConstraint.BELOW_PRICE_TICK)
@@ -175,8 +180,10 @@ def plan_account_decision(decision, point, account, reference, spec, *, owner,
                                 PlanningConstraint.DEPENDENCY_UNAVAILABLE))
     else:
         raise ValueError('unsupported execution policy: '+kind)
-    instructions = orders if orders else tuple(leg.order for leg in legs)
-    target_quantity = account.quantity + sum(order.quantity * (1 if order.side is OrderSide.BUY else -1) for order in instructions)
+    instructions = orders if orders or not legs else tuple(leg.order for leg in legs)
+    target_quantity = account.quantity
+    if instructions:
+        target_quantity += sum(order.quantity * (1 if order.side is OrderSide.BUY else -1) for order in instructions)
     if target_quantity < 0:
         raise ValueError('orders exceed confirmed holdings')
     reasons = tuple(dict.fromkeys(reasons))

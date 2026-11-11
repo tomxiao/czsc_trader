@@ -4,6 +4,7 @@ Planning proposes state; only the calling account transaction may commit it.
 Prepared market inputs never form part of a durable account's state binding.
 """
 from contextlib import nullcontext
+from functools import partial
 from dataclasses import dataclass
 from datetime import datetime
 import math
@@ -15,6 +16,7 @@ from .account_strategy import (AccountDecision, AccountStepContext, AccountStepR
 from .equity import DecisionPoint, EquityPortfolio, equity_hash
 from .equity_definition import EquityStrategyCandidate
 from .equity_replay import PreparedObservations, StateRecord, _FeatureEvaluator, _Visibility
+from .market_features import _market_feature
 from .replay_contracts import (AccountSnapshot, ExecutionPrecision,
     ReplayPoint, StrategyComputation)
 
@@ -112,6 +114,7 @@ class AccountDecisionEngine:
         if not prepared._sessions or not prepared._calendar_intervals:
             raise ValueError('account planning requires explicit session evidence')
         self.candidate, self.prepared = candidate, prepared
+        self._market_feature_provider = partial(_market_feature, candidate, prepared)
         self._visibility = _Visibility(prepared._data)
         self._features = _FeatureEvaluator(prepared._data, prepared.graph, self._visibility)
         self._auxiliary = {name: (_Visibility(data), data) for name, data in prepared._auxiliary}
@@ -246,7 +249,8 @@ class AccountDecisionEngine:
             features, history, budget=budget, events=events, auxiliary_histories=views,
             session=session if definition.session_context else None,
             session_available_at=available if definition.session_context else None,
-            observations=self.table_views(point.decision_at))
+            observations=self.table_views(point.decision_at),
+            _market_feature_provider=self._market_feature_provider)
         cursor = state.event_cursor + len(events) if next_event_cursor is None else next_event_cursor
         if type(cursor) is not int or cursor < state.event_cursor + len(events):
             raise ValueError('recognized account event cursor cannot regress')

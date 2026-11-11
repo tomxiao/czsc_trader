@@ -179,6 +179,18 @@ class AccountStepContext:
     session: TradingSession | None = None
     session_available_at: datetime | None = None
     observations: Mapping[str, TableHistoryView] = field(default_factory=dict)
+    _market_feature_provider: object = field(default=None, repr=False, compare=False)
+
+    def market_feature(self, function, *, windows, parameters=()):
+        """Share a pure market calculation across accounts using these inputs.
+
+        The function receives tuples of immutable visible rows, followed by
+        its explicit parameters. It must depend only on those arguments.
+        Use None for the primary history or an auxiliary history name.
+        """
+        if self._market_feature_provider is None:
+            raise RuntimeError('market features require a prepared account decision')
+        return self._market_feature_provider(self, function, windows, parameters)
 
     def __post_init__(self):
         from .equity_definition import _freeze

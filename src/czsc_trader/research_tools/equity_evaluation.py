@@ -291,10 +291,14 @@ def _audit_inputs(request, specification, products):
 
 
 def _records(frame):
-    return json.loads(frame.to_json(orient="records", date_format="iso", date_unit="us"))
+    return json.loads(_records_json(frame))
 
 
-def _data_quality(bars, run, *, timezone="America/New_York", execution_bars=None):
+def _records_json(frame):
+    return frame.to_json(orient="records", date_format="iso", date_unit="us")
+
+
+def _data_quality(bars, run, *, suppressed_signals, timezone="America/New_York", execution_bars=None):
     """Report execution limitations from source facts and audited account entries."""
     ends = {row["time"] for row in run["account_points"]}
     selected = [row for row in bars if row["Date"] in ends]
@@ -316,7 +320,7 @@ def _data_quality(bars, run, *, timezone="America/New_York", execution_bars=None
                  else "STRICT_COMPLETE_BARS",
         "prepared_history": summary(bars), "evaluation_window": summary(selected),
         "stale_valuations": sum(row.get("valuation_stale", False) for row in run["account_points"]),
-        "suppressed_signals": sum(row.get("signal_status") == "SUPPRESSED_UNOBSERVED_BAR" for row in run["decisions"]),
+        "suppressed_signals": suppressed_signals,
         "affected_orders": [{"order_id": row["order_id"], "reason": row["reason"],
                              "start": row["valid_start"], "end": row["valid_end"]}
                             for row in run["orders"] if row["reason"] in {"MISSING_BAR", "MISSING_EXECUTION_BAR", "ZERO_VOLUME", "KNOWN_INTERRUPTION"}],

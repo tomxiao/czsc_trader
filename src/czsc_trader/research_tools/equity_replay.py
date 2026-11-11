@@ -23,7 +23,7 @@ from strategy_runtime.equity_definition import EquityAuxiliaryBinding, EquityInp
 from strategy_evaluator.equity_metrics import summarize_equity_ledger
 
 from .equity_evaluation import (EquityArtifact, EquityEvaluationRequest, EquityEvaluationResult,
-    _audit_inputs, _data_quality, _fetch_products, _json_value, _records)
+    _audit_inputs, _data_quality, _fetch_products, _json_value, _records, _records_json)
 from .execution import ExecutionPhase, ResearchExecutionSession
 from .account_preparation import PreparedAccountEvaluation, BenchmarkRunIdentity
 from .equity_assessment import AssessmentProjection
@@ -325,22 +325,35 @@ def _compute_account(replay, candidate, request, owner, execution_bars, output):
     outcome = run_replay(replay, candidate, executor, start=request.window.start,
         end=request.window.end, fee_rate=request.fee_rate, owner=owner, constraints=output.constraints)
     account = outcome.execution_result
-    run = {"decisions": _records(account.decisions), "orders": _records(account.orders),
-        "fills": _records(account.fills), "account_entries": _records(account.account_entries),
+    run = {"orders": _records(account.orders), "fills": _records(account.fills),
         "price_basis": account.price_basis, "quantity_basis": account.quantity_basis,
-        "account_points": _records(account.account_points), "trades": _records(account.trades),
-        "account_daily": _records(account.account_daily)}
+        "account_points": _records(account.account_points), "trades": _records(account.trades)}
     ledger = {**run, "specification": asdict(candidate.definition.execution_spec),
               "initial_cash": request.initial_cash, "fee_rate": request.fee_rate}
     metrics = summarize_equity_ledger(ledger)
-    run.update(metrics=_json_value(asdict(metrics)), data_quality=_data_quality(
-        output.bars, run, timezone=candidate.instrument.timezone, execution_bars=output.execution_bars))
-    # Records, metrics and owner have already been normalized to JSON values.
-    # Encode the large account once; a JSON round-trip here duplicates all rows.
-    artifact = EquityArtifact("equity_account", json.dumps({"schema": "equity-account/v1",
-        "owner": _read(output.owner_content), "input_sha256": output.input_sha256, "run": run},
-        sort_keys=True, separators=(",", ":"), allow_nan=False).encode())
+    statuses = account.decisions.get("signal_status")
+    suppressed = 0 if statuses is None else int(statuses.eq("SUPPRESSED_UNOBSERVED_BAR").sum())
+    run.update(metrics=asdict(metrics), data_quality=_data_quality(
+        output.bars, run, suppressed_signals=suppressed,
+        timezone=candidate.instrument.timezone, execution_bars=output.execution_bars))
+    artifact = EquityArtifact("equity_account", _account_document(run, account, output))
     return artifact, outcome.statistics
+
+
+def _account_document(run, account, output):
+    """Embed the existing table encodings for rows SE does not read."""
+    def encode(value):
+        return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
+
+    fields = {key: encode(value) for key, value in run.items()}
+    for key in ("decisions", "account_entries", "account_daily"):
+        fields[key] = _records_json(getattr(account, key)).encode()
+    parts = [b'{"input_sha256":', encode(output.input_sha256), b',"owner":',
+             output.owner_content, b',"run":{']
+    for key in sorted(fields):
+        parts.extend((encode(key), b":", fields[key], b","))
+    parts[-1] = b'},"schema":"equity-account/v1"}'
+    return b"".join(parts)
 
 
 def _compute_transported_account(shared, candidate, request, owner, input_sha256, owner_content):
