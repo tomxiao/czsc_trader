@@ -1,0 +1,258 @@
+{
+  "name": "rebuild_linear_047",
+  "family": "rebuild_linear",
+  "trial_number": 47,
+  "proposed_candidate_id": "C0950",
+  "id": "C0950",
+  "parameters": {
+    "confirm": true,
+    "down_days": 1,
+    "exit_mode": "fixed",
+    "hold_days": 5,
+    "information": "relative",
+    "joint_rule": "maximum",
+    "participation_days": 3,
+    "require_sector": false,
+    "risk_basis": "daily",
+    "treatment": "tilt",
+    "exit_policy": "ramp_rebuild",
+    "confirm_bars": 2,
+    "participation_policy": "linear",
+    "exit_width": 0.1968406253114,
+    "participation_threshold": 1.0232271002161708,
+    "participation_width": 0.2606887639907822,
+    "quiet_fraction": 0.3804536416617344,
+    "trail_atr": 2.7696632808881083,
+    "weak_fraction": 0.39629189685351585
+  },
+  "content_hash": "8f542bf32e8779b3e123deb1906bc73790952fc6bd1092bdfddc00127f98904e",
+  "definition": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "MU"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 900,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "strategy.py"
+    ],
+    "source_sha256": "0082d1ca613c6f475c651317db8622b23ff3e50725977592818ee7fe493e4fc8",
+    "parameters_json": "{\"confirm\":true,\"confirm_bars\":2,\"down_days\":1,\"exit_mode\":\"fixed\",\"exit_policy\":\"ramp_rebuild\",\"exit_width\":0.1968406253114,\"hold_days\":5,\"information\":\"relative\",\"joint_rule\":\"maximum\",\"participation_days\":3,\"participation_policy\":\"linear\",\"participation_threshold\":1.0232271002161708,\"participation_width\":0.2606887639907822,\"quiet_fraction\":0.3804536416617344,\"require_sector\":false,\"risk_basis\":\"daily\",\"trail_atr\":2.7696632808881083,\"treatment\":\"tilt\",\"weak_fraction\":0.39629189685351585}",
+    "dependencies": [
+      {
+        "name": "numpy",
+        "version": "2.5.2"
+      },
+      {
+        "name": "pandas",
+        "version": "3.0.5"
+      }
+    ],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"confirm\":{\"type\":\"boolean\"},\"confirm_bars\":{\"type\":\"integer\"},\"down_days\":{\"type\":\"integer\"},\"exit_mode\":{\"type\":\"string\"},\"exit_policy\":{\"type\":\"string\"},\"exit_width\":{\"type\":\"number\"},\"hold_days\":{\"type\":\"integer\"},\"information\":{\"type\":\"string\"},\"joint_rule\":{\"type\":\"string\"},\"participation_days\":{\"type\":\"integer\"},\"participation_policy\":{\"type\":\"string\"},\"participation_threshold\":{\"type\":\"number\"},\"participation_width\":{\"type\":\"number\"},\"quiet_fraction\":{\"type\":\"number\"},\"require_sector\":{\"type\":\"boolean\"},\"risk_basis\":{\"type\":\"string\"},\"trail_atr\":{\"type\":\"number\"},\"treatment\":{\"type\":\"string\"},\"weak_fraction\":{\"type\":\"number\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "HFQ",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "auxiliary_inputs": [
+      {
+        "name": "mu_daily",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "frequency": "daily",
+        "warmup_bars": 65,
+        "max_age_seconds": 604800,
+        "analysis_price": "HFQ"
+      },
+      {
+        "name": "soxx_daily",
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SOXX"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "frequency": "daily",
+        "warmup_bars": 65,
+        "max_age_seconds": 604800,
+        "analysis_price": "HFQ"
+      },
+      {
+        "name": "soxx_open",
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SOXX"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "frequency": "30m",
+        "warmup_bars": 1,
+        "max_age_seconds": 604800,
+        "analysis_price": "HFQ"
+      }
+    ],
+    "session_context": true,
+    "feature_graph": {
+      "nodes": [],
+      "outputs": [],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "anchor",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "allocation",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "exiting",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "high_water",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "entry_atr",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "risk_fraction",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "breach_count",
+          "value_type": "int",
+          "nullable": false
+        }
+      ]
+    },
+    "computation": "STATEFUL_STEP",
+    "execution_policy": {
+      "policy_type": "TARGET_POSITION",
+      "settings": {
+        "capital_mode": "target_equity_fraction"
+      }
+    }
+  },
+  "account": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S019",
+      "experiment_id": "EX047_20261111"
+    },
+    "evidence_id": "3f9c9ef2bb7c9bab82bba684c411b1a035bb655d11469f91b265ba5135c00670.json",
+    "sha256": "3f9c9ef2bb7c9bab82bba684c411b1a035bb655d11469f91b265ba5135c00670",
+    "media_type": "application/json",
+    "name": "rebuild_linear_047",
+    "schema": "equity_research",
+    "schema_version": 4
+  },
+  "request_sha256": "ad81a17ec96b9918f36f2b45c2ada417f256506ce621bbf58518486ca726a959",
+  "candidate": {
+    "nar": 0.6744137354395487,
+    "drawdown": 0.1475764438176328,
+    "bar_drawdown": 0.16562556102012727,
+    "calmar": 4.569928086036236,
+    "closed_cycles": 116,
+    "frequency_median": 6.0,
+    "frequency_coverage": 0.9982653946227233,
+    "year_returns": {
+      "2022": 0.09179136134194188,
+      "2023": 0.19704517833000978,
+      "2024": 0.23483850587180055,
+      "2025": 1.5366471363736252,
+      "2026": 1.9144253998538527
+    },
+    "gates": {
+      "nar": true,
+      "calmar": false,
+      "absolute_dd": true,
+      "relative_dd": true,
+      "frequency_median": true,
+      "frequency_coverage": true
+    },
+    "eligible": false,
+    "fees": 45737.8745205086
+  },
+  "buy_hold": {
+    "nar": 0.5930831369630878,
+    "drawdown": 0.5695248274745268,
+    "bar_drawdown": 0.5832097877410136,
+    "calmar": 1.0413648507529105,
+    "closed_cycles": 0,
+    "frequency_median": 0.0,
+    "frequency_coverage": 0.0,
+    "year_returns": {
+      "2022": -0.46101403090000004,
+      "2023": 0.703127023200278,
+      "2024": -0.008298386617065723,
+      "2025": 2.344269718302019,
+      "2026": 2.0843508883998956
+    },
+    "gates": {
+      "nar": true,
+      "calmar": false,
+      "absolute_dd": false,
+      "relative_dd": false,
+      "frequency_median": false,
+      "frequency_coverage": false
+    },
+    "eligible": false,
+    "fees": 99.56309
+  },
+  "audit": {
+    "chronology_cash_integer": "PASS"
+  },
+  "provenance": {
+    "kind": "NEW_ACCOUNT",
+    "canonical": "rebuild_linear_047"
+  }
+}

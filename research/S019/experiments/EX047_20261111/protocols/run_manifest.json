@@ -1,0 +1,944 @@
+{
+  "version": 1,
+  "experiment": "EX047_20261111",
+  "runner_sha256": "5bad78a717271e6dd9bc38286d77126187e1c83ad761213633297987394b7bb0",
+  "source_sha256": "0082d1ca613c6f475c651317db8622b23ff3e50725977592818ee7fe493e4fc8",
+  "search_sha256": "4cf76959baae0b0a086b804c026b4e0ab866304f00b8470f4a889c0482a737a7",
+  "plan_sha256": "adce6ea688b0a11665fb51b24627fc8cfc072f189525f3a8652d2f9d0e7640aa",
+  "dependencies": {
+    "research/S019/experiments/EX043_20261110/src/batch_runner.py": "0dd8d0a5739f2d48bea1280bc0c98d80005df543492d59e2ea8719b71c77257a",
+    "research/S019/experiments/EX013_20261110/src/runner.py": "20d7bf58f82816ccd19f1697d88240aacf28274fc1a81dd6558ef67daecebb2f",
+    "research/S019/experiments/EX003_20261110/src/data_window.py": "ba21d1b00fc8f0efa0fa349d6230225b71043e4d85de82191ac278c56a7c2678",
+    "research/S019/experiments/EX001_20261110/src/prepare_data.py": "ebed38de0e8a988f8a58318c148f16cc573db00bb91b305c226d30d611e3e7c9",
+    "research/S019/experiments/EX001_20261110/src/load_data.py": "b3fcafc79d664d26c7bf4878f4e641aa023ca528ed8569bab8e62bae489ab1a6"
+  },
+  "optuna_version": "4.9.0",
+  "storage": "InMemoryStorage + immutable JSON ask/result/tell records",
+  "sampler": "Constrained multivariate TPE; constant_liar=True; maximize original NAR",
+  "seeds": {
+    "hard_linear": 20261121,
+    "ramp_linear": 20261122,
+    "rebuild_linear": 20261123
+  },
+  "resources": {
+    "workers": 12,
+    "native_threads": 1,
+    "family_batch_size": 4
+  },
+  "resource_waves": {
+    "family_counts": [
+      3
+    ],
+    "regular_proposal_counts": [
+      12
+    ],
+    "first_controls": 3,
+    "first_remaining_proposal_counts": [
+      9
+    ],
+    "feedback_barrier": "All families complete four observations before next ask"
+  },
+  "family_trial_budget": 48,
+  "startup_trials": 16,
+  "proposal_budget": 144,
+  "imported_observations": 21,
+  "imported_records": {
+    "hard_linear": [
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/hard_linear_original_hard_center.json",
+        "file_sha256": "37ddb0e3e37b57893762a69c2e28fd0e9e6d0d7130ea93a9c4a10f32eb8c2034",
+        "id": "C0780",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "4261e18953e84dc7c6b1c6f5082cd6ac1d6bf7144d9931ca4fae6c63f5db9827.json",
+          "sha256": "4261e18953e84dc7c6b1c6f5082cd6ac1d6bf7144d9931ca4fae6c63f5db9827",
+          "media_type": "application/json",
+          "name": "original_hard_center",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "631e68c0dfdf587c7b7fffccac346d227211df23752a87cc828b41c89b4d4b3c",
+        "request_sha256": "3ac9cd336542e436bf878eb7830b5ec1b0773328b0b715b1b04d86e72e00fd60"
+      },
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/hard_linear_original_hard_low.json",
+        "file_sha256": "ab02c86e9e270a3a930001dad36939448a57dcbe655be7f7afbe55d1f25752ec",
+        "id": "C0781",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "48866a4170329a7e5b484b196ccec270f255136a51b8f5548aeabd78a76709af.json",
+          "sha256": "48866a4170329a7e5b484b196ccec270f255136a51b8f5548aeabd78a76709af",
+          "media_type": "application/json",
+          "name": "original_hard_low",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "db17d21f19cd903df3830b7a7090393c22472160cf1c1b40a37463bb6aee2a70",
+        "request_sha256": "b232d868b266d82369d86da98c25f53fa8224fe8a1f62b0d164b96ce8f3ea2ad"
+      },
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/hard_linear_original_hard_high.json",
+        "file_sha256": "d55df05ecf968996059e76767ac67ec685900d65e59de59dc27c52aaaadf6aa9",
+        "id": "C0782",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "3d275d11f2a9147bde5de16037847f7764f009995b10013a97980533be4eccd7.json",
+          "sha256": "3d275d11f2a9147bde5de16037847f7764f009995b10013a97980533be4eccd7",
+          "media_type": "application/json",
+          "name": "original_hard_high",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "e69271e025cecc78548f81fed67754310019ddc7e0d282762e7c316237cccc44",
+        "request_sha256": "b3a0d4bb0e621625de0c650f6791c321c9118b12c026b04d70e072d7d80bebe6"
+      },
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/hard_linear_qualified_linear_hard_low.json",
+        "file_sha256": "d59c219c0fddfc0a7bb1e98eb93a6a54e25b40964e32d3dde1bbb4083d30d510",
+        "id": "C0799",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "9e1d848db418f79af8c1864cdbfe46cc28a941bc938e55195c91eb0b14053d71.json",
+          "sha256": "9e1d848db418f79af8c1864cdbfe46cc28a941bc938e55195c91eb0b14053d71",
+          "media_type": "application/json",
+          "name": "qualified_linear_hard_low",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "ae5c7a115acec748b834523a7e4af457198520204931e65dbba8d608836fa4e8",
+        "request_sha256": "f0d9d93e95a1d29f47d108a7bbc06882a5baa88bb6e66ba31e98682e7605c9a1"
+      },
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/hard_linear_qualified_linear_hard_high.json",
+        "file_sha256": "dcb1fced5c5da27a34100e3a3667ad184692651286e166b41dfee6a774b8184f",
+        "id": "C0800",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "fd2367f66a8a8798de230dd0af3dbb74211e2c869f04012f2f96158e7f4de4da.json",
+          "sha256": "fd2367f66a8a8798de230dd0af3dbb74211e2c869f04012f2f96158e7f4de4da",
+          "media_type": "application/json",
+          "name": "qualified_linear_hard_high",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "5f98eac36beba6158fecfc4401ff3c57978e1fa35ccc075dae19dc1a25d6d1a3",
+        "request_sha256": "937386366a88dc6f576525f23951d510b5d21e0347e28a92f78fdfafc6e4bfe5"
+      }
+    ],
+    "ramp_linear": [
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_original_ramp_center.json",
+        "file_sha256": "3a6b1d12f62b3245fdc9913b7868f2ffab443d2aa9ce32e98a38efc3eeb11fab",
+        "id": "C0783",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "bb7d7fb4173cccf49728b8ab839db6dcdb8d06e4d3a5d1a49b5861d1a33184fd.json",
+          "sha256": "bb7d7fb4173cccf49728b8ab839db6dcdb8d06e4d3a5d1a49b5861d1a33184fd",
+          "media_type": "application/json",
+          "name": "original_ramp_center",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "8ac0c17a61c64f0a753bc5a67189cb279f80c7cf37c16900e2975d69cec415ce",
+        "request_sha256": "eee1e9452e566c177dcf3f2452b957b3c79d4169d6058b738c099a2ec7b9b493"
+      },
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_adapted_ramp_center.json",
+        "file_sha256": "4e2571b12a93547d223044aeeb42ae7731c61caeb8cf10cefaf56896b5e7ac3c",
+        "id": "C0792",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "a80ae44c9216ea5343654d1ddcab9b871368e9f9239976f0ae2a2e10d786e7a3.json",
+          "sha256": "a80ae44c9216ea5343654d1ddcab9b871368e9f9239976f0ae2a2e10d786e7a3",
+          "media_type": "application/json",
+          "name": "adapted_ramp_center",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "59a09ac86fb365bc47643fb1ffbfd0d30cd0453631f490acc093f3e858e6a688",
+        "request_sha256": "f9198f3514104a11b762cd05fccf775c695e3d354fb2fe9cc235d456fa7548bb"
+      },
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_original_ramp_low.json",
+        "file_sha256": "8850e9bc9d78271f994d73c74d92b41ff4fb184eb8ccbfa571687770e8c2d8cb",
+        "id": "C0784",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "6792e586adbae79823d0270b2d40abb63e804bb7e5c01a2ffe2f49afc5f488ff.json",
+          "sha256": "6792e586adbae79823d0270b2d40abb63e804bb7e5c01a2ffe2f49afc5f488ff",
+          "media_type": "application/json",
+          "name": "original_ramp_low",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "447cdc371f4480b01398da5f3fad488f0dbc5f7f1a5a2f59ab4cf86935f17445",
+        "request_sha256": "539424cf926a73b65f547774ed4a35188adea1adf2f395f63d32094b845c0fad"
+      },
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_original_ramp_high.json",
+        "file_sha256": "7a3df2fcc11dce8d9340a2d59230d232a39448a30acdab1070acc37b9f8e1a28",
+        "id": "C0785",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "3abc5f8202da72ef34aca75eb1799a03c6420c8a2c4fc2ae166fdadc9dd039e0.json",
+          "sha256": "3abc5f8202da72ef34aca75eb1799a03c6420c8a2c4fc2ae166fdadc9dd039e0",
+          "media_type": "application/json",
+          "name": "original_ramp_high",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "ff4788b4f1a51c3f7d484745f6dfc700b6096da6f229b329f5877702a8278fda",
+        "request_sha256": "9dbdf71ad7714418fd8a6dc561fcd15b27eae5376c0ab064f84609c031e05946"
+      },
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_adapted_ramp_low.json",
+        "file_sha256": "10aa118dfea02d5eccb4e64c43b18a41a7d4b0a1ebef96210e462feb0d777ad8",
+        "id": "C0793",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "3357aefddcc91dd275d6f0cc35c5c325718c406597b57a10e1388ec620e89075.json",
+          "sha256": "3357aefddcc91dd275d6f0cc35c5c325718c406597b57a10e1388ec620e89075",
+          "media_type": "application/json",
+          "name": "adapted_ramp_low",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "7130cdce6905e3cb745296035e9eed99e7dd7c0f34e694c83e63125a9cb9e153",
+        "request_sha256": "8dc2f7e0d88f56ff917aace319f24bc4556d23bd90d39f124fa952e92e92696a"
+      },
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_adapted_ramp_high.json",
+        "file_sha256": "012c43c3fcc9b51d2af297867be424f0741f1b41fcb885f799e5ddf57cea893a",
+        "id": "C0794",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "fa4fa905e371a62088ecf7954f8f5c9e90c806ee591a200da83d26ae336d7601.json",
+          "sha256": "fa4fa905e371a62088ecf7954f8f5c9e90c806ee591a200da83d26ae336d7601",
+          "media_type": "application/json",
+          "name": "adapted_ramp_high",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "9fe8304f805fd7f0a0e6e63c0e120c9ec264540820a5c5f01f79ccc8a7e03b42",
+        "request_sha256": "6de8bd46b1e89342c450912fe22875da14e685a1673e5613bdc10d88c2a968cc"
+      },
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_qualified_linear_ramp_low.json",
+        "file_sha256": "e1dacea2b1ef731495ab512c8879e551ebc382eceff7c5aa93d9c51102bb22a1",
+        "id": "C0802",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "9bc23b9cea49848fdeea790f02d99c6304dbf67463b3d41f53b2a09fa6e8f326.json",
+          "sha256": "9bc23b9cea49848fdeea790f02d99c6304dbf67463b3d41f53b2a09fa6e8f326",
+          "media_type": "application/json",
+          "name": "qualified_linear_ramp_low",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "7d6c6de868e11e318cb8fc0258f3bc9244ee8932fbbdb38db47ce815315e1135",
+        "request_sha256": "f87288d5c5813b26890435a2428d1b2ca0d6d76004c4d0ce4b1f7e4511c30cb0"
+      },
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_qualified_linear_ramp_high.json",
+        "file_sha256": "af3d7703105eb2ab061117cbd66cf6554eb18627c6a0fab1fc0aa0f59b7c23d4",
+        "id": "C0803",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "3357f952fc1546acfe56b4331fece57df5388f80f6ecf5ba9a3ec5da075cb764.json",
+          "sha256": "3357f952fc1546acfe56b4331fece57df5388f80f6ecf5ba9a3ec5da075cb764",
+          "media_type": "application/json",
+          "name": "qualified_linear_ramp_high",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "14657996524d53e32ad055ad848bf64fb58cc53d5149a44ec050b53075c382c2",
+        "request_sha256": "46273cbdc829d7b479bcecf83d8680ed748a51cb8be0650f85436cc877f7496e"
+      }
+    ],
+    "rebuild_linear": [
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_original_ramp_rebuild_center.json",
+        "file_sha256": "37c14bf7f12fd71c8c9b60fecbb13c14cf226d2b23008e6c3abfb4d0da68cfbe",
+        "id": "C0786",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "42743989901c13aeb58c82dace610ba9dd607c605dc60ef2b0ed6a970900f03f.json",
+          "sha256": "42743989901c13aeb58c82dace610ba9dd607c605dc60ef2b0ed6a970900f03f",
+          "media_type": "application/json",
+          "name": "original_ramp_rebuild_center",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "cac3d169e2dc9e5ca1e0e2e7253d597f46ed8b6a74d7f21ec899e8c60525824f",
+        "request_sha256": "1f407fde311b7d7fc98f8099562e8d0e777dd4e3a03e56548386bc5becac2d42"
+      },
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_original_ramp_rebuild_low.json",
+        "file_sha256": "f19b717b6e53d50d0d6ef068be3ba5c381c9515dabf0d412484c688877a9aa40",
+        "id": "C0787",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "a3696033aa463ee25c8bed1ce16bd57a8e8ed59636cd5d38872ae2fcb6d319ba.json",
+          "sha256": "a3696033aa463ee25c8bed1ce16bd57a8e8ed59636cd5d38872ae2fcb6d319ba",
+          "media_type": "application/json",
+          "name": "original_ramp_rebuild_low",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "f6db3081a92247f8851596acd1304c29946ef6b5a930c119e61a27f3a7e2b771",
+        "request_sha256": "f6bd0baa2bc42f5ed4e8a8feecf921299053171dd9af48a78fb7978eb2d6c694"
+      },
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_original_ramp_rebuild_high.json",
+        "file_sha256": "2468fa3c65f2c07d0d367c108867f9a6e8d590f112dcd4caac8e5d7e7f2e83ba",
+        "id": "C0788",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "0ef1b773a9165c8e9d718af1c3225251d32f632e59a7ba7d530ac17899455873.json",
+          "sha256": "0ef1b773a9165c8e9d718af1c3225251d32f632e59a7ba7d530ac17899455873",
+          "media_type": "application/json",
+          "name": "original_ramp_rebuild_high",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "5228a0fe45b0a8be542735772dd8b5afea569bb216b61f041dfd55ef5d0f7d9e",
+        "request_sha256": "841b51f278a8cb97c460b3a114732ab857c09cc1921549548880df3ddc76f952"
+      },
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_adapted_ramp_rebuild_center.json",
+        "file_sha256": "3eb92a7d3ff5d3821d99574d0695e96015d387780eaa4d1228d68a5b82e31862",
+        "id": "C0795",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "5c97dc291d907c50e4efbec41f8b167fb0c4100d31209dee51cc84264fc87bad.json",
+          "sha256": "5c97dc291d907c50e4efbec41f8b167fb0c4100d31209dee51cc84264fc87bad",
+          "media_type": "application/json",
+          "name": "adapted_ramp_rebuild_center",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "fa16a6e71877c4f0b4b91ea10e20678b90cd1d6e2c93f311caf8ddd6760a5aae",
+        "request_sha256": "7819b97473b611910061be1d7b156ca8377b798685aa496aff07839142ef0fcf"
+      },
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_adapted_ramp_rebuild_low.json",
+        "file_sha256": "fb889549910b690f3b459ceb82e4af561c952acd4571f9a5706492a15bb5fd8b",
+        "id": "C0796",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "7a1178717cafa72133dfcf8a7aee5a5228bfb5b30ea1384e966633d93a1bc0ae.json",
+          "sha256": "7a1178717cafa72133dfcf8a7aee5a5228bfb5b30ea1384e966633d93a1bc0ae",
+          "media_type": "application/json",
+          "name": "adapted_ramp_rebuild_low",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "c3abdc85ca69ddc80c1379667eb73a7bb03fb5901d411c31e3f8adadb2054c7d",
+        "request_sha256": "bb1325c56fdf46514fb55dff89e532090af2f96e415955e8e82fe59b059638d7"
+      },
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_adapted_ramp_rebuild_high.json",
+        "file_sha256": "e79a3575e42b781d8c9b78be8fea6dc9cf10b25db811fb72ce65ba0905f59241",
+        "id": "C0797",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "d7cb3166e17148f7923e7c146a937e3c2c89eb983e3b0ee090b464f076421007.json",
+          "sha256": "d7cb3166e17148f7923e7c146a937e3c2c89eb983e3b0ee090b464f076421007",
+          "media_type": "application/json",
+          "name": "adapted_ramp_rebuild_high",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "db3f591102612bc3371ee6de81b8ef5c584ad2466e673259cb100eb31aa74ae4",
+        "request_sha256": "0b8410565fa507d19808a118f02325f43e648b98fd1b6621426cc4b3a2c270e3"
+      },
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_qualified_linear_ramp_rebuild_low.json",
+        "file_sha256": "613d7c32bae715d69a3b9f84d8afb5f2541c4b7d927bd8b18b62bae1693c915e",
+        "id": "C0805",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "1734ce6c631514683296ab176ca451a0e7664853e2e29961a41a3b594fe205f9.json",
+          "sha256": "1734ce6c631514683296ab176ca451a0e7664853e2e29961a41a3b594fe205f9",
+          "media_type": "application/json",
+          "name": "qualified_linear_ramp_rebuild_low",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "8f38a38477fb3488eeb0e21e9e8ad31345118252e408d370061b11178f3dc4ec",
+        "request_sha256": "00c158faa649edd65ba6518a2377a80659f2e390105c434ab700ffd6d7439738"
+      },
+      {
+        "path": "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_qualified_linear_ramp_rebuild_high.json",
+        "file_sha256": "776515982bc780f8ed12f2b6ab9d959551cd8d8b5114edac57af0599399b70cc",
+        "id": "C0806",
+        "account": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "be7d067c4c295cb048dcef52016df0ddd6a1bbd548ef873ffc2e5ee9e334ec86.json",
+          "sha256": "be7d067c4c295cb048dcef52016df0ddd6a1bbd548ef873ffc2e5ee9e334ec86",
+          "media_type": "application/json",
+          "name": "qualified_linear_ramp_rebuild_high",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "content_hash": "912e6f6559717d5e2b84194f5ab9a3328e8f8f05620921d73761a0710cc21758",
+        "request_sha256": "35b34b8924ab89a80cb727c04ac28e499b2c515b1b637f0c96d21454a9702cc3"
+      }
+    ]
+  },
+  "imported_trial_counts": {
+    "hard_linear": 5,
+    "ramp_linear": 8,
+    "rebuild_linear": 8
+  },
+  "base_definition": {
+    "runtime_kind": "ACCOUNT_REPLAY",
+    "instrument": {
+      "market": "US",
+      "asset_class": "STOCK",
+      "symbol": "MU"
+    },
+    "execution_spec": {
+      "market": {
+        "rule_version": "US_EQUITY_V1"
+      },
+      "decision_clock": "30m",
+      "account": {
+        "currency": "USD",
+        "cash_availability": "IMMEDIATE_RESEARCH",
+        "allow_short": false,
+        "allow_negative_cash": false
+      },
+      "quantity_step": 1,
+      "price_tick": 0.01,
+      "buy_premium": 0.01,
+      "slippage_bp": 0.0,
+      "execution": "BAR_RANGE_V1",
+      "inclusive_touch": false,
+      "data_latency_seconds": 0
+    },
+    "warmup_bars": 900,
+    "entrypoint": "strategy:step",
+    "source_files": [
+      "strategy.py"
+    ],
+    "source_sha256": "0082d1ca613c6f475c651317db8622b23ff3e50725977592818ee7fe493e4fc8",
+    "parameters_json": "{\"confirm\":true,\"confirm_bars\":2,\"down_days\":1,\"exit_mode\":\"fixed\",\"exit_policy\":\"hard\",\"exit_width\":0.5,\"hold_days\":5,\"information\":\"relative\",\"joint_rule\":\"maximum\",\"participation_days\":3,\"participation_policy\":\"linear\",\"participation_threshold\":1.0443117349209394,\"participation_width\":0.2888670017592839,\"quiet_fraction\":0.35250973549252723,\"require_sector\":false,\"risk_basis\":\"daily\",\"trail_atr\":2.4279380676391424,\"treatment\":\"tilt\",\"weak_fraction\":0.3284299259134771}",
+    "dependencies": [
+      {
+        "name": "numpy",
+        "version": "2.5.2"
+      },
+      {
+        "name": "pandas",
+        "version": "3.0.5"
+      }
+    ],
+    "contract_version": 4,
+    "parameter_schema_json": "{\"confirm\":{\"type\":\"boolean\"},\"confirm_bars\":{\"type\":\"integer\"},\"down_days\":{\"type\":\"integer\"},\"exit_mode\":{\"type\":\"string\"},\"exit_policy\":{\"type\":\"string\"},\"exit_width\":{\"type\":\"number\"},\"hold_days\":{\"type\":\"integer\"},\"information\":{\"type\":\"string\"},\"joint_rule\":{\"type\":\"string\"},\"participation_days\":{\"type\":\"integer\"},\"participation_policy\":{\"type\":\"string\"},\"participation_threshold\":{\"type\":\"number\"},\"participation_width\":{\"type\":\"number\"},\"quiet_fraction\":{\"type\":\"number\"},\"require_sector\":{\"type\":\"boolean\"},\"risk_basis\":{\"type\":\"string\"},\"trail_atr\":{\"type\":\"number\"},\"treatment\":{\"type\":\"string\"},\"weak_fraction\":{\"type\":\"number\"}}",
+    "feedback_mode": "CONFIRMED_EXECUTION",
+    "analysis_price": "HFQ",
+    "explanation_cases": [
+      "flat",
+      "long"
+    ],
+    "auxiliary_inputs": [
+      {
+        "name": "mu_daily",
+        "instrument": {
+          "market": "US",
+          "asset_class": "STOCK",
+          "symbol": "MU"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "frequency": "daily",
+        "warmup_bars": 65,
+        "max_age_seconds": 604800,
+        "analysis_price": "HFQ"
+      },
+      {
+        "name": "soxx_daily",
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SOXX"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "frequency": "daily",
+        "warmup_bars": 65,
+        "max_age_seconds": 604800,
+        "analysis_price": "HFQ"
+      },
+      {
+        "name": "soxx_open",
+        "instrument": {
+          "market": "US",
+          "asset_class": "ETF",
+          "symbol": "SOXX"
+        },
+        "source": {
+          "provider": "futu",
+          "revision": "s019-unified-window-20261110-v2"
+        },
+        "frequency": "30m",
+        "warmup_bars": 1,
+        "max_age_seconds": 604800,
+        "analysis_price": "HFQ"
+      }
+    ],
+    "session_context": true,
+    "feature_graph": {
+      "nodes": [],
+      "outputs": [],
+      "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+    },
+    "state_schema": {
+      "account_fields": [],
+      "cycle_fields": [
+        {
+          "key": "anchor",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "allocation",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "exiting",
+          "value_type": "bool",
+          "nullable": false
+        },
+        {
+          "key": "high_water",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "entry_atr",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "risk_fraction",
+          "value_type": "float",
+          "nullable": false
+        },
+        {
+          "key": "breach_count",
+          "value_type": "int",
+          "nullable": false
+        }
+      ]
+    },
+    "computation": "STATEFUL_STEP",
+    "execution_policy": {
+      "policy_type": "TARGET_POSITION",
+      "settings": {
+        "capital_mode": "target_equity_fraction"
+      }
+    }
+  },
+  "controls": {
+    "hard_linear": {
+      "path": "research/S019/experiments/EX046_20261111/others/qualified_linear_hard_center_account.json",
+      "reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S019",
+          "experiment_id": "EX046_20261111"
+        },
+        "evidence_id": "e4ae95a1c07d1fb6ae6961960f30e03ccf3a7b1ceeea488e0021064c4cadbebe.json",
+        "sha256": "e4ae95a1c07d1fb6ae6961960f30e03ccf3a7b1ceeea488e0021064c4cadbebe",
+        "media_type": "application/json",
+        "name": "qualified_linear_hard_center",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "file_sha256": "6c9de3d767074f3113158e99668debae40c78fb5d32b963fb68d64515de3b74a",
+      "historical_source_sha256": "0082d1ca613c6f475c651317db8622b23ff3e50725977592818ee7fe493e4fc8",
+      "current_source_sha256": "0082d1ca613c6f475c651317db8622b23ff3e50725977592818ee7fe493e4fc8",
+      "neutral_added_parameters": {},
+      "parity_required_before_feedback": true
+    },
+    "ramp_linear": {
+      "path": "research/S019/experiments/EX046_20261111/others/qualified_linear_ramp_center_account.json",
+      "reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S019",
+          "experiment_id": "EX046_20261111"
+        },
+        "evidence_id": "9be22fa345e84defd912af7f8107746c0605031baaecffe23a3ea66b31851ae6.json",
+        "sha256": "9be22fa345e84defd912af7f8107746c0605031baaecffe23a3ea66b31851ae6",
+        "media_type": "application/json",
+        "name": "qualified_linear_ramp_center",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "file_sha256": "5f04dbbc28c6ce10aa29e5715404d4b53286b8e7ad6faef699a7c25568afbf01",
+      "historical_source_sha256": "0082d1ca613c6f475c651317db8622b23ff3e50725977592818ee7fe493e4fc8",
+      "current_source_sha256": "0082d1ca613c6f475c651317db8622b23ff3e50725977592818ee7fe493e4fc8",
+      "neutral_added_parameters": {},
+      "parity_required_before_feedback": true
+    },
+    "rebuild_linear": {
+      "path": "research/S019/experiments/EX046_20261111/others/qualified_linear_ramp_rebuild_center_account.json",
+      "reference": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S019",
+          "experiment_id": "EX046_20261111"
+        },
+        "evidence_id": "f52d3a84d6b3c46ffd24a8b106a363255c50a696237c03c753a5bb380fe28bdf.json",
+        "sha256": "f52d3a84d6b3c46ffd24a8b106a363255c50a696237c03c753a5bb380fe28bdf",
+        "media_type": "application/json",
+        "name": "qualified_linear_ramp_rebuild_center",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "file_sha256": "0155acac5cedfc7406bce27c760214f460ed9b55532daeb69167b9f5c80604d9",
+      "historical_source_sha256": "0082d1ca613c6f475c651317db8622b23ff3e50725977592818ee7fe493e4fc8",
+      "current_source_sha256": "0082d1ca613c6f475c651317db8622b23ff3e50725977592818ee7fe493e4fc8",
+      "neutral_added_parameters": {},
+      "parity_required_before_feedback": true
+    }
+  },
+  "control_parameters": {
+    "hard_linear": {
+      "confirm": true,
+      "confirm_bars": 2,
+      "down_days": 1,
+      "exit_mode": "fixed",
+      "exit_policy": "hard",
+      "exit_width": 0.5,
+      "hold_days": 5,
+      "information": "relative",
+      "joint_rule": "maximum",
+      "participation_days": 3,
+      "participation_policy": "linear",
+      "participation_threshold": 1.0443117349209394,
+      "participation_width": 0.2888670017592839,
+      "quiet_fraction": 0.35250973549252723,
+      "require_sector": false,
+      "risk_basis": "daily",
+      "trail_atr": 2.4279380676391424,
+      "treatment": "tilt",
+      "weak_fraction": 0.3284299259134771
+    },
+    "ramp_linear": {
+      "confirm": true,
+      "confirm_bars": 2,
+      "down_days": 1,
+      "exit_mode": "fixed",
+      "exit_policy": "ramp",
+      "exit_width": 0.5,
+      "hold_days": 5,
+      "information": "relative",
+      "joint_rule": "maximum",
+      "participation_days": 3,
+      "participation_policy": "linear",
+      "participation_threshold": 1.0443117349209394,
+      "participation_width": 0.2888670017592839,
+      "quiet_fraction": 0.35250973549252723,
+      "require_sector": false,
+      "risk_basis": "daily",
+      "trail_atr": 2.4279380676391424,
+      "treatment": "tilt",
+      "weak_fraction": 0.3284299259134771
+    },
+    "rebuild_linear": {
+      "confirm": true,
+      "confirm_bars": 2,
+      "down_days": 1,
+      "exit_mode": "fixed",
+      "exit_policy": "ramp_rebuild",
+      "exit_width": 0.5,
+      "hold_days": 5,
+      "information": "relative",
+      "joint_rule": "maximum",
+      "participation_days": 3,
+      "participation_policy": "linear",
+      "participation_threshold": 1.0443117349209394,
+      "participation_width": 0.2888670017592839,
+      "quiet_fraction": 0.35250973549252723,
+      "require_sector": false,
+      "risk_basis": "daily",
+      "trail_atr": 2.4279380676391424,
+      "treatment": "tilt",
+      "weak_fraction": 0.3284299259134771
+    }
+  },
+  "candidate_start": 807,
+  "next_candidate_start": 951,
+  "reserved_proposed_candidate_ids": [
+    "C0807",
+    "C0808",
+    "C0809",
+    "C0810",
+    "C0811",
+    "C0812",
+    "C0813",
+    "C0814",
+    "C0815",
+    "C0816",
+    "C0817",
+    "C0818",
+    "C0819",
+    "C0820",
+    "C0821",
+    "C0822",
+    "C0823",
+    "C0824",
+    "C0825",
+    "C0826",
+    "C0827",
+    "C0828",
+    "C0829",
+    "C0830",
+    "C0831",
+    "C0832",
+    "C0833",
+    "C0834",
+    "C0835",
+    "C0836",
+    "C0837",
+    "C0838",
+    "C0839",
+    "C0840",
+    "C0841",
+    "C0842",
+    "C0843",
+    "C0844",
+    "C0845",
+    "C0846",
+    "C0847",
+    "C0848",
+    "C0849",
+    "C0850",
+    "C0851",
+    "C0852",
+    "C0853",
+    "C0854",
+    "C0855",
+    "C0856",
+    "C0857",
+    "C0858",
+    "C0859",
+    "C0860",
+    "C0861",
+    "C0862",
+    "C0863",
+    "C0864",
+    "C0865",
+    "C0866",
+    "C0867",
+    "C0868",
+    "C0869",
+    "C0870",
+    "C0871",
+    "C0872",
+    "C0873",
+    "C0874",
+    "C0875",
+    "C0876",
+    "C0877",
+    "C0878",
+    "C0879",
+    "C0880",
+    "C0881",
+    "C0882",
+    "C0883",
+    "C0884",
+    "C0885",
+    "C0886",
+    "C0887",
+    "C0888",
+    "C0889",
+    "C0890",
+    "C0891",
+    "C0892",
+    "C0893",
+    "C0894",
+    "C0895",
+    "C0896",
+    "C0897",
+    "C0898",
+    "C0899",
+    "C0900",
+    "C0901",
+    "C0902",
+    "C0903",
+    "C0904",
+    "C0905",
+    "C0906",
+    "C0907",
+    "C0908",
+    "C0909",
+    "C0910",
+    "C0911",
+    "C0912",
+    "C0913",
+    "C0914",
+    "C0915",
+    "C0916",
+    "C0917",
+    "C0918",
+    "C0919",
+    "C0920",
+    "C0921",
+    "C0922",
+    "C0923",
+    "C0924",
+    "C0925",
+    "C0926",
+    "C0927",
+    "C0928",
+    "C0929",
+    "C0930",
+    "C0931",
+    "C0932",
+    "C0933",
+    "C0934",
+    "C0935",
+    "C0936",
+    "C0937",
+    "C0938",
+    "C0939",
+    "C0940",
+    "C0941",
+    "C0942",
+    "C0943",
+    "C0944",
+    "C0945",
+    "C0946",
+    "C0947",
+    "C0948",
+    "C0949",
+    "C0950"
+  ],
+  "round_budget": {
+    "allocated_rounds": 10,
+    "round_index": 1,
+    "total_round": 1,
+    "remaining_after_completion": 9
+  },
+  "rounds_debited_by_runner": 0,
+  "checkpoint_run_id": "ex047_20261111-family-tpe",
+  "duplicate_rule": "Exact content identity reuses canonical candidate/handle/account; proposed IDs remain recorded."
+}

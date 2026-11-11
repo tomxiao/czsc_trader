@@ -1,0 +1,268 @@
+{
+  "families": [
+    {
+      "name": "hard_linear",
+      "fixed": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "confirm_bars": 2,
+        "participation_policy": "linear"
+      },
+      "space": {
+        "weak_fraction": {
+          "kind": "float",
+          "low": 0.15,
+          "high": 0.55,
+          "step": null
+        },
+        "quiet_fraction": {
+          "kind": "float",
+          "low": 0.15,
+          "high": 0.85,
+          "step": null
+        },
+        "participation_threshold": {
+          "kind": "float",
+          "low": 0.75,
+          "high": 1.5,
+          "step": null
+        },
+        "participation_width": {
+          "kind": "float",
+          "low": 0.05,
+          "high": 0.65,
+          "step": null
+        },
+        "trail_atr": {
+          "kind": "float",
+          "low": 1.8,
+          "high": 3.2,
+          "step": null
+        }
+      },
+      "control_account": "research/S019/experiments/EX046_20261111/others/qualified_linear_hard_center_account.json"
+    },
+    {
+      "name": "ramp_linear",
+      "fixed": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "ramp",
+        "confirm_bars": 2,
+        "participation_policy": "linear"
+      },
+      "space": {
+        "weak_fraction": {
+          "kind": "float",
+          "low": 0.15,
+          "high": 0.55,
+          "step": null
+        },
+        "quiet_fraction": {
+          "kind": "float",
+          "low": 0.15,
+          "high": 0.85,
+          "step": null
+        },
+        "participation_threshold": {
+          "kind": "float",
+          "low": 0.75,
+          "high": 1.5,
+          "step": null
+        },
+        "participation_width": {
+          "kind": "float",
+          "low": 0.05,
+          "high": 0.65,
+          "step": null
+        },
+        "trail_atr": {
+          "kind": "float",
+          "low": 1.8,
+          "high": 3.2,
+          "step": null
+        },
+        "exit_width": {
+          "kind": "float",
+          "low": 0.1,
+          "high": 1.25,
+          "step": null
+        }
+      },
+      "control_account": "research/S019/experiments/EX046_20261111/others/qualified_linear_ramp_center_account.json"
+    },
+    {
+      "name": "rebuild_linear",
+      "fixed": {
+        "confirm": true,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "treatment": "tilt",
+        "exit_policy": "ramp_rebuild",
+        "confirm_bars": 2,
+        "participation_policy": "linear"
+      },
+      "space": {
+        "weak_fraction": {
+          "kind": "float",
+          "low": 0.15,
+          "high": 0.55,
+          "step": null
+        },
+        "quiet_fraction": {
+          "kind": "float",
+          "low": 0.15,
+          "high": 0.85,
+          "step": null
+        },
+        "participation_threshold": {
+          "kind": "float",
+          "low": 0.75,
+          "high": 1.5,
+          "step": null
+        },
+        "participation_width": {
+          "kind": "float",
+          "low": 0.05,
+          "high": 0.65,
+          "step": null
+        },
+        "trail_atr": {
+          "kind": "float",
+          "low": 1.8,
+          "high": 3.2,
+          "step": null
+        },
+        "exit_width": {
+          "kind": "float",
+          "low": 0.1,
+          "high": 1.25,
+          "step": null
+        }
+      },
+      "control_account": "research/S019/experiments/EX046_20261111/others/qualified_linear_ramp_rebuild_center_account.json"
+    }
+  ],
+  "state_schema": {
+    "account_fields": [],
+    "cycle_fields": [
+      {
+        "key": "anchor",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "allocation",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "exiting",
+        "value_type": "bool",
+        "nullable": false
+      },
+      {
+        "key": "high_water",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "entry_atr",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "risk_fraction",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "breach_count",
+        "value_type": "int",
+        "nullable": false
+      }
+    ]
+  },
+  "base_candidate": "C0355",
+  "parameter_schema": {
+    "exit_policy": {
+      "type": "string"
+    },
+    "exit_width": {
+      "type": "number"
+    },
+    "confirm_bars": {
+      "type": "integer"
+    },
+    "participation_policy": {
+      "type": "string"
+    },
+    "participation_width": {
+      "type": "number"
+    }
+  },
+  "candidate_start": 807,
+  "round_budget": {
+    "allocated_rounds": 10,
+    "round_index": 1,
+    "total_round": 1,
+    "remaining_after_completion": 9
+  },
+  "seed": 20261121,
+  "trial_budget": 48,
+  "startup_trials": 16,
+  "batch_size": 4,
+  "imported_observations": {
+    "hard_linear": [
+      "research/S019/experiments/EX047_20261111/others/imports/hard_linear_original_hard_center.json",
+      "research/S019/experiments/EX047_20261111/others/imports/hard_linear_original_hard_low.json",
+      "research/S019/experiments/EX047_20261111/others/imports/hard_linear_original_hard_high.json",
+      "research/S019/experiments/EX047_20261111/others/imports/hard_linear_qualified_linear_hard_low.json",
+      "research/S019/experiments/EX047_20261111/others/imports/hard_linear_qualified_linear_hard_high.json"
+    ],
+    "ramp_linear": [
+      "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_original_ramp_center.json",
+      "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_adapted_ramp_center.json",
+      "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_original_ramp_low.json",
+      "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_original_ramp_high.json",
+      "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_adapted_ramp_low.json",
+      "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_adapted_ramp_high.json",
+      "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_qualified_linear_ramp_low.json",
+      "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_qualified_linear_ramp_high.json"
+    ],
+    "rebuild_linear": [
+      "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_original_ramp_rebuild_center.json",
+      "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_original_ramp_rebuild_low.json",
+      "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_original_ramp_rebuild_high.json",
+      "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_adapted_ramp_rebuild_center.json",
+      "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_adapted_ramp_rebuild_low.json",
+      "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_adapted_ramp_rebuild_high.json",
+      "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_qualified_linear_ramp_rebuild_low.json",
+      "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_qualified_linear_ramp_rebuild_high.json"
+    ]
+  }
+}

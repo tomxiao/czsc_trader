@@ -1,0 +1,2148 @@
+{
+  "status": "COMPLETE",
+  "manifest": {
+    "version": 1,
+    "experiment": "EX047_20261111",
+    "runner_sha256": "5bad78a717271e6dd9bc38286d77126187e1c83ad761213633297987394b7bb0",
+    "source_sha256": "0082d1ca613c6f475c651317db8622b23ff3e50725977592818ee7fe493e4fc8",
+    "search_sha256": "4cf76959baae0b0a086b804c026b4e0ab866304f00b8470f4a889c0482a737a7",
+    "plan_sha256": "adce6ea688b0a11665fb51b24627fc8cfc072f189525f3a8652d2f9d0e7640aa",
+    "dependencies": {
+      "research/S019/experiments/EX043_20261110/src/batch_runner.py": "0dd8d0a5739f2d48bea1280bc0c98d80005df543492d59e2ea8719b71c77257a",
+      "research/S019/experiments/EX013_20261110/src/runner.py": "20d7bf58f82816ccd19f1697d88240aacf28274fc1a81dd6558ef67daecebb2f",
+      "research/S019/experiments/EX003_20261110/src/data_window.py": "ba21d1b00fc8f0efa0fa349d6230225b71043e4d85de82191ac278c56a7c2678",
+      "research/S019/experiments/EX001_20261110/src/prepare_data.py": "ebed38de0e8a988f8a58318c148f16cc573db00bb91b305c226d30d611e3e7c9",
+      "research/S019/experiments/EX001_20261110/src/load_data.py": "b3fcafc79d664d26c7bf4878f4e641aa023ca528ed8569bab8e62bae489ab1a6"
+    },
+    "optuna_version": "4.9.0",
+    "storage": "InMemoryStorage + immutable JSON ask/result/tell records",
+    "sampler": "Constrained multivariate TPE; constant_liar=True; maximize original NAR",
+    "seeds": {
+      "hard_linear": 20261121,
+      "ramp_linear": 20261122,
+      "rebuild_linear": 20261123
+    },
+    "resources": {
+      "workers": 12,
+      "native_threads": 1,
+      "family_batch_size": 4
+    },
+    "resource_waves": {
+      "family_counts": [
+        3
+      ],
+      "regular_proposal_counts": [
+        12
+      ],
+      "first_controls": 3,
+      "first_remaining_proposal_counts": [
+        9
+      ],
+      "feedback_barrier": "All families complete four observations before next ask"
+    },
+    "family_trial_budget": 48,
+    "startup_trials": 16,
+    "proposal_budget": 144,
+    "imported_observations": 21,
+    "imported_records": {
+      "hard_linear": [
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/hard_linear_original_hard_center.json",
+          "file_sha256": "37ddb0e3e37b57893762a69c2e28fd0e9e6d0d7130ea93a9c4a10f32eb8c2034",
+          "id": "C0780",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "4261e18953e84dc7c6b1c6f5082cd6ac1d6bf7144d9931ca4fae6c63f5db9827.json",
+            "sha256": "4261e18953e84dc7c6b1c6f5082cd6ac1d6bf7144d9931ca4fae6c63f5db9827",
+            "media_type": "application/json",
+            "name": "original_hard_center",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "631e68c0dfdf587c7b7fffccac346d227211df23752a87cc828b41c89b4d4b3c",
+          "request_sha256": "3ac9cd336542e436bf878eb7830b5ec1b0773328b0b715b1b04d86e72e00fd60"
+        },
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/hard_linear_original_hard_low.json",
+          "file_sha256": "ab02c86e9e270a3a930001dad36939448a57dcbe655be7f7afbe55d1f25752ec",
+          "id": "C0781",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "48866a4170329a7e5b484b196ccec270f255136a51b8f5548aeabd78a76709af.json",
+            "sha256": "48866a4170329a7e5b484b196ccec270f255136a51b8f5548aeabd78a76709af",
+            "media_type": "application/json",
+            "name": "original_hard_low",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "db17d21f19cd903df3830b7a7090393c22472160cf1c1b40a37463bb6aee2a70",
+          "request_sha256": "b232d868b266d82369d86da98c25f53fa8224fe8a1f62b0d164b96ce8f3ea2ad"
+        },
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/hard_linear_original_hard_high.json",
+          "file_sha256": "d55df05ecf968996059e76767ac67ec685900d65e59de59dc27c52aaaadf6aa9",
+          "id": "C0782",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "3d275d11f2a9147bde5de16037847f7764f009995b10013a97980533be4eccd7.json",
+            "sha256": "3d275d11f2a9147bde5de16037847f7764f009995b10013a97980533be4eccd7",
+            "media_type": "application/json",
+            "name": "original_hard_high",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "e69271e025cecc78548f81fed67754310019ddc7e0d282762e7c316237cccc44",
+          "request_sha256": "b3a0d4bb0e621625de0c650f6791c321c9118b12c026b04d70e072d7d80bebe6"
+        },
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/hard_linear_qualified_linear_hard_low.json",
+          "file_sha256": "d59c219c0fddfc0a7bb1e98eb93a6a54e25b40964e32d3dde1bbb4083d30d510",
+          "id": "C0799",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "9e1d848db418f79af8c1864cdbfe46cc28a941bc938e55195c91eb0b14053d71.json",
+            "sha256": "9e1d848db418f79af8c1864cdbfe46cc28a941bc938e55195c91eb0b14053d71",
+            "media_type": "application/json",
+            "name": "qualified_linear_hard_low",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "ae5c7a115acec748b834523a7e4af457198520204931e65dbba8d608836fa4e8",
+          "request_sha256": "f0d9d93e95a1d29f47d108a7bbc06882a5baa88bb6e66ba31e98682e7605c9a1"
+        },
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/hard_linear_qualified_linear_hard_high.json",
+          "file_sha256": "dcb1fced5c5da27a34100e3a3667ad184692651286e166b41dfee6a774b8184f",
+          "id": "C0800",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "fd2367f66a8a8798de230dd0af3dbb74211e2c869f04012f2f96158e7f4de4da.json",
+            "sha256": "fd2367f66a8a8798de230dd0af3dbb74211e2c869f04012f2f96158e7f4de4da",
+            "media_type": "application/json",
+            "name": "qualified_linear_hard_high",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "5f98eac36beba6158fecfc4401ff3c57978e1fa35ccc075dae19dc1a25d6d1a3",
+          "request_sha256": "937386366a88dc6f576525f23951d510b5d21e0347e28a92f78fdfafc6e4bfe5"
+        }
+      ],
+      "ramp_linear": [
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_original_ramp_center.json",
+          "file_sha256": "3a6b1d12f62b3245fdc9913b7868f2ffab443d2aa9ce32e98a38efc3eeb11fab",
+          "id": "C0783",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "bb7d7fb4173cccf49728b8ab839db6dcdb8d06e4d3a5d1a49b5861d1a33184fd.json",
+            "sha256": "bb7d7fb4173cccf49728b8ab839db6dcdb8d06e4d3a5d1a49b5861d1a33184fd",
+            "media_type": "application/json",
+            "name": "original_ramp_center",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "8ac0c17a61c64f0a753bc5a67189cb279f80c7cf37c16900e2975d69cec415ce",
+          "request_sha256": "eee1e9452e566c177dcf3f2452b957b3c79d4169d6058b738c099a2ec7b9b493"
+        },
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_adapted_ramp_center.json",
+          "file_sha256": "4e2571b12a93547d223044aeeb42ae7731c61caeb8cf10cefaf56896b5e7ac3c",
+          "id": "C0792",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "a80ae44c9216ea5343654d1ddcab9b871368e9f9239976f0ae2a2e10d786e7a3.json",
+            "sha256": "a80ae44c9216ea5343654d1ddcab9b871368e9f9239976f0ae2a2e10d786e7a3",
+            "media_type": "application/json",
+            "name": "adapted_ramp_center",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "59a09ac86fb365bc47643fb1ffbfd0d30cd0453631f490acc093f3e858e6a688",
+          "request_sha256": "f9198f3514104a11b762cd05fccf775c695e3d354fb2fe9cc235d456fa7548bb"
+        },
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_original_ramp_low.json",
+          "file_sha256": "8850e9bc9d78271f994d73c74d92b41ff4fb184eb8ccbfa571687770e8c2d8cb",
+          "id": "C0784",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "6792e586adbae79823d0270b2d40abb63e804bb7e5c01a2ffe2f49afc5f488ff.json",
+            "sha256": "6792e586adbae79823d0270b2d40abb63e804bb7e5c01a2ffe2f49afc5f488ff",
+            "media_type": "application/json",
+            "name": "original_ramp_low",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "447cdc371f4480b01398da5f3fad488f0dbc5f7f1a5a2f59ab4cf86935f17445",
+          "request_sha256": "539424cf926a73b65f547774ed4a35188adea1adf2f395f63d32094b845c0fad"
+        },
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_original_ramp_high.json",
+          "file_sha256": "7a3df2fcc11dce8d9340a2d59230d232a39448a30acdab1070acc37b9f8e1a28",
+          "id": "C0785",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "3abc5f8202da72ef34aca75eb1799a03c6420c8a2c4fc2ae166fdadc9dd039e0.json",
+            "sha256": "3abc5f8202da72ef34aca75eb1799a03c6420c8a2c4fc2ae166fdadc9dd039e0",
+            "media_type": "application/json",
+            "name": "original_ramp_high",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "ff4788b4f1a51c3f7d484745f6dfc700b6096da6f229b329f5877702a8278fda",
+          "request_sha256": "9dbdf71ad7714418fd8a6dc561fcd15b27eae5376c0ab064f84609c031e05946"
+        },
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_adapted_ramp_low.json",
+          "file_sha256": "10aa118dfea02d5eccb4e64c43b18a41a7d4b0a1ebef96210e462feb0d777ad8",
+          "id": "C0793",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "3357aefddcc91dd275d6f0cc35c5c325718c406597b57a10e1388ec620e89075.json",
+            "sha256": "3357aefddcc91dd275d6f0cc35c5c325718c406597b57a10e1388ec620e89075",
+            "media_type": "application/json",
+            "name": "adapted_ramp_low",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "7130cdce6905e3cb745296035e9eed99e7dd7c0f34e694c83e63125a9cb9e153",
+          "request_sha256": "8dc2f7e0d88f56ff917aace319f24bc4556d23bd90d39f124fa952e92e92696a"
+        },
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_adapted_ramp_high.json",
+          "file_sha256": "012c43c3fcc9b51d2af297867be424f0741f1b41fcb885f799e5ddf57cea893a",
+          "id": "C0794",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "fa4fa905e371a62088ecf7954f8f5c9e90c806ee591a200da83d26ae336d7601.json",
+            "sha256": "fa4fa905e371a62088ecf7954f8f5c9e90c806ee591a200da83d26ae336d7601",
+            "media_type": "application/json",
+            "name": "adapted_ramp_high",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "9fe8304f805fd7f0a0e6e63c0e120c9ec264540820a5c5f01f79ccc8a7e03b42",
+          "request_sha256": "6de8bd46b1e89342c450912fe22875da14e685a1673e5613bdc10d88c2a968cc"
+        },
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_qualified_linear_ramp_low.json",
+          "file_sha256": "e1dacea2b1ef731495ab512c8879e551ebc382eceff7c5aa93d9c51102bb22a1",
+          "id": "C0802",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "9bc23b9cea49848fdeea790f02d99c6304dbf67463b3d41f53b2a09fa6e8f326.json",
+            "sha256": "9bc23b9cea49848fdeea790f02d99c6304dbf67463b3d41f53b2a09fa6e8f326",
+            "media_type": "application/json",
+            "name": "qualified_linear_ramp_low",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "7d6c6de868e11e318cb8fc0258f3bc9244ee8932fbbdb38db47ce815315e1135",
+          "request_sha256": "f87288d5c5813b26890435a2428d1b2ca0d6d76004c4d0ce4b1f7e4511c30cb0"
+        },
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/ramp_linear_qualified_linear_ramp_high.json",
+          "file_sha256": "af3d7703105eb2ab061117cbd66cf6554eb18627c6a0fab1fc0aa0f59b7c23d4",
+          "id": "C0803",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "3357f952fc1546acfe56b4331fece57df5388f80f6ecf5ba9a3ec5da075cb764.json",
+            "sha256": "3357f952fc1546acfe56b4331fece57df5388f80f6ecf5ba9a3ec5da075cb764",
+            "media_type": "application/json",
+            "name": "qualified_linear_ramp_high",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "14657996524d53e32ad055ad848bf64fb58cc53d5149a44ec050b53075c382c2",
+          "request_sha256": "46273cbdc829d7b479bcecf83d8680ed748a51cb8be0650f85436cc877f7496e"
+        }
+      ],
+      "rebuild_linear": [
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_original_ramp_rebuild_center.json",
+          "file_sha256": "37c14bf7f12fd71c8c9b60fecbb13c14cf226d2b23008e6c3abfb4d0da68cfbe",
+          "id": "C0786",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "42743989901c13aeb58c82dace610ba9dd607c605dc60ef2b0ed6a970900f03f.json",
+            "sha256": "42743989901c13aeb58c82dace610ba9dd607c605dc60ef2b0ed6a970900f03f",
+            "media_type": "application/json",
+            "name": "original_ramp_rebuild_center",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "cac3d169e2dc9e5ca1e0e2e7253d597f46ed8b6a74d7f21ec899e8c60525824f",
+          "request_sha256": "1f407fde311b7d7fc98f8099562e8d0e777dd4e3a03e56548386bc5becac2d42"
+        },
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_original_ramp_rebuild_low.json",
+          "file_sha256": "f19b717b6e53d50d0d6ef068be3ba5c381c9515dabf0d412484c688877a9aa40",
+          "id": "C0787",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "a3696033aa463ee25c8bed1ce16bd57a8e8ed59636cd5d38872ae2fcb6d319ba.json",
+            "sha256": "a3696033aa463ee25c8bed1ce16bd57a8e8ed59636cd5d38872ae2fcb6d319ba",
+            "media_type": "application/json",
+            "name": "original_ramp_rebuild_low",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "f6db3081a92247f8851596acd1304c29946ef6b5a930c119e61a27f3a7e2b771",
+          "request_sha256": "f6bd0baa2bc42f5ed4e8a8feecf921299053171dd9af48a78fb7978eb2d6c694"
+        },
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_original_ramp_rebuild_high.json",
+          "file_sha256": "2468fa3c65f2c07d0d367c108867f9a6e8d590f112dcd4caac8e5d7e7f2e83ba",
+          "id": "C0788",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "0ef1b773a9165c8e9d718af1c3225251d32f632e59a7ba7d530ac17899455873.json",
+            "sha256": "0ef1b773a9165c8e9d718af1c3225251d32f632e59a7ba7d530ac17899455873",
+            "media_type": "application/json",
+            "name": "original_ramp_rebuild_high",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "5228a0fe45b0a8be542735772dd8b5afea569bb216b61f041dfd55ef5d0f7d9e",
+          "request_sha256": "841b51f278a8cb97c460b3a114732ab857c09cc1921549548880df3ddc76f952"
+        },
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_adapted_ramp_rebuild_center.json",
+          "file_sha256": "3eb92a7d3ff5d3821d99574d0695e96015d387780eaa4d1228d68a5b82e31862",
+          "id": "C0795",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "5c97dc291d907c50e4efbec41f8b167fb0c4100d31209dee51cc84264fc87bad.json",
+            "sha256": "5c97dc291d907c50e4efbec41f8b167fb0c4100d31209dee51cc84264fc87bad",
+            "media_type": "application/json",
+            "name": "adapted_ramp_rebuild_center",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "fa16a6e71877c4f0b4b91ea10e20678b90cd1d6e2c93f311caf8ddd6760a5aae",
+          "request_sha256": "7819b97473b611910061be1d7b156ca8377b798685aa496aff07839142ef0fcf"
+        },
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_adapted_ramp_rebuild_low.json",
+          "file_sha256": "fb889549910b690f3b459ceb82e4af561c952acd4571f9a5706492a15bb5fd8b",
+          "id": "C0796",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "7a1178717cafa72133dfcf8a7aee5a5228bfb5b30ea1384e966633d93a1bc0ae.json",
+            "sha256": "7a1178717cafa72133dfcf8a7aee5a5228bfb5b30ea1384e966633d93a1bc0ae",
+            "media_type": "application/json",
+            "name": "adapted_ramp_rebuild_low",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "c3abdc85ca69ddc80c1379667eb73a7bb03fb5901d411c31e3f8adadb2054c7d",
+          "request_sha256": "bb1325c56fdf46514fb55dff89e532090af2f96e415955e8e82fe59b059638d7"
+        },
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_adapted_ramp_rebuild_high.json",
+          "file_sha256": "e79a3575e42b781d8c9b78be8fea6dc9cf10b25db811fb72ce65ba0905f59241",
+          "id": "C0797",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "d7cb3166e17148f7923e7c146a937e3c2c89eb983e3b0ee090b464f076421007.json",
+            "sha256": "d7cb3166e17148f7923e7c146a937e3c2c89eb983e3b0ee090b464f076421007",
+            "media_type": "application/json",
+            "name": "adapted_ramp_rebuild_high",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "db3f591102612bc3371ee6de81b8ef5c584ad2466e673259cb100eb31aa74ae4",
+          "request_sha256": "0b8410565fa507d19808a118f02325f43e648b98fd1b6621426cc4b3a2c270e3"
+        },
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_qualified_linear_ramp_rebuild_low.json",
+          "file_sha256": "613d7c32bae715d69a3b9f84d8afb5f2541c4b7d927bd8b18b62bae1693c915e",
+          "id": "C0805",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "1734ce6c631514683296ab176ca451a0e7664853e2e29961a41a3b594fe205f9.json",
+            "sha256": "1734ce6c631514683296ab176ca451a0e7664853e2e29961a41a3b594fe205f9",
+            "media_type": "application/json",
+            "name": "qualified_linear_ramp_rebuild_low",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "8f38a38477fb3488eeb0e21e9e8ad31345118252e408d370061b11178f3dc4ec",
+          "request_sha256": "00c158faa649edd65ba6518a2377a80659f2e390105c434ab700ffd6d7439738"
+        },
+        {
+          "path": "research/S019/experiments/EX047_20261111/others/imports/rebuild_linear_qualified_linear_ramp_rebuild_high.json",
+          "file_sha256": "776515982bc780f8ed12f2b6ab9d959551cd8d8b5114edac57af0599399b70cc",
+          "id": "C0806",
+          "account": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX046_20261111"
+            },
+            "evidence_id": "be7d067c4c295cb048dcef52016df0ddd6a1bbd548ef873ffc2e5ee9e334ec86.json",
+            "sha256": "be7d067c4c295cb048dcef52016df0ddd6a1bbd548ef873ffc2e5ee9e334ec86",
+            "media_type": "application/json",
+            "name": "qualified_linear_ramp_rebuild_high",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "content_hash": "912e6f6559717d5e2b84194f5ab9a3328e8f8f05620921d73761a0710cc21758",
+          "request_sha256": "35b34b8924ab89a80cb727c04ac28e499b2c515b1b637f0c96d21454a9702cc3"
+        }
+      ]
+    },
+    "imported_trial_counts": {
+      "hard_linear": 5,
+      "ramp_linear": 8,
+      "rebuild_linear": 8
+    },
+    "base_definition": {
+      "runtime_kind": "ACCOUNT_REPLAY",
+      "instrument": {
+        "market": "US",
+        "asset_class": "STOCK",
+        "symbol": "MU"
+      },
+      "execution_spec": {
+        "market": {
+          "rule_version": "US_EQUITY_V1"
+        },
+        "decision_clock": "30m",
+        "account": {
+          "currency": "USD",
+          "cash_availability": "IMMEDIATE_RESEARCH",
+          "allow_short": false,
+          "allow_negative_cash": false
+        },
+        "quantity_step": 1,
+        "price_tick": 0.01,
+        "buy_premium": 0.01,
+        "slippage_bp": 0.0,
+        "execution": "BAR_RANGE_V1",
+        "inclusive_touch": false,
+        "data_latency_seconds": 0
+      },
+      "warmup_bars": 900,
+      "entrypoint": "strategy:step",
+      "source_files": [
+        "strategy.py"
+      ],
+      "source_sha256": "0082d1ca613c6f475c651317db8622b23ff3e50725977592818ee7fe493e4fc8",
+      "parameters_json": "{\"confirm\":true,\"confirm_bars\":2,\"down_days\":1,\"exit_mode\":\"fixed\",\"exit_policy\":\"hard\",\"exit_width\":0.5,\"hold_days\":5,\"information\":\"relative\",\"joint_rule\":\"maximum\",\"participation_days\":3,\"participation_policy\":\"linear\",\"participation_threshold\":1.0443117349209394,\"participation_width\":0.2888670017592839,\"quiet_fraction\":0.35250973549252723,\"require_sector\":false,\"risk_basis\":\"daily\",\"trail_atr\":2.4279380676391424,\"treatment\":\"tilt\",\"weak_fraction\":0.3284299259134771}",
+      "dependencies": [
+        {
+          "name": "numpy",
+          "version": "2.5.2"
+        },
+        {
+          "name": "pandas",
+          "version": "3.0.5"
+        }
+      ],
+      "contract_version": 4,
+      "parameter_schema_json": "{\"confirm\":{\"type\":\"boolean\"},\"confirm_bars\":{\"type\":\"integer\"},\"down_days\":{\"type\":\"integer\"},\"exit_mode\":{\"type\":\"string\"},\"exit_policy\":{\"type\":\"string\"},\"exit_width\":{\"type\":\"number\"},\"hold_days\":{\"type\":\"integer\"},\"information\":{\"type\":\"string\"},\"joint_rule\":{\"type\":\"string\"},\"participation_days\":{\"type\":\"integer\"},\"participation_policy\":{\"type\":\"string\"},\"participation_threshold\":{\"type\":\"number\"},\"participation_width\":{\"type\":\"number\"},\"quiet_fraction\":{\"type\":\"number\"},\"require_sector\":{\"type\":\"boolean\"},\"risk_basis\":{\"type\":\"string\"},\"trail_atr\":{\"type\":\"number\"},\"treatment\":{\"type\":\"string\"},\"weak_fraction\":{\"type\":\"number\"}}",
+      "feedback_mode": "CONFIRMED_EXECUTION",
+      "analysis_price": "HFQ",
+      "explanation_cases": [
+        "flat",
+        "long"
+      ],
+      "auxiliary_inputs": [
+        {
+          "name": "mu_daily",
+          "instrument": {
+            "market": "US",
+            "asset_class": "STOCK",
+            "symbol": "MU"
+          },
+          "source": {
+            "provider": "futu",
+            "revision": "s019-unified-window-20261110-v2"
+          },
+          "frequency": "daily",
+          "warmup_bars": 65,
+          "max_age_seconds": 604800,
+          "analysis_price": "HFQ"
+        },
+        {
+          "name": "soxx_daily",
+          "instrument": {
+            "market": "US",
+            "asset_class": "ETF",
+            "symbol": "SOXX"
+          },
+          "source": {
+            "provider": "futu",
+            "revision": "s019-unified-window-20261110-v2"
+          },
+          "frequency": "daily",
+          "warmup_bars": 65,
+          "max_age_seconds": 604800,
+          "analysis_price": "HFQ"
+        },
+        {
+          "name": "soxx_open",
+          "instrument": {
+            "market": "US",
+            "asset_class": "ETF",
+            "symbol": "SOXX"
+          },
+          "source": {
+            "provider": "futu",
+            "revision": "s019-unified-window-20261110-v2"
+          },
+          "frequency": "30m",
+          "warmup_bars": 1,
+          "max_age_seconds": 604800,
+          "analysis_price": "HFQ"
+        }
+      ],
+      "session_context": true,
+      "feature_graph": {
+        "nodes": [],
+        "outputs": [],
+        "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1"
+      },
+      "state_schema": {
+        "account_fields": [],
+        "cycle_fields": [
+          {
+            "key": "anchor",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "allocation",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "exiting",
+            "value_type": "bool",
+            "nullable": false
+          },
+          {
+            "key": "high_water",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "entry_atr",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "risk_fraction",
+            "value_type": "float",
+            "nullable": false
+          },
+          {
+            "key": "breach_count",
+            "value_type": "int",
+            "nullable": false
+          }
+        ]
+      },
+      "computation": "STATEFUL_STEP",
+      "execution_policy": {
+        "policy_type": "TARGET_POSITION",
+        "settings": {
+          "capital_mode": "target_equity_fraction"
+        }
+      }
+    },
+    "controls": {
+      "hard_linear": {
+        "path": "research/S019/experiments/EX046_20261111/others/qualified_linear_hard_center_account.json",
+        "reference": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "e4ae95a1c07d1fb6ae6961960f30e03ccf3a7b1ceeea488e0021064c4cadbebe.json",
+          "sha256": "e4ae95a1c07d1fb6ae6961960f30e03ccf3a7b1ceeea488e0021064c4cadbebe",
+          "media_type": "application/json",
+          "name": "qualified_linear_hard_center",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "file_sha256": "6c9de3d767074f3113158e99668debae40c78fb5d32b963fb68d64515de3b74a",
+        "historical_source_sha256": "0082d1ca613c6f475c651317db8622b23ff3e50725977592818ee7fe493e4fc8",
+        "current_source_sha256": "0082d1ca613c6f475c651317db8622b23ff3e50725977592818ee7fe493e4fc8",
+        "neutral_added_parameters": {},
+        "parity_required_before_feedback": true
+      },
+      "ramp_linear": {
+        "path": "research/S019/experiments/EX046_20261111/others/qualified_linear_ramp_center_account.json",
+        "reference": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "9be22fa345e84defd912af7f8107746c0605031baaecffe23a3ea66b31851ae6.json",
+          "sha256": "9be22fa345e84defd912af7f8107746c0605031baaecffe23a3ea66b31851ae6",
+          "media_type": "application/json",
+          "name": "qualified_linear_ramp_center",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "file_sha256": "5f04dbbc28c6ce10aa29e5715404d4b53286b8e7ad6faef699a7c25568afbf01",
+        "historical_source_sha256": "0082d1ca613c6f475c651317db8622b23ff3e50725977592818ee7fe493e4fc8",
+        "current_source_sha256": "0082d1ca613c6f475c651317db8622b23ff3e50725977592818ee7fe493e4fc8",
+        "neutral_added_parameters": {},
+        "parity_required_before_feedback": true
+      },
+      "rebuild_linear": {
+        "path": "research/S019/experiments/EX046_20261111/others/qualified_linear_ramp_rebuild_center_account.json",
+        "reference": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX046_20261111"
+          },
+          "evidence_id": "f52d3a84d6b3c46ffd24a8b106a363255c50a696237c03c753a5bb380fe28bdf.json",
+          "sha256": "f52d3a84d6b3c46ffd24a8b106a363255c50a696237c03c753a5bb380fe28bdf",
+          "media_type": "application/json",
+          "name": "qualified_linear_ramp_rebuild_center",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "file_sha256": "0155acac5cedfc7406bce27c760214f460ed9b55532daeb69167b9f5c80604d9",
+        "historical_source_sha256": "0082d1ca613c6f475c651317db8622b23ff3e50725977592818ee7fe493e4fc8",
+        "current_source_sha256": "0082d1ca613c6f475c651317db8622b23ff3e50725977592818ee7fe493e4fc8",
+        "neutral_added_parameters": {},
+        "parity_required_before_feedback": true
+      }
+    },
+    "control_parameters": {
+      "hard_linear": {
+        "confirm": true,
+        "confirm_bars": 2,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_policy": "linear",
+        "participation_threshold": 1.0443117349209394,
+        "participation_width": 0.2888670017592839,
+        "quiet_fraction": 0.35250973549252723,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.4279380676391424,
+        "treatment": "tilt",
+        "weak_fraction": 0.3284299259134771
+      },
+      "ramp_linear": {
+        "confirm": true,
+        "confirm_bars": 2,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_policy": "linear",
+        "participation_threshold": 1.0443117349209394,
+        "participation_width": 0.2888670017592839,
+        "quiet_fraction": 0.35250973549252723,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.4279380676391424,
+        "treatment": "tilt",
+        "weak_fraction": 0.3284299259134771
+      },
+      "rebuild_linear": {
+        "confirm": true,
+        "confirm_bars": 2,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "exit_policy": "ramp_rebuild",
+        "exit_width": 0.5,
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_policy": "linear",
+        "participation_threshold": 1.0443117349209394,
+        "participation_width": 0.2888670017592839,
+        "quiet_fraction": 0.35250973549252723,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.4279380676391424,
+        "treatment": "tilt",
+        "weak_fraction": 0.3284299259134771
+      }
+    },
+    "candidate_start": 807,
+    "next_candidate_start": 951,
+    "reserved_proposed_candidate_ids": [
+      "C0807",
+      "C0808",
+      "C0809",
+      "C0810",
+      "C0811",
+      "C0812",
+      "C0813",
+      "C0814",
+      "C0815",
+      "C0816",
+      "C0817",
+      "C0818",
+      "C0819",
+      "C0820",
+      "C0821",
+      "C0822",
+      "C0823",
+      "C0824",
+      "C0825",
+      "C0826",
+      "C0827",
+      "C0828",
+      "C0829",
+      "C0830",
+      "C0831",
+      "C0832",
+      "C0833",
+      "C0834",
+      "C0835",
+      "C0836",
+      "C0837",
+      "C0838",
+      "C0839",
+      "C0840",
+      "C0841",
+      "C0842",
+      "C0843",
+      "C0844",
+      "C0845",
+      "C0846",
+      "C0847",
+      "C0848",
+      "C0849",
+      "C0850",
+      "C0851",
+      "C0852",
+      "C0853",
+      "C0854",
+      "C0855",
+      "C0856",
+      "C0857",
+      "C0858",
+      "C0859",
+      "C0860",
+      "C0861",
+      "C0862",
+      "C0863",
+      "C0864",
+      "C0865",
+      "C0866",
+      "C0867",
+      "C0868",
+      "C0869",
+      "C0870",
+      "C0871",
+      "C0872",
+      "C0873",
+      "C0874",
+      "C0875",
+      "C0876",
+      "C0877",
+      "C0878",
+      "C0879",
+      "C0880",
+      "C0881",
+      "C0882",
+      "C0883",
+      "C0884",
+      "C0885",
+      "C0886",
+      "C0887",
+      "C0888",
+      "C0889",
+      "C0890",
+      "C0891",
+      "C0892",
+      "C0893",
+      "C0894",
+      "C0895",
+      "C0896",
+      "C0897",
+      "C0898",
+      "C0899",
+      "C0900",
+      "C0901",
+      "C0902",
+      "C0903",
+      "C0904",
+      "C0905",
+      "C0906",
+      "C0907",
+      "C0908",
+      "C0909",
+      "C0910",
+      "C0911",
+      "C0912",
+      "C0913",
+      "C0914",
+      "C0915",
+      "C0916",
+      "C0917",
+      "C0918",
+      "C0919",
+      "C0920",
+      "C0921",
+      "C0922",
+      "C0923",
+      "C0924",
+      "C0925",
+      "C0926",
+      "C0927",
+      "C0928",
+      "C0929",
+      "C0930",
+      "C0931",
+      "C0932",
+      "C0933",
+      "C0934",
+      "C0935",
+      "C0936",
+      "C0937",
+      "C0938",
+      "C0939",
+      "C0940",
+      "C0941",
+      "C0942",
+      "C0943",
+      "C0944",
+      "C0945",
+      "C0946",
+      "C0947",
+      "C0948",
+      "C0949",
+      "C0950"
+    ],
+    "round_budget": {
+      "allocated_rounds": 10,
+      "round_index": 1,
+      "total_round": 1,
+      "remaining_after_completion": 9
+    },
+    "rounds_debited_by_runner": 0,
+    "checkpoint_run_id": "ex047_20261111-family-tpe",
+    "duplicate_rule": "Exact content identity reuses canonical candidate/handle/account; proposed IDs remain recorded."
+  },
+  "workload": {
+    "input_snapshots": 1,
+    "candidate_runs": 144,
+    "benchmark_runs": 1,
+    "account_timings": [
+      {
+        "kind": "BENCHMARK",
+        "owner": "benchmark:abf8237a412cc25462378459822b2aa6cc2e7aaae1ddfb484afe8d8521bd7f24",
+        "feature_seconds": 0.0,
+        "replay_seconds": 17.457786999992095,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0807:24f2847aaec1244c2601988d838d286aeaa088da25aa960ff0ef1919155b9fd5",
+        "feature_seconds": 0.0,
+        "replay_seconds": 57.541647599980934,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0808:4c49ae1ec7d84e9594d594744b01a9ff10713dec1dba425c157c313a40f1b2d3",
+        "feature_seconds": 0.0,
+        "replay_seconds": 103.39722709998023,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0809:dd51326244c5665b34aacabc611666b7e6d1c2b9f510db2650ca504e4f45d9c8",
+        "feature_seconds": 0.0,
+        "replay_seconds": 104.01056719999178,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0810:124909a211b64cb7e32394b6384108c5bcf0c68f9f2d0fea4613c05faeea5fd5",
+        "feature_seconds": 0.0,
+        "replay_seconds": 102.93792339999345,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0811:b84749bf7eaa1a16c450699205f737b0487bc0fe76e0b2e29ef22cbcabc9d35c",
+        "feature_seconds": 0.0,
+        "replay_seconds": 113.38479300000472,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0812:1da9563ef025ef7b63682dafcf4b87a8e515483f055bb0dfd9e7f56140dbd8ed",
+        "feature_seconds": 0.0,
+        "replay_seconds": 114.39487429999281,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0813:70f1e376785beae0408293166c39934131442796403e89bb5952ec5fa0345325",
+        "feature_seconds": 0.0,
+        "replay_seconds": 114.47521539998706,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0814:0deec3d159fd04cd5b9d5ad0e583b5a8704bfc72f876a354cfd85b0a125cfb29",
+        "feature_seconds": 0.0,
+        "replay_seconds": 113.99450850000721,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0815:c275f9fd9671f830c2ea2d8d8e1a8a9b3f2464bfad8cf08eb9c0b7c1853422d1",
+        "feature_seconds": 0.0,
+        "replay_seconds": 105.03699340001913,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0816:dd637f84536276fe5e87ff5de5bb0922c4f00abd5b75f0203a05347bf1ae5b67",
+        "feature_seconds": 0.0,
+        "replay_seconds": 105.58541390000028,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0817:6202e00b6c2f0fde533a3438dbc3f68c7e0235075722fa8d101267f6d9207b9d",
+        "feature_seconds": 0.0,
+        "replay_seconds": 105.97810969999409,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0818:b1ede2735ec6bad80e604c7200457550e1bc9f76db91979cb43e1bbd6d6cec95",
+        "feature_seconds": 0.0,
+        "replay_seconds": 105.83749109998462,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0819:e151f171f2832f0fea457274fb8db75d5b7ff2212d5413b4d711760a0a63f56f",
+        "feature_seconds": 0.0,
+        "replay_seconds": 102.61014149998664,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0820:0009297e55633cecf15661443dd35b85663a7c97c14b98ead955f05f4c362ba0",
+        "feature_seconds": 0.0,
+        "replay_seconds": 103.01403349998873,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0821:2054ba50bf8fe58d1cbe964836ba1207537ea0b680ed60aa3e47b99e81ebc87a",
+        "feature_seconds": 0.0,
+        "replay_seconds": 103.29253929998958,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0822:b0dd36a37fad40b35eb09f3284fec49706a8ba588a7ea703ba68aad9ac160ff7",
+        "feature_seconds": 0.0,
+        "replay_seconds": 103.54894100001547,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0823:09d5382561dc1e51f2469d1499cc16209a2eeb2f9bc96ec2351e126256bec1f0",
+        "feature_seconds": 0.0,
+        "replay_seconds": 101.99584380001761,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0824:d2317b230b51fa3ee8b57e13cb5ca25667b6cb0a610449c49c7608ca9feabb00",
+        "feature_seconds": 0.0,
+        "replay_seconds": 102.34275680000428,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0825:f91f540756d8b5fc71ab32284ecbdda235b19bded8387365947995486377537c",
+        "feature_seconds": 0.0,
+        "replay_seconds": 101.9737410999951,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0826:7ca0e0d930f3678845806f14db184fbc1b930f5a764ac0fd2176d25d75ee609e",
+        "feature_seconds": 0.0,
+        "replay_seconds": 102.34797870001057,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0827:ff01541d5a134f9eed06059144229e37139090c50ce4febe1e42e906c7835fdf",
+        "feature_seconds": 0.0,
+        "replay_seconds": 105.41533469999558,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0828:7d880057ee1c83b9542e97d6c8ee06368ec80b2f55710015d036f5a3d9ad42de",
+        "feature_seconds": 0.0,
+        "replay_seconds": 106.3138146000274,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0829:6242309de2a96a15773ea6451ed5089f77d8d6a28a620a8fd5d9196933bf7274",
+        "feature_seconds": 0.0,
+        "replay_seconds": 105.9704298999859,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0830:79c238989c646c221ce0ccce346edaf5efa276d3896e7a8d870237a30fe29dc5",
+        "feature_seconds": 0.0,
+        "replay_seconds": 106.20874140001251,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0831:f2063f249f6ac9d33967594e074f857bde522cc990eaae7073efb913c33626ee",
+        "feature_seconds": 0.0,
+        "replay_seconds": 114.46382189998985,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0832:8be361a8bbf5295b1d95930367dcbd44ce9b1c9d97f2e48b16e168189ce225e5",
+        "feature_seconds": 0.0,
+        "replay_seconds": 115.54463980000583,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0833:caf424c3645a532d60e99189391c04e449162985ea3e59e1e900a90c4e13552b",
+        "feature_seconds": 0.0,
+        "replay_seconds": 115.17543189998833,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0834:23f036d0f8f9b2daab93957b2c2447f370a167f1056ec738a695801ed3606100",
+        "feature_seconds": 0.0,
+        "replay_seconds": 115.40422970001237,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0835:a06b585a5765fabbb6049cac45a061952186dc49d1860875bb485150ef224240",
+        "feature_seconds": 0.0,
+        "replay_seconds": 105.77087810001103,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0836:b1247ec49e03c554e2e56e533d67316bc5fff0394b489941c9fcb55cad74f8df",
+        "feature_seconds": 0.0,
+        "replay_seconds": 106.05167780001648,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0837:2ce22b6abce94f2fe6ba46cfeeb0a5c354392a7b145cac11695294f0ae083a22",
+        "feature_seconds": 0.0,
+        "replay_seconds": 105.9474682,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0838:94b5032c73ddb28b1b49cd2ca06761f35609186d574876bfa601a67b5ed5e37b",
+        "feature_seconds": 0.0,
+        "replay_seconds": 105.87820390000707,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0839:45ee5223eb207c15425ebf16ca3b514bca86d643bb20940a5279e3f72acdc8d7",
+        "feature_seconds": 0.0,
+        "replay_seconds": 120.43787910000538,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0840:3dd11ff9f4160ca7d22cb95a1208569a56c59db22509729bee7ed00f17638ff3",
+        "feature_seconds": 0.0,
+        "replay_seconds": 120.913979200006,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0841:bee5c578516e6e5e2616c9e0edda348d7c74a05985a5209bb4a38a204b39a1c7",
+        "feature_seconds": 0.0,
+        "replay_seconds": 120.47703479998745,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0842:85aaf17e86566a5895ea638a2e78b64f05d935c05206710a166b31e84d48dc7f",
+        "feature_seconds": 0.0,
+        "replay_seconds": 120.65603460001876,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0843:0afa12271411bf5d3fe58cea0391ced13b1a2ec9e163177faf5a5c388b3fe8ab",
+        "feature_seconds": 0.0,
+        "replay_seconds": 106.87797970001702,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0844:537e1751b7fe00c557e8f6c5ed75cd9271b499abff4d59a6404b7f4df7fff222",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.24794349999866,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0845:0ec3403258fc8099c2d535904bc497dec928c0b948c851b89e43db723068633b",
+        "feature_seconds": 0.0,
+        "replay_seconds": 106.91653309998219,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0846:d55e58b63565e24ea9aa5000b0e15609beaf0734ac14a8f49e859ad9b33cca0e",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.4215521000151,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0847:462fbb2f601d8e62852f474b917034011648d3da1f78d5dfd6293629682c8a4c",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.19007260000217,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0848:32c7d2308fddd1aa34dba895e107084860bdce5eaaa97a9af7499d4e38b7a8dc",
+        "feature_seconds": 0.0,
+        "replay_seconds": 108.10899089998566,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0849:3899f463048d4b1fcbc2d846ad40cfbab0ae3d68062428b146f0b856c654e16b",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.87179830000969,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0850:b9c1a7682bec54736196a284107e1bd86eb2fbfa8f82b74d19882024291dc161",
+        "feature_seconds": 0.0,
+        "replay_seconds": 108.22914660000242,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0851:d3b75d57599fd25664771217a7ce0cd1f8dbf9e3ae0a43e8691642ed97ec8958",
+        "feature_seconds": 0.0,
+        "replay_seconds": 105.45476000002236,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0852:1d7e873b32b97bba20deb9545ba72251076575caab7b19d50d814d710f9b3f2d",
+        "feature_seconds": 0.0,
+        "replay_seconds": 105.69930219999515,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0853:381882ad3b03307a0fefc35c1934d80e9e2781039d8109830006a32f172e5f85",
+        "feature_seconds": 0.0,
+        "replay_seconds": 105.1191669999971,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0854:dcddd41623a16ce4b21614e9f3b77b1f3b754adde3b3d8398a24714f32ebcb41",
+        "feature_seconds": 0.0,
+        "replay_seconds": 105.78093609999632,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0855:33288470b305a6948c69c3bf10ef19d6ee75e8dde0b1a7bcee30187ed7fce9a8",
+        "feature_seconds": 0.0,
+        "replay_seconds": 57.57305529998848,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0856:ccee6b04d77e3c7d5099f2a0aaaff51a994fa0335a817cbe8741e3ba75a6286d",
+        "feature_seconds": 0.0,
+        "replay_seconds": 103.11306679999689,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0857:0be5ec066a459f1bb75ce60463c9c7a04378cd02292ed07aab2dc3d3dfb652fa",
+        "feature_seconds": 0.0,
+        "replay_seconds": 103.19343409998692,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0858:401705ee4b829723b0c78b7a1f18617afb1e94adf3b5f7e79b5dc9ae47019cc3",
+        "feature_seconds": 0.0,
+        "replay_seconds": 102.59831800000393,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0859:ca1cb9136fb5d87cffca6764a85e0e53fdeb99fa62410cbb0365d417c5c2e354",
+        "feature_seconds": 0.0,
+        "replay_seconds": 115.30444549999083,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0860:016969ccc98c0cdaa56a4165800b5d25d5e386ee013d755c4a51293907f6d1d5",
+        "feature_seconds": 0.0,
+        "replay_seconds": 114.6902820999967,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0861:57c137616f0ee7cc91c49e57ebb06484e97f711a44835707fe820180c248d134",
+        "feature_seconds": 0.0,
+        "replay_seconds": 114.33957989999908,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0862:983f4a25f61f75fe06add35af7a7d67a6296a2c3b9e41657c9fe2779ded49064",
+        "feature_seconds": 0.0,
+        "replay_seconds": 115.34182880001026,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0863:dfee569ab2e5c87557bb410102fb7f4f38a5435ef33352524771814f5ae277de",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.25974109998788,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0864:598e3658423c2bf970ed31d019516a856c8839f505c7bb9fc6e6c04713182f0b",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.50309939999715,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0865:ef0acf7f4bf63b4b51c3393cba54b83faea47c0f4610d2b11bcbdb88a46741ec",
+        "feature_seconds": 0.0,
+        "replay_seconds": 106.97687640000368,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0866:f3c0ee1d3c116fbdf8238b05aeecbd0132f831bba2028df438e977d0ff875923",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.7683172999823,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0867:c218acc7955e68f538a45bbb088169ff64eb5adce5f39c2d08a7c0cc62e8a801",
+        "feature_seconds": 0.0,
+        "replay_seconds": 104.76642960001482,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0868:08718a27c72c20225363ecf5b65b1e56d8abb5947ff665f73d3417c51a2e4e34",
+        "feature_seconds": 0.0,
+        "replay_seconds": 104.8488262000028,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0869:6d6988ebe59a1563e7e8cd97ff9cbc3119316962962db0c45283a7068881c218",
+        "feature_seconds": 0.0,
+        "replay_seconds": 104.3506680999999,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0870:a3fd0d6485877f1d098265da9916fa3e37075d9a9dd8d87d2b6da9e6a68938a5",
+        "feature_seconds": 0.0,
+        "replay_seconds": 105.10353669998585,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0871:c0b6e22271d27a680c0cb0e4522ba7101e0311bd8f351627becf7ee187ca4c2e",
+        "feature_seconds": 0.0,
+        "replay_seconds": 103.49360570000135,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0872:7f5c93497381c416f64d8081590a6d523658c5e029ddcb3e5a1e809f9967e6fd",
+        "feature_seconds": 0.0,
+        "replay_seconds": 103.56018890000996,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0873:ad35c72136c821756b2cc74042e4a74ac5e2cab29e3768a716d21c341342cc97",
+        "feature_seconds": 0.0,
+        "replay_seconds": 104.06215680000605,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0874:0780b6de219d5fc03cee1d1a0a39af099366649931a2be75a4477e2a1eef81de",
+        "feature_seconds": 0.0,
+        "replay_seconds": 104.16789119999157,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0875:f5cb5116f0ed5271977efb3c31f3e70893db8a38a9c0e98e29de40f1606c702d",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.28385569999227,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0876:de68ff52744651fa2a8b70ad4354840654a0eaed53d9730bac5cad08ba1e3560",
+        "feature_seconds": 0.0,
+        "replay_seconds": 106.90825359997689,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0877:eb7b419e1a5b70ba6cdf2e2d5e2ea3dcb00dd57f3ae182ba948132bb4596fc0d",
+        "feature_seconds": 0.0,
+        "replay_seconds": 106.7358830999874,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0878:219d3ffbc3bf14c6bc808c1b3d6216c76f5f635c336fdfa306c1c206b417cd3c",
+        "feature_seconds": 0.0,
+        "replay_seconds": 106.9800716000027,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0879:e93d2e475f7daa95e1808c932125baded58dc798796abc74dc60e7f6ab46d993",
+        "feature_seconds": 0.0,
+        "replay_seconds": 116.40304039997864,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0880:cc24d5d84c2a3487db86b93382a376ecb49dc7d95a67207a9f8d43bdab7556b4",
+        "feature_seconds": 0.0,
+        "replay_seconds": 116.61546780000208,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0881:3c156fbe39e47a477aecddbef1e61d33f66e286a7b98bcc30bcf628db5d6f6a7",
+        "feature_seconds": 0.0,
+        "replay_seconds": 116.19711490001646,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0882:7e70862a75d51ce21f9f1e6ff2f4f1620dc3a98a995875f831478e8de57cf0f9",
+        "feature_seconds": 0.0,
+        "replay_seconds": 116.81964669999434,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0883:61c09e3d229801bc2bffbbd3d1e5a40b6b6aba66ded26dce8910b70b8902fc92",
+        "feature_seconds": 0.0,
+        "replay_seconds": 106.94100880000042,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0884:729bdec124ec3fdf1c55fedbf500c513b4214ce48470bfbf546e96f4b73e7b6c",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.36056689999532,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0885:b7c7229664898499ffad5eb9eade25edf52cff7ea7b3b2dfcf3f15b8728dd136",
+        "feature_seconds": 0.0,
+        "replay_seconds": 106.96645569999237,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0886:55415c16591a2a6280a36155707c90ccc20240b6f08d4979c94745428810a0ae",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.3425446000183,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0887:e3785490e3ae4aa6e4749df584a84f10b85b45d9e84345ae8f867cba179b57b3",
+        "feature_seconds": 0.0,
+        "replay_seconds": 121.63478910000413,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0888:4ccc8403fd7945dc8c5f4e3a085961fb579489162b0dea526f83f2eae62e0a72",
+        "feature_seconds": 0.0,
+        "replay_seconds": 121.76215960000991,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0889:525cf5d0a9fee24256df9533cc2fa309e3e5b3e8ca7d1f63b084d2a20555c4d4",
+        "feature_seconds": 0.0,
+        "replay_seconds": 120.94139930000529,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0890:f332368788bc4fe7400e935bf30617f9fc517c47123a9afd492896c061802720",
+        "feature_seconds": 0.0,
+        "replay_seconds": 121.272819899983,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0891:2ade1917ebcedcebbe8f0dd7567c82d5de2d3141452c4d04904c4647fc4f0d1f",
+        "feature_seconds": 0.0,
+        "replay_seconds": 108.25122890001512,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0892:d8aaaa1df22cded3714906dbebbd6995070e7270d488bcec3482eb15278be18a",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.65788630000316,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0893:c06546d7f716d780a4b52bd36a265ba93c14727cdbda7bb83ec1e5123c7774f9",
+        "feature_seconds": 0.0,
+        "replay_seconds": 108.45722979999846,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0894:0f8fe05c92891f1ff33121ee260013df57e2f5399cd5fa79c09f2ced1abef817",
+        "feature_seconds": 0.0,
+        "replay_seconds": 108.39802890000283,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0895:6c53a050ff25e229b30d9b191de149afe0375f3ba3a374825b4227b0baa4cb3b",
+        "feature_seconds": 0.0,
+        "replay_seconds": 109.77067530000932,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0896:532e303de8121f9f6bf3d3c30664d61ab68ce34e75ec1f3a3fc975b3975cbe24",
+        "feature_seconds": 0.0,
+        "replay_seconds": 108.79217059997609,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0897:f45b1fcfc091ce1b06defabae2fb6ea8fae8cc8b3c98bb30b0a6e802008093c3",
+        "feature_seconds": 0.0,
+        "replay_seconds": 109.71574939999846,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0898:d9aaed310be9691d62b27b2852b06b792b55dbe29cc7353b7df4845960c7cfb7",
+        "feature_seconds": 0.0,
+        "replay_seconds": 110.28421429998707,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0899:88a053c9d0ccaf5717d0d26cebed44059bc031caa7f06e810ffa6ff32b0f4ef4",
+        "feature_seconds": 0.0,
+        "replay_seconds": 106.13946750000468,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0900:398e8a3eceba830b9feefc2a4ec5dfac5bdf1abeefc36afe4a4de73f1db4b887",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.5803503000061,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0901:4ea88302dff606d40ea4381baf984f200904a599cdfa07ec70935339c81f12d9",
+        "feature_seconds": 0.0,
+        "replay_seconds": 106.98498770000879,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0902:ad828e64ea62d9d03cb73318bebfdc50163096a5aea5c88ee050eaa2a46d60db",
+        "feature_seconds": 0.0,
+        "replay_seconds": 106.84226689999923,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0903:b82511658dd2c095f9cb0a569e657583813054fb3a8f71322a0b6ed638f0dd7e",
+        "feature_seconds": 0.0,
+        "replay_seconds": 57.25942999997642,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0904:438306997326f9116fae1b79327bb8b737444c1c951d5c45c9de0697371364c5",
+        "feature_seconds": 0.0,
+        "replay_seconds": 102.12663839999004,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0905:d8841da50cc00bcd24c38f3d1dd299bb51c6d0e4b6877d07586552ee17365599",
+        "feature_seconds": 0.0,
+        "replay_seconds": 103.68653150001774,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0906:26a5a97070e64af0e01372f16ca8086647b1ce06e5afbad541ecffcf4701fc3a",
+        "feature_seconds": 0.0,
+        "replay_seconds": 102.95225790000404,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0907:5f07d83efaa69ee6449aea3acec4f719590080eb1d9ef5afe79ccaef636c63da",
+        "feature_seconds": 0.0,
+        "replay_seconds": 114.82922760001384,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0908:db21e658f75d3b28f9201877d936d470bfd543d8b4d3d4974976574e1c6ecff5",
+        "feature_seconds": 0.0,
+        "replay_seconds": 114.39409849999356,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0909:4accfb1320d76376283085438ba897d968bdd7f0248ad7219fc072f130c09d62",
+        "feature_seconds": 0.0,
+        "replay_seconds": 113.7323563999962,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0910:e5f656927551070e8ab8e34646195db5477ffc109be4ee88aa8e8f30b976817d",
+        "feature_seconds": 0.0,
+        "replay_seconds": 113.37396749999607,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0911:bc2655da312df17f578bf6ae6308b0c8d58b88b0df7f8dcd172f2e197b303704",
+        "feature_seconds": 0.0,
+        "replay_seconds": 106.92717040001298,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0912:05d24a51c2f567f5c13cb76d5631656b62a8d778bd58086573fb62520c9d0776",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.97866860000067,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0913:6a17df61e263a8589e929c478b9704986226dabb7fc442e3bd9797f46df05120",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.32005969999591,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0914:3d65745d1e448cd3a1f68e78520ef4ef6388fb2a17059f62702db95fada14459",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.01726929997676,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0915:790dad2c31fb57407c24eb5d968815412811f66d3d3400d3cad5e681c7094843",
+        "feature_seconds": 0.0,
+        "replay_seconds": 105.15674220002256,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0916:e67d4f3f6d53b912c410deba4cbce0283644e2fbea94d28c51fae7e9f8dcd4fb",
+        "feature_seconds": 0.0,
+        "replay_seconds": 105.55450590001419,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0917:52de065671f97cdff8f491636b23efe75a625139f02b1fa5a190baf4b3a4de14",
+        "feature_seconds": 0.0,
+        "replay_seconds": 104.77022439998109,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0918:5c31be5b887a401a9c64a5519a7c3ce96afb14bcafe0d09052266a4318f06ab9",
+        "feature_seconds": 0.0,
+        "replay_seconds": 104.59058540000115,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0919:0db2b9cccc5054af1f2bf075cb5c4f8b1d1cb73d4fa0f39e0b8c4a81ecaea629",
+        "feature_seconds": 0.0,
+        "replay_seconds": 104.18475079999189,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0920:e7ac2febbbc27d515ebd1f761649265f2a789252059d14c4f017c0a43c0d2015",
+        "feature_seconds": 0.0,
+        "replay_seconds": 104.99482150000404,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0921:360be177ef11ffb9b313c7d154206d51d77987813c9666cd40ec081b87a07261",
+        "feature_seconds": 0.0,
+        "replay_seconds": 103.97495319999871,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0922:52c4f9814488c59eb7b90ea623bb53390964b874ceaeb16a6165418c1074c6d8",
+        "feature_seconds": 0.0,
+        "replay_seconds": 103.76717830001144,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0923:ff6b50b1cbd4a3621d72c7864333bc1881bb75c9d6bee8c7aedf41a5a594e925",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.14929939998547,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0924:b46dfc0e863d6d0ccc1344510f7eece85f58870d3b1225ae142e057decd3c72e",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.72389720001956,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0925:a6948cda0fee900afa7a13bce6793826facc331676a6d35fa4e026f5906392ba",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.23013800001354,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0926:d94b5749f94a782823e5f7f9a952be725e508b8eb20abf6d27f40ba1e1be6608",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.02617160000955,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0927:f421b3a881bf672e1df4d71e42d1e9aa563b0b95bc0f2b174d96be1a7e1b5600",
+        "feature_seconds": 0.0,
+        "replay_seconds": 117.14757920001284,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0928:eb81edb920a4973579b4a8c982df6da02fe106c9128d0aa9735dc429c8d65780",
+        "feature_seconds": 0.0,
+        "replay_seconds": 117.67372950000572,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0929:1d3d24dc4b0353eb2ccb5ff08062245395066a4d2da4a05f315c5f5aa2e968b2",
+        "feature_seconds": 0.0,
+        "replay_seconds": 117.02544940001098,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0930:28e4cea0fbd1098debb77f69a0a41e3ebac1e34b9ced1ca1e064c69f0f9e0ec9",
+        "feature_seconds": 0.0,
+        "replay_seconds": 116.53631610001321,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0931:fb84c8381b304380e66a9aa2ddd487212e3891e64b0fcc7e8d8e78d0f05cd7e5",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.52405730000464,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0932:d215006e990fd62b1943687b4a94689269107bb43e01847942781da8dcce925a",
+        "feature_seconds": 0.0,
+        "replay_seconds": 108.03650660000858,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0933:2254aa16a2512ef0127e3feaf18a1b948dca22714f2d993c3c7b5d3b45eefcd2",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.47185349999927,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0934:919af6db397a83a9e790ec22a1b9269e5419a527f4602883dc1a14e92308b59b",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.09772029999294,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0935:aabe5db355ec949e31fe64a3a19ebf3680b78655abfedbb0ad1804d6c5304d4d",
+        "feature_seconds": 0.0,
+        "replay_seconds": 121.67190290000872,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0936:670b9dfa947dd7014584c7ba4a9c42e656994535c6c6a832e38507f74824fbd1",
+        "feature_seconds": 0.0,
+        "replay_seconds": 122.08325699999114,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0937:4026ebc1dafb55bc8b2f0ead822b7b1c9fc88595546749f61a403fef2b2b6d68",
+        "feature_seconds": 0.0,
+        "replay_seconds": 121.2377739000076,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0938:9df1f8b203ed3c9b4ee1cf11ed972e183288aeddd413ed6c19e48405fbfba3cb",
+        "feature_seconds": 0.0,
+        "replay_seconds": 120.82873129998916,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0939:6e9408d2438e2c87a1405c39329eee528f33edccd2c7b4db105dac007623fb9c",
+        "feature_seconds": 0.0,
+        "replay_seconds": 108.58857989998069,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0940:8dfee2f0ce188b8cd7e75dabd182a6e3e365ad16cf17088f11bf83d125bbadfd",
+        "feature_seconds": 0.0,
+        "replay_seconds": 108.71399379998911,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0941:f89d92d305fc5d3ccd5c4e352db907465d5178ab1c5b47e8535b9ebfa74af5bf",
+        "feature_seconds": 0.0,
+        "replay_seconds": 108.90359840000747,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0942:61705b77900b579ed2fa5e0f34d15356a3cbef75978e35fab92800ec3c2c3412",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.63484679997782,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0943:4b6788c1c0b9de19c254cc2229958e7c07260b54a66a5101a940360e22e6a47d",
+        "feature_seconds": 0.0,
+        "replay_seconds": 110.08872599998722,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0944:3ead5df5619fbbbcae1ae7641321495913ec36c829e47ecbfe86906bed80fd96",
+        "feature_seconds": 0.0,
+        "replay_seconds": 109.38621349999448,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0945:b7bf7b5a3ace86c7af061fce703b6ffbc59a9c04d7e859f57de1a5aed31e7d44",
+        "feature_seconds": 0.0,
+        "replay_seconds": 108.586888299993,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0946:40bfe741a83c959445899172d0e097e9bb7adbe32e9c5e4c76212b98546db4b7",
+        "feature_seconds": 0.0,
+        "replay_seconds": 109.17148170000291,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0947:9659eef7b60145d252a23389689922dec85ce3d07889c190cb8af62536efa8d4",
+        "feature_seconds": 0.0,
+        "replay_seconds": 108.0997803999926,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0948:8e08c71d75c72bc8ca315f76f678c7a487288d2bacbaaf689fcc516bf42b1d3b",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.94797419998213,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0949:2f94fb63f037e5ddde9449a5ea5b7f50daef209aeb2d95da2833bc9a918d9b26",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.14986470001168,
+        "rows": 15702,
+        "decisions": 15702
+      },
+      {
+        "kind": "CANDIDATE",
+        "owner": "candidate:S019:C0950:8f542bf32e8779b3e123deb1906bc73790952fc6bd1092bdfddc00127f98904e",
+        "feature_seconds": 0.0,
+        "replay_seconds": 107.77769469999475,
+        "rows": 15702,
+        "decisions": 15702
+      }
+    ]
+  },
+  "replay_statistics_complete": true,
+  "attempt_count": 1,
+  "elapsed_seconds": 2940.1653392000007,
+  "round_budget": {
+    "allocated_rounds": 10,
+    "round_index": 1,
+    "total_round": 1,
+    "remaining_after_completion": 9
+  },
+  "rounds_debited_by_runner": 0,
+  "proposals": 144,
+  "feedback": 144,
+  "distinct_accounts": 144,
+  "aliases": 0,
+  "families": {
+    "hard_linear": {
+      "proposals": 48,
+      "completed_feedback": 48,
+      "unique_accounts": 48,
+      "aliases": 0
+    },
+    "ramp_linear": {
+      "proposals": 48,
+      "completed_feedback": 48,
+      "unique_accounts": 48,
+      "aliases": 0
+    },
+    "rebuild_linear": {
+      "proposals": 48,
+      "completed_feedback": 48,
+      "unique_accounts": 48,
+      "aliases": 0
+    }
+  }
+}

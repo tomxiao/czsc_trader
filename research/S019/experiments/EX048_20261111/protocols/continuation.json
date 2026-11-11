@@ -1,0 +1,58 @@
+{
+  "previous_report": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S019",
+      "experiment_id": "EX047_20261111"
+    },
+    "evidence_id": "96f34cbf5e30bc1e9901ae6d6a3b4d535c57effa4d04d2448f2c2269c1c4d320.json",
+    "sha256": "96f34cbf5e30bc1e9901ae6d6a3b4d535c57effa4d04d2448f2c2269c1c4d320",
+    "media_type": "application/json",
+    "name": "experiment-report",
+    "schema": "experiment_report",
+    "schema_version": 1
+  },
+  "authorization_decision": "S019-STAGE3-CONTINUOUS-20261111",
+  "selection_rule": "Per family: all original six center gates, then maximum unrounded NAR, candidate ID exact tie break; also the original family control when its content differs. Use the same diagnostic design for both.",
+  "recipe_sha256": "a21a71104b519d759d30b61c8eeb9cb761c4507617e94e4ebd166c1df1785dcb",
+  "source_origins": {
+    "setup.py": {
+      "path": ".tmp/s019-stage3-20261111/open_diagnostics.py",
+      "sha256": "c9ea71f27dea226e885be30145ddf118f5306c329ed05e73c13f6ba839760c28"
+    },
+    "prepare_diagnostic_recipe.py": {
+      "path": ".tmp/s019-stage3-20261111/prepare_diagnostic_recipe.py",
+      "sha256": "70bf8a837ff7a3c8f90e7f0b383c950021d0bb92155c41b80f4d38759ff48e9d"
+    },
+    "batch_runner.py": {
+      "path": ".tmp/s019-stage3-20261111/batch_runner.py",
+      "sha256": "cffd9e35a7dea05856cf001490f18b94d48eaaf216d9bc45cc62fb799c3717bc"
+    },
+    "prepare_audit.py": {
+      "path": ".tmp/s019-stage3-20261111/generic_fixed_audit.py",
+      "sha256": "90b1d1e74acea676f322d3f86ef53e1d7d89765c76f397899a54b2326ba05890"
+    },
+    "semantic_audit.py": {
+      "path": "research/S019/experiments/EX046_20261111/src/semantic_audit.py",
+      "sha256": "77a8165a0c26f16236e3ef2084f195bf3058c9cda6750a97a6559ea3202100d6"
+    },
+    "close_round.py": {
+      "path": ".tmp/s019-stage3-20261111/close_round.py",
+      "sha256": "c29d8501f5b1ea2ecf550256a415b521679a264110351b296d238146dc7fdb63"
+    },
+    "strategy.py": {
+      "path": "research/S019/experiments/EX047_20261111/src/strategy.py",
+      "sha256": "b7adc4eb3ee0567db72243e670d671665c806e2c4aaee46ea2734399f243411f"
+    },
+    "analyze_search.py": {
+      "path": "research/S019/experiments/EX047_20261111/src/analyze_search.py",
+      "sha256": "1732a74f5e0ea3c40d32216995e875080f016656f9a311e911490e14ae811229"
+    },
+    "analyze_diagnostics.py": {
+      "path": ".tmp/s019-stage3-20261111/analyze_diagnostics.py",
+      "sha256": "e10dd08b8194e72a4e2307472e79df73a31e6ba6f96bc67492c03973ec7dbe58"
+    }
+  },
+  "source_preparation_note": "Before report publication, close helper matched the public prepared-request experiment shape; account runner, strategy, points and plan unchanged."
+}

@@ -1,0 +1,94 @@
+{
+  "family": "ramp_linear",
+  "number": 23,
+  "optuna_trial_number": 31,
+  "proposed_candidate_id": "C0878",
+  "candidate_id": "C0878",
+  "alias_of": null,
+  "content_hash": "219d3ffbc3bf14c6bc808c1b3d6216c76f5f635c336fdfa306c1c206b417cd3c",
+  "raw_parameters": {
+    "exit_width": 0.7405385464867125,
+    "participation_threshold": 0.8733339502599335,
+    "participation_width": 0.251412310491403,
+    "quiet_fraction": 0.5013196354301231,
+    "trail_atr": 2.286649411516018,
+    "weak_fraction": 0.1912353439154699
+  },
+  "parameters": {
+    "confirm": true,
+    "down_days": 1,
+    "exit_mode": "fixed",
+    "hold_days": 5,
+    "information": "relative",
+    "joint_rule": "maximum",
+    "participation_days": 3,
+    "require_sector": false,
+    "risk_basis": "daily",
+    "treatment": "tilt",
+    "exit_policy": "ramp",
+    "confirm_bars": 2,
+    "participation_policy": "linear",
+    "exit_width": 0.7405385464867125,
+    "participation_threshold": 0.8733339502599335,
+    "participation_width": 0.251412310491403,
+    "quiet_fraction": 0.5013196354301231,
+    "trail_atr": 2.286649411516018,
+    "weak_fraction": 0.1912353439154699
+  },
+  "distributions": {
+    "exit_width": {
+      "name": "FloatDistribution",
+      "attributes": {
+        "step": null,
+        "low": 0.1,
+        "high": 1.25,
+        "log": false
+      }
+    },
+    "participation_threshold": {
+      "name": "FloatDistribution",
+      "attributes": {
+        "step": null,
+        "low": 0.75,
+        "high": 1.5,
+        "log": false
+      }
+    },
+    "participation_width": {
+      "name": "FloatDistribution",
+      "attributes": {
+        "step": null,
+        "low": 0.05,
+        "high": 0.65,
+        "log": false
+      }
+    },
+    "quiet_fraction": {
+      "name": "FloatDistribution",
+      "attributes": {
+        "step": null,
+        "low": 0.15,
+        "high": 0.85,
+        "log": false
+      }
+    },
+    "trail_atr": {
+      "name": "FloatDistribution",
+      "attributes": {
+        "step": null,
+        "low": 1.8,
+        "high": 3.2,
+        "log": false
+      }
+    },
+    "weak_fraction": {
+      "name": "FloatDistribution",
+      "attributes": {
+        "step": null,
+        "low": 0.15,
+        "high": 0.55,
+        "log": false
+      }
+    }
+  }
+}

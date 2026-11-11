@@ -1,0 +1,212 @@
+{
+  "state_schema": {
+    "account_fields": [],
+    "cycle_fields": [
+      {
+        "key": "anchor",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "allocation",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "exiting",
+        "value_type": "bool",
+        "nullable": false
+      },
+      {
+        "key": "high_water",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "entry_atr",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "risk_fraction",
+        "value_type": "float",
+        "nullable": false
+      },
+      {
+        "key": "breach_count",
+        "value_type": "int",
+        "nullable": false
+      }
+    ]
+  },
+  "specs": [
+    {
+      "label": "C0798",
+      "parameters": {
+        "confirm": true,
+        "confirm_bars": 2,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_policy": "linear",
+        "participation_threshold": 1.0443117349209394,
+        "participation_width": 0.2888670017592839,
+        "quiet_fraction": 0.35250973549252723,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.4279380676391424,
+        "treatment": "tilt",
+        "weak_fraction": 0.3284299259134771
+      }
+    },
+    {
+      "label": "C0801",
+      "parameters": {
+        "confirm": true,
+        "confirm_bars": 2,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_policy": "linear",
+        "participation_threshold": 1.0443117349209394,
+        "participation_width": 0.2888670017592839,
+        "quiet_fraction": 0.35250973549252723,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.4279380676391424,
+        "treatment": "tilt",
+        "weak_fraction": 0.3284299259134771
+      }
+    },
+    {
+      "label": "C0804",
+      "parameters": {
+        "confirm": true,
+        "confirm_bars": 2,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "exit_policy": "ramp_rebuild",
+        "exit_width": 0.5,
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_policy": "linear",
+        "participation_threshold": 1.0443117349209394,
+        "participation_width": 0.2888670017592839,
+        "quiet_fraction": 0.35250973549252723,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.4279380676391424,
+        "treatment": "tilt",
+        "weak_fraction": 0.3284299259134771
+      }
+    },
+    {
+      "label": "C0966",
+      "parameters": {
+        "confirm": true,
+        "confirm_bars": 2,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "exit_policy": "hard",
+        "exit_width": 0.5,
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_policy": "linear",
+        "participation_threshold": 0.8846550030769686,
+        "participation_width": 0.4254720004431187,
+        "quiet_fraction": 0.2667726928308929,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.4308131636307126,
+        "treatment": "tilt",
+        "weak_fraction": 0.3523115946991197
+      }
+    },
+    {
+      "label": "C1010",
+      "parameters": {
+        "confirm": true,
+        "confirm_bars": 2,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "exit_policy": "ramp",
+        "exit_width": 0.5,
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_policy": "linear",
+        "participation_threshold": 0.9920961481748924,
+        "participation_width": 0.2744236516713197,
+        "quiet_fraction": 0.33488424871790085,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.4279380676391424,
+        "treatment": "tilt",
+        "weak_fraction": 0.3284299259134771
+      }
+    },
+    {
+      "label": "C1045",
+      "parameters": {
+        "confirm": true,
+        "confirm_bars": 2,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "exit_policy": "ramp_rebuild",
+        "exit_width": 0.6800560270052899,
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_policy": "linear",
+        "participation_threshold": 0.9544427674471152,
+        "participation_width": 0.2601275252579139,
+        "quiet_fraction": 0.47213737239420356,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.172754745242738,
+        "treatment": "tilt",
+        "weak_fraction": 0.41051750621694294
+      }
+    },
+    {
+      "label": "C0909",
+      "parameters": {
+        "confirm": true,
+        "confirm_bars": 2,
+        "down_days": 1,
+        "exit_mode": "fixed",
+        "exit_policy": "ramp_rebuild",
+        "exit_width": 0.17977103825379553,
+        "hold_days": 5,
+        "information": "relative",
+        "joint_rule": "maximum",
+        "participation_days": 3,
+        "participation_policy": "linear",
+        "participation_threshold": 1.0502582814918575,
+        "participation_width": 0.19871562356927863,
+        "quiet_fraction": 0.38674460235016284,
+        "require_sector": false,
+        "risk_basis": "daily",
+        "trail_atr": 2.3130291164910854,
+        "treatment": "tilt",
+        "weak_fraction": 0.3521257080683571
+      }
+    }
+  ]
+}

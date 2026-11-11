@@ -1,0 +1,84 @@
+{
+  "family": "hard_linear",
+  "number": 33,
+  "optuna_trial_number": 38,
+  "proposed_candidate_id": "C0840",
+  "candidate_id": "C0840",
+  "alias_of": null,
+  "content_hash": "3dd11ff9f4160ca7d22cb95a1208569a56c59db22509729bee7ed00f17638ff3",
+  "raw_parameters": {
+    "participation_threshold": 0.7827802725829793,
+    "participation_width": 0.37191968318440527,
+    "quiet_fraction": 0.2943250607171702,
+    "trail_atr": 2.59012362428784,
+    "weak_fraction": 0.16514359627584402
+  },
+  "parameters": {
+    "confirm": true,
+    "down_days": 1,
+    "exit_mode": "fixed",
+    "hold_days": 5,
+    "information": "relative",
+    "joint_rule": "maximum",
+    "participation_days": 3,
+    "require_sector": false,
+    "risk_basis": "daily",
+    "treatment": "tilt",
+    "exit_policy": "hard",
+    "exit_width": 0.5,
+    "confirm_bars": 2,
+    "participation_policy": "linear",
+    "participation_threshold": 0.7827802725829793,
+    "participation_width": 0.37191968318440527,
+    "quiet_fraction": 0.2943250607171702,
+    "trail_atr": 2.59012362428784,
+    "weak_fraction": 0.16514359627584402
+  },
+  "distributions": {
+    "participation_threshold": {
+      "name": "FloatDistribution",
+      "attributes": {
+        "step": null,
+        "low": 0.75,
+        "high": 1.5,
+        "log": false
+      }
+    },
+    "participation_width": {
+      "name": "FloatDistribution",
+      "attributes": {
+        "step": null,
+        "low": 0.05,
+        "high": 0.65,
+        "log": false
+      }
+    },
+    "quiet_fraction": {
+      "name": "FloatDistribution",
+      "attributes": {
+        "step": null,
+        "low": 0.15,
+        "high": 0.85,
+        "log": false
+      }
+    },
+    "trail_atr": {
+      "name": "FloatDistribution",
+      "attributes": {
+        "step": null,
+        "low": 1.8,
+        "high": 3.2,
+        "log": false
+      }
+    },
+    "weak_fraction": {
+      "name": "FloatDistribution",
+      "attributes": {
+        "step": null,
+        "low": 0.15,
+        "high": 0.55,
+        "log": false
+      }
+    }
+  }
+}
