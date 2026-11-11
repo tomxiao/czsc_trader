@@ -555,19 +555,28 @@ def _typed_key(values):
 def _enumerate_domain(axes):
     """Reconstruct the entire fixed domain partition, without executing user code."""
     counts = {reason: 0 for reason in NeighborhoodRejectionReason}
-    seen, legal = set(), []
+    legal = []
     center = _typed_key(x.center for x in axes)
-    for values in product(*(_choices(axis) for axis in axes)):
+    # Collapse equal choices before taking the product. Multiplicities preserve
+    # the historical accounting and first-occurrence order (and thus identity).
+    choices = []
+    for axis in axes:
+        unique = {}
+        for value in _choices(axis):
+            key = (type(value).__name__, value)
+            previous = unique.get(key)
+            unique[key] = (value, 1 if previous is None else previous[1] + 1)
+        choices.append(tuple(unique.values()))
+    for selected in product(*choices):
+        values = tuple(value for value, _ in selected)
+        multiplicity = math.prod(count for _, count in selected)
         if any(
             v is _OUTSIDE or not _contains(a.domain, v) for a, v in zip(axes, values, strict=True)
         ):
-            counts[NeighborhoodRejectionReason.OUT_OF_DOMAIN] += 1
+            counts[NeighborhoodRejectionReason.OUT_OF_DOMAIN] += multiplicity
             continue
         key = _typed_key(values)
-        if key in seen:
-            counts[NeighborhoodRejectionReason.DUPLICATE] += 1
-            continue
-        seen.add(key)
+        counts[NeighborhoodRejectionReason.DUPLICATE] += multiplicity - 1
         if key == center:
             counts[NeighborhoodRejectionReason.CENTER] += 1
             continue
@@ -856,7 +865,6 @@ def build_parameter_neighborhood_design(
               "historical neighborhood generation is read-only")
     if not callable(feasibility):
         raise TypeError("feasibility must be callable")
-    request = ParameterNeighborhoodRequest.from_dict(request.to_dict())
     axes = request.space.axes
     total = math.prod(_choice_count(x) for x in axes)
     if total > request.protocol.max_combinations:

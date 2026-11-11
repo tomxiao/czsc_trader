@@ -6,8 +6,8 @@ import pytest
 
 from strategy_evaluator import research_models as m
 from strategy_evaluator.research_assessment import (
-    recompute_historical_assessment as assess_candidates,
-    recompute_historical_comparison as compare_candidates,
+    assess_candidates,
+    compare_candidates,
 )
 from strategy_evaluator import research_assessment as assessment
 
@@ -65,7 +65,7 @@ def evidence(who=None, profits=(10.0, 20.0), scenario="standard", parent=None):
 
 
 def protocol():
-    return m.SelfCheckProtocol(
+    return m.NeighborhoodSelfCheckProtocol(
         "1",
         "full",
         "standard",
@@ -74,25 +74,32 @@ def protocol():
         1,
         m.QuantileMethod.LINEAR,
         1,
-        1,
         40,
         2,
         11,
         1e-8,
+        m.ParameterNeighborhoodProtocol(),
         pbo_blocks=2,
     )
 
 
 def request():
+    from strategy_evaluator import (build_parameter_neighborhood_design, ParameterNeighborhoodRequest,
+        ParameterNeighborhoodSpace, ParameterAxis, IntegerDomain, BoundedLocalStep, RelativeChangeLimit)
     center, child = candidate(), candidate("C0002", "b")
+    design = build_parameter_neighborhood_design(ParameterNeighborhoodRequest(center,
+        protocol().parameter_protocol, ParameterNeighborhoodSpace((ParameterAxis('hold', 20,
+            IntegerDomain(20, 21), BoundedLocalStep(RelativeChangeLimit(.05)), ('hold',), 'sessions'),),
+            'a' * 64, 'b' * 64)), feasibility=lambda _: True).design
     base = evidence(center)
-    neighbor = evidence(child, (5.0, 10.0), parent=center)
+    neighbor = replace(evidence(child, (5.0, 10.0), parent=center), parameter_point=design.bind_point(0))
     stress = evidence(center, (20.0, 30.0), "pressure")
     return m.CandidateAssessmentRequest(
         (center,),
         protocol(),
-        (m.PerturbationLink(center, child, 1.0, "e" * 64),),
+        (m.PerturbationLink(center, child, 1.0, "e" * 64, design.bind_point(0)),),
         (base, neighbor, stress),
+        parameter_designs=(design,),
     )
 
 
@@ -207,7 +214,7 @@ def policy(resolution=0.01, frequency_metric=m.ResearchMetric.FULL_SAMPLE_FREQUE
         ),
         pareto_basis=m.ParetoBasis.RAW,
         missing_evidence_policy=m.MissingEvidencePolicy.REQUIRE_COMPLETE,
-        formula_version="research-ranking-v3",
+        formula_version="research-ranking-v4",
     )
 
 
@@ -267,24 +274,21 @@ def row(who, annual=0.1, drawdown=0.1, degradation=0.02, missing=None):
                 )
             )
         ),
-        parameter_context=m.ParameterDiagnosticContext(
-            m.ParameterPerturbationProtocol(), "a" * 64, "b" * 64, 2, 32, 32
+        parameter_context=m.ParameterNeighborhoodContext(
+            m.ParameterNeighborhoodProtocol(), "a" * 64, "b" * 64, 2, 32, 32, "c" * 64
         ),
     )
 
 
 def compare(rows, selected_policy=None, targets=(), *, current=False):
-    # Historical fixtures retain v3; current tests explicitly opt into v7/v4.
-    from strategy_evaluator import compare_candidates as current_compare
     panel = m.AssessmentPanel("a" * 64, "b" * 64, rows, (), (),
-        formula_version="research-assessment-v7" if current else "research-assessment-v5")
+        formula_version="research-assessment-v7")
     selected_policy = selected_policy or policy()
-    if current:
-        selected_policy = replace(selected_policy, formula_version="research-ranking-v4")
-    return (current_compare if current else compare_candidates)(
+    selected_policy = replace(selected_policy, formula_version="research-ranking-v4")
+    return compare_candidates(
         m.CandidateComparisonRequest(
             tuple(x.candidate for x in rows),
-            m.ResearchTargets(targets, (rows[0].frequency_window_days or 60) if current else 60),
+            m.ResearchTargets(targets, rows[0].frequency_window_days or 60),
             panel,
             selected_policy,
         )

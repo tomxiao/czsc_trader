@@ -31,7 +31,7 @@ SE按显式协议提供指标、协议校验、比较、帕累托分层、PBO、
 
 `EvaluationProtocol.standard_version`使用`opc-v3`，公共标准常量为`OPC_V3`；
 `resolve_margins`拒绝其他标准版本。各计算入口按其显式版本和强类型合同校验证据。
-历史产物原件保持不变；本次明确保留的v5自检和旧球面计划只读认证见下节，不推及其他旧格式。
+历史产物原件保持不变；v5/v6自检、v3排序和旧球面计划保留只读反序列化与原身份，历史计算入口已退役。
 
 工程压力审计的必需场景由`required_stress_scenarios()`返回：
 `total_cost_15bp/total_cost_20bp/total_cost_30bp/total_cost_50bp`。
@@ -44,6 +44,27 @@ SE按显式协议提供指标、协议校验、比较、帕累托分层、PBO、
 | --- | --- | --- |
 | `assess_candidates(request)` | `CandidateAssessmentRequest` | `AssessmentPanel` |
 | `compare_candidates(request)` | `CandidateComparisonRequest` | `CandidateComparison` |
+
+阶段四统一使用以上计算入口。参数邻点优先使用
+`CandidatePerformanceAssessmentRequest(baseline_request, parameter_evidence)`：中心及压力场景由
+`baseline_request`提供必要账户事实，邻点由`ParameterPerformanceEvidence`提供绩效及关联身份。
+该输入同时支持`NeighborhoodSelfCheckProtocol`（NAR、v7）和`CalmarSelfCheckProtocol`（v8）；
+完整账户输入与数值投影输入执行相同指标和覆盖规则，缺失点保留原分母。
+同次评价内每个账户及基准的绩效只计算一次；已有不可变强类型对象直接使用，存储入口负责反序列化。
+
+`paired_stationary_bootstrap`新结果记录实际收益序列指纹、样本数、种子和算法版本。
+需要复用该计算时，将
+`AssessmentBootstrapEvidence(center, standard_evaluation_id, result.cagr_result)`放入
+`CandidateAssessmentRequest.bootstrap_evidence`，再调用同一`assess_candidates`入口。
+`cagr_result`仅投影有限的CAGR区间及实际运行合同，完整结果中不可用的Calmar不影响CAGR复用。
+SE检查来源关联、两列收益指纹、样本数、种子、重复数、分块长度和算法；任一不符即报错，
+已提供但不匹配的结果不会触发隐式补算。未提供预计算结果时按声明协议计算一次。
+旧结果缺少实际运行绑定时保留原件，不能通过补写元数据取得复用资格。
+
+当前`CandidateAssessment.calculation_details`返回本次计算的滚动窗口起止、观察数、
+策略／基准收益及超额收益，以及集中性口径、盈利笔数、选中笔数和利润分子／分母。
+报告直接引用这些明细。明细有独立结构版本；指标公式、随机调用顺序和既有判定口径保持原义，
+历史缺少明细字段的记录仍按原字段集合读取和计算内容身份。
 
 全部类型和函数从`strategy_evaluator`顶层导入。TDR的
 `build_assessment_evidence(EvaluationRequest, EvaluationResult)`检查本次请求与结果的关联，再投影为
@@ -89,13 +110,13 @@ TDR允许研究员自由定义成本评价场景，包括单场景及零成本�
 五项默认按独立因素评估：参数项仅使用基准窗口、标准费用的中心和联合扰动点；费用压力项仅使用中心。
 时间滚动、收益集中性和收益区间复用中心标准账本，滚动及重抽样不触发账户重算。
 SE使用显式协议，不自动扩展窗口、压力档位或参数点组合；研究族选择偏差每份评价计算一次。
-阶段四收益区间内部只计算CAGR重抽样，保持原有分块、随机调用、种子及分位数口径；
+阶段四收益区间在未提供匹配的预计算结果时只计算CAGR重抽样，保持原有分块、随机调用、种子及分位数口径；
 公开`paired_stationary_bootstrap`仍返回CAGR、最大回撤和Calmar全部指标。
 同次评价的两种DSR共享相关矩阵和公共统计计算，失败仍分别报告状态和原因，指标公式及版本不变。
 
 `effective_trial_count`通过收益相关矩阵的特征值估算有效试验数；原生计算库的线程数变化
 可能使该值及`DSR_EFFECTIVE`出现浮点尾差，固定协议与种子不保证跨线程配置逐位相同。
-SE保留原始计算结果，不统一舍入或强制线程数。受管交付的复算比较由
+SE保留原始计算结果，不统一舍入或强制线程数。显式请求复算时的结果比较由
 [TDR交付API](../../src/czsc_trader/README.md#7-五阶段交付)负责，仅对`DSR_EFFECTIVE`
 应用`rel_tol=1e-12`、`abs_tol=0.0`；其余自检字段及候选比较结果仍精确核验。
 
@@ -198,10 +219,11 @@ if result.status is ParameterDesignStatus.COMPLETE:
 便声称分位数可直接同排。普通候选排序还要求经济上下文可比；缺失或不一致明确保留原因。
 `compare_parameter_robustness`只返回参数诊断及可比性，不产生总体候选赢家。
 
-新公式版本为`research-assessment-v7`。`assess_candidates`只接收当前v2邻域协议；历史
-`SelfCheckProtocol`、球面设计、v1邻域及v5/v6面板保留精确读取身份。必要的历史数值复核由
-`strategy_evaluator.research_assessment.recompute_historical_assessment`执行；该入口不升级旧协议，
-不创建新版本交付。生成器拒绝旧方法，新评价不得重新绑定旧计划。既有证据和资格不自动迁移或改写。
+NAR公式版本为`research-assessment-v7`。`assess_candidates`只接收当前v2邻域协议；历史
+`SelfCheckProtocol`、球面设计、v1邻域及v5/v6面板保留精确读取身份，历史评价和排序计算入口已移除。
+邻域生成只使用`build_parameter_neighborhood_design`，旧名称转发入口已移除。
+生成器按每轴唯一值展开，并用重复次数保留逻辑组合及拒绝计数；固定轴重复声明不会展开重复网格。
+点序、设计哈希、逻辑组合上限及历史计数保持原义。新评价采用当前计划；既有证据和资格不自动迁移或改写。
 
 相关账户计划与绑定详见[TDR公开API](../../src/czsc_trader/README.md)。
 
@@ -221,7 +243,7 @@ formula_version="research-ranking-v4")`
 | --- | --- |
 | `pareto_basis` | `ParetoBasis.RAW`使用原始净年化与回撤；`BINNED`使用协议分箱后的两项指标分层 |
 | `missing_evidence_policy` | `MissingEvidencePolicy.REQUIRE_COMPLETE`要求全部适用证据齐备；参数项确认不适用时两项敏感度采用最低得分。`PREFIX_PARTIAL`允许按已知指标前缀判断部分先后关系，遇到影响判断的缺失值保留成对不可比 |
-| `formula_version` | 当前`research-ranking-v4`，连同研究协议`version`进入请求身份；v3仅用于历史读取和明确的历史复核，不自动升级交付 |
+| `formula_version` | 当前`research-ranking-v4`，连同研究协议`version`进入请求身份；v3仅用于历史读取，不自动升级交付 |
 
 `bins`恰含净年化、回撤、上述五项稳健性及一个`FREQUENCY_METRICS`指标。
 层级优先；层内固定按六项指标比较：扰动净年化Q10（高）、扰动回撤Q90（低）、滚动超额Q10（高）、
@@ -236,8 +258,8 @@ formula_version="research-ranking-v4")`
 时由比较器填入后者。相应`bin_values`仍为`None`，排序使用明确的最低得分标记，低于有效实测得分；
 双方均为最低得分时继续比较后续项。收益/回撤方向不影响最低得分的统一最差待遇，不能填成0回撤。
 两项参数指标不适用不阻止候选参与同一排序，中心收益和回撤分层仍优先。真实缺失与计算失败不取得此待遇，
-两个实际邻域的不可比也不因此消除。`compare_candidates`要求v7面板及v4排序协议；历史v3排序通过
-`strategy_evaluator.research_assessment.recompute_historical_comparison`复核，旧结果不增加最低得分字段或改变哈希。
+两个实际邻域的不可比也不因此消除。`compare_candidates`要求v7面板及v4排序协议；历史v3排序保留只读解析，
+旧结果不增加最低得分字段或改变哈希。
 交易频率最后参与层内排序。排序只选择一项频率，验收可同时声明中位数及覆盖率等多项条件；
 它们不必等于排序指标，但窗口须与面板一致。选择覆盖率排序时，必须显式声明同口径覆盖率目标。
 未达标、证据不足和不可比候选仍保留结果。
@@ -260,7 +282,7 @@ formula_version="research-ranking-v4")`
 
 ### 经济、频率及稳健性验收
 
-验收复用上述两个入口，不新增账户回放或独立准入服务。SE计算声明的条件，TDR认证来源并绑定
+验收复用上述两个入口，不新增账户回放或独立准入服务。SE计算声明的条件，TDR传递来源关联并绑定
 阶段一确认；数值通过不等于统计独立性充分，也不授予冻结或PTE权限。
 
 | 输入类型 | 字段与语义 |
@@ -292,7 +314,7 @@ formula_version="research-ranking-v4")`
 避免`0.1 * 1.5`的乘法尾差误拒绝`0.15`；不加入额外容差，严格不等号仍严格执行。
 
 以下是新比例参数标准的目标构造示例；`performance`是示例内的本地构造函数，不是平台API。
-研究协议需显式配置60日频率、完整邻域、标准/压力场景与覆盖阈值3，再取得面板。13/16为81.25%；N=17需至少14点联合通过，17点全部满足风险上限。旧32点/26点目标不自动转换。
+研究协议需显式配置60日频率、完整邻域、标准/压力场景与覆盖阈值3，再取得面板。下例邻域联合通过率为80%，最低通过数量按固定N向上取整；全部N点均须满足风险上限。旧点数目标保持历史原义。
 
 ```python
 from strategy_evaluator import (
@@ -317,7 +339,7 @@ targets = ResearchTargets((
     ResearchTarget("center-cap", M.DRAWDOWN_MAGNITUDE, upper=C(0.25, True), one_way_cost=0.001),
     ResearchTarget("median", M.FREQUENCY_MEDIAN, lower=C(6.0, True), one_way_cost=0.001),
     FrequencyCoverageTarget("coverage", 60, 3, 9, 10),
-    ParameterNeighborhoodTarget("parameters", 13, 16, performance("point", 1.25, 0.9), (
+    ParameterNeighborhoodTarget("parameters", 4, 5, performance("point", 1.25, 0.9), (
         ResearchTarget("point-cap", M.DRAWDOWN_MAGNITUDE, upper=C(0.25, True), one_way_cost=0.001),
     )),
     ResearchTarget("stress-profit", M.NET_ANNUAL_RETURN, lower=C(0.0, False), **pressure),
@@ -416,7 +438,7 @@ TDR的`build_assessment_evidence`将当前V4账户观测适配为`AssessmentEvid
 | 年化、频率 | 按纽约市场交易日聚合，年化使用交易日数；60 日频率按完整周期的平仓日计数，30 分钟 bar 不充当独立交易日 |
 | 最大回撤 | `SESSION_CLOSE` 使用每日最后净值；`BAR_CLOSE` 使用每个 30 分钟净值。候选和基准使用相同选择，包含初始资金基点 |
 | 盈利集中度 | `TOP_DECILE` 使用盈利周期中最大的前 10%（向上取整）占比；`MAX_SINGLE` 使用最大单个盈利周期占比。无盈利周期时标记不适用 |
-| 交付校验 | 阶段四发布保存已计算事实和关联，返回存储完整性状态；显式FULL才复核来源及SE指标与排序，不重跑策略账户 |
+| 交付校验 | 阶段四发布保存已计算事实和关联，仅支持INTEGRITY存储完整性检查；FULL返回UNSUPPORTED_SCOPE，独立审计和复算由调用者显式发起 |
 
 回撤和集中度选择进入指标版本与比较上下文，禁止混用口径。诊断结果不会自动变成硬性研究目标。
 旧 A 股 `AssessmentEvidence` 未设置附加事实时不序列化新字段，既有语义、档案及哈希保持不变。

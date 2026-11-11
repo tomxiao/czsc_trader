@@ -51,6 +51,10 @@ from .research_models import (
     IncompleteEvaluation,
     FamilyReturnEvidence,
     CandidateAssessmentRequest,
+    AssessmentBootstrapEvidence,
+    AssessmentCalculationDetails,
+    RollingReturnFacts,
+    ProfitConcentrationFacts,
     UncertaintyInterval,
     FamilyDiagnostic,
     CandidateAssessment,
@@ -86,6 +90,7 @@ from .performance_assessment import (
     ParameterPerformanceEvidence,
     project_parameter_performance,
     assessment_benchmark_fingerprint,
+    equity_benchmark_fingerprint,
 )
 from .research_models import AssessmentInputKind
 from .research_models import (
@@ -108,7 +113,6 @@ from .research_models import (
 )
 from .parameter_perturbation import (
     ParameterFeasibility,
-    build_parameter_perturbation_design,
     compare_parameter_robustness,
 )
 from .audit_models import (
@@ -145,6 +149,8 @@ from .search_bias import (
 from .bootstrap import (
     AbsoluteBootstrap,
     BootstrapComparison,
+    BootstrapCagrResult,
+    BootstrapRunBinding,
     BootstrapInterval,
     BootstrapMetric,
     PerformanceMetrics,
@@ -225,6 +231,12 @@ from .parameter_neighborhood import (
 )
 
 __all__ = [
+    "BootstrapCagrResult",
+    "BootstrapRunBinding",
+    "AssessmentBootstrapEvidence",
+    "AssessmentCalculationDetails",
+    "RollingReturnFacts",
+    "ProfitConcentrationFacts",
     "TargetScope",
     "FrequencyCoverageTarget",
     "ParameterGroupTarget",
@@ -250,7 +262,6 @@ __all__ = [
     "ParameterRobustnessRow",
     "ParameterRobustnessComparison",
     "ParameterFeasibility",
-    "build_parameter_perturbation_design",
     "compare_parameter_robustness",
     "AssessmentDerivationKind",
     "assess_candidates",
@@ -417,7 +428,7 @@ __all__ += ["DeclaredParameterPointSetCheck"]
 __all__ += ["CalmarSelfCheckProtocol"]
 __all__ += [
     "AssessmentInputKind", "CandidatePerformanceAssessmentRequest", "ParameterPerformanceEvidence",
-    "project_parameter_performance", "assessment_benchmark_fingerprint",
+    "project_parameter_performance", "assessment_benchmark_fingerprint", "equity_benchmark_fingerprint",
 ]
 
 __all__ += [

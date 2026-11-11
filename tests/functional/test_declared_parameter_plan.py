@@ -21,10 +21,10 @@ def test_TDR_14_C04_declared_plan_covers_only_selected_source_points_and_binds_w
         assert len(plan.children) == 1 < source.design.point_count
         assert _plan_child(plan, 1).candidate.candidate_id == f"{child.candidate.strategy_id}-{child.candidate.candidate_id}"
         assert ParameterEvaluationPlan.from_dict(plan.to_dict()) == plan
-        bound = plan.bind_point(reference, 1, repository_root=tmp_path / "unpublished")
-        assert bound.point == source.design.bind_point(1)
+        bound = plan.bind_point(reference, 1, child, execution=execution)
+        assert bound.request.lineage.parameter_binding.point == source.design.bind_point(1)
         with pytest.raises(ValueError, match="point index"):
-            plan.bind_point(reference, 0, repository_root=tmp_path / "unpublished")
+            plan.bind_point(reference, 0, child, execution=execution)
 
 
 def test_TDR_14_X01_boolean_index_cannot_select_integer_key():

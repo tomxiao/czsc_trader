@@ -92,6 +92,7 @@ from .evaluation_access import (
 )
 
 from .assessment import build_assessment_evidence
+from .equity_assessment import AssessmentProjection
 from .execution import (
     CheckpointMode, ExecutionCheckpointRequest, ExecutionPhase, ExecutionProgress,
     ExecutionStats, EquityAccountTiming, EquityExecutionStatistics, ResearchExecutionSession,
@@ -225,6 +226,7 @@ __all__ = [
     'EvaluationError',
     'EvaluationOutcome',
     'build_assessment_evidence',
+    'AssessmentProjection',
     'ParameterEvaluationCandidate',
     'ParameterEvaluationPlan',
     'ParameterEvaluationBinding',

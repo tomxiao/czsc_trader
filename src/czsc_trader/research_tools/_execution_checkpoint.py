@@ -6,6 +6,7 @@ requires a freshly prepared request and the same implementation identity.
 
 from __future__ import annotations
 
+from collections import OrderedDict
 from hashlib import sha256
 import json
 import os
@@ -35,6 +36,11 @@ def _unique_object(items):
     return value
 
 
+def _file_identity(path):
+    value = path.stat()
+    return (value.st_dev, value.st_ino, value.st_size, value.st_mtime_ns, value.st_ctime_ns)
+
+
 class CheckpointStore:
     def __init__(self, repository_root: Path, experiment: ExperimentRef, run_id: str,
                  mode, implementation_identity: str):
@@ -53,6 +59,10 @@ class CheckpointStore:
         self.root = managed_path(self.repository_root, self.relative)
         self._closed = True
         self._lock = None
+        self._installed_artifacts = {}
+        # Bound decoded byte retention: current input, benchmark and adjacent
+        # candidate results. Never retain the entire experiment's accounts.
+        self._loaded_artifacts = OrderedDict()
         if mode == "CREATE":
             self.root.mkdir(parents=True, exist_ok=False)
         elif not self.root.is_dir():
@@ -75,6 +85,8 @@ class CheckpointStore:
     def close(self):
         if not self._closed:
             self._closed = True
+            self._installed_artifacts.clear()
+            self._loaded_artifacts.clear()
             self._lock.__exit__(None, None, None)
 
     def __enter__(self):
@@ -139,20 +151,45 @@ class CheckpointStore:
         # Commit dependencies first. An interrupted result commit can leave an
         # unused object, but cannot expose a completed result without its bytes.
         for artifact, reference in zip(result.artifacts, payload["artifact_refs"], strict=True):
-            self._write(f"artifacts/{reference['sha256']}.json", {
+            name = f"artifacts/{reference['sha256']}.json"
+            target = self._target(name)
+            before = _file_identity(target) if target.exists() else None
+            cached = self._installed_artifacts.get((artifact.kind, artifact.sha256))
+            if cached is not None and before == cached:
+                continue
+            self._write(name, {
                 **reference, "content": artifact.content.decode("utf-8")})
+            after = _file_identity(target)
+            if before is not None and before != after:
+                raise CheckpointIntegrityError("checkpoint artifact changed while saving")
+            self._installed_artifacts[(artifact.kind, artifact.sha256)] = after
         self._write(f"results/{request_hash}.json", payload)
 
     def _load_equity_artifact(self, kind, digest):
         from .equity_evaluation import EquityArtifact
         _hash(digest)
-        payload = self._read(f"artifacts/{digest}.json", required=True)
+        name = f"artifacts/{digest}.json"
+        target = self._target(name)
+        key = (kind, digest)
+        cached = self._loaded_artifacts.get(key)
+        if cached is not None and target.exists() and _file_identity(target) == cached[0]:
+            self._loaded_artifacts.move_to_end(key)
+            return cached[1]
+        before = _file_identity(target) if target.exists() else None
+        payload = self._read(name, required=True)
         if (type(payload) is not dict or set(payload) != {"kind", "sha256", "content"}
                 or payload["kind"] != kind or payload["sha256"] != digest):
             raise CheckpointIntegrityError("equity checkpoint artifact identity differs")
         artifact = EquityArtifact(kind, payload["content"].encode("utf-8"))
         if artifact.sha256 != digest:
             raise CheckpointIntegrityError("equity checkpoint artifact bytes differ")
+        after = _file_identity(target)
+        if before != after:
+            raise CheckpointIntegrityError("checkpoint artifact changed while reading")
+        self._loaded_artifacts[key] = (after, artifact)
+        self._loaded_artifacts.move_to_end(key)
+        while len(self._loaded_artifacts) > 4:
+            self._loaded_artifacts.popitem(last=False)
         return artifact
 
     def load_equity_result(self, request, request_hash):

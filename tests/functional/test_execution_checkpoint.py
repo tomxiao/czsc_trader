@@ -58,6 +58,12 @@ def test_TDR_08_C01_equity_checkpoint_shares_artifacts_and_restores_without_repl
         # One input, one shared benchmark and two candidate ledgers.
         assert len(paths) == 4
         before = {path.name: path.stat().st_mtime_ns for path in paths}
+        reads = []
+        original_read = execution.checkpoint._read
+        def counted_read(name, **kwargs):
+            reads.append(name)
+            return original_read(name, **kwargs)
+        monkeypatch.setattr(execution.checkpoint, '_read', counted_read)
         for result in originals:
             document = json.loads((cache / "results" / f"{result.request_hash}.json").read_bytes())["payload"]
             assert document["schema_version"] == 2 and len(document["artifact_refs"]) == 3
@@ -65,6 +71,7 @@ def test_TDR_08_C01_equity_checkpoint_shares_artifacts_and_restores_without_repl
             assert all(set(ref) == {"kind", "sha256"} for ref in document["artifact_refs"])
             execution.checkpoint.save_equity_result(result.request_hash, result)
         assert {path.name: path.stat().st_mtime_ns for path in paths} == before
+        assert not any(name.startswith('artifacts/') for name in reads)
 
     def unexpected(*args, **kwargs):
         raise AssertionError("completed checkpoint must not replay candidate or benchmark")
@@ -72,6 +79,12 @@ def test_TDR_08_C01_equity_checkpoint_shares_artifacts_and_restores_without_repl
     monkeypatch.setattr(equity_replay, "_compute_account", unexpected)
     with ResearchExecutionSession(context, experiment=request.experiment,
             checkpoint=ExecutionCheckpointRequest("shared-artifacts", CheckpointMode.RESUME)) as execution:
+        restored_reads = []
+        original_read = execution.checkpoint._read
+        def counted_restore(name, **kwargs):
+            restored_reads.append(name)
+            return original_read(name, **kwargs)
+        monkeypatch.setattr(execution.checkpoint, '_read', counted_restore)
         prepared = tuple(context.evaluation.prepare(item, execution=execution) for item in (request, other))
         restored = context.evaluation.evaluate_many(prepared, execution=execution)
         assert all(item.result is not None for item in restored), [item.error for item in restored]
@@ -80,6 +93,7 @@ def test_TDR_08_C01_equity_checkpoint_shares_artifacts_and_restores_without_repl
             assert outcome.result.artifacts == original.artifacts
         assert execution.stats.reused_results == 2 and execution.stats.submitted == 0
         assert execution.equity_statistics.candidate_runs == execution.equity_statistics.benchmark_runs == 0
+        assert len([name for name in restored_reads if name.startswith('artifacts/')]) == 4
 
 
 @pytest.mark.parametrize('corruption', [pytest.param('missing', id='TDR-08-C02'), pytest.param('bytes', id='TDR-08-C03')])
@@ -91,6 +105,7 @@ def test_equity_checkpoint_rejects_broken_artifact_closure(tmp_path, corruption,
         document = json.loads(path.read_bytes())["payload"]
         reference = document["artifact_refs"][0]
         artifact_path = store.root / "artifacts" / f"{reference['sha256']}.json"
+        assert store.load_equity_result(prepared, result.request_hash) is not None
         if corruption == "missing":
             artifact_path.unlink()
         elif corruption in {"bytes", "kind"}:
@@ -108,6 +123,8 @@ def test_equity_checkpoint_rejects_broken_artifact_closure(tmp_path, corruption,
                                           "content": item.content.decode()} for item in result.artifacts]
                 document.pop("artifact_refs")
             path.write_bytes(_checkpoint_envelope(document))
+        with pytest.raises(CheckpointIntegrityError, match="cannot restore equity checkpoint"):
+            store.load_equity_result(prepared, result.request_hash)
     with CheckpointStore(tmp_path, prepared.experiment, "damaged-artifacts", "RESUME", "a" * 64) as store:
         with pytest.raises(CheckpointIntegrityError, match="cannot restore equity checkpoint"):
             store.load_equity_result(prepared, result.request_hash)
@@ -117,6 +134,35 @@ def _checkpoint_envelope(payload):
     def canonical(value):
         return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False).encode()
     return canonical({"sha256": sha256(canonical(payload)).hexdigest(), "payload": payload})
+
+
+def test_checkpoint_read_replacement_is_rejected_without_caching_old_bytes(tmp_path, account_facts, monkeypatch):
+    """Bind cached bytes to the file read, including a change during that read."""
+    from pathlib import Path
+    prepared, result = account_facts
+    with CheckpointStore(tmp_path, prepared.experiment, "read-replacement", "CREATE", "a" * 64) as store:
+        store.save_equity_result(result.request_hash, result)
+        artifact = result.artifacts[0]
+        target = store.root / 'artifacts' / f'{artifact.sha256}.json'
+        original_read = Path.read_bytes
+        replaced = []
+
+        def read_then_replace(path):
+            body = original_read(path)
+            if path == target and not replaced:
+                replacement = target.with_suffix('.replacement')
+                replacement.write_bytes(b'corrupted while reading')
+                replacement.replace(target)
+                replaced.append(path)
+            return body
+
+        monkeypatch.setattr(Path, 'read_bytes', read_then_replace)
+        with pytest.raises(CheckpointIntegrityError, match='changed while reading'):
+            store.load_equity_result(prepared, result.request_hash)
+        assert replaced == [target]
+        assert (artifact.kind, artifact.sha256) not in store._loaded_artifacts
+        with pytest.raises(CheckpointIntegrityError, match='cannot authenticate checkpoint'):
+            store.load_equity_result(prepared, result.request_hash)
 
 
 

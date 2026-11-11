@@ -68,6 +68,43 @@ def counts(result):
 
 
 @pytest.mark.risk_cases('SE-15-C01')
+def test_weighted_enumeration_preserves_historical_partition_identity(monkeypatch):
+    from itertools import product
+    from strategy_evaluator import parameter_neighborhood as implementation
+    fixed = tuple(ParameterAxis(f'fixed_{i}', True, BooleanDomain(), ExplicitValues((True,)),
+        (f'fixed_{i}',), 'structure') for i in range(9))
+    req = request(axis(center=0.98), *fixed, limit=10000)
+    optimized = build(req)
+
+    def historical(axes):
+        rejected = {reason: 0 for reason in NeighborhoodRejectionReason}
+        seen, legal = set(), []
+        center = implementation._typed_key(item.center for item in axes)
+        for values in product(*(implementation._choices(item) for item in axes)):
+            if any(value is implementation._OUTSIDE or not implementation._contains(item.domain, value)
+                   for item, value in zip(axes, values, strict=True)):
+                rejected[NeighborhoodRejectionReason.OUT_OF_DOMAIN] += 1
+                continue
+            key = implementation._typed_key(values)
+            if key in seen:
+                rejected[NeighborhoodRejectionReason.DUPLICATE] += 1
+                continue
+            seen.add(key)
+            if key == center:
+                rejected[NeighborhoodRejectionReason.CENTER] += 1
+                continue
+            legal.append(tuple(NamedParameterValue(item.name, value)
+                for item, value in zip(axes, values, strict=True)))
+        return tuple(legal), rejected
+
+    monkeypatch.setattr(implementation, '_enumerate_domain', historical)
+    previous = build(req)
+    assert previous.to_dict() == optimized.to_dict()
+    assert previous.sha256 == optimized.sha256
+    assert optimized.generated_combinations == 3 * 512
+
+
+@pytest.mark.risk_cases('SE-15-C01')
 def test_full_cartesian_typed_mapping_and_determinism():
     req = request(
         axis(), axis("hold", 3, IntegerDomain(1, 30), NumericOffsets((-1, 1)), unit="sessions")

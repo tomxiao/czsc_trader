@@ -28,6 +28,42 @@ def projected_request(request):
     )
 
 
+@pytest.mark.risk_cases('SE-38-C01', 'SE-18-C06')
+def test_nar_projection_matches_complete_facts_and_retains_missing_denominator(monkeypatch):
+    from strategy_evaluator import research_assessment as calculation
+    request = current_request()
+    original = calculation._performance
+    original_benchmark = calculation._benchmark_performance
+    calls = {}
+    benchmark_calls = []
+
+    def counted(item):
+        calls[item.evaluation_id] = calls.get(item.evaluation_id, 0) + 1
+        return original(item)
+
+    monkeypatch.setattr(calculation, '_performance', counted)
+    def counted_benchmark(item):
+        benchmark_calls.append(item.evaluation_id)
+        return original_benchmark(item)
+
+    monkeypatch.setattr(calculation, '_benchmark_performance', counted_benchmark)
+    full = se.assess_candidates(request)
+    assert all(count == 1 for count in calls.values())
+    assert len(benchmark_calls) == 1
+    projected = se.assess_candidates(projected_request(request))
+    assert full.rows == projected.rows
+    assert projected.formula_version == 'research-assessment-v7'
+    assert se.AssessmentPanel.from_dict(projected.to_dict()) == projected
+    numeric = projected_request(request)
+    missing = se.assess_candidates(replace(numeric, parameter_evidence=numeric.parameter_evidence[:-1]))
+    assert missing.rows[0].parameter_context.prescribed_points == 2
+    assert missing.rows[0].parameter_context.valid_points == 1
+    details = full.rows[0].calculation_details
+    assert len(details.rolling_windows) == 3
+    assert details.concentration.selected_profit / details.concentration.total_profit == next(
+        x.value for x in full.rows[0].diagnostics if x.metric is m.ResearchMetric.PROFIT_CONCENTRATION)
+
+
 def economic_request():
     centers = (candidate(), candidate("C0011", "b"))
     designs, links, items = [], [], []

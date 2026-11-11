@@ -31,9 +31,18 @@ def test_TDR_15_C02_plan_read_verifies_selected_bytes_without_reading_upstream(t
 
 def test_TDR_15_C01_plan_creation_uses_declared_sources_and_owned_handles(tmp_path, monkeypatch):
     with equity_plan(tmp_path, applicable=False) as (context, center, plan, _, _, execution):
+        import json
+        decode = json.loads
+
+        def forbid_snapshot_decode(value, *args, **kwargs):
+            if value is center.snapshot.artifact.content:
+                raise AssertionError("plan creation decoded the shared full input snapshot")
+            return decode(value, *args, **kwargs)
+
         def forbid_read(*args, **kwargs):
             raise AssertionError("plan creation must not authenticate source documents")
 
+        monkeypatch.setattr(json, "loads", forbid_snapshot_decode)
         monkeypatch.setattr(EvidenceRef, "_read_verified", forbid_read)
         kwargs = dict(mapping_evidence=plan.mapping_evidence, feasibility_evidence=plan.feasibility_evidence,
                       dataflows=context.data, execution=execution)

@@ -16,16 +16,27 @@ def assessment_benchmark_fingerprint(evidence: m.AssessmentEvidence) -> str | No
     if not evidence.benchmark_equity:
         return None
     equity = evidence.equity
+    if equity is not None:
+        return equity_benchmark_fingerprint(initial_cash=evidence.initial_cash,
+            sessions=tuple(x.session for x in evidence.account), benchmark_equity=evidence.benchmark_equity,
+            market=equity.market, timezone=equity.timezone, currency=equity.currency,
+            drawdown_basis=equity.drawdown_basis, benchmark_ledger=equity.benchmark_ledger)
     return m.digest({
         "initial_cash": evidence.initial_cash,
         "sessions": tuple(x.session for x in evidence.account),
         "benchmark_equity": evidence.benchmark_equity,
-        "equity_contract": None if equity is None else {
-            "market": equity.market, "timezone": equity.timezone,
-            "currency": equity.currency, "drawdown_basis": equity.drawdown_basis,
-            "benchmark_ledger": equity.benchmark_ledger,
-        },
+        "equity_contract": None,
     })
+
+
+def equity_benchmark_fingerprint(*, initial_cash: float, sessions: tuple[str, ...],
+        benchmark_equity: tuple[float, ...], market: str, timezone: str, currency: str,
+        drawdown_basis: str, benchmark_ledger: str) -> str:
+    """Fingerprint supplied benchmark facts without constructing candidate journals."""
+    return m.digest({"initial_cash": initial_cash, "sessions": sessions,
+        "benchmark_equity": benchmark_equity,
+        "equity_contract": {"market": market, "timezone": timezone, "currency": currency,
+            "drawdown_basis": drawdown_basis, "benchmark_ledger": benchmark_ledger}})
 
 
 @dataclass(frozen=True)
@@ -89,8 +100,8 @@ class CandidatePerformanceAssessmentRequest(m.ResearchRecord):
 
     def validate(self):
         base = self.baseline_request
-        m.require(type(base.protocol) is m.CalmarSelfCheckProtocol,
-                  "performance input requires CalmarSelfCheckProtocol")
+        m.require(type(base.protocol) in (m.NeighborhoodSelfCheckProtocol, m.CalmarSelfCheckProtocol),
+                  "performance input requires a current neighborhood self-check protocol")
         m.require(base.protocol.parameter_protocol.version == "parameter-cartesian-neighborhood-v2",
                   "performance input requires current neighborhood protocol")
         m.require(all(x.candidate in base.centers and x.parameter_point is None for x in base.evidence),

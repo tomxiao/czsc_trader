@@ -9,7 +9,6 @@ from strategy_evaluator import (
     ParameterCoordinate,
     ParameterCoordinateKind,
     ParameterPerturbationProtocol,
-    build_parameter_perturbation_design,
 )
 from strategy_evaluator import research_models as m
 from test_research_assessment import candidate, evidence, protocol
@@ -41,7 +40,11 @@ def build(request=None):
 
 
 def bound_request():
-    design = build(design_request(2, 2)).design
+    import strategy_evaluator as se
+    design = se.build_parameter_neighborhood_design(se.ParameterNeighborhoodRequest(candidate(),
+        se.ParameterNeighborhoodProtocol(), se.ParameterNeighborhoodSpace((se.ParameterAxis('hold', 20,
+            se.IntegerDomain(1, 30), se.BoundedLocalStep(se.RelativeChangeLimit(.05)), ('hold',), 'sessions'),),
+            'a' * 64, 'b' * 64)), feasibility=lambda _: True).design
     center, a, b = candidate(), candidate("C0002", "b"), candidate("C0003", "c")
     links = tuple(
         m.PerturbationLink(center, child, 1.0, "e" * 64, design.bind_point(i))
@@ -72,8 +75,10 @@ def test_historical_sphere_record_roundtrip_radius_and_accounting():
     dimension = 8
     result = build(design_request(dimension))
     assert m.ParameterDesignResult.from_dict(result.to_dict()) == result
-    with pytest.raises(TypeError, match="read-only"):
-        build_parameter_perturbation_design(design_request(dimension), feasibility=lambda values: True)
+    import strategy_evaluator as se
+    from strategy_evaluator import parameter_perturbation
+    assert not hasattr(se, "build_parameter_perturbation_design")
+    assert not hasattr(parameter_perturbation, "build_parameter_perturbation_design")
     for point in result.design.points:
         distance = math.sqrt(sum(((v - 5.0) / 10.0) ** 2 for v in point.coordinates))
         assert distance == pytest.approx(0.05, abs=1e-15)

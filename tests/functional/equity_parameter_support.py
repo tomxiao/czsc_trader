@@ -10,18 +10,19 @@ from dataclasses import replace
 
 
 @contextmanager
-def equity_plan(tmp_path, *, applicable=True):
+def equity_plan(tmp_path, *, applicable=True, resources=None):
     """Yield one explicit account execution owner and its authenticated prospective plan."""
     from strategy_evaluator import (AssessmentCandidate, ParameterAxis, RealDomain, BoundedLocalStep,
         RelativeChangeLimit, ParameterNeighborhoodProtocol, ParameterNeighborhoodRequest,
         ParameterNeighborhoodSpace, build_parameter_neighborhood_design)
-    from strategy_manager import CandidateDerivation, CandidateDerivationKind, CandidateEvidence
     from strategy_runtime import equity_source_hash
     from czsc_trader.application import publish_evidence
-    from czsc_trader.research_tools import MaterialEvidenceWrite, EvaluationLineage, ResearchExecutionSession
+    from czsc_trader.research_tools import MaterialEvidenceWrite, ResearchExecutionSession
     from equity_test_support import setup_account_research
 
     context, request, _, _ = setup_account_research(tmp_path)
+    if resources is not None:
+        context.evaluation.resources = resources
     source = request.candidate.source_root
     (source / "strategy.py").write_text(
         "from strategy_runtime import AccountDecision\n"
@@ -56,11 +57,5 @@ def equity_plan(tmp_path, *, applicable=True):
         ref = material("plan", json.dumps(plan.to_dict()).encode())
         bound = []
         for index, child in enumerate(children):
-            derivation = CandidateDerivation(center.candidate.key, center.candidate.content_identity.content_sha256,
-                child.candidate.key, child.candidate.content_identity.content_sha256, CandidateDerivationKind.PARAMETERS,
-                {v.name: v.value for v in design.points[index].values}, design.protocol.sha256,
-                CandidateEvidence(ref.repository_path, ref.sha256))
-            proposed = replace(child.request, lineage=EvaluationLineage(derivation,
-                plan.bind_point(ref, index, repository_root=context.repository.root)))
-            bound.append(context.evaluation.prepare(proposed, execution=execution))
+            bound.append(plan.bind_point(ref, index, child, execution=execution))
         yield context, center, plan, ref, tuple(bound), execution

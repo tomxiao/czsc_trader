@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 
 from strategy_evaluator import bootstrap
-from strategy_evaluator.research_assessment import recompute_historical_assessment as assess_candidates
+from strategy_evaluator import assess_candidates
 from strategy_evaluator import research_models as m
 from test_research_assessment import evidence, protocol
 
@@ -89,3 +89,48 @@ def test_public_bootstrap_rejects_invalid_return_series_and_protocol(champion, c
         bootstrap.paired_stationary_bootstrap(
             champion, comparator, champion_id="center", comparator_id="benchmark", **kwargs,
         )
+
+
+@pytest.mark.risk_cases('SE-08-C02')
+def test_bound_bootstrap_reuse_skips_resampling_and_rejects_mismatch(monkeypatch):
+    import strategy_evaluator as se
+    from dataclasses import fields
+    from strategy_evaluator import research_assessment as calculation
+    champion = np.array([.02, -.015, .003, .01, -.008, .004])
+    comparator = np.array([.005, -.006, .001, .003, -.002, .002])
+    kwargs = dict(repetitions=40, mean_block_length=3, seed=13)
+    old, champion, comparator = interval_request(champion, comparator, **kwargs)
+    values = {field.name: getattr(old.protocol, field.name) for field in fields(old.protocol)
+              if field.name not in ('minimum_perturbations', 'parameter_protocol')}
+    request = replace(old, protocol=se.NeighborhoodSelfCheckProtocol(
+        **values, parameter_protocol=se.ParameterNeighborhoodProtocol()))
+    expected = se.assess_candidates(request)
+    result = bootstrap.paired_stationary_bootstrap(champion, comparator,
+        champion_id='center', comparator_id='benchmark', **kwargs)
+    source = request.evidence[0]
+    reuse = se.AssessmentBootstrapEvidence(source.candidate, source.evaluation_id, result.cagr_result)
+    supplied = replace(request, bootstrap_evidence=(reuse,))
+    assert se.CandidateAssessmentRequest.from_dict(supplied.to_dict()) == supplied
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError('precomputed bootstrap was recomputed')
+
+    monkeypatch.setattr(calculation, '_paired_stationary_bootstrap_cagr', forbidden)
+    assert se.assess_candidates(supplied).rows == expected.rows
+    for changed in (
+        replace(result, binding=replace(result.binding, seed=result.binding.seed + 1)),
+        replace(result, binding=replace(result.binding, champion_returns_sha256='a' * 64)),
+        replace(result, repetitions=result.repetitions + 1),
+    ):
+        with pytest.raises(ValueError, match='inputs or method differ'):
+            se.assess_candidates(replace(request, bootstrap_evidence=(replace(reuse, result=changed.cagr_result),)))
+    with pytest.raises(ValueError, match='recorded computation binding'):
+        replace(result, binding=None).cagr_result
+    with pytest.raises(ValueError, match='source differs'):
+        replace(request, bootstrap_evidence=(replace(reuse, evaluation_id='a' * 64),))
+    no_drawdown = bootstrap.paired_stationary_bootstrap(np.full(6, .01), np.zeros(6),
+        champion_id='center', comparator_id='benchmark', **kwargs)
+    assert np.isnan(no_drawdown.calmar.point_difference)
+    finite = replace(reuse, result=no_drawdown.cagr_result)
+    assert se.AssessmentBootstrapEvidence.from_dict(finite.to_dict()) == finite
+    assert len(finite.sha256) == 64

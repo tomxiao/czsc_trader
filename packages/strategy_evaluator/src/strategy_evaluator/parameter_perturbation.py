@@ -3,10 +3,7 @@
 from typing import Protocol
 
 from . import research_models as m
-from .parameter_neighborhood import (
-    NamedParameterValue, ParameterNeighborhoodRequest, ParameterNeighborhoodResult,
-    build_parameter_neighborhood_design,
-)
+from .parameter_neighborhood import NamedParameterValue
 from .research_assessment import parameter_comparison_key
 
 
@@ -16,21 +13,11 @@ class ParameterFeasibility(Protocol):
     def __call__(self, values: tuple[NamedParameterValue, ...]) -> bool: ...
 
 
-def build_parameter_perturbation_design(
-    request: ParameterNeighborhoodRequest, *, feasibility: ParameterFeasibility
-) -> ParameterNeighborhoodResult:
-    """Build current typed neighborhoods; legacy sphere records are read-only."""
-    if type(request) is not ParameterNeighborhoodRequest:
-        raise TypeError("requires ParameterNeighborhoodRequest; legacy sphere generation is read-only")
-    return build_parameter_neighborhood_design(request, feasibility=feasibility)
-
-
 def compare_parameter_robustness(
     request: m.ParameterRobustnessComparisonRequest,
 ) -> m.ParameterRobustnessComparison:
     if type(request) is not m.ParameterRobustnessComparisonRequest:
         raise TypeError("request requires ParameterRobustnessComparisonRequest")
-    request = m.ParameterRobustnessComparisonRequest.from_dict(request.to_dict())
     rows = request.rows
     reasons = []
     contexts = [x.parameter_context for x in rows]

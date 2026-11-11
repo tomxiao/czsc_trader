@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from functools import cached_property, lru_cache
 import json
 from pathlib import Path
@@ -135,22 +135,60 @@ class ParameterEvaluationPlan(_Record):
             mapping_evidence=mapping_evidence, feasibility_evidence=feasibility_evidence,
             dataflows=dataflows, execution=execution)
 
-    def bind_point(self, reference: EvidenceRef, index: int, *, repository_root: Path) -> ParameterEvaluationBinding:
-        """Bind an actual planned point without reading or publishing evidence."""
-        if self.schema_version not in (3, 4):
+    def bind_point(self, reference: EvidenceRef, index: int, prepared: PreparedAccountEvaluation, *,
+                   execution: ResearchExecutionSession) -> PreparedAccountEvaluation:
+        """Issue an owned point handle using already prepared inputs, without re-preparing."""
+        from strategy_manager import CandidateDerivation, CandidateDerivationKind, CandidateEvidence, CandidateKey
+        from .account_preparation import PreparedAccountEvaluation
+        from .equity_replay import _bytes, _read, _require_prepared, _state
+        from .evaluation import EvaluationLineage
+        from .execution import ExecutionPhase, ResearchExecutionSession
+
+        if self.schema_version != 4 or self.design.protocol.version != "parameter-cartesian-neighborhood-v2":
             raise ValueError("historical parameter plans are read-only")
         if not self.design.is_applicable:
             raise ValueError("not-applicable parameter plans have no point to bind")
-        _plan_child(self, index)
+        planned = _plan_child(self, index)
+        if type(reference) is not EvidenceRef or reference.media_type != "application/json":
+            raise TypeError("parameter plan requires a JSON EvidenceRef")
+        if type(execution) is not ResearchExecutionSession or type(prepared) is not PreparedAccountEvaluation:
+            raise TypeError("parameter binding requires an owned prepared handle and execution session")
+        state = _state(execution.context.evaluation, execution, prepared.experiment.experiment_id)
+        _require_prepared(state, prepared)
         if reference.experiment.strategy_id != self.design.center.candidate_id.split("-", 1)[0]:
             raise ValueError("published parameter plan belongs to another strategy family")
-        return ParameterEvaluationBinding(reference, self.design.bind_point(index))
+        if _equity_candidate(prepared) != planned:
+            raise ValueError("parameter plan differs from actual child content")
+        if prepared.request.lineage is not None:
+            raise ValueError("parameter binding requires a prepared child without prior lineage")
+        with execution.executor.measure(ExecutionPhase.PREPARE):
+            point = self.design.bind_point(index)
+            binding = ParameterEvaluationBinding(reference, point)
+            parent = CandidateKey(*self.design.center.candidate_id.split("-", 1))
+            values = self._point_values_by_index[index]
+            derivation = CandidateDerivation(parent, self.design.center.content_sha256,
+                prepared.candidate.key, prepared.candidate.content_identity.content_sha256,
+                CandidateDerivationKind.PARAMETERS, {item.name: item.value for item in values},
+                self.design.protocol.sha256, CandidateEvidence(reference.repository_path, reference.sha256))
+            lineage = EvaluationLineage(derivation, binding)
+            request = replace(prepared.request, lineage=lineage)
+            contract = _read(prepared.contract_content)
+            contract["lineage"] = {"derivation": derivation.to_dict(), "parameter_binding": binding.to_dict()}
+            validate_parameter_contract(equity_parameter_contract(contract), self, binding)
+            value = PreparedAccountEvaluation(request, prepared.snapshot, prepared.benchmark_identity,
+                state.token, _bytes(contract))
+            state.prepared[id(value)] = value
+            return value
 
     @cached_property
     def _children_by_point(self):
         indices = (self.design.point_indices if type(self.design) is DeclaredParameterPointSet
                    else range(len(self.children)))
         return dict(zip(indices, self.children, strict=True))
+
+    @cached_property
+    def _point_values_by_index(self):
+        return {point.index: point.values for point in self.design.points}
 
 
 def _plan_child(plan, point_index):
@@ -288,9 +326,7 @@ def _verify_equity_inputs(request, dataflows, *, execution=None):
             raise ValueError("account parameter inputs belong to another data context")
         state = _state(access, execution, request.experiment.experiment_id)
         _require_prepared(state, request)
-        data = json.loads(request.snapshot.artifact.content)["data"]
-        if dict(request.request.input_binding.expected_identities) != {
-                name: value["content_sha256"] for name, value in data.items() if name != "constraints"}:
+        if dict(request.request.input_binding.expected_identities) != dict(request.snapshot.expected_identities):
             raise ValueError("account parameter input binding differs from its authenticated snapshot")
         return
     raise TypeError("equity parameter inputs require session-owned PreparedAccountEvaluation")

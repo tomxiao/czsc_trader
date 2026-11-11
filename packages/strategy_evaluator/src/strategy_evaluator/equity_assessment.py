@@ -218,10 +218,13 @@ def equity_performance(evidence, *, benchmark=False):
     return float(annual), float(drawdown)
 
 
-def equity_concentration(evidence):
+def _equity_concentration_parts(evidence):
     ledger = read_ledger(evidence.equity.candidate_ledger)
     winners = sorted((row["net_pnl"] for row in ledger["trades"] if row["net_pnl"] > 0), reverse=True)
-    if not winners:
-        return None
     count = 1 if evidence.equity.concentration_basis == "MAX_SINGLE" else math.ceil(0.1 * len(winners))
-    return float(sum(winners[:count]) / sum(winners))
+    return len(winners), min(count, len(winners)), float(sum(winners[:count])), float(sum(winners))
+
+
+def equity_concentration(evidence):
+    _, _, selected, total = _equity_concentration_parts(evidence)
+    return selected / total if total else None

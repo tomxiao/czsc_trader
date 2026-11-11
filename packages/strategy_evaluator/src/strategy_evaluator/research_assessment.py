@@ -10,7 +10,7 @@ import numpy as np
 
 from . import research_models as m
 from .research_acceptance import acceptance_status, check_target as _check_target, _calmar
-from .bootstrap import _paired_stationary_bootstrap_cagr
+from .bootstrap import _paired_stationary_bootstrap_cagr, _return_fingerprint
 from .calmar_diagnostics import rolling_calmar_excess, stress_calmar_loss
 from .performance_assessment import (
     CandidatePerformanceAssessmentRequest, ParameterPerformanceEvidence,
@@ -72,10 +72,15 @@ def _returns(evidence):
     return equity / np.r_[evidence.initial_cash, equity[:-1]] - 1
 
 
-def _concentration(evidence, tolerance):
+def _concentration(evidence, tolerance, *, details=None):
     if evidence.equity is not None:
-        from .equity_assessment import equity_concentration
-        value = equity_concentration(evidence)
+        from .equity_assessment import _equity_concentration_parts
+        count, selected, numerator, denominator = _equity_concentration_parts(evidence)
+        if details is not None:
+            details.append(m.ProfitConcentrationFacts(
+                "MAX_SINGLE" if evidence.equity.concentration_basis == "MAX_SINGLE" else "TOP_DECILE",
+                count, selected, numerator, denominator))
+        value = numerator / denominator if denominator else None
         return (value, m.DiagnosticStatus.AVAILABLE, None) if value is not None else (
             None, m.DiagnosticStatus.NOT_APPLICABLE, "NO_PROFITABLE_CLOSED_CYCLES")
     daily = defaultdict(list)
@@ -133,6 +138,10 @@ def _concentration(evidence, tolerance):
     ):
         return None, m.DiagnosticStatus.FAILED, "PNL_RECONCILIATION_FAILED"
     winners = sorted((flows[key] for key in closed if flows[key] > 0), reverse=True)
+    if details is not None:
+        count = math.ceil(0.1 * len(winners))
+        details.append(m.ProfitConcentrationFacts("TOP_DECILE", len(winners), count,
+            float(sum(winners[:count])), float(sum(winners))))
     if not winners:
         return None, m.DiagnosticStatus.NOT_APPLICABLE, "NO_PROFITABLE_CLOSED_CYCLES"
     return (
@@ -218,17 +227,6 @@ def assess_candidates(
     return _assess_candidates(request)
 
 
-def recompute_historical_assessment(request: m.CandidateAssessmentRequest) -> m.AssessmentPanel:
-    """Recompute stored v5/v6 evidence without upgrading its protocol or identity."""
-    if type(request) is not m.CandidateAssessmentRequest:
-        raise TypeError("historical assessment requires CandidateAssessmentRequest")
-    m.require(isinstance(request.protocol, m.SelfCheckProtocol) or (
-        isinstance(request.protocol, m.NeighborhoodSelfCheckProtocol)
-        and request.protocol.parameter_protocol.version == "parameter-cartesian-neighborhood-v1"
-    ), "historical assessment requires a historical protocol")
-    return _assess_candidates(request)
-
-
 def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evidence=None,
                        request_sha256=None) -> m.AssessmentPanel:
     if type(request) is not m.CandidateAssessmentRequest:
@@ -237,6 +235,30 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
     evidence = {(x.candidate, x.window_id, x.scenario_id): x for x in request.evidence}
     if parameter_evidence is not None:
         evidence.update({(x.candidate, x.window_id, x.scenario_id): x for x in parameter_evidence})
+    performances, benchmarks, facts = {}, {}, {}
+
+    def performance(item):
+        if id(item) not in performances:
+            performances[id(item)] = _performance(item)
+        return performances[id(item)]
+
+    def benchmark_performance(item):
+        key = (item.initial_cash, item.benchmark_equity) if item.equity is None else (
+            item.initial_cash, item.equity.drawdown_basis, item.equity.benchmark_ledger)
+        if key not in benchmarks:
+            benchmarks[key] = _benchmark_performance(item)
+        return benchmarks[key]
+
+    def performance_facts(item):
+        if id(item) not in facts:
+            facts[id(item)] = item.performance if type(item) is ParameterPerformanceEvidence else m.PerformanceFacts(
+                item.candidate, item.evaluation_id, item.scenario_context, *performance(item),
+                *(benchmark_performance(item) if item.benchmark_equity else (None, None)),
+                None if item.parameter_point is None else item.parameter_point.point_index)
+        return facts[id(item)]
+
+    supplied_bootstrap = {item.candidate: item for item in request.bootstrap_evidence}
+    current = isinstance(p, m.NeighborhoodSelfCheckProtocol) and p.parameter_protocol.version == "parameter-cartesian-neighborhood-v2"
     rows = []
     for center in request.centers:
         base = evidence.get((center, p.baseline_window, p.standard_scenario))
@@ -253,6 +275,7 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
         coverage = None
         point_facts = ()
         stress_facts = None
+        rolling_details, concentration_details = (), []
 
         def put(
             metric,
@@ -281,7 +304,7 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
             m.DiagnosticStatus.INSUFFICIENT_DATA, None, None, "MISSING_BASELINE"
         )
         if base is not None:
-            annual, drawdown = _performance(base)
+            annual, drawdown = performance(base)
             put(m.ResearchMetric.NET_ANNUAL_RETURN, annual, sources=(base,))
             put(m.ResearchMetric.DRAWDOWN_MAGNITUDE, drawdown, sources=(base,))
             sessions = tuple(x.session for x in base.account)
@@ -342,7 +365,8 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
                     reason="INSUFFICIENT_FREQUENCY_WINDOW", sources=(base,))
             else:
                 put(m.ResearchMetric.FREQUENCY_COVERAGE, reason="FREQUENCY_COVERAGE_NOT_REQUESTED", sources=(base,))
-            concentration, state, reason = _concentration(base, p.reconciliation_tolerance)
+            concentration, state, reason = _concentration(base, p.reconciliation_tolerance,
+                details=concentration_details if current else None)
             put(m.ResearchMetric.PROFIT_CONCENTRATION, concentration, state, reason, (base,))
             if reason:
                 gaps.append(reason)
@@ -352,7 +376,7 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
                 evidence.get((x.child, p.baseline_window, p.standard_scenario)) for x in links
             ]
             projection_context = None if parameter_evidence is None else (
-                assessment_benchmark_fingerprint(base), _benchmark_performance(base)
+                assessment_benchmark_fingerprint(base), benchmark_performance(base)
                 if base.benchmark_equity else (None, None))
             for link, neighbor in zip(links, neighbors):
                 if neighbor is not None:
@@ -371,7 +395,7 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
                     )
             comparable = all(_parameter_comparable(x, base, p, projection_context) for x in neighbors)
             if design is not None:
-                point_facts = tuple(_performance_facts(x) for x in neighbors
+                point_facts = tuple(performance_facts(x) for x in neighbors
                     if x is not None and x.parameter_point is not None
                     and _parameter_comparable(x, base, p, projection_context, require_benchmark=True))
             declared_complete = design is None or (
@@ -396,10 +420,10 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
                 and declared_complete
                 and (p.parameter_protocol is None or design is not None)
             ):
-                performances = [_performance(x) for x in neighbors]
+                neighbor_performances = [performance(x) for x in neighbors]
                 weights = [x.weight for x in links]
-                return_q10 = _quantile([x[0] for x in performances], 0.1, p.quantile_method, weights)
-                drawdown_q90 = _quantile([x[1] for x in performances], 0.9, p.quantile_method, weights)
+                return_q10 = _quantile([x[0] for x in neighbor_performances], 0.1, p.quantile_method, weights)
+                drawdown_q90 = _quantile([x[1] for x in neighbor_performances], 0.9, p.quantile_method, weights)
                 values = (
                     return_q10, drawdown_q90,
                     max(0.0, annual - return_q10), max(0.0, drawdown_q90 - drawdown),
@@ -441,10 +465,10 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
                     base.metric_version,
                 )
             ):
-                stress_facts = _performance_facts(stress)
+                stress_facts = performance_facts(stress)
                 put(
                     m.ResearchMetric.STRESS_ANNUAL_LOSS,
-                    annual - _performance(stress)[0],
+                    annual - stress_facts.annual_return,
                     sources=(base, stress),
                 )
             else:
@@ -457,13 +481,15 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
             if base.benchmark_equity:
                 strategy = np.r_[base.initial_cash, [x.equity for x in base.account]]
                 benchmark = np.r_[base.initial_cash, base.benchmark_equity]
-                excess = [
-                    strategy[i + p.rolling_window_days] / strategy[i]
-                    - benchmark[i + p.rolling_window_days] / benchmark[i]
-                    for i in range(
-                        0, len(base.account) - p.rolling_window_days + 1, p.rolling_step_days
-                    )
-                ]
+                windows = []
+                for i in range(0, len(base.account) - p.rolling_window_days + 1, p.rolling_step_days):
+                    growth = strategy[i + p.rolling_window_days] / strategy[i]
+                    comparator_growth = benchmark[i + p.rolling_window_days] / benchmark[i]
+                    windows.append(m.RollingReturnFacts(sessions[i], sessions[i + p.rolling_window_days - 1],
+                        p.rolling_window_days, float(growth - 1), float(comparator_growth - 1),
+                        float(growth - comparator_growth)))
+                rolling_details = tuple(windows)
+                excess = [window.excess_return for window in rolling_details]
                 put(
                     m.ResearchMetric.ROLLING_EXCESS_Q10,
                     _quantile(excess, 0.1, p.quantile_method)
@@ -473,13 +499,22 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
                     sources=(base,),
                 )
                 if len(base.account) >= 2:
-                    result = _paired_stationary_bootstrap_cagr(
-                        _returns(base),
-                        benchmark[1:] / benchmark[:-1] - 1,
-                        repetitions=p.bootstrap_repetitions,
-                        mean_block_length=p.bootstrap_block_length,
-                        seed=p.seed,
-                    )
+                    returns, comparator_returns = _returns(base), benchmark[1:] / benchmark[:-1] - 1
+                    supplied = supplied_bootstrap.get(center)
+                    if supplied is not None:
+                        computed, binding = supplied.result, supplied.result.binding
+                        m.require(binding.method == "paired-stationary-bootstrap-v1"
+                            and binding.seed == p.seed and binding.observations == len(returns)
+                            and computed.repetitions == p.bootstrap_repetitions
+                            and computed.mean_block_length == p.bootstrap_block_length
+                            and binding.champion_returns_sha256 == _return_fingerprint(returns)
+                            and binding.comparator_returns_sha256 == _return_fingerprint(comparator_returns),
+                            "precomputed bootstrap inputs or method differ")
+                        result = computed.cagr
+                    else:
+                        result = _paired_stationary_bootstrap_cagr(returns, comparator_returns,
+                            repetitions=p.bootstrap_repetitions,
+                            mean_block_length=p.bootstrap_block_length, seed=p.seed)
                     interval = m.UncertaintyInterval(
                         m.DiagnosticStatus.AVAILABLE,
                         result.lower_95,
@@ -487,10 +522,12 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
                         None,
                     )
                 else:
+                    m.require(center not in supplied_bootstrap, "precomputed bootstrap has insufficient source observations")
                     interval = m.UncertaintyInterval(
                         m.DiagnosticStatus.INSUFFICIENT_DATA, None, None, "TOO_FEW_RETURNS"
                     )
             else:
+                m.require(center not in supplied_bootstrap, "precomputed bootstrap has no comparable benchmark")
                 put(
                     m.ResearchMetric.ROLLING_EXCESS_Q10, reason="MISSING_BENCHMARK", sources=(base,)
                 )
@@ -501,7 +538,7 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
         else:
             gaps.append("MISSING_BASELINE")
         benchmark_values = (
-            _benchmark_performance(base)
+            benchmark_performance(base)
             if base is not None and base.benchmark_equity
             else (None, None)
         )
@@ -539,6 +576,8 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
                     projection_context if base is not None else None),
                 coverage, point_facts, stress_facts,
                 rolling_calmar_excess(base, p) if isinstance(p, m.CalmarSelfCheckProtocol) else None,
+                m.AssessmentCalculationDetails(rolling_details,
+                    concentration_details[0] if concentration_details else None) if current else None,
             )
         )
     family, limitations = _family(request)
@@ -950,16 +989,6 @@ def compare_candidates(request: m.CandidateComparisonRequest | m.CalmarCompariso
                     ("research-ranking-v4", "research-assessment-v7"),)
     m.require((request.policy.formula_version, request.panel.formula_version) in expected,
               "historical comparison protocols are read-only")
-    return _compare_candidates(request)
-
-
-def recompute_historical_comparison(request: m.CandidateComparisonRequest) -> m.CandidateComparison:
-    """Read-only numeric verification of stored v3 rankings from v5/v6 panels."""
-    if type(request) is not m.CandidateComparisonRequest:
-        raise TypeError("historical comparison requires CandidateComparisonRequest")
-    m.require(request.policy.formula_version == "research-ranking-v3"
-              and request.panel.formula_version in ("research-assessment-v5", "research-assessment-v6"),
-              "historical comparison requires historical formulas")
     return _compare_candidates(request)
 
 

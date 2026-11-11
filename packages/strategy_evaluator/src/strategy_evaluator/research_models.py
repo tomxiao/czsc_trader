@@ -14,6 +14,7 @@ from types import MappingProxyType, UnionType
 from typing import Union, get_args, get_origin, get_type_hints
 
 from .models import ValidationError
+from .bootstrap import BootstrapCagrResult
 
 
 def require(condition, message):
@@ -816,6 +817,24 @@ class FamilyReturnEvidence(ResearchRecord):
 
 
 @dataclass(frozen=True)
+class AssessmentBootstrapEvidence(ResearchRecord):
+    """Explicit reuse of a bootstrap result carrying its actual computation inputs."""
+
+    candidate: AssessmentCandidate
+    evaluation_id: str
+    result: BootstrapCagrResult
+
+    def validate(self):
+        require(self.result.binding is not None, "bootstrap reuse requires recorded computation binding")
+        require(self.result.cagr.metric == "cagr", "bootstrap result has no CAGR interval")
+        require(self.result.repetitions > 0 and self.result.mean_block_length > 0,
+                "invalid bootstrap computation contract")
+        require(math.isfinite(self.result.cagr.lower_95) and math.isfinite(self.result.cagr.upper_95)
+                and self.result.cagr.lower_95 <= self.result.cagr.upper_95,
+                "invalid bootstrap confidence interval")
+
+
+@dataclass(frozen=True)
 class CandidateAssessmentRequest(ResearchRecord):
     centers: tuple[AssessmentCandidate, ...]
     protocol: SelfCheckProtocol | NeighborhoodSelfCheckProtocol | CalmarSelfCheckProtocol
@@ -824,9 +843,24 @@ class CandidateAssessmentRequest(ResearchRecord):
     incomplete: tuple[IncompleteEvaluation, ...] = ()
     family_returns: FamilyReturnEvidence | None = None
     parameter_designs: tuple[ParameterPerturbationDesign | ParameterNeighborhoodDesign | DeclaredParameterPointSet, ...] = ()
+    bootstrap_evidence: tuple[AssessmentBootstrapEvidence, ...] = ()
+
+    def _serialized_fields(self):
+        return tuple(f.name for f in fields(self)
+                     if f.name != "bootstrap_evidence" or self.bootstrap_evidence)
+
+    @staticmethod
+    def _decode_defaults(value):
+        return {"bootstrap_evidence": ()} if type(value) is dict and "bootstrap_evidence" not in value else {}
 
     def validate(self):
         require(bool(self.centers), "explicit center set must be nonempty")
+        unique((x.candidate for x in self.bootstrap_evidence), "bootstrap center")
+        require(all(x.candidate in self.centers and any(
+            e.candidate == x.candidate and e.evaluation_id == x.evaluation_id
+            and e.window_id == self.protocol.baseline_window
+            and e.scenario_id == self.protocol.standard_scenario for e in self.evidence
+        ) for x in self.bootstrap_evidence), "bootstrap source differs from standard center")
         unique((x.center for x in self.parameter_designs), "parameter design center")
         require(
             all(x.center in self.centers for x in self.parameter_designs), "design center absent"
@@ -1018,6 +1052,48 @@ class PerformanceFacts(ResearchRecord):
 
 
 @dataclass(frozen=True)
+class RollingReturnFacts(ResearchRecord):
+    start_session: str
+    end_session: str
+    observations: int
+    strategy_return: float
+    benchmark_return: float
+    excess_return: float
+
+    def validate(self):
+        require(date.fromisoformat(self.start_session) <= date.fromisoformat(self.end_session)
+                and self.observations > 0 and self.strategy_return > -1 and self.benchmark_return > -1,
+                "invalid rolling return window")
+
+
+@dataclass(frozen=True)
+class ProfitConcentrationFacts(ResearchRecord):
+    basis: str
+    winning_cycles: int
+    selected_cycles: int
+    selected_profit: float
+    total_profit: float
+
+    def validate(self):
+        require(self.basis in ("MAX_SINGLE", "TOP_DECILE"), "invalid concentration basis")
+        require(0 <= self.selected_cycles <= self.winning_cycles
+                and 0 <= self.selected_profit <= self.total_profit, "invalid concentration totals")
+        require((self.winning_cycles == 0) == (self.total_profit == 0), "winning count differs from profit")
+        require(self.selected_cycles == (min(1, self.winning_cycles) if self.basis == "MAX_SINGLE"
+                else math.ceil(.1 * self.winning_cycles)), "concentration selection differs from basis")
+
+
+@dataclass(frozen=True)
+class AssessmentCalculationDetails(ResearchRecord):
+    rolling_windows: tuple[RollingReturnFacts, ...]
+    concentration: ProfitConcentrationFacts | None
+    version: str = "assessment-calculation-details-v1"
+
+    def validate(self):
+        require(self.version == "assessment-calculation-details-v1", "unsupported calculation details")
+
+
+@dataclass(frozen=True)
 class CandidateAssessment(ResearchRecord):
     candidate: AssessmentCandidate
     context_sha256: str | None
@@ -1035,14 +1111,16 @@ class CandidateAssessment(ResearchRecord):
     parameter_performances: tuple[PerformanceFacts, ...] = ()
     stress_performance: PerformanceFacts | None = None
     rolling_calmar_excess_q10: DiagnosticValue | None = None
+    calculation_details: AssessmentCalculationDetails | None = None
 
     def _serialized_fields(self):
-        return tuple(f.name for f in fields(self)
-                     if f.name != "rolling_calmar_excess_q10" or self.rolling_calmar_excess_q10 is not None)
+        return tuple(f.name for f in fields(self) if f.name not in (
+            "rolling_calmar_excess_q10", "calculation_details") or getattr(self, f.name) is not None)
 
     @classmethod
     def _decode_defaults(cls, value):
-        return {"rolling_calmar_excess_q10": None} if type(value) is dict and "rolling_calmar_excess_q10" not in value else {}
+        return {name: None for name in ("rolling_calmar_excess_q10", "calculation_details")
+                if type(value) is dict and name not in value}
 
     def validate(self):
         if self.rolling_calmar_excess_q10 is not None:
@@ -1151,8 +1229,8 @@ class AssessmentPanel(ResearchRecord):
         return {"input_kind": None} if type(value) is dict and "input_kind" not in value else {}
 
     def validate(self):
-        require(self.input_kind is None or self.formula_version == "research-assessment-v8",
-                "performance projection requires assessment v8")
+        require(self.input_kind is None or self.formula_version in ("research-assessment-v7", "research-assessment-v8"),
+                "performance projection requires current neighborhood assessment")
         require(
             self.formula_version in ("research-assessment-v5", "research-assessment-v6", "research-assessment-v7", "research-assessment-v8"),
             "unsupported assessment formula version",

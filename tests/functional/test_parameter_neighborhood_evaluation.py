@@ -72,7 +72,7 @@ def test_TDR_14_C06_legacy_sphere_plan_is_readable_but_cannot_start_new_work(pre
         read_parameter_plan,
     )
 
-    research, center, plan, reference, children, _ = prepared_parameter_plan
+    research, center, plan, reference, children, execution = prepared_parameter_plan
     oldspace = ParameterSpace((ParameterCoordinate("threshold", .5, 0., 1.,
         ParameterCoordinateKind.CONTINUOUS),), plan.mapping_evidence.sha256,
         plan.feasibility_evidence.sha256)
@@ -84,13 +84,13 @@ def test_TDR_14_C06_legacy_sphere_plan_is_readable_but_cannot_start_new_work(pre
     legacy = replace(plan, design=olddesign, schema_version=1)
     assert ParameterEvaluationPlan.from_dict(legacy.to_dict()) == legacy
     oldref = publish_evidence(research, MaterialEvidenceWrite(reference.experiment,
-        "legacy-read-only-plan", json.dumps(legacy.to_dict()).encode(), "application/json", "json"))
+        "legacy-read-only-plan", json.dumps(legacy.to_dict()).encode(), "application/json", "json"), execution=execution)
     assert read_parameter_plan(oldref, research.repository.root) == legacy
     with pytest.raises(TypeError, match="typed neighborhood"):
         ParameterEvaluationPlan.create(olddesign, center, (), mapping_evidence=plan.mapping_evidence,
             feasibility_evidence=plan.feasibility_evidence, dataflows=research.data)
     with pytest.raises(ValueError, match="read-only"):
-        legacy.bind_point(oldref, 0, repository_root=research.repository.root)
+        legacy.bind_point(oldref, 0, center, execution=None)
 
 
 def test_TDR_14_C07_legacy_cartesian_plan_remains_read_only_without_changing_serialization(prepared_parameter_plan):
@@ -99,7 +99,7 @@ def test_TDR_14_C07_legacy_cartesian_plan_remains_read_only_without_changing_ser
     from czsc_trader.research_tools import MaterialEvidenceWrite
     from czsc_trader.research_tools.parameter_evaluation import read_parameter_plan
 
-    research, center, plan, reference, _, _ = prepared_parameter_plan
+    research, center, plan, reference, _, execution = prepared_parameter_plan
     old_axis = replace(plan.design.space.axes[0], rule=NumericOffsets((-.5, .5)))
     legacy_design = replace(plan.design,
         protocol=replace(plan.design.protocol, version="parameter-cartesian-neighborhood-v1"),
@@ -108,10 +108,10 @@ def test_TDR_14_C07_legacy_cartesian_plan_remains_read_only_without_changing_ser
     original = legacy.to_dict()
     assert ParameterEvaluationPlan.from_dict(original).to_dict() == original
     oldref = publish_evidence(research, MaterialEvidenceWrite(reference.experiment,
-        "legacy-cartesian-plan", json.dumps(original).encode(), "application/json", "json"))
+        "legacy-cartesian-plan", json.dumps(original).encode(), "application/json", "json"), execution=execution)
     assert read_parameter_plan(oldref, research.repository.root).to_dict() == original
     with pytest.raises(ValueError, match="read-only"):
         ParameterEvaluationPlan.create(legacy_design, center, (), mapping_evidence=plan.mapping_evidence,
             feasibility_evidence=plan.feasibility_evidence, dataflows=research.data)
     with pytest.raises(ValueError, match="read-only"):
-        legacy.bind_point(oldref, 0, repository_root=research.repository.root)
+        legacy.bind_point(oldref, 0, center, execution=None)

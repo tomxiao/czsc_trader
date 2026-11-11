@@ -1,5 +1,4 @@
 """Resolve content-addressed account dependencies beside their evaluation document."""
-from hashlib import sha256
 from pathlib import PurePosixPath
 import re
 
@@ -22,9 +21,8 @@ def materialize_equity_document(root, evaluation_path, value):
                 or not re.fullmatch('[a-f0-9]{64}', reference['sha256'])):
             raise ValueError('invalid equity dependency reference')
         path = managed_path(root, (relative.parent / (reference['sha256']+'.json')).as_posix())
-        content = path.read_bytes()
-        if sha256(content).hexdigest() != reference['sha256']:
-            raise ValueError('published equity dependency checksum differs')
-        return content
+        # The materializer constructs an immutable EquityArtifact and compares
+        # its digest with this reference. Avoid hashing the same bytes twice.
+        return path.read_bytes()
 
     return materialize_equity(value, resolve)

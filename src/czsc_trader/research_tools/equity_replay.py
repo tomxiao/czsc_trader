@@ -15,6 +15,7 @@ import inspect
 import json
 from pathlib import Path
 from weakref import WeakValueDictionary, ref
+from typing import TYPE_CHECKING
 
 from dataflows import EquityDataRequest, EquityProduct, PreparePolicy, TimeInterval
 from strategy_runtime.equity import ResearchExecutionSpec, equity_hash
@@ -25,6 +26,10 @@ from .equity_evaluation import (EquityArtifact, EquityEvaluationRequest, EquityE
     _audit_inputs, _data_quality, _fetch_products, _json_value, _records)
 from .execution import ExecutionPhase, ResearchExecutionSession
 from .account_preparation import PreparedAccountEvaluation, BenchmarkRunIdentity
+from .equity_assessment import AssessmentProjection
+
+if TYPE_CHECKING:
+    from strategy_evaluator import AssessmentEvidence, ParameterPerformanceEvidence
 
 
 def _bytes(value):
@@ -56,12 +61,15 @@ class EquityInputSnapshot:
     artifact: EquityArtifact
     primary_sha256: str = field(init=False, repr=False, compare=False)
     data_content: bytes = field(init=False, repr=False, compare=False)
+    expected_identities: tuple[tuple[str, str], ...] = field(init=False, repr=False, compare=False)
 
     def __post_init__(self):
         if type(self.artifact) is not EquityArtifact or self.artifact.kind != "equity_input":
             raise TypeError("input snapshot requires an immutable input artifact")
         value = _read(self.artifact.content)
         object.__setattr__(self, "data_content", _bytes(value["data"]))
+        object.__setattr__(self, "expected_identities", tuple(sorted(
+            (name, item["content_sha256"]) for name, item in value["data"].items() if name != "constraints")))
         object.__setattr__(self, "primary_sha256", primary_input_digest(value))
 
     @property
@@ -135,6 +143,8 @@ def prepare_equity(access, request, *, execution):
     """Fetch/authenticate each exact input selection once in the owning session."""
     if type(request) is not EquityEvaluationRequest or request.candidate.definition.contract_version != 4:
         raise TypeError("equity preparation requires an explicit equity strategy request")
+    if request.lineage is not None and request.lineage.parameter_binding is not None:
+        raise ValueError("prepare an unbound child, then use ParameterEvaluationPlan.bind_point")
     state = _state(access, execution, request.experiment.experiment_id)
     spec = access.execution_spec
     if type(spec) is not ResearchExecutionSpec:
@@ -399,7 +409,8 @@ def evaluate_many_equity(access, requests, *, execution):
     if execution.checkpoint is not None:
         for i, prepared in enumerate(requests):
             request_hash = request_hashes[i]
-            cached = execution.checkpoint.load_equity_result(prepared, request_hash)
+            with execution.executor.measure(ExecutionPhase.CHECKPOINT):
+                cached = execution.checkpoint.load_equity_result(prepared, request_hash)
             if cached is None:
                 continue
             with execution.executor.measure(ExecutionPhase.AUTHENTICATE):
@@ -474,7 +485,8 @@ def evaluate_many_equity(access, requests, *, execution):
             result = _result(prepared, accounts[("candidate", request_hash)], state.benchmarks[prepared.benchmark_identity.sha256])
             _remember_result(state, prepared, result)
             if execution.checkpoint is not None:
-                execution.checkpoint.save_equity_result(request_hash, result)
+                with execution.executor.measure(ExecutionPhase.CHECKPOINT):
+                    execution.checkpoint.save_equity_result(request_hash, result)
             outcomes.append(EvaluationOutcome(EvaluationStatus.SUCCEEDED, request_hash, result))
         except Exception as exc:
             outcomes.append(EvaluationOutcome(EvaluationStatus.FAILED, request_hash,
@@ -535,6 +547,11 @@ def decoded_equity_runs(payload, inputs, candidate, benchmark, *, primary_sha256
     """Validate V4 dependency identities without re-decoding or account replay."""
     if inputs.get("schema") != "equity-input/v2" or inputs["data"] != payload["data"]:
         raise ValueError("equity input identity differs")
+    return _account_runs(payload, candidate, benchmark, primary_sha256=primary_sha256)
+
+
+def _account_runs(payload, candidate, benchmark, *, primary_sha256=None):
+    """Check the identities consumed by account-fact projection."""
     runs = {}
     for name, key in (("candidate", "candidate_ref"), ("buy_hold", "benchmark_ref")):
         account = candidate if name == "candidate" else benchmark
@@ -550,7 +567,7 @@ def decoded_equity_runs(payload, inputs, candidate, benchmark, *, primary_sha256
             expected_owner = {"kind": "BENCHMARK", "run_identity": identity.to_dict(), "run_sha256": identity.sha256}
             contract = identity.to_dict()
             request = payload["request"]
-            if (contract["input_snapshot_sha256"] != primary_sha256
+            if ((primary_sha256 is not None and contract["input_snapshot_sha256"] != primary_sha256)
                     or any(contract[name] != request[name] for name in
                         ("instrument", "window", "history_start", "initial_cash", "fee_rate", "engine_sources", "python_version", "pandas_version"))
                     or contract.get("income_policy") != request.get("income_policy")
@@ -565,6 +582,7 @@ def decoded_equity_runs(payload, inputs, candidate, benchmark, *, primary_sha256
 
 @dataclass(frozen=True, slots=True)
 class MaterializedEquity:
+    """Immutable, resolved bytes; economic links are checked when facts are read."""
     source_content: bytes
     artifacts: tuple[EquityArtifact, ...]
 
@@ -582,12 +600,30 @@ class MaterializedEquity:
 
     @property
     def payload(self):
+        """Return an isolated mutable snapshot, decoding each dependency once."""
+        payload, inputs, runs = self._decoded_facts()
+        return self._payload_from_facts(payload, inputs, runs)
+
+    def _decoded_facts(self):
+        """Consume this closure without retaining a mutable decoded ledger cache."""
         payload = _read(self.source_content)
         documents = {item.sha256: _read(item.content) for item in self.artifacts}
         inputs = documents[payload["input_ref"]["sha256"]]
         runs = decoded_equity_runs(payload, inputs,
             documents[payload["candidate_ref"]["sha256"]], documents[payload["benchmark_ref"]["sha256"]],
             primary_sha256=primary_input_digest(inputs))
+        return payload, inputs, runs
+
+    def _account_facts(self):
+        """Read recorded accounts; input bars are only needed by full payload consumers."""
+        payload = _read(self.source_content)
+        artifacts = {item.sha256: item for item in self.artifacts}
+        candidate, benchmark = (_read(artifacts[payload[name]["sha256"]].content)
+                                for name in ("candidate_ref", "benchmark_ref"))
+        return payload, _account_runs(payload, candidate, benchmark)
+
+    @staticmethod
+    def _payload_from_facts(payload, inputs, runs):
         request = payload["request"]
         products = inputs["products"]
         payload.update(runs=runs, audit_inputs={"bars": products["bars"],
@@ -616,7 +652,9 @@ class MaterializedEquity:
 
 def _resolve_equity(value, resolver):
     if type(value) is EquityEvaluationResult:
-        content, artifacts = value.content, value.artifacts
+        if value.artifacts:
+            return MaterializedEquity(value.content, value.artifacts)
+        content, artifacts = value.content, ()
     elif type(value) is dict:
         content, artifacts = _bytes(value), ()
     elif type(value) is bytes:
@@ -640,14 +678,15 @@ def _resolve_equity(value, resolver):
 
 
 def materialize_equity(value, resolver=None):
-    """Resolve and validate an immutable closure, including owner/input links."""
-    view = _resolve_equity(value, resolver)
-    view.payload
-    return view
+    """Resolve immutable bytes and references; consumers validate economic links."""
+    return _resolve_equity(value, resolver)
 
 
-def build_equity_assessment(value, resolver=None):
+def build_equity_assessment(value, resolver=None, *, projection: AssessmentProjection = AssessmentProjection.FULL
+        ) -> tuple[AssessmentEvidence, ...] | tuple[ParameterPerformanceEvidence, ...]:
     """Project recorded account facts without independently auditing them."""
     from .equity_assessment import build_equity_assessment_payload
+    if type(projection) is not AssessmentProjection:
+        raise TypeError("assessment projection requires AssessmentProjection")
     view = value if type(value) is MaterializedEquity else _resolve_equity(value, resolver)
-    return build_equity_assessment_payload(view)
+    return build_equity_assessment_payload(view, projection=projection)

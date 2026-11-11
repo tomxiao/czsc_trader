@@ -393,7 +393,7 @@ SE生成`ParameterNeighborhoodDesign`或接受`DeclaredParameterPointSet`，RSCH
 `research.evaluation.prepare(..., execution=execution)`准备后，在同一活动会话内构造计划；下例展示事前发布的一种组织方式：
 
 ```python
-from czsc_trader.research_tools import ParameterEvaluationPlan, EvaluationLineage
+from czsc_trader.research_tools import ParameterEvaluationPlan
 
 plan = ParameterEvaluationPlan.create(
     design, prepared_center, prepared_children,
@@ -403,28 +403,41 @@ plan = ParameterEvaluationPlan.create(
 plan_reference = publish_evidence(research, MaterialEvidenceWrite(
     experiment, "parameter-evaluation-plan",
     json.dumps(plan.to_dict(), ensure_ascii=False).encode("utf-8"), "application/json", "json",
-))
+), execution=execution)
 if design.is_applicable:
-    point_binding = plan.bind_point(plan_reference, 0, repository_root=repository.root)
-    child_request = replace(prepared_children[0].request, lineage=EvaluationLineage(derivation, point_binding))
-    child_bound = research.evaluation.prepare(child_request, execution=execution)
+    child_bound = plan.bind_point(plan_reference, 0, prepared_children[0], execution=execution)
     child_outcome, = research.evaluation.evaluate_many((child_bound,), execution=execution)
     if child_outcome.status.value != "SUCCEEDED":
         raise RuntimeError(child_outcome.error)
     child_result = child_outcome.result
 ```
 
-上例需导入 `json` 及 `dataclasses.replace`；`derivation` 为实际中心与该子候选的 `PARAMETERS` 派生关系。
+上例需导入 `json`。`bind_point`由计划构造实际中心与子候选的`PARAMETERS`派生关系，
+返回会话登记的新准备句柄，复用输入快照、基准和源码准备；调用者直接执行该句柄。
 `ParameterEvaluationPlan.create`保留调用形式，接受完整邻域或已有的`DeclaredParameterPointSet`。
 声明集合仅要求对应的实际子候选，不准备未选来源点。计划保留中心、实际点、参数载荷及执行上下文，原点编号不重新编号。
-`bind_point(reference, index, repository_root=...)`仅按内存计划和原点ID构造绑定，不读取文件或要求已事前发布；
+`bind_point(reference, index, prepared, execution=...)`按内存计划和原点ID绑定同会话子句柄，不读取计划文件或要求已事前发布；
+旧的仅返回绑定、再手工追加谱系并重新`prepare`的运行方式已移除。`prepare`拒绝已经携带参数点绑定的请求。
 是否事前发布由RSCH协议安排。显式`read_parameter_plan`只读取并核对所指定计划字节，不认证映射、可行性等上游材料；计划新建只接受V4会话句柄。
 点ID、内容身份和参数映射须满足强类型契约；工具不替RSCH证明参数识别充分或检验方法合理。
 
 中心和邻点共享相同的实际输入与公共执行会话；收益、回撤和必要观测从账户事实计算一次。
 `build_assessment_evidence`只投影已有事实，不重新物化完整行情及账本进行来源认证。
+中心使用默认`projection=AssessmentProjection.FULL`；邻点显式使用
+`projection=AssessmentProjection.PARAMETER_PERFORMANCE`，直接返回SE的`ParameterPerformanceEvidence`。
+`CandidatePerformanceAssessmentRequest`同时支持当前NAR及Calmar协议；两者统一交给`assess_candidates`。
+轻量投影复用账户保存的指标，按原`drawdown_basis`选择逐日或逐柱MDD，不先构造完整评估再压缩。
 中心使用紧凑的逐柱净值及周期观测支撑时间、集中度和区间计算；原始账户单独保存供显式深入核验。
 缺失或失败点如实返回，声明N不因缺失而缩小，不以填零或中心值替代邻点。
+
+SE输出的`calculation_details`保存滚动窗口及集中性分子、分母；报告直接引用同一次计算。
+已有Bootstrap通过显式强类型结果输入，匹配实际收益序列和方法后复用；错配报错，复算由调用者另行发起。
+完整调用示例与统计类型见[SE自检](../../packages/strategy_evaluator/README.md#候选自检与比较)。
+
+单项`publish_evidence`和批量`publish_evidence_many`共用依赖安装实现。活动会话须显式传入`execution`；
+同会话中未变化的共享材料只处理一次，文件身份变化则重新读取核对。检查点恢复校验实际存储字节，
+已完成发布后的检查点失败在批量返回中标为`UNKNOWN`，保留其他各项结果；不自动重试。
+检查点恢复使用有界的四材料读取缓存，关闭会话释放缓存，避免保留整个实验的完整账户字节。
 
 阶段四`CandidateAssessmentDelivery.parameter_plans`显式关联计划。发布保存选定材料及其直接依赖，
 每份共享材料按唯一内容处理一次；不递归认证历史交付、不重算SE、不判断实验步骤或结论是否正确。
@@ -491,7 +504,7 @@ RSCH 应用普通材料显式保存完整参数、源码文件及依赖，并直
 | `COMPONENTS` | `ComponentPanel` | 组件定义、测试结论、边界及证据；定义仅使用 `ExperimentDefinitionRef` 引用实验材料 |
 | `PROTOTYPES` | `PrototypePanel` | 阶段二原型、组件职责与对照、定义及账户身份、精确来源引用；不要求候选登记 |
 | `CANDIDATES` | `CandidateSet` | 候选内容及真实账户证据；handoff 对象须已登记且来源完整 |
-| `ASSESSMENT` | `CandidateAssessmentDelivery` | 精确交接范围、已确认目标／窗口／基准、保存事实，以及 SE 自检和比较重算 |
+| `ASSESSMENT` | `CandidateAssessmentDelivery` | 精确交接范围、已确认目标／窗口／基准、已计算的SE自检和比较结果；发布只检查存储完整性 |
 | `INSPECTION` | `CandidateInspectionDelivery` | 实际选型、技术检验、决定及冻结事务证据 |
 
 `FactValue` 的数值和不可用状态分别表达；`Explanation` 区分事实、假设、统计证据和研究判断。
@@ -634,7 +647,7 @@ SE评估或比较重算，历史研究来源是否继续适用由RSCH明确决�
 由`frequency_window_item_id`引用；`benchmark_item_id`绑定已确认基准。
 新自检协议使用`NeighborhoodSelfCheckProtocol`，显式设置`frequency_min_closed_cycles=3`及
 `parameter_protocol=ParameterNeighborhoodProtocol(...)`，不再设置`minimum_perturbations`。
-适用邻域固定N，`ParameterNeighborhoodTarget("parameters", 13, 16, ...)`要求至少ceil(13N/16)点联合通过；N=17时需14点且全部17点满足全部点条件。经完整设计确认整项不适用时，目标仍须绑定原约定，结果为`NOT_APPLICABLE`，不以0/0通过率伪装达标。不要用排序频率替代双频率目标。
+适用邻域固定N，`ParameterNeighborhoodTarget("parameters", 4, 5, ...)`表达联合通过率至少80%，最低通过数量按固定N向上取整；全部N点满足全部点条件。经完整设计确认整项不适用时，目标仍须绑定原约定，结果为`NOT_APPLICABLE`，不以0/0通过率伪装达标。不要用排序频率替代双频率目标。
 `target_bindings`只绑定参数组外层ID，内层条件随整个组的强类型值精确核对。
 
 技术校验`PASS`只表示所返回scope的检查已通过；阶段四发布不宣称独立认证或复算成功。研究验收读取`comparison.rows[*].acceptance_status`及
@@ -910,12 +923,14 @@ V4结果为 `equity-research/v4`，发布引用为 `EvidenceRef(schema="equity_r
 
 参数计划沿用权益schema4。中心和子项先显式准备，再以
 `ParameterEvaluationPlan.create(..., execution=execution)`创建实际声明点计划，再用
-`plan.bind_point(...)`构造`EvaluationLineage`并重新准备子请求，不复制句柄伪造所有权。
+`plan.bind_point(reference, index, child, execution=execution)`直接取得绑定完成的准备句柄，
+复用已固定的输入和执行上下文，仅更新谱系及受其影响的请求身份。
 是否事前发布由RSCH安排，绑定不读取计划文件。计划及lineage留在父进程，实际市场、输入、执行及非参数条件随请求留证。
 
 `execution.equity_statistics`返回输入快照数、候选及基准回放次数和账户计时，不返回审计次数或审计PASS。
 `account_timings`包括启动装载、特征、策略、执行及账表；特征是其子项，不重复相加。
 数据获取、完整性检查、检查点与发布的端到端时间须另报。`COMPUTE`墙钟包含逐个返回结果的处理，
+`CHECKPOINT`记录账户保存／恢复和批量发布检查点保存的实际耗时，它可能包含在上层墙钟区间内。
 `worker_seconds`只统计工作进程任务耗时；阶段计时可嵌套，不能直接相加。合成基准见
 [回放基准](../../scripts/benchmarks/README.md)，不能由接口成功推导任意策略秒级。
 
@@ -1084,9 +1099,13 @@ with ResearchExecutionSession(context, experiment=experiment,
 
 逐项检查批量计算和发布状态。主结果通过 `input_ref/candidate_ref/benchmark_ref`绑定三个内容寻址依赖；
 发布、检查点与交付必须保存完整闭包。冷读由 `materialize_equity`解析，再以
-`build_equity_assessment`检查引用关联、统计一致性并构造评价事实；缺少依赖或身份不同即失败，
-不静默重算，也不触发独立会计审计。公开`materialize_equity(...).payload`每次返回独立解码对象，
-不将可变字典缓存后共享给调用方。
+`build_equity_assessment`按所选投影消费必要事实。`materialize_equity`只解析不可变字节闭包及其引用结构；
+账户归属与输入关联在消费阶段检查。评估投影只解码候选和基准材料；显式`.payload`才解码输入正文并构造完整材料视图。
+缺少依赖或本次消费所需身份不同即失败，不隐式重算或独立审计。每次`.payload`返回独立可变快照。
+
+平台源码指纹参与账户请求及检查点身份。平台升级后，旧证据仍按原身份读取和引用；
+旧检查点要求原实现身份，升级续跑需建立明确的新执行版本，禁止改写旧身份以命中缓存。
+阶段四接口性能、工作量和可复现命令见[接口基准](../../scripts/benchmarks/README.md)。
 
 <a id="us-equity-evidence"></a>
 

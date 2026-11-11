@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from hashlib import sha256
 
 import numpy as np
 
@@ -26,6 +27,50 @@ class BootstrapMetric(Record):
 
 
 @dataclass(frozen=True)
+class BootstrapRunBinding(Record):
+    champion_returns_sha256: str
+    comparator_returns_sha256: str
+    observations: int
+    seed: int
+    method: str = "paired-stationary-bootstrap-v1"
+
+    def __post_init__(self):
+        import re
+        if any(type(value) is not str or re.fullmatch(r"[0-9a-f]{64}", value) is None
+               for value in (self.champion_returns_sha256, self.comparator_returns_sha256)):
+            raise ValueError("invalid bootstrap return fingerprint")
+        if type(self.observations) is not int or self.observations < 2 or type(self.seed) is not int:
+            raise ValueError("invalid bootstrap run binding")
+        if self.method != "paired-stationary-bootstrap-v1":
+            raise ValueError("unsupported bootstrap method")
+
+
+def _return_fingerprint(values):
+    values = np.asarray(values, dtype="<f8")
+    return sha256(values.tobytes(order="C")).hexdigest()
+
+
+@dataclass(frozen=True)
+class BootstrapCagrResult(Record):
+    """Finite CAGR facts with the binding recorded by the bootstrap computation."""
+
+    repetitions: int
+    mean_block_length: int
+    cagr: BootstrapMetric
+    binding: BootstrapRunBinding
+
+    def __post_init__(self):
+        if (type(self.repetitions) is not int or self.repetitions < 1
+            or type(self.mean_block_length) is not int or self.mean_block_length < 1
+            or type(self.cagr) is not BootstrapMetric or type(self.binding) is not BootstrapRunBinding):
+            raise TypeError("invalid bound bootstrap CAGR result")
+        if self.cagr.metric != "cagr" or not all(np.isfinite(value) for value in (
+            self.cagr.point_difference, self.cagr.lower_95, self.cagr.upper_95, self.cagr.probability_favorable
+        )) or self.cagr.lower_95 > self.cagr.upper_95:
+            raise ValueError("invalid bound bootstrap CAGR interval")
+
+
+@dataclass(frozen=True)
 class BootstrapComparison(Record):
     champion_id: str
     comparator_id: str
@@ -34,6 +79,17 @@ class BootstrapComparison(Record):
     cagr: BootstrapMetric
     max_drawdown: BootstrapMetric
     calmar: BootstrapMetric
+    binding: BootstrapRunBinding | None = None
+
+    @staticmethod
+    def _decode_defaults(value):
+        return {"binding": None} if type(value) is dict and "binding" not in value else {}
+
+    @property
+    def cagr_result(self) -> BootstrapCagrResult:
+        if self.binding is None:
+            raise ValueError("bootstrap reuse requires recorded computation binding")
+        return BootstrapCagrResult(self.repetitions, self.mean_block_length, self.cagr, self.binding)
 
 
 @dataclass(frozen=True)
@@ -173,21 +229,23 @@ def stationary_bootstrap_performance(
 
 
 def _paired_returns(champion_returns, comparator_returns, repetitions, mean_block_length):
-    champion = np.asarray(champion_returns, dtype=float)
-    comparator = np.asarray(comparator_returns, dtype=float)
+    champion = np.array(champion_returns, dtype=float, copy=True)
+    comparator = np.array(comparator_returns, dtype=float, copy=True)
     if champion.shape != comparator.shape or champion.ndim != 1 or len(champion) < 2:
         raise ValueError("paired returns must be aligned one-dimensional series")
     if not np.isfinite(champion).all() or not np.isfinite(comparator).all():
         raise ValueError("paired returns must be finite")
     if np.any(champion <= -1.0) or np.any(comparator <= -1.0):
         raise ValueError("daily returns must be greater than -1")
-    if repetitions < 1 or mean_block_length < 1:
+    if type(repetitions) is not int or type(mean_block_length) is not int or repetitions < 1 or mean_block_length < 1:
         raise ValueError("repetitions and mean block length must be positive")
     return champion, comparator
 
 
 def _paired_sample_indices(observations, repetitions, mean_block_length, seed):
     """Retain the original chunk boundaries and all stationary-bootstrap RNG draws."""
+    if type(seed) is not int or seed < 0:
+        raise ValueError("bootstrap seed must be a nonnegative integer")
     rng = np.random.default_rng(seed)
     chunk_size = min(256, repetitions)
     for start in range(0, repetitions, chunk_size):
@@ -260,6 +318,8 @@ def paired_stationary_bootstrap(
     return BootstrapComparison(
         champion_id, comparator_id, repetitions, mean_block_length,
         summaries[0], summaries[1], summaries[2],
+        BootstrapRunBinding(_return_fingerprint(champion), _return_fingerprint(comparator),
+                            len(champion), seed),
     )
 
 

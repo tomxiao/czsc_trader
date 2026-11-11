@@ -6,7 +6,7 @@ import pytest
 from strategy_evaluator import research_models as m
 from strategy_evaluator import EquityAssessmentFacts
 from strategy_evaluator.equity_assessment import canonical_ledger, daily_points
-from strategy_evaluator.research_assessment import recompute_historical_assessment
+from strategy_evaluator import assess_candidates
 
 
 from equity_facts_support import daily_profit_ledger as ledger
@@ -30,9 +30,10 @@ def evidence(drawdown="SESSION_CLOSE", concentration="MAX_SINGLE", days=12):
 
 
 def panel(value):
-    protocol = m.SelfCheckProtocol("test", "full", "standard", "pressure", 2, 1,
-        m.QuantileMethod.LINEAR, 1, 1, 20, 2, 3, 1e-8, pbo_blocks=2, frequency_min_closed_cycles=3)
-    return recompute_historical_assessment(m.CandidateAssessmentRequest((value.candidate,), protocol, (), (value,)))
+    protocol = m.NeighborhoodSelfCheckProtocol("test", "full", "standard", "pressure", 2, 1,
+        m.QuantileMethod.LINEAR, 1, 20, 2, 3, 1e-8, m.ParameterNeighborhoodProtocol(),
+        pbo_blocks=2, frequency_min_closed_cycles=3)
+    return assess_candidates(m.CandidateAssessmentRequest((value.candidate,), protocol, (), (value,)))
 
 
 def metric(result, key):

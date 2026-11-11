@@ -47,9 +47,49 @@ def test_TDR_14_C03_plan_rejects_changed_nonparameter_execution_context(prepared
 
 
 def test_TDR_14_C05_zero_point_plan_is_explicit_and_cannot_bind_fabricated_child(tmp_path):
-    with equity_plan(tmp_path, applicable=False) as (context, _, plan, reference, children, _):
+    with equity_plan(tmp_path, applicable=False) as (context, center, plan, reference, children, execution):
         assert plan.schema_version == 4
         assert not plan.design.is_applicable and plan.children == children == ()
         assert ParameterEvaluationPlan.from_dict(plan.to_dict()) == plan
         with pytest.raises(ValueError, match="no point to bind"):
-            plan.bind_point(reference, 0, repository_root=context.repository.root)
+            plan.bind_point(reference, 0, center, execution=execution)
+
+
+def test_TDR_14_C09_binding_reuses_preparation_and_preserves_exact_execution_contract(
+        prepared_parameter_plan, monkeypatch):
+    from czsc_trader.research_tools import equity_replay
+    from czsc_trader.research_tools.parameter_evaluation import validate_parameter_request
+
+    context, _, plan, reference, children, execution = prepared_parameter_plan
+    child = context.evaluation.prepare(replace(children[0].request, lineage=None), execution=execution)
+    changed = context.evaluation.prepare(replace(child.request, initial_cash=child.request.initial_cash + 1,
+        audit_inputs_sha256=None), execution=execution)
+
+    def unexpected(*args, **kwargs):
+        raise AssertionError("binding repeated expensive preparation")
+
+    monkeypatch.setattr(type(child.candidate), "verify", unexpected)
+    monkeypatch.setattr(equity_replay, "_fetch_products", unexpected)
+    monkeypatch.setattr(context.data, "prepare", unexpected)
+    bound = plan.bind_point(reference, 0, child, execution=execution)
+    assert bound.snapshot is child.snapshot
+    assert bound.benchmark_identity is child.benchmark_identity
+    assert bound.request.prepared is child.request.prepared
+    assert bound.request.input_binding is child.request.input_binding
+    contract = json.loads(bound.contract_content)
+    expected = equity_replay._bytes(bound.request._identity_with_sources(
+        context.evaluation.execution_spec, contract["engine_sources"]))
+    assert bound.contract_content == expected
+    assert bound.contract_content == children[0].contract_content
+    assert bound.request.lineage.derivation.changes == {x.name: x.value for x in plan.design.points[0].values}
+    validate_parameter_request(bound, context.data, execution=execution)
+    with pytest.raises(ValueError, match="actual child content"):
+        plan.bind_point(reference, 1, child, execution=execution)
+    with pytest.raises(ValueError, match="nonparameter context"):
+        plan.bind_point(reference, 0, changed, execution=execution)
+    with pytest.raises(ValueError, match="not issued"):
+        plan.bind_point(reference, 0, replace(child), execution=execution)
+    with pytest.raises(ValueError, match="prior lineage"):
+        plan.bind_point(reference, 0, bound, execution=execution)
+    with pytest.raises(ValueError, match="ParameterEvaluationPlan.bind_point"):
+        context.evaluation.prepare(bound.request, execution=execution)

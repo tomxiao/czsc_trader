@@ -60,7 +60,7 @@ def test_v4_public_publish_register_diagnose_and_delivery(tmp_path, market):
             CandidateRegistrationRequest(request.candidate, request.experiment, (refs[0],), ()))
         assert load_candidate(context.repository, request.candidate.key).content_identity.content_sha256 == record.content_sha256
         material = publish_evidence(context, MaterialEvidenceWrite(request.experiment, 'definition',
-            json.dumps(request.candidate.payload).encode(), 'application/json', 'json'))
+            json.dumps(request.candidate.payload).encode(), 'application/json', 'json'), execution=execution)
         entry = d.PrototypeEntry('P1', d.CandidateIdentityRef(request.candidate.key, record.content_sha256),
             d.ExperimentDefinitionRef(material, 'strategy:step'), 'Synthetic v4 timing', (),
             (d.EvaluationEvidenceRef(refs[0], (facts[0].evaluation_id,)),), d.PrototypeDisposition.INVESTIGATE,
@@ -77,7 +77,7 @@ def test_v4_public_publish_register_diagnose_and_delivery(tmp_path, market):
             AccountRunRef(refs[0], identities[0]), None,
             window), execution=execution)
         assert damaged.status.value == 'INVALID_EVIDENCE'
-        assert any('checksum differs' in issue for issue in damaged.issues)
+        assert any('artifact content digest differs' in issue for issue in damaged.issues)
         assert validate_delivery(context.repository, delivery.receipt.reference).status == 'PASS'
     # A real result cannot be published after its owning session has closed.
     with pytest.raises((TypeError, RuntimeError, ValueError), match='Session|session|active|execution'):

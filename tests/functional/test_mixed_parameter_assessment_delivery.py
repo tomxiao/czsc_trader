@@ -16,14 +16,13 @@ from strategy_evaluator import (
     RelativeChangeLimit, assess_candidates, build_parameter_neighborhood_design,
     compare_candidates, project_parameter_performance,
 )
-from strategy_manager import CandidateDerivation, CandidateDerivationKind, CandidateEvidence
 from strategy_runtime import canonical_sha256, equity_source_hash
 from czsc_trader.application import (
     CandidateRegistrationRequest, assemble_delivery, publish_evidence,
     register_candidate, validate_delivery,
 )
 from czsc_trader.research_tools import (
-    EvaluationEvidenceWrite, EvaluationLineage, MaterialEvidenceWrite,
+    EvaluationEvidenceWrite, MaterialEvidenceWrite,
     ParameterEvaluationPlan, ResearchExecutionSession, build_assessment_evidence,
 )
 from czsc_trader.research_tools import delivery as d
@@ -89,13 +88,8 @@ def mixed_plan(tmp_path, market):
             feasibility_evidence=feasible, dataflows=context.data, execution=execution)
         plan_ref = material("selected-plan", json.dumps(plan.to_dict()).encode())
         bound = []
-        for point_id, child, point in zip(geometry.point_indices, children, geometry.points, strict=True):
-            derivation = CandidateDerivation(center.candidate.key, center.candidate.content_identity.content_sha256,
-                child.candidate.key, child.candidate.content_identity.content_sha256, CandidateDerivationKind.PARAMETERS,
-                {v.name: v.value for v in point.values}, geometry.protocol.sha256,
-                CandidateEvidence(plan_ref.repository_path, plan_ref.sha256))
-            bound.append(context.evaluation.prepare(replace(child.request, lineage=EvaluationLineage(
-                derivation, plan.bind_point(plan_ref, point_id, repository_root=tmp_path))), execution=execution))
+        for point_id, child in zip(geometry.point_indices, children, strict=True):
+            bound.append(plan.bind_point(plan_ref, point_id, child, execution=execution))
         yield context, center, plan, plan_ref, tuple(bound), execution
 
 

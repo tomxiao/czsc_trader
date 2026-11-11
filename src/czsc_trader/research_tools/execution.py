@@ -32,6 +32,7 @@ class ExecutionPhase(StrEnum):
     BENCHMARK = "BENCHMARK"
     SERIALIZE = "SERIALIZE"
     PUBLISH = "PUBLISH"
+    CHECKPOINT = "CHECKPOINT"
     AUTHENTICATE = "AUTHENTICATE"
     RECOMPUTE = "RECOMPUTE"
     VERIFY = "VERIFY"
@@ -174,6 +175,7 @@ class ResearchExecutionSession:
         self._active = False
         self._entered = False
         self._owns_lock = False
+        self._publication_artifacts = {}
 
     def __enter__(self):
         import json
@@ -210,6 +212,7 @@ class ResearchExecutionSession:
             return self.executor.__exit__(*exc)
         finally:
             self._active = False
+            self._publication_artifacts.clear()
             try:
                 if self.checkpoint is not None:
                     self.checkpoint.close()

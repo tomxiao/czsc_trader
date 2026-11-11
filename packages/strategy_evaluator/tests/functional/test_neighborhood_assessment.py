@@ -6,10 +6,7 @@ import pytest
 import strategy_evaluator as se
 from strategy_evaluator import research_models as m
 from test_parameter_perturbation import bound_request
-from test_research_assessment import compare
-from strategy_evaluator.research_assessment import (
-    recompute_historical_assessment,
-)
+from test_research_assessment import compare, row, candidate
 
 
 def current_request(*, all_na=False, partial=False):
@@ -52,15 +49,19 @@ def test_current_complete_roundtrip_and_unit_weights():
 
 
 @pytest.mark.risk_cases('SE-33-C01')
-def test_historical_v5_retains_prior_recomputation_semantics():
-    request = bound_request()
-    bad = replace(request.evidence[-1], benchmark_equity=(1001.0,) * 4)
-    panel = recompute_historical_assessment(replace(request, evidence=(*request.evidence[:-1], bad)))
+def test_historical_v5_retains_read_only_identity():
+    historical_row = replace(row(candidate()), parameter_context=m.ParameterDiagnosticContext(
+        m.ParameterPerturbationProtocol(), 'a' * 64, 'b' * 64, 2, 32, 32))
+    panel = m.AssessmentPanel('a' * 64, 'b' * 64, (historical_row,), (), (),
+        formula_version='research-assessment-v5')
     assert panel.formula_version == "research-assessment-v5"
-    assert panel.rows[0].parameter_context.valid_points == 2
+    assert panel.rows[0].parameter_context.valid_points == 32
     original = panel.to_dict()
     assert m.AssessmentPanel.from_dict(original).to_dict() == original
     assert m.AssessmentPanel.from_dict(original).sha256 == panel.sha256
+    from strategy_evaluator import research_assessment
+    assert not hasattr(research_assessment, 'recompute_historical_assessment')
+    assert not hasattr(research_assessment, 'recompute_historical_comparison')
 
 
 PARAMETER_METRICS = (
