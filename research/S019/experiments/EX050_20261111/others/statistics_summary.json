@@ -1,0 +1,1477 @@
+{
+  "verification": "PASSED",
+  "completion": {
+    "status": "COMPLETE",
+    "published_accounts": 1042,
+    "unique_implementations": 1019,
+    "reused_implementations": 371,
+    "incremental_implementations": 648,
+    "new_strategy_accounts": 0,
+    "source_sha256": "65c56980a68ab8a8902ae18e89581e5b5b8a4a560500a4d34f90e8346cbecf62",
+    "selection_source_sha256": "1f8482fd33866fd01ef1c2bb4445d46be2a81e5df264d235ba0c574a3a2e1775",
+    "protocol_sha256": "cfd15103299727c35497a07c010ab978cf27ab42bd10f592b6e49d2f1620417c",
+    "annual_projection_stats": {
+      "type": "SelectionProjectionStats",
+      "source_bytes": 41179650691,
+      "shared_bytes": 61711268,
+      "read_count": 1310,
+      "decode_count": 1298,
+      "read_seconds": 338.4012046999942,
+      "decode_seconds": 852.4858801000046,
+      "projection_seconds": 253.4663373999997,
+      "total_seconds": 1530.3442207000003,
+      "projected_accounts": 649,
+      "projected_windows": 3245,
+      "observation_points": 10190598,
+      "window_point_visits": 10190598,
+      "frequency_subwindows": 595133
+    },
+    "preparation_verification_archive": {
+      "path": "others/statistics_preparation_verification.json",
+      "sha256": "c25d9de8a865484b31b846552a17af50a1e028389369ae257bdbaa61f73d0f57"
+    },
+    "completed_at_utc": "2026-11-11T05:43:36.493988+00:00",
+    "native_ci_check": {
+      "status": "PENDING_NATIVE_PANEL",
+      "owner": "assess.py compute also asserts exact endpoint equality"
+    }
+  },
+  "selection_summary": {
+    "planned_windows": 4,
+    "selected_windows": 2,
+    "no_eligible_windows": 2,
+    "passed_observations": 0,
+    "failed_observations": 2
+  },
+  "selection_groups": [
+    {
+      "context": [
+        "ba6fd38d46ad56ae91eacfb66ce0ec4b0d6150f1e86860e1dceeacbfd2c69e7f",
+        "367df537ed2919bf3132ff9c592c00fc7f6cef04cc1bc717e09ba390191ed8d0"
+      ],
+      "member_count": 1019,
+      "summary": {
+        "type": "SelectionStabilityResult",
+        "request_sha256": "dcd9735f51268505083330c6827c3526ccf088a8ec59f3b42aff0d8d483e44a1",
+        "status": "COMPLETE",
+        "planned_windows": 4,
+        "selected_windows": 2,
+        "no_eligible_windows": 2,
+        "insufficient_selection_windows": 0,
+        "observation_incomplete_windows": 0,
+        "ranking_incomplete_windows": 0,
+        "passed_observations": 0,
+        "failed_observations": 2,
+        "indeterminate_observations": 0,
+        "primary_min": 0.07585327682869573,
+        "primary_median": 0.4294644190474437,
+        "primary_max": 0.7830755612661917,
+        "worst_pairs": [
+          "2023-to-2024"
+        ],
+        "limitations": [
+          "Repeatedly seen development sample; selfcheck feedback entered subsequent optimization.",
+          "Overlapping time windows are dependent; incomplete 2026 annualization is labeled.",
+          "Bootstrap conditions on observed returns and rearranges chronology.",
+          "Selection-history counts include source identity changes; economic aliases remain explicit.",
+          "RETROSPECTIVE_FIXED_CANDIDATES_NOT_INDEPENDENT_SEARCH_VALIDATION",
+          "OVERLAPPING_WINDOWS_ARE_NOT_INDEPENDENT_SAMPLES"
+        ],
+        "primary_distribution": {
+          "type": "SelectionDistribution",
+          "available_observations": 2,
+          "total_observations": 2,
+          "minimum": 0.07585327682869573,
+          "median": 0.4294644190474437,
+          "maximum": 0.7830755612661917
+        },
+        "excess_distribution": {
+          "type": "SelectionDistribution",
+          "available_observations": 2,
+          "total_observations": 2,
+          "minimum": -2.1056306254478248,
+          "median": -1.0107394810010313,
+          "maximum": 0.08415166344576219
+        },
+        "change_distribution": {
+          "type": "SelectionDistribution",
+          "available_observations": 2,
+          "total_observations": 2,
+          "minimum": -0.8589279756224757,
+          "median": -0.6107769053973956,
+          "maximum": -0.3626258351723155
+        },
+        "formula_version": "selection-stability-v1"
+      },
+      "decisions": [
+        {
+          "type": "SelectionDecision",
+          "pair_id": "2022-to-2023",
+          "selection_window_id": "2022",
+          "status": "NO_ELIGIBLE_CANDIDATE",
+          "eligible": [],
+          "selected": []
+        },
+        {
+          "type": "SelectionDecision",
+          "pair_id": "2023-to-2024",
+          "selection_window_id": "2023",
+          "status": "SELECTED",
+          "eligible": [
+            {
+              "type": "AssessmentCandidate",
+              "candidate_id": "S019-C0010",
+              "content_sha256": "1d094e3cc70d21ae06922f8672f13111354b73043c901aa2c3cb756cf45cff58"
+            },
+            {
+              "type": "AssessmentCandidate",
+              "candidate_id": "S019-C0011",
+              "content_sha256": "58a2a8e6e9badc3002b38ea39f037efff1d60e863bab339434c95931dbd5a6b1"
+            }
+          ],
+          "selected": [
+            {
+              "type": "AssessmentCandidate",
+              "candidate_id": "S019-C0011",
+              "content_sha256": "58a2a8e6e9badc3002b38ea39f037efff1d60e863bab339434c95931dbd5a6b1"
+            }
+          ]
+        },
+        {
+          "type": "SelectionDecision",
+          "pair_id": "2024-to-2025",
+          "selection_window_id": "2024",
+          "status": "NO_ELIGIBLE_CANDIDATE",
+          "eligible": [],
+          "selected": []
+        },
+        {
+          "type": "SelectionDecision",
+          "pair_id": "2025-to-2026",
+          "selection_window_id": "2025",
+          "status": "SELECTED",
+          "eligible": [
+            {
+              "type": "AssessmentCandidate",
+              "candidate_id": "S019-C0050",
+              "content_sha256": "c6f78d40d0e982200b77bb8463bad49e365186400661cd3fc2503476f231d63d"
+            },
+            {
+              "type": "AssessmentCandidate",
+              "candidate_id": "S019-C0051",
+              "content_sha256": "bd5f2c24b9961d751ae47f62c0e44b37bf5845256deb07bb01e1254a4fab1f2e"
+            }
+          ],
+          "selected": [
+            {
+              "type": "AssessmentCandidate",
+              "candidate_id": "S019-C0051",
+              "content_sha256": "bd5f2c24b9961d751ae47f62c0e44b37bf5845256deb07bb01e1254a4fab1f2e"
+            }
+          ]
+        }
+      ],
+      "observations": [
+        {
+          "type": "SelectionObservation",
+          "pair_id": "2023-to-2024",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S019-C0011",
+            "content_sha256": "58a2a8e6e9badc3002b38ea39f037efff1d60e863bab339434c95931dbd5a6b1"
+          },
+          "observation_window_id": "2024",
+          "acceptance_status": "FAILED",
+          "primary_value": 0.07585327682869573,
+          "benchmark_primary_value": -0.008298386617066453,
+          "excess_primary": 0.08415166344576219,
+          "primary_change": -0.8589279756224757,
+          "rank_min": 2,
+          "rank_max": 2,
+          "reference_size": 2,
+          "rank_reason": null,
+          "failed_targets": [
+            "center-nar",
+            "center-calmar",
+            "center-risk",
+            "center-relative-risk"
+          ],
+          "metric_observations": {
+            "center-nar": 0.07585327682869573,
+            "center-calmar": 0.20595970082559056,
+            "center-risk": 0.36829183828019496,
+            "center-relative-risk": 0.36829183828019496,
+            "center-frequency": 10.0,
+            "center-coverage": null
+          }
+        },
+        {
+          "type": "SelectionObservation",
+          "pair_id": "2025-to-2026",
+          "candidate": {
+            "type": "AssessmentCandidate",
+            "candidate_id": "S019-C0051",
+            "content_sha256": "bd5f2c24b9961d751ae47f62c0e44b37bf5845256deb07bb01e1254a4fab1f2e"
+          },
+          "observation_window_id": "2026",
+          "acceptance_status": "FAILED",
+          "primary_value": 0.7830755612661917,
+          "benchmark_primary_value": 2.8887061867140162,
+          "excess_primary": -2.1056306254478248,
+          "primary_change": -0.3626258351723155,
+          "rank_min": 2,
+          "rank_max": 2,
+          "reference_size": 2,
+          "rank_reason": null,
+          "failed_targets": [
+            "center-calmar",
+            "center-risk",
+            "center-frequency"
+          ],
+          "metric_observations": {
+            "center-nar": 0.7830755612661917,
+            "center-calmar": 3.093635410880338,
+            "center-risk": 0.25312470839715284,
+            "center-relative-risk": 0.25312470839715284,
+            "center-frequency": 5.0,
+            "center-coverage": null
+          }
+        }
+      ]
+    }
+  ],
+  "selected_centers_annual_gate_diagnostics": [
+    {
+      "candidate_id": "C0909",
+      "selection_year": "2022",
+      "status": "FAILED",
+      "failed_targets": [
+        {
+          "target_id": "center-nar",
+          "observed": 0.07274569000371722,
+          "facts": null
+        },
+        {
+          "target_id": "center-calmar",
+          "observed": 0.7419676408739779,
+          "facts": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "C0966",
+      "selection_year": "2022",
+      "status": "FAILED",
+      "failed_targets": [
+        {
+          "target_id": "center-nar",
+          "observed": 0.09495376537473667,
+          "facts": null
+        },
+        {
+          "target_id": "center-calmar",
+          "observed": 0.9502449653588558,
+          "facts": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "C1010",
+      "selection_year": "2022",
+      "status": "FAILED",
+      "failed_targets": [
+        {
+          "target_id": "center-nar",
+          "observed": 0.0957572576087128,
+          "facts": null
+        },
+        {
+          "target_id": "center-calmar",
+          "observed": 1.1330129667248008,
+          "facts": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "C0909",
+      "selection_year": "2023",
+      "status": "FAILED",
+      "failed_targets": [
+        {
+          "target_id": "center-nar",
+          "observed": 0.19650826412313777,
+          "facts": null
+        },
+        {
+          "target_id": "center-calmar",
+          "observed": 2.114638699017572,
+          "facts": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "C0966",
+      "selection_year": "2023",
+      "status": "FAILED",
+      "failed_targets": [
+        {
+          "target_id": "center-nar",
+          "observed": 0.19283305424548,
+          "facts": null
+        },
+        {
+          "target_id": "center-calmar",
+          "observed": 2.00182830946454,
+          "facts": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "C1010",
+      "selection_year": "2023",
+      "status": "FAILED",
+      "failed_targets": [
+        {
+          "target_id": "center-nar",
+          "observed": 0.19016292543762678,
+          "facts": null
+        },
+        {
+          "target_id": "center-calmar",
+          "observed": 2.001979687782426,
+          "facts": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "C0909",
+      "selection_year": "2024",
+      "status": "FAILED",
+      "failed_targets": [
+        {
+          "target_id": "center-nar",
+          "observed": 0.24115087815432035,
+          "facts": null
+        },
+        {
+          "target_id": "center-calmar",
+          "observed": 1.9343247470469551,
+          "facts": null
+        },
+        {
+          "target_id": "center-frequency",
+          "observed": 5.0,
+          "facts": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "C0966",
+      "selection_year": "2024",
+      "status": "FAILED",
+      "failed_targets": [
+        {
+          "target_id": "center-nar",
+          "observed": 0.2582002978387185,
+          "facts": null
+        },
+        {
+          "target_id": "center-calmar",
+          "observed": 1.8297819591637994,
+          "facts": null
+        },
+        {
+          "target_id": "center-frequency",
+          "observed": 5.0,
+          "facts": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "C1010",
+      "selection_year": "2024",
+      "status": "FAILED",
+      "failed_targets": [
+        {
+          "target_id": "center-nar",
+          "observed": 0.2330726841713621,
+          "facts": null
+        },
+        {
+          "target_id": "center-calmar",
+          "observed": 1.745757202718711,
+          "facts": null
+        },
+        {
+          "target_id": "center-frequency",
+          "observed": 5.0,
+          "facts": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "C0909",
+      "selection_year": "2025",
+      "status": "FAILED",
+      "failed_targets": [
+        {
+          "target_id": "center-frequency",
+          "observed": 4.0,
+          "facts": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "C0966",
+      "selection_year": "2025",
+      "status": "FAILED",
+      "failed_targets": [
+        {
+          "target_id": "center-frequency",
+          "observed": 4.0,
+          "facts": null
+        }
+      ]
+    },
+    {
+      "candidate_id": "C1010",
+      "selection_year": "2025",
+      "status": "FAILED",
+      "failed_targets": [
+        {
+          "target_id": "center-frequency",
+          "observed": 4.0,
+          "facts": null
+        }
+      ]
+    }
+  ],
+  "bootstrap_comparisons": [
+    {
+      "champion_id": "C0966",
+      "comparator_id": "MU_BUY_HOLD",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.12171982021967676,
+        "lower_95": -0.7793815084706546,
+        "upper_95": 0.6892207959444232,
+        "probability_favorable": 0.6269
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": 0.42841495558754195,
+        "lower_95": 0.182364409367988,
+        "upper_95": 0.6107035079646131,
+        "probability_favorable": 0.9999
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": 4.024212402093393,
+        "lower_95": 0.13023777361409977,
+        "upper_95": 6.7624020619491665,
+        "probability_favorable": 0.9808
+      }
+    },
+    {
+      "champion_id": "C1010",
+      "comparator_id": "MU_BUY_HOLD",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.07636935402667966,
+        "lower_95": -0.8414853452438569,
+        "upper_95": 0.6426782949584325,
+        "probability_favorable": 0.5782
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": 0.4360167521199513,
+        "lower_95": 0.18615147744978394,
+        "upper_95": 0.6141565136043108,
+        "probability_favorable": 0.9999
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": 3.9729572358460734,
+        "lower_95": 0.012329476781364411,
+        "upper_95": 6.453043301169462,
+        "probability_favorable": 0.9753
+      }
+    },
+    {
+      "champion_id": "C0909",
+      "comparator_id": "MU_BUY_HOLD",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.08502770628568745,
+        "lower_95": -0.8291024417388758,
+        "upper_95": 0.646513100523515,
+        "probability_favorable": 0.5886
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": 0.44267704332929525,
+        "lower_95": 0.1931631603338731,
+        "upper_95": 0.6184517212170679,
+        "probability_favorable": 0.9999
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": 4.3044978918897945,
+        "lower_95": 0.11512968105047097,
+        "upper_95": 6.845469754836814,
+        "probability_favorable": 0.9794
+      }
+    },
+    {
+      "champion_id": "C0966",
+      "comparator_id": "C1010",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.045350466192997096,
+        "lower_95": 0.0086902542004551,
+        "upper_95": 0.10535388793930835,
+        "probability_favorable": 0.9964
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": -0.007601796532409333,
+        "lower_95": -0.018341570608011688,
+        "upper_95": 0.018948470636298585,
+        "probability_favorable": 0.2579
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": 0.051255166247319295,
+        "lower_95": -0.24446789887150933,
+        "upper_95": 0.8311122454032245,
+        "probability_favorable": 0.7997
+      }
+    },
+    {
+      "champion_id": "C0966",
+      "comparator_id": "C0909",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": 0.0366921139339893,
+        "lower_95": 0.0029938800001201088,
+        "upper_95": 0.08494163040665333,
+        "probability_favorable": 0.9855
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": -0.014262087741753304,
+        "lower_95": -0.02571012524349277,
+        "upper_95": 0.0069952927471556,
+        "probability_favorable": 0.115
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": -0.2802854897964018,
+        "lower_95": -0.5524016997024997,
+        "upper_95": 0.4954064651583628,
+        "probability_favorable": 0.5621
+      }
+    },
+    {
+      "champion_id": "C1010",
+      "comparator_id": "C0909",
+      "repetitions": 10000,
+      "mean_block_length": 21,
+      "cagr": {
+        "metric": "cagr",
+        "direction": "higher_is_better",
+        "point_difference": -0.008658352259007795,
+        "lower_95": -0.04160373101320351,
+        "upper_95": 0.01736814357328838,
+        "probability_favorable": 0.2928
+      },
+      "max_drawdown": {
+        "metric": "max_drawdown",
+        "direction": "higher_is_better",
+        "point_difference": -0.0066602912093439715,
+        "lower_95": -0.02403760194030373,
+        "upper_95": 0.009142373777487039,
+        "probability_favorable": 0.214
+      },
+      "calmar": {
+        "metric": "calmar",
+        "direction": "higher_is_better",
+        "point_difference": -0.33154065604372107,
+        "lower_95": -0.7362250152302416,
+        "upper_95": 0.22714970586324273,
+        "probability_favorable": 0.1852
+      }
+    }
+  ],
+  "temporal": [
+    {
+      "candidate_id": "C0966",
+      "concentration": 0.14957297907002845,
+      "closed_cycles": 117,
+      "positive_closed_cycles": 71,
+      "years": [
+        {
+          "window_id": "2022",
+          "start": "2022-01-03",
+          "end": "2022-12-30",
+          "sessions": 251,
+          "strategy": {
+            "period_return": 0.09455968710798102,
+            "nar": 0.09495376537473565,
+            "mdd": 0.09992556533975205,
+            "calmar": 0.9502449653588446
+          },
+          "benchmark": {
+            "period_return": -0.46101403090000004,
+            "nar": -0.46233960439726596,
+            "mdd": 0.49310957696643976,
+            "calmar": -0.9376001318845447
+          },
+          "nar_excess": 0.5572933697720016,
+          "calmar_excess": 1.8878450972433893
+        },
+        {
+          "window_id": "2023",
+          "start": "2023-01-03",
+          "end": "2023-12-29",
+          "sessions": 250,
+          "strategy": {
+            "period_return": 0.19116490685626975,
+            "nar": 0.19283305424548058,
+            "mdd": 0.09632846799786743,
+            "calmar": 2.001828309464546
+          },
+          "benchmark": {
+            "period_return": 0.703127023200278,
+            "nar": 0.7103973547122044,
+            "mdd": 0.1755126148598959,
+            "calmar": 4.047557238431459
+          },
+          "nar_excess": -0.5175643004667239,
+          "calmar_excess": -2.0457289289669127
+        },
+        {
+          "window_id": "2024",
+          "start": "2024-01-02",
+          "end": "2024-12-31",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.25820029783871923,
+            "nar": 0.2582002978387199,
+            "mdd": 0.1411098718869842,
+            "calmar": 1.8297819591638078
+          },
+          "benchmark": {
+            "period_return": -0.008298386617065723,
+            "nar": -0.008298386617064057,
+            "mdd": 0.4448384414889679,
+            "calmar": -0.018654832503431158
+          },
+          "nar_excess": 0.26649868445578395,
+          "calmar_excess": 1.848436791667239
+        },
+        {
+          "window_id": "2025",
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "sessions": 250,
+          "strategy": {
+            "period_return": 1.570405563921517,
+            "nar": 1.5898920698685193,
+            "mdd": 0.12992803527047925,
+            "calmar": 12.236712935424155
+          },
+          "benchmark": {
+            "period_return": 2.344269718302019,
+            "nar": 2.376725105653791,
+            "mdd": 0.40035464019940536,
+            "calmar": 5.936549416462393
+          },
+          "nar_excess": -0.7868330357852718,
+          "calmar_excess": 6.300163518961762
+        },
+        {
+          "window_id": "2026",
+          "start": "2026-01-02",
+          "end": "2026-10-30",
+          "sessions": 209,
+          "strategy": {
+            "period_return": 2.1731902449140525,
+            "nar": 3.024155332080417,
+            "mdd": 0.128495001091246,
+            "calmar": 23.535198306531193
+          },
+          "benchmark": {
+            "period_return": 2.0843508883998956,
+            "nar": 2.8887061867140145,
+            "mdd": 0.39012252514053036,
+            "calmar": 7.404612655148384
+          },
+          "nar_excess": 0.1354491453664024,
+          "calmar_excess": 16.13058565138281
+        }
+      ],
+      "scenarios": {
+        "standard": {
+          "reference": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX048_20261111"
+            },
+            "evidence_id": "0f40ecb58030f18f234ee8e580bad6e741564ab2d3678cba1520a2add524f1fb.json",
+            "sha256": "0f40ecb58030f18f234ee8e580bad6e741564ab2d3678cba1520a2add524f1fb",
+            "media_type": "application/json",
+            "name": "hard_linear_winner_participation_joint_4",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "context_sha256": "3bb84709567758f11906869a6cda6dcf9c8481515ccf0b67924f3f0e9cff337c",
+          "scenario_context": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+          },
+          "nar": 0.7148029571827645,
+          "mdd": 0.14110987188698443,
+          "calmar": 5.065577252846304
+        },
+        "pressure": {
+          "reference": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX049_20261111"
+            },
+            "evidence_id": "8eb8a4403b2d6c3a7a4325e94fbc895051ed653d7bead1be6531d2511a80da62.json",
+            "sha256": "8eb8a4403b2d6c3a7a4325e94fbc895051ed653d7bead1be6531d2511a80da62",
+            "media_type": "application/json",
+            "name": "C0966_stress",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "context_sha256": "3bb84709567758f11906869a6cda6dcf9c8481515ccf0b67924f3f0e9cff337c",
+          "scenario_context": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.002,
+            "measurement_tier": "STRESS",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+          },
+          "nar": 0.6628439563184905,
+          "mdd": 0.14319709763733002,
+          "calmar": 4.628892395551555
+        }
+      },
+      "bh_rolling_below": {
+        "nar_excess": 27,
+        "calmar_excess": 14
+      },
+      "bh_rolling_lag_runs": {
+        "nar_excess": {
+          "maximum_count": 16,
+          "segments": [
+            {
+              "count": 16,
+              "first_window": "R08",
+              "last_window": "R23",
+              "first_start": "2022-09-02",
+              "last_start": "2023-12-05",
+              "last_end": "2024-12-04"
+            },
+            {
+              "count": 11,
+              "first_window": "R35",
+              "last_window": "R45",
+              "first_start": "2024-12-05",
+              "last_start": "2025-10-09",
+              "last_end": "2026-10-09"
+            }
+          ]
+        },
+        "calmar_excess": {
+          "maximum_count": 10,
+          "segments": [
+            {
+              "count": 10,
+              "first_window": "R09",
+              "last_window": "R18",
+              "first_start": "2022-10-04",
+              "last_start": "2023-07-07",
+              "last_end": "2024-07-08"
+            },
+            {
+              "count": 2,
+              "first_window": "R21",
+              "last_window": "R22",
+              "first_start": "2023-10-05",
+              "last_start": "2023-11-03",
+              "last_end": "2024-11-04"
+            },
+            {
+              "count": 2,
+              "first_window": "R40",
+              "last_window": "R41",
+              "first_start": "2025-05-09",
+              "last_start": "2025-06-10",
+              "last_end": "2026-06-10"
+            }
+          ]
+        }
+      },
+      "s018_rolling_below": {
+        "nar_excess": 1,
+        "calmar_excess": 10
+      }
+    },
+    {
+      "candidate_id": "C1010",
+      "concentration": 0.14922510288782842,
+      "closed_cycles": 116,
+      "positive_closed_cycles": 68,
+      "years": [
+        {
+          "window_id": "2022",
+          "start": "2022-01-03",
+          "end": "2022-12-30",
+          "sessions": 251,
+          "strategy": {
+            "period_return": 0.09535970168364205,
+            "nar": 0.09575725760871245,
+            "mdd": 0.08451558845395946,
+            "calmar": 1.1330129667247952
+          },
+          "benchmark": {
+            "period_return": -0.46101403090000004,
+            "nar": -0.46233960439726596,
+            "mdd": 0.49310957696643976,
+            "calmar": -0.9376001318845447
+          },
+          "nar_excess": 0.5580968620059784,
+          "calmar_excess": 2.07061309860934
+        },
+        {
+          "window_id": "2023",
+          "start": "2023-01-03",
+          "end": "2023-12-29",
+          "sessions": 250,
+          "strategy": {
+            "period_return": 0.18851965050502173,
+            "nar": 0.1901629254376267,
+            "mdd": 0.09498743998160541,
+            "calmar": 2.0019796877824296
+          },
+          "benchmark": {
+            "period_return": 0.703127023200278,
+            "nar": 0.7103973547122044,
+            "mdd": 0.1755126148598959,
+            "calmar": 4.047557238431459
+          },
+          "nar_excess": -0.5202344292745777,
+          "calmar_excess": -2.0455775506490292
+        },
+        {
+          "window_id": "2024",
+          "start": "2024-01-02",
+          "end": "2024-12-31",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.23307268417136306,
+            "nar": 0.2330726841713635,
+            "mdd": 0.1335080753545752,
+            "calmar": 1.7457572027187216
+          },
+          "benchmark": {
+            "period_return": -0.008298386617065723,
+            "nar": -0.008298386617064057,
+            "mdd": 0.4448384414889679,
+            "calmar": -0.018654832503431158
+          },
+          "nar_excess": 0.24137107078842757,
+          "calmar_excess": 1.7644120352221528
+        },
+        {
+          "window_id": "2025",
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "sessions": 250,
+          "strategy": {
+            "period_return": 1.3911912730228795,
+            "nar": 1.4079265291177707,
+            "mdd": 0.12328503010676417,
+            "calmar": 11.4200931605282
+          },
+          "benchmark": {
+            "period_return": 2.344269718302019,
+            "nar": 2.376725105653791,
+            "mdd": 0.40035464019940536,
+            "calmar": 5.936549416462393
+          },
+          "nar_excess": -0.9687985765360203,
+          "calmar_excess": 5.483543744065807
+        },
+        {
+          "window_id": "2026",
+          "start": "2026-01-02",
+          "end": "2026-10-30",
+          "sessions": 209,
+          "strategy": {
+            "period_return": 2.0641437987308877,
+            "nar": 2.858008470208398,
+            "mdd": 0.13007745784504587,
+            "calmar": 21.971589217349145
+          },
+          "benchmark": {
+            "period_return": 2.0843508883998956,
+            "nar": 2.8887061867140145,
+            "mdd": 0.39012252514053036,
+            "calmar": 7.404612655148384
+          },
+          "nar_excess": -0.03069771650561659,
+          "calmar_excess": 14.566976562200761
+        }
+      ],
+      "scenarios": {
+        "standard": {
+          "reference": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX048_20261111"
+            },
+            "evidence_id": "06d6e9f25f9ddc5383c80f47084fdf89233605f02f7724ceb448ee555b99cd11.json",
+            "sha256": "06d6e9f25f9ddc5383c80f47084fdf89233605f02f7724ceb448ee555b99cd11",
+            "media_type": "application/json",
+            "name": "ramp_linear_winner_participation_joint_0",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "context_sha256": "3bb84709567758f11906869a6cda6dcf9c8481515ccf0b67924f3f0e9cff337c",
+          "scenario_context": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+          },
+          "nar": 0.6694524909897674,
+          "mdd": 0.1335080753545751,
+          "calmar": 5.014322086598985
+        },
+        "pressure": {
+          "reference": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX049_20261111"
+            },
+            "evidence_id": "5b6ca5b7efa48091ce370dd6ade2b4861e6d1f9e9729170164fa9a5c54c20408.json",
+            "sha256": "5b6ca5b7efa48091ce370dd6ade2b4861e6d1f9e9729170164fa9a5c54c20408",
+            "media_type": "application/json",
+            "name": "C1010_stress",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "context_sha256": "3bb84709567758f11906869a6cda6dcf9c8481515ccf0b67924f3f0e9cff337c",
+          "scenario_context": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.002,
+            "measurement_tier": "STRESS",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+          },
+          "nar": 0.6220424351247609,
+          "mdd": 0.13557500457374616,
+          "calmar": 4.588179340878431
+        }
+      },
+      "bh_rolling_below": {
+        "nar_excess": 27,
+        "calmar_excess": 17
+      },
+      "bh_rolling_lag_runs": {
+        "nar_excess": {
+          "maximum_count": 16,
+          "segments": [
+            {
+              "count": 16,
+              "first_window": "R08",
+              "last_window": "R23",
+              "first_start": "2022-09-02",
+              "last_start": "2023-12-05",
+              "last_end": "2024-12-04"
+            },
+            {
+              "count": 11,
+              "first_window": "R35",
+              "last_window": "R45",
+              "first_start": "2024-12-05",
+              "last_start": "2025-10-09",
+              "last_end": "2026-10-09"
+            }
+          ]
+        },
+        "calmar_excess": {
+          "maximum_count": 10,
+          "segments": [
+            {
+              "count": 10,
+              "first_window": "R09",
+              "last_window": "R18",
+              "first_start": "2022-10-04",
+              "last_start": "2023-07-07",
+              "last_end": "2024-07-08"
+            },
+            {
+              "count": 3,
+              "first_window": "R20",
+              "last_window": "R22",
+              "first_start": "2023-09-06",
+              "last_start": "2023-11-03",
+              "last_end": "2024-11-04"
+            },
+            {
+              "count": 4,
+              "first_window": "R39",
+              "last_window": "R42",
+              "first_start": "2025-04-09",
+              "last_start": "2025-07-11",
+              "last_end": "2026-07-13"
+            }
+          ]
+        }
+      },
+      "s018_rolling_below": {
+        "nar_excess": 1,
+        "calmar_excess": 13
+      }
+    },
+    {
+      "candidate_id": "C0909",
+      "concentration": 0.15270264832492794,
+      "closed_cycles": 117,
+      "positive_closed_cycles": 71,
+      "years": [
+        {
+          "window_id": "2022",
+          "start": "2022-01-03",
+          "end": "2022-12-30",
+          "sessions": 251,
+          "strategy": {
+            "period_return": 0.07244680413561211,
+            "nar": 0.07274569000371822,
+            "mdd": 0.0980442892604163,
+            "calmar": 0.7419676408739906
+          },
+          "benchmark": {
+            "period_return": -0.46101403090000004,
+            "nar": -0.46233960439726596,
+            "mdd": 0.49310957696643976,
+            "calmar": -0.9376001318845447
+          },
+          "nar_excess": 0.5350852944009842,
+          "calmar_excess": 1.6795677727585354
+        },
+        {
+          "window_id": "2023",
+          "start": "2023-01-03",
+          "end": "2023-12-29",
+          "sessions": 250,
+          "strategy": {
+            "period_return": 0.19480580503310074,
+            "nar": 0.1965082641231386,
+            "mdd": 0.09292758342804941,
+            "calmar": 2.1146386990175863
+          },
+          "benchmark": {
+            "period_return": 0.703127023200278,
+            "nar": 0.7103973547122044,
+            "mdd": 0.1755126148598959,
+            "calmar": 4.047557238431459
+          },
+          "nar_excess": -0.5138890905890658,
+          "calmar_excess": -1.9329185394138726
+        },
+        {
+          "window_id": "2024",
+          "start": "2024-01-02",
+          "end": "2024-12-31",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.24115087815431968,
+            "nar": 0.24115087815431813,
+            "mdd": 0.12466928240590147,
+            "calmar": 1.9343247470469338
+          },
+          "benchmark": {
+            "period_return": -0.008298386617065723,
+            "nar": -0.008298386617064057,
+            "mdd": 0.4448384414889679,
+            "calmar": -0.018654832503431158
+          },
+          "nar_excess": 0.24944926477138218,
+          "calmar_excess": 1.952979579550365
+        },
+        {
+          "window_id": "2025",
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "sessions": 250,
+          "strategy": {
+            "period_return": 1.5027250273765023,
+            "nar": 1.5211601949301548,
+            "mdd": 0.11782418014780871,
+            "calmar": 12.910424609124219
+          },
+          "benchmark": {
+            "period_return": 2.344269718302019,
+            "nar": 2.376725105653791,
+            "mdd": 0.40035464019940536,
+            "calmar": 5.936549416462393
+          },
+          "nar_excess": -0.8555649107236363,
+          "calmar_excess": 6.973875192661826
+        },
+        {
+          "window_id": "2026",
+          "start": "2026-01-02",
+          "end": "2026-10-30",
+          "sessions": 209,
+          "strategy": {
+            "period_return": 2.029489416119659,
+            "nar": 2.805460086078959,
+            "mdd": 0.12513440158503963,
+            "calmar": 22.419574877436137
+          },
+          "benchmark": {
+            "period_return": 2.0843508883998956,
+            "nar": 2.8887061867140145,
+            "mdd": 0.39012252514053036,
+            "calmar": 7.404612655148384
+          },
+          "nar_excess": -0.08324610063505533,
+          "calmar_excess": 15.014962222287753
+        }
+      ],
+      "scenarios": {
+        "standard": {
+          "reference": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX047_20261111"
+            },
+            "evidence_id": "671548da85e11bdaa05d33f2c5361f8c57e4466b489feb80bad4e68513610008.json",
+            "sha256": "671548da85e11bdaa05d33f2c5361f8c57e4466b489feb80bad4e68513610008",
+            "media_type": "application/json",
+            "name": "rebuild_linear_006",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "context_sha256": "3bb84709567758f11906869a6cda6dcf9c8481515ccf0b67924f3f0e9cff337c",
+          "scenario_context": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.001,
+            "measurement_tier": "FORMAL",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+          },
+          "nar": 0.6781108432487752,
+          "mdd": 0.12684778414523112,
+          "calmar": 5.345862742642706
+        },
+        "pressure": {
+          "reference": {
+            "type": "EvidenceRef",
+            "experiment": {
+              "type": "ExperimentRef",
+              "strategy_id": "S019",
+              "experiment_id": "EX049_20261111"
+            },
+            "evidence_id": "6239c0c25f12700b062a974e550ad35ea7afaaba0cc6efa8a7e3e48a9b6be11f.json",
+            "sha256": "6239c0c25f12700b062a974e550ad35ea7afaaba0cc6efa8a7e3e48a9b6be11f",
+            "media_type": "application/json",
+            "name": "C0909_stress",
+            "schema": "equity_research",
+            "schema_version": 4
+          },
+          "context_sha256": "3bb84709567758f11906869a6cda6dcf9c8481515ccf0b67924f3f0e9cff337c",
+          "scenario_context": {
+            "type": "EvaluationScenarioContext",
+            "one_way_cost": 0.002,
+            "measurement_tier": "STRESS",
+            "benchmark_id": "BuyHold",
+            "benchmark_kind": "BUYHOLD",
+            "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+          },
+          "nar": 0.6293909460753062,
+          "mdd": 0.1331293603124083,
+          "calmar": 4.72766446558704
+        }
+      },
+      "bh_rolling_below": {
+        "nar_excess": 27,
+        "calmar_excess": 14
+      },
+      "bh_rolling_lag_runs": {
+        "nar_excess": {
+          "maximum_count": 16,
+          "segments": [
+            {
+              "count": 16,
+              "first_window": "R08",
+              "last_window": "R23",
+              "first_start": "2022-09-02",
+              "last_start": "2023-12-05",
+              "last_end": "2024-12-04"
+            },
+            {
+              "count": 11,
+              "first_window": "R35",
+              "last_window": "R45",
+              "first_start": "2024-12-05",
+              "last_start": "2025-10-09",
+              "last_end": "2026-10-09"
+            }
+          ]
+        },
+        "calmar_excess": {
+          "maximum_count": 10,
+          "segments": [
+            {
+              "count": 10,
+              "first_window": "R09",
+              "last_window": "R18",
+              "first_start": "2022-10-04",
+              "last_start": "2023-07-07",
+              "last_end": "2024-07-08"
+            },
+            {
+              "count": 2,
+              "first_window": "R21",
+              "last_window": "R22",
+              "first_start": "2023-10-05",
+              "last_start": "2023-11-03",
+              "last_end": "2024-11-04"
+            },
+            {
+              "count": 2,
+              "first_window": "R40",
+              "last_window": "R41",
+              "first_start": "2025-05-09",
+              "last_start": "2025-06-10",
+              "last_end": "2026-06-10"
+            }
+          ]
+        }
+      },
+      "s018_rolling_below": {
+        "nar_excess": 2,
+        "calmar_excess": 10
+      }
+    }
+  ],
+  "history": [
+    "EX005-040 inventory reused with exact aliases.",
+    "EX041 reviewed neighborhoods included: later mechanism research used their failures.",
+    "EX042 has zero completed economic accounts; technical failure retained separately.",
+    "EX043-049 full standard histories included, not only 112 qualified or 3 selected.",
+    "Repeated imported references are one observed account; source/parameter repeats keep aliases.",
+    "EX050 new neighborhoods excluded from pre-selection universe."
+  ],
+  "accounts_by_origin": {
+    "EX005_20261110": 4,
+    "EX006_20261110": 2,
+    "EX007_20261110": 4,
+    "EX008_20261110": 3,
+    "EX009_20261110": 3,
+    "EX010_20261110": 3,
+    "EX011_20261110": 3,
+    "EX012_20261110": 3,
+    "EX013_20261110": 4,
+    "EX014_20261110": 3,
+    "EX015_20261110": 3,
+    "EX016_20261110": 3,
+    "EX017_20261110": 3,
+    "EX018_20261110": 3,
+    "EX019_20261110": 4,
+    "EX020_20261110": 3,
+    "EX021_20261110": 3,
+    "EX022_20261110": 4,
+    "EX023_20261110": 3,
+    "EX024_20261110": 3,
+    "EX036_20261110": 46,
+    "EX025_20261110": 3,
+    "EX027_20261110": 3,
+    "EX028_20261110": 3,
+    "EX029_20261110": 4,
+    "EX030_20261110": 4,
+    "EX031_20261110": 3,
+    "EX032_20261110": 3,
+    "EX033_20261110": 3,
+    "EX034_20261110": 3,
+    "EX035_20261110": 3,
+    "EX037_20261110": 48,
+    "EX038_20261110": 48,
+    "EX039_20261110": 88,
+    "EX041_20261110": 241,
+    "EX040_20261110": 48,
+    "EX048_20261111": 117,
+    "EX047_20261111": 144,
+    "EX046_20261111": 27,
+    "EX045_20261111": 96,
+    "EX044_20261110": 24,
+    "EX043_20261110": 19
+  },
+  "exact_definition_alias_count": 23,
+  "header_context_proxies": {
+    "a616054f1808234475e2cb86608069f1f6e976ef5f45fb76e8f98509529b2ba5": 25,
+    "f4b1b04808b6d4a0d698c716312f82231504f4f8c5ea48c70b7cf76d653142bd": 994
+  },
+  "header_context_differing_fields": {
+    "data": {
+      "54cdba638c23a98640135ca0b99a86f91733e6aceb33537760c9fe406e4c558b": 25,
+      "3c5a1a505d3e38caecffcc3bf8ef7dbbfc470619193b2c9095dc3145a710f87b": 994
+    }
+  },
+  "header_context_review": {
+    "status": "VERIFIED_HEADER_COMPONENT_DIFFERENCE",
+    "new_accounts": 0,
+    "representatives": [
+      {
+        "candidate_id": "C0006",
+        "reference": {
+          "evidence_id": "07330ab2451ce9a9c95c12f559338e0a3db95bc0fc4adbad4bd58b5f35bd8ccc.json",
+          "experiment": {
+            "experiment_id": "EX005_20261110",
+            "strategy_id": "S019",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "prototype-all",
+          "schema": "equity_research",
+          "schema_version": 4,
+          "sha256": "07330ab2451ce9a9c95c12f559338e0a3db95bc0fc4adbad4bd58b5f35bd8ccc",
+          "type": "EvidenceRef"
+        },
+        "context_proxy": "a616054f1808234475e2cb86608069f1f6e976ef5f45fb76e8f98509529b2ba5"
+      },
+      {
+        "candidate_id": "C0031",
+        "reference": {
+          "evidence_id": "7a4d2cdfc60c59d86fdd0df37c3e7635d548b8515a6d65fe7c24c12ff82184cf.json",
+          "experiment": {
+            "experiment_id": "EX013_20261110",
+            "strategy_id": "S019",
+            "type": "ExperimentRef"
+          },
+          "media_type": "application/json",
+          "name": "sector_gate",
+          "schema": "equity_research",
+          "schema_version": 4,
+          "sha256": "7a4d2cdfc60c59d86fdd0df37c3e7635d548b8515a6d65fe7c24c12ff82184cf",
+          "type": "EvidenceRef"
+        },
+        "context_proxy": "f4b1b04808b6d4a0d698c716312f82231504f4f8c5ea48c70b7cf76d653142bd"
+      }
+    ],
+    "group_unique_counts": [
+      25,
+      994
+    ],
+    "different_top_level_component": "data",
+    "later_group_only_keys": [
+      "auxiliary:soxx_open:bars",
+      "auxiliary:soxx_open:sessions"
+    ],
+    "earlier_group_only_keys": [],
+    "different_common_data_entries": [],
+    "interpretation": "Later structure families include SOXX opening 30m auxiliary input. Shared data entries are exact matches. Preserve both groups in history; formal comparable grouping is determined separately by public SelectionWindowFacts source contexts."
+  },
+  "public_selection_context_groups": 1,
+  "sharpe_proxy": {
+    "PBO_SHARPE_PROXY": {
+      "status": "NOT_COMPUTED_CURRENT_UNIVERSE"
+    },
+    "DSR_SHARPE_PROXY_C0966": {
+      "RAW": {
+        "status": "NOT_COMPUTED_CURRENT_UNIVERSE"
+      },
+      "EFFECTIVE": {
+        "status": "NOT_COMPUTED_CURRENT_UNIVERSE"
+      }
+    },
+    "DSR_SHARPE_PROXY_C1010": {
+      "RAW": {
+        "status": "NOT_COMPUTED_CURRENT_UNIVERSE"
+      },
+      "EFFECTIVE": {
+        "status": "NOT_COMPUTED_CURRENT_UNIVERSE"
+      }
+    },
+    "DSR_SHARPE_PROXY_C0909": {
+      "RAW": {
+        "status": "NOT_COMPUTED_CURRENT_UNIVERSE"
+      },
+      "EFFECTIVE": {
+        "status": "NOT_COMPUTED_CURRENT_UNIVERSE"
+      }
+    }
+  },
+  "historical_sharpe_scope": {
+    "reference": "research/S019/experiments/EX041_20261110/others/statistics_search_bias.json",
+    "sha256": "a0240758e09614967424c23909a6b3ba30364ad02de5283db1ad6b9e387e06dd",
+    "published_accounts": 374,
+    "unique_implementations": 371,
+    "use": "Historical record only; no current-candidate eligibility/ranking or current-universe probability."
+  },
+  "actual_nar_gated_adaptive_selection_bias": "NOT_ESTIMATED",
+  "limitations": [
+    "Repeatedly seen development sample; selfcheck feedback entered subsequent optimization.",
+    "Overlapping time windows are dependent; incomplete 2026 annualization is labeled.",
+    "Bootstrap conditions on observed returns and rearranges chronology.",
+    "Selection-history counts include source identity changes; economic aliases remain explicit.",
+    "Historical candidate universe was chosen using the full seen sample; annual results are retrospective diagnostics.",
+    "Adaptive gated-NAR selection bias remains NOT_ESTIMATED; this measures observed chronological selection sensitivity.",
+    "Sharpe-proxy PBO/DSR are omitted in this preparation to avoid a second full-family return extraction."
+  ],
+  "new_hard_gates": [],
+  "source_sha256": "53d469e62e4a84c6a517b861ac9c376df5bc5cba52930329853270fd04f4bd47"
+}

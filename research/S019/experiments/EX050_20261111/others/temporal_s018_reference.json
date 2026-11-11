@@ -1,0 +1,3741 @@
+{
+  "status": "COMPLETE",
+  "new_accounts": 0,
+  "selected_ids": [
+    "C0966",
+    "C1010",
+    "C0909"
+  ],
+  "method": "PUBLIC_ASSESSMENT_SESSION_RETURNS_FIXED_S018_V1",
+  "source_sha256": "2997021ce945fe623a03c6a4d5f1d64947b24c1ac3bb5188a10f97dcfc4e08a9",
+  "protocol_sha256": "cfd15103299727c35497a07c010ab978cf27ab42bd10f592b6e49d2f1620417c",
+  "reference": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S019",
+      "experiment_id": "EX003_20261110"
+    },
+    "evidence_id": "1c0be34f82c8fd04cfd8cc218cc965d30fc28c83a151fa975f92cdc5afab0597.json",
+    "sha256": "1c0be34f82c8fd04cfd8cc218cc965d30fc28c83a151fa975f92cdc5afab0597",
+    "media_type": "application/json",
+    "name": "fixed-s018-v1-reference",
+    "schema": "equity_research",
+    "schema_version": 4
+  },
+  "reference_identity": {
+    "purpose": "FIXED_S018_V1_COMPARISON_ONLY",
+    "origin": {
+      "candidate_package_hash": "b873bd2984968d9064d7dbc9ba714d2c5d035a60e3ee08a3d1b3bb0db1a54b5f",
+      "files": {
+        "runtime_binding.json": "63923fbee7a64ad778ac3854e58be395fc877987705243ff50c92430272f2638",
+        "src/strategy_runtime/strategy.py": "f0fe198de58b9bc1a04d1c400ed2891c411636027a40b2e0c45cbc35db6e8fc7"
+      },
+      "package_hash": "c7035dc5a8bd3eee2a2dfe434e04f868e43613085036f7f3a434ce8b875a9d80",
+      "runtime_binding": "runtime_binding.json",
+      "runtime_candidate_id": "C9397",
+      "runtime_root": "src/strategy_runtime",
+      "schema_version": 2,
+      "source_candidate_id": "S018-C9380",
+      "strategy_version_hash": "80a7ca699f5814ad3e9162de1828d9848b5a0e7077857eb92002aec10c3f631e",
+      "strategy_version_id": "S018-v1"
+    },
+    "reference_identity": {
+      "strategy_id": "S019",
+      "candidate_id": "C0001"
+    },
+    "original_definition": {
+      "analysis_price": "HFQ",
+      "auxiliary_inputs": [
+        {
+          "analysis_price": "HFQ",
+          "frequency": "daily",
+          "instrument": {
+            "asset_class": "ETF",
+            "market": "US",
+            "symbol": "SOXX"
+          },
+          "max_age_seconds": 604800,
+          "name": "soxx_hfq",
+          "source": {
+            "provider": "futu",
+            "revision": "s018-hfq-target-repack-20261108-v1"
+          },
+          "warmup_bars": 63
+        }
+      ],
+      "computation": "STATEFUL_STEP",
+      "contract_version": 4,
+      "dependencies": [
+        {
+          "name": "numpy",
+          "version": "2.5.2"
+        },
+        {
+          "name": "pandas",
+          "version": "3.0.5"
+        }
+      ],
+      "entrypoint": "strategy:step",
+      "execution_policy": {
+        "policy_type": "TARGET_POSITION",
+        "settings": {
+          "capital_mode": "target_equity_fraction"
+        }
+      },
+      "execution_spec": {
+        "account": {
+          "allow_negative_cash": false,
+          "allow_short": false,
+          "cash_availability": "IMMEDIATE_RESEARCH",
+          "currency": "USD"
+        },
+        "buy_premium": 0.01,
+        "data_latency_seconds": 0,
+        "decision_clock": "daily",
+        "execution": "BAR_RANGE_V1",
+        "inclusive_touch": false,
+        "market": {
+          "rule_version": "US_EQUITY_V1"
+        },
+        "price_tick": 0.01,
+        "quantity_step": 1,
+        "slippage_bp": 0.0
+      },
+      "explanation_cases": [
+        "flat",
+        "long"
+      ],
+      "feature_graph": {
+        "nodes": [],
+        "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1",
+        "outputs": []
+      },
+      "feedback_mode": "CONFIRMED_EXECUTION",
+      "instrument": {
+        "asset_class": "STOCK",
+        "market": "US",
+        "symbol": "MU"
+      },
+      "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"add_mu_margin\":{\"type\":\"number\"},\"add_sector_margin\":{\"type\":\"number\"},\"beta_window\":{\"type\":\"integer\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"entry_days\":{\"type\":\"integer\"},\"exit_margin\":{\"type\":\"number\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+      "parameters_json": "{\"add_mode\":\"repair_both\",\"add_mu_margin\":0.01,\"add_sector_margin\":0.0,\"beta_window\":40,\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":3,\"entry_days\":2,\"exit_margin\":0.005,\"initial_fraction\":0.5,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+      "runtime_kind": "ACCOUNT_REPLAY",
+      "source_files": [
+        "strategy.py"
+      ],
+      "source_sha256": "e788b40b2aaaccd0500eef06135914c15db483791cbd54ef3c97eba725307d65",
+      "state_schema": {
+        "account_fields": [],
+        "cycle_fields": [
+          {
+            "key": "anchor",
+            "nullable": false,
+            "value_type": "float"
+          },
+          {
+            "key": "sector_anchor",
+            "nullable": false,
+            "value_type": "float"
+          },
+          {
+            "key": "allocation",
+            "nullable": false,
+            "value_type": "float"
+          },
+          {
+            "key": "promoted",
+            "nullable": false,
+            "value_type": "bool"
+          },
+          {
+            "key": "exiting",
+            "nullable": false,
+            "value_type": "bool"
+          }
+        ]
+      },
+      "warmup_bars": 63
+    },
+    "evaluation_definition": {
+      "analysis_price": "HFQ",
+      "auxiliary_inputs": [
+        {
+          "analysis_price": "HFQ",
+          "frequency": "daily",
+          "instrument": {
+            "asset_class": "ETF",
+            "market": "US",
+            "symbol": "SOXX"
+          },
+          "max_age_seconds": 604800,
+          "name": "soxx_hfq",
+          "source": {
+            "provider": "futu",
+            "revision": "s019-unified-window-20261110-v2"
+          },
+          "warmup_bars": 63
+        }
+      ],
+      "computation": "STATEFUL_STEP",
+      "contract_version": 4,
+      "dependencies": [
+        {
+          "name": "numpy",
+          "version": "2.5.2"
+        },
+        {
+          "name": "pandas",
+          "version": "3.0.5"
+        }
+      ],
+      "entrypoint": "strategy:step",
+      "execution_policy": {
+        "policy_type": "TARGET_POSITION",
+        "settings": {
+          "capital_mode": "target_equity_fraction"
+        }
+      },
+      "execution_spec": {
+        "account": {
+          "allow_negative_cash": false,
+          "allow_short": false,
+          "cash_availability": "IMMEDIATE_RESEARCH",
+          "currency": "USD"
+        },
+        "buy_premium": 0.01,
+        "data_latency_seconds": 0,
+        "decision_clock": "daily",
+        "execution": "BAR_RANGE_V1",
+        "inclusive_touch": false,
+        "market": {
+          "rule_version": "US_EQUITY_V1"
+        },
+        "price_tick": 0.01,
+        "quantity_step": 1,
+        "slippage_bp": 0.0
+      },
+      "explanation_cases": [
+        "flat",
+        "long"
+      ],
+      "feature_graph": {
+        "nodes": [],
+        "numeric_semantics": "FLOAT64_CHRONOLOGICAL_V1",
+        "outputs": []
+      },
+      "feedback_mode": "CONFIRMED_EXECUTION",
+      "instrument": {
+        "asset_class": "STOCK",
+        "market": "US",
+        "symbol": "MU"
+      },
+      "parameter_schema_json": "{\"add_mode\":{\"type\":\"string\"},\"add_mu_margin\":{\"type\":\"number\"},\"add_sector_margin\":{\"type\":\"number\"},\"beta_window\":{\"type\":\"integer\"},\"common_budget\":{\"type\":\"number\"},\"common_share\":{\"type\":\"number\"},\"earliest_add\":{\"type\":\"integer\"},\"entry_days\":{\"type\":\"integer\"},\"exit_margin\":{\"type\":\"number\"},\"initial_fraction\":{\"type\":\"number\"},\"max_hold\":{\"type\":\"integer\"},\"other_budget\":{\"type\":\"number\"},\"review_after\":{\"type\":\"integer\"}}",
+      "parameters_json": "{\"add_mode\":\"repair_both\",\"add_mu_margin\":0.01,\"add_sector_margin\":0.0,\"beta_window\":40,\"common_budget\":1.0,\"common_share\":0.375,\"earliest_add\":3,\"entry_days\":2,\"exit_margin\":0.005,\"initial_fraction\":0.5,\"max_hold\":5,\"other_budget\":0.375,\"review_after\":3}",
+      "runtime_kind": "ACCOUNT_REPLAY",
+      "source_files": [
+        "strategy.py"
+      ],
+      "source_sha256": "e788b40b2aaaccd0500eef06135914c15db483791cbd54ef3c97eba725307d65",
+      "state_schema": {
+        "account_fields": [],
+        "cycle_fields": [
+          {
+            "key": "anchor",
+            "nullable": false,
+            "value_type": "float"
+          },
+          {
+            "key": "sector_anchor",
+            "nullable": false,
+            "value_type": "float"
+          },
+          {
+            "key": "allocation",
+            "nullable": false,
+            "value_type": "float"
+          },
+          {
+            "key": "promoted",
+            "nullable": false,
+            "value_type": "bool"
+          },
+          {
+            "key": "exiting",
+            "nullable": false,
+            "value_type": "bool"
+          }
+        ]
+      },
+      "warmup_bars": 63
+    },
+    "adaptations": [
+      "research batch/candidate identity",
+      "auxiliary source revision"
+    ],
+    "strategy_source_and_financial_parameters": "UNCHANGED"
+  },
+  "source_bindings": {
+    "research/S019/experiments/EX003_20261110/others/reference_identity.json": "c17dfbc83d9f764d53dd396d31801b679d7288dc2d61e604fc508c3ca55ea996",
+    "research/S019/experiments/EX003_20261110/others/reference_summary.json": "b485ac7c43f515ae23114e2f76012282451acdc4f91c534d0e6d68626be8a8cc",
+    "research/S019/experiments/EX003_20261110/others/reference_account.json": "f14de22187d1348a9f4f0a119025d517c03c9b7c257b40aec3ba6b8cc375b7b6",
+    "research/S019/materials/stage1_agreement.md": "9498020efabf0f02a0b115b4633a4a62713ef57a501fc23c2382ea59da0a01fc"
+  },
+  "reference_context_sha256": "1770f21ff997c53a1e4d84afce622848ce376c8fe71b526eb65a66cbc39f99ed",
+  "reference_scenario": {
+    "type": "EvaluationScenarioContext",
+    "one_way_cost": 0.001,
+    "measurement_tier": "FORMAL",
+    "benchmark_id": "BuyHold",
+    "benchmark_kind": "BUYHOLD",
+    "benchmark_contract_sha256": "0fbe8993fed1603f9799baeaeaaf722151055f98070fd1772b94f4e3a1c27f93"
+  },
+  "candidates": [
+    {
+      "candidate_id": "C0966",
+      "source": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S019",
+          "experiment_id": "EX048_20261111"
+        },
+        "evidence_id": "0f40ecb58030f18f234ee8e580bad6e741564ab2d3678cba1520a2add524f1fb.json",
+        "sha256": "0f40ecb58030f18f234ee8e580bad6e741564ab2d3678cba1520a2add524f1fb",
+        "media_type": "application/json",
+        "name": "hard_linear_winner_participation_joint_4",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "full": {
+        "window_id": "FULL",
+        "start": "2022-01-03",
+        "end": "2026-10-30",
+        "sessions": 1212,
+        "strategy": {
+          "period_return": 12.380085413195458,
+          "nar": 0.7148029571827645,
+          "mdd": 0.14110987188698443,
+          "calmar": 5.065577252846304
+        },
+        "reference": {
+          "period_return": 2.577542032047085,
+          "nar": 0.3034722165863606,
+          "mdd": 0.24111155998695388,
+          "calmar": 1.2586381864178595
+        },
+        "nar_excess": 0.41133074059640395,
+        "calmar_excess": 3.806939066428445
+      },
+      "years": [
+        {
+          "window_id": "2022",
+          "start": "2022-01-03",
+          "end": "2022-12-30",
+          "sessions": 251,
+          "strategy": {
+            "period_return": 0.0945596871079808,
+            "nar": 0.09495376537473565,
+            "mdd": 0.09992556533975205,
+            "calmar": 0.9502449653588446
+          },
+          "reference": {
+            "period_return": -0.19120311494392095,
+            "nar": -0.19188662172438564,
+            "mdd": 0.24111155998695388,
+            "calmar": -0.7958416499597459
+          },
+          "nar_excess": 0.2868403870991213,
+          "calmar_excess": 1.7460866153185906
+        },
+        {
+          "window_id": "2023",
+          "start": "2023-01-03",
+          "end": "2023-12-29",
+          "sessions": 250,
+          "strategy": {
+            "period_return": 0.19116490685626886,
+            "nar": 0.19283305424548058,
+            "mdd": 0.09632846799786743,
+            "calmar": 2.001828309464546
+          },
+          "reference": {
+            "period_return": 0.11564430422223348,
+            "nar": 0.11662143017293958,
+            "mdd": 0.06494389044177484,
+            "calmar": 1.7957259625136872
+          },
+          "nar_excess": 0.076211624072541,
+          "calmar_excess": 0.20610234695085894
+        },
+        {
+          "window_id": "2024",
+          "start": "2024-01-02",
+          "end": "2024-12-31",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.25820029783871945,
+            "nar": 0.2582002978387199,
+            "mdd": 0.1411098718869842,
+            "calmar": 1.8297819591638078
+          },
+          "reference": {
+            "period_return": 0.07919758417378908,
+            "nar": 0.07919758417378864,
+            "mdd": 0.07929744694907415,
+            "calmar": 0.9987406558580676
+          },
+          "nar_excess": 0.17900271366493126,
+          "calmar_excess": 0.8310413033057402
+        },
+        {
+          "window_id": "2025",
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "sessions": 250,
+          "strategy": {
+            "period_return": 1.570405563921518,
+            "nar": 1.5898920698685193,
+            "mdd": 0.12992803527047925,
+            "calmar": 12.236712935424155
+          },
+          "reference": {
+            "period_return": 0.937509990011995,
+            "nar": 0.9477889695020694,
+            "mdd": 0.07223347492708387,
+            "calmar": 13.121187516713206
+          },
+          "nar_excess": 0.6421031003664499,
+          "calmar_excess": -0.8844745812890515
+        },
+        {
+          "window_id": "2026",
+          "start": "2026-01-02",
+          "end": "2026-10-30",
+          "sessions": 209,
+          "strategy": {
+            "period_return": 2.173190244914053,
+            "nar": 3.024155332080417,
+            "mdd": 0.128495001091246,
+            "calmar": 23.535198306531193
+          },
+          "reference": {
+            "period_return": 0.8961583701326052,
+            "nar": 1.1629425349735096,
+            "mdd": 0.09069045768364647,
+            "calmar": 12.823207255499542
+          },
+          "nar_excess": 1.8612127971069072,
+          "calmar_excess": 10.711991051031651
+        }
+      ],
+      "rolling": [
+        {
+          "window_id": "R00",
+          "start": "2022-01-03",
+          "end": "2023-01-03",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.09859968090798055,
+            "nar": 0.09859968090798055,
+            "mdd": 0.09992556533975205,
+            "calmar": 0.9867312791550047
+          },
+          "reference": {
+            "period_return": -0.188113160143921,
+            "nar": -0.18811316014392065,
+            "mdd": 0.24111155998695388,
+            "calmar": -0.7801913776100122
+          },
+          "nar_excess": 0.2867128410519012,
+          "calmar_excess": 1.766922656765017
+        },
+        {
+          "window_id": "R01",
+          "start": "2022-02-02",
+          "end": "2023-02-02",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.09996374060906943,
+            "nar": 0.09996374060906943,
+            "mdd": 0.09992556533975228,
+            "calmar": 1.00038203706116
+          },
+          "reference": {
+            "period_return": -0.08329574617758928,
+            "nar": -0.08329574617758906,
+            "mdd": 0.24111155998695333,
+            "calmar": -0.3454655852340561
+          },
+          "nar_excess": 0.1832594867866585,
+          "calmar_excess": 1.3458476222952163
+        },
+        {
+          "window_id": "R02",
+          "start": "2022-03-04",
+          "end": "2023-03-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.03686073090639885,
+            "nar": 0.03686073090639885,
+            "mdd": 0.1099859358439993,
+            "calmar": 0.33514040339376655
+          },
+          "reference": {
+            "period_return": -0.1920307283770737,
+            "nar": -0.19203072837707302,
+            "mdd": 0.2411115599869531,
+            "calmar": -0.7964393262084326
+          },
+          "nar_excess": 0.22889145928347188,
+          "calmar_excess": 1.1315797296021992
+        },
+        {
+          "window_id": "R03",
+          "start": "2022-04-04",
+          "end": "2023-04-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": -0.014471916035940113,
+            "nar": -0.01447191603593978,
+            "mdd": 0.1279474695114048,
+            "calmar": -0.11310826303328965
+          },
+          "reference": {
+            "period_return": -0.19936578590372855,
+            "nar": -0.19936578590372822,
+            "mdd": 0.22261998510908187,
+            "calmar": -0.8955430744730339
+          },
+          "nar_excess": 0.18489386986778844,
+          "calmar_excess": 0.7824348114397442
+        },
+        {
+          "window_id": "R04",
+          "start": "2022-05-04",
+          "end": "2023-05-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.019383985900075507,
+            "nar": 0.01938398590007595,
+            "mdd": 0.1292481657495882,
+            "calmar": 0.1499749399742465
+          },
+          "reference": {
+            "period_return": -0.11620072409120807,
+            "nar": -0.11620072409120741,
+            "mdd": 0.18042054593956525,
+            "calmar": -0.6440548302637922
+          },
+          "nar_excess": 0.13558470999128336,
+          "calmar_excess": 0.7940297702380387
+        },
+        {
+          "window_id": "R05",
+          "start": "2022-06-03",
+          "end": "2023-06-05",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.08368828184652988,
+            "nar": 0.08368828184653032,
+            "mdd": 0.1292481657495883,
+            "calmar": 0.6475007313347261
+          },
+          "reference": {
+            "period_return": -0.0665742922362409,
+            "nar": -0.06657429223624012,
+            "mdd": 0.17382479365760706,
+            "calmar": -0.3829965267634687
+          },
+          "nar_excess": 0.15026257408277044,
+          "calmar_excess": 1.0304972580981948
+        },
+        {
+          "window_id": "R06",
+          "start": "2022-07-06",
+          "end": "2023-07-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.14238915467576807,
+            "nar": 0.14238915467576874,
+            "mdd": 0.12924816574958786,
+            "calmar": 1.101672537091481
+          },
+          "reference": {
+            "period_return": -0.06705091963710685,
+            "nar": -0.0670509196371063,
+            "mdd": 0.17382479365760728,
+            "calmar": -0.3857385257087108
+          },
+          "nar_excess": 0.20944007431287504,
+          "calmar_excess": 1.487411062800192
+        },
+        {
+          "window_id": "R07",
+          "start": "2022-08-04",
+          "end": "2023-08-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.12972944811602005,
+            "nar": 0.1297294481160205,
+            "mdd": 0.1292481657495883,
+            "calmar": 1.003723707517557
+          },
+          "reference": {
+            "period_return": -0.05826067420476422,
+            "nar": -0.058260674204763996,
+            "mdd": 0.17382479365760706,
+            "calmar": -0.3351689536276596
+          },
+          "nar_excess": 0.1879901223207845,
+          "calmar_excess": 1.3388926611452165
+        },
+        {
+          "window_id": "R08",
+          "start": "2022-09-02",
+          "end": "2023-09-05",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.168630552408906,
+            "nar": 0.16863055240890623,
+            "mdd": 0.12924816574958853,
+            "calmar": 1.304703640712542
+          },
+          "reference": {
+            "period_return": -0.07948063368949088,
+            "nar": -0.07948063368949032,
+            "mdd": 0.13157404881410484,
+            "calmar": -0.6040753051673966
+          },
+          "nar_excess": 0.24811118609839655,
+          "calmar_excess": 1.9087789458799387
+        },
+        {
+          "window_id": "R09",
+          "start": "2022-10-04",
+          "end": "2023-10-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.14496825796334867,
+            "nar": 0.14496825796334956,
+            "mdd": 0.1292481657495883,
+            "calmar": 1.1216271977446715
+          },
+          "reference": {
+            "period_return": -0.021911356731844633,
+            "nar": -0.02191135673184419,
+            "mdd": 0.06494389044177451,
+            "calmar": -0.33738903818040944
+          },
+          "nar_excess": 0.16687961469519375,
+          "calmar_excess": 1.459016235925081
+        },
+        {
+          "window_id": "R10",
+          "start": "2022-11-02",
+          "end": "2023-11-02",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.09599825164940512,
+            "nar": 0.09599825164940579,
+            "mdd": 0.12924816574958786,
+            "calmar": 0.7427436288372387
+          },
+          "reference": {
+            "period_return": 0.07352986343345247,
+            "nar": 0.07352986343345247,
+            "mdd": 0.06494389044177462,
+            "calmar": 1.1322060155816442
+          },
+          "nar_excess": 0.022468388215953317,
+          "calmar_excess": -0.3894623867444056
+        },
+        {
+          "window_id": "R11",
+          "start": "2022-12-02",
+          "end": "2023-12-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.0810117624891753,
+            "nar": 0.08101176248917619,
+            "mdd": 0.09632846799786843,
+            "calmar": 0.8409950264232254
+          },
+          "reference": {
+            "period_return": 0.08958732777736889,
+            "nar": 0.08958732777736866,
+            "mdd": 0.06494389044177462,
+            "calmar": 1.3794573618543546
+          },
+          "nar_excess": -0.008575565288192477,
+          "calmar_excess": -0.5384623354311292
+        },
+        {
+          "window_id": "R12",
+          "start": "2023-01-04",
+          "end": "2024-01-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.16482060870887127,
+            "nar": 0.16482060870887194,
+            "mdd": 0.09632846799786743,
+            "calmar": 1.7110269906142475
+          },
+          "reference": {
+            "period_return": 0.10688325720959191,
+            "nar": 0.10688325720959169,
+            "mdd": 0.06494389044177495,
+            "calmar": 1.64577847866101
+          },
+          "nar_excess": 0.057937351499280254,
+          "calmar_excess": 0.06524851195323755
+        },
+        {
+          "window_id": "R13",
+          "start": "2023-02-03",
+          "end": "2024-02-05",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.18222959099087666,
+            "nar": 0.182229590990878,
+            "mdd": 0.0963284679978671,
+            "calmar": 1.8917521972311748
+          },
+          "reference": {
+            "period_return": 0.05064069845999586,
+            "nar": 0.05064069845999608,
+            "mdd": 0.06494389044177495,
+            "calmar": 0.7797607768108331
+          },
+          "nar_excess": 0.1315888925308819,
+          "calmar_excess": 1.1119914204203418
+        },
+        {
+          "window_id": "R14",
+          "start": "2023-03-07",
+          "end": "2024-03-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.2267869464218295,
+            "nar": 0.2267869464218304,
+            "mdd": 0.09632846799786743,
+            "calmar": 2.3543086601029626
+          },
+          "reference": {
+            "period_return": 0.10916318785782497,
+            "nar": 0.10916318785782497,
+            "mdd": 0.06494389044177484,
+            "calmar": 1.680884639267103
+          },
+          "nar_excess": 0.11762375856400542,
+          "calmar_excess": 0.6734240208358595
+        },
+        {
+          "window_id": "R15",
+          "start": "2023-04-05",
+          "end": "2024-04-05",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.3274325969032257,
+            "nar": 0.32743259690322657,
+            "mdd": 0.09632846799786765,
+            "calmar": 3.399125966692159
+          },
+          "reference": {
+            "period_return": 0.10392061555622667,
+            "nar": 0.10392061555622645,
+            "mdd": 0.06494389044177429,
+            "calmar": 1.6001599973348826
+          },
+          "nar_excess": 0.22351198134700012,
+          "calmar_excess": 1.7989659693572764
+        },
+        {
+          "window_id": "R16",
+          "start": "2023-05-05",
+          "end": "2024-05-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.23445265909134094,
+            "nar": 0.2344526590913416,
+            "mdd": 0.14110987188698432,
+            "calmar": 1.6614901279133472
+          },
+          "reference": {
+            "period_return": 0.08154172256512271,
+            "nar": 0.08154172256512271,
+            "mdd": 0.07474630854531716,
+            "calmar": 1.0909130384102597
+          },
+          "nar_excess": 0.1529109365262189,
+          "calmar_excess": 0.5705770895030875
+        },
+        {
+          "window_id": "R17",
+          "start": "2023-06-06",
+          "end": "2024-06-05",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.11813511716687763,
+            "nar": 0.11813511716687852,
+            "mdd": 0.14110987188698454,
+            "calmar": 0.8371853477515266
+          },
+          "reference": {
+            "period_return": 0.06792062189287829,
+            "nar": 0.06792062189287806,
+            "mdd": 0.0747463085453175,
+            "calmar": 0.9086819565370091
+          },
+          "nar_excess": 0.05021449527400046,
+          "calmar_excess": -0.07149660878548247
+        },
+        {
+          "window_id": "R18",
+          "start": "2023-07-07",
+          "end": "2024-07-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.14695080758115941,
+            "nar": 0.14695080758116008,
+            "mdd": 0.1411098718869841,
+            "calmar": 1.0413928211830143
+          },
+          "reference": {
+            "period_return": 0.04663704766594012,
+            "nar": 0.0466370476659399,
+            "mdd": 0.0747463085453175,
+            "calmar": 0.623937804736733
+          },
+          "nar_excess": 0.10031375991522018,
+          "calmar_excess": 0.41745501644628136
+        },
+        {
+          "window_id": "R19",
+          "start": "2023-08-07",
+          "end": "2024-08-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.1360436590956169,
+            "nar": 0.13604365909561755,
+            "mdd": 0.14110987188698443,
+            "calmar": 0.9640973893348551
+          },
+          "reference": {
+            "period_return": 0.013962973846403548,
+            "nar": 0.01396297384640377,
+            "mdd": 0.07474630854531739,
+            "calmar": 0.18680486191419424
+          },
+          "nar_excess": 0.12208068524921378,
+          "calmar_excess": 0.7772925274206609
+        },
+        {
+          "window_id": "R20",
+          "start": "2023-09-06",
+          "end": "2024-09-05",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.09065374017633943,
+            "nar": 0.09065374017634054,
+            "mdd": 0.1411098718869842,
+            "calmar": 0.6424337217806114
+          },
+          "reference": {
+            "period_return": 0.04497760193748124,
+            "nar": 0.04497760193748124,
+            "mdd": 0.0747463085453175,
+            "calmar": 0.6017367655047745
+          },
+          "nar_excess": 0.0456761382388593,
+          "calmar_excess": 0.040696956275836915
+        },
+        {
+          "window_id": "R21",
+          "start": "2023-10-05",
+          "end": "2024-10-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.12331260429796997,
+            "nar": 0.12331260429797042,
+            "mdd": 0.1411098718869841,
+            "calmar": 0.8738765236547898
+          },
+          "reference": {
+            "period_return": 0.056194208222003716,
+            "nar": 0.05619420822200327,
+            "mdd": 0.07929744694907337,
+            "calmar": 0.7086509135419262
+          },
+          "nar_excess": 0.06711839607596715,
+          "calmar_excess": 0.16522561011286363
+        },
+        {
+          "window_id": "R22",
+          "start": "2023-11-03",
+          "end": "2024-11-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.0942351176080416,
+            "nar": 0.09423511760804182,
+            "mdd": 0.1411098718869842,
+            "calmar": 0.6678137847330435
+          },
+          "reference": {
+            "period_return": 0.00952080322866422,
+            "nar": 0.009520803228663555,
+            "mdd": 0.0792974469490737,
+            "calmar": 0.1200644358043203
+          },
+          "nar_excess": 0.08471431437937826,
+          "calmar_excess": 0.5477493489287233
+        },
+        {
+          "window_id": "R23",
+          "start": "2023-12-05",
+          "end": "2024-12-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.2071482199066108,
+            "nar": 0.20714821990661103,
+            "mdd": 0.14110987188698432,
+            "calmar": 1.467992402916482
+          },
+          "reference": {
+            "period_return": 0.11116665743701826,
+            "nar": 0.11116665743701781,
+            "mdd": 0.07929744694907404,
+            "calmar": 1.4018945339868336
+          },
+          "nar_excess": 0.09598156246959322,
+          "calmar_excess": 0.0660978689296483
+        },
+        {
+          "window_id": "R24",
+          "start": "2024-01-05",
+          "end": "2025-01-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.28702410626569086,
+            "nar": 0.2870241062656913,
+            "mdd": 0.1411098718869842,
+            "calmar": 2.0340469623242994
+          },
+          "reference": {
+            "period_return": 0.1774144088041325,
+            "nar": 0.17741440880413206,
+            "mdd": 0.07929744694907426,
+            "calmar": 2.237328131359256
+          },
+          "nar_excess": 0.10960969746155924,
+          "calmar_excess": -0.20328116903495674
+        },
+        {
+          "window_id": "R25",
+          "start": "2024-02-06",
+          "end": "2025-02-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.27467308776572175,
+            "nar": 0.27467308776572175,
+            "mdd": 0.14110987188698454,
+            "calmar": 1.946519290909062
+          },
+          "reference": {
+            "period_return": 0.2418926620276347,
+            "nar": 0.24189266202763426,
+            "mdd": 0.07929744694907392,
+            "calmar": 3.0504470362454614
+          },
+          "nar_excess": 0.03278042573808748,
+          "calmar_excess": -1.1039277453363994
+        },
+        {
+          "window_id": "R26",
+          "start": "2024-03-07",
+          "end": "2025-03-10",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.23559753826682495,
+            "nar": 0.23559753826682517,
+            "mdd": 0.14110987188698398,
+            "calmar": 1.6696035161559575
+          },
+          "reference": {
+            "period_return": 0.2330658823098961,
+            "nar": 0.23306588230989522,
+            "mdd": 0.0792974469490737,
+            "calmar": 2.9391347549887006
+          },
+          "nar_excess": 0.0025316559569299457,
+          "calmar_excess": -1.269531238832743
+        },
+        {
+          "window_id": "R27",
+          "start": "2024-04-08",
+          "end": "2025-04-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.24887724214213858,
+            "nar": 0.24887724214213858,
+            "mdd": 0.12199920906865591,
+            "calmar": 2.0399906199562423
+          },
+          "reference": {
+            "period_return": 0.19563634163506594,
+            "nar": 0.19563634163506505,
+            "mdd": 0.07929744694907381,
+            "calmar": 2.467120306668966
+          },
+          "nar_excess": 0.05324090050707353,
+          "calmar_excess": -0.4271296867127239
+        },
+        {
+          "window_id": "R28",
+          "start": "2024-05-07",
+          "end": "2025-05-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.6622672776499814,
+            "nar": 0.6622672776499812,
+            "mdd": 0.10454426643320702,
+            "calmar": 6.334802474061085
+          },
+          "reference": {
+            "period_return": 0.35839658826855314,
+            "nar": 0.3583965882685518,
+            "mdd": 0.07929744694907426,
+            "calmar": 4.519648514014811
+          },
+          "nar_excess": 0.30387068938142936,
+          "calmar_excess": 1.815153960046274
+        },
+        {
+          "window_id": "R29",
+          "start": "2024-06-06",
+          "end": "2025-06-09",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.9306969189542589,
+            "nar": 0.9306969189542584,
+            "mdd": 0.10454426643320702,
+            "calmar": 8.90241952722369
+          },
+          "reference": {
+            "period_return": 0.3981486304169939,
+            "nar": 0.39814863041699233,
+            "mdd": 0.07223347492708398,
+            "calmar": 5.511968388879299
+          },
+          "nar_excess": 0.5325482885372661,
+          "calmar_excess": 3.3904511383443916
+        },
+        {
+          "window_id": "R30",
+          "start": "2024-07-09",
+          "end": "2025-07-10",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.8145201629406358,
+            "nar": 0.8145201629406351,
+            "mdd": 0.10454426643320702,
+            "calmar": 7.791150971067641
+          },
+          "reference": {
+            "period_return": 0.4568990243511486,
+            "nar": 0.45689902435114704,
+            "mdd": 0.07223347492708398,
+            "calmar": 6.325308657964515
+          },
+          "nar_excess": 0.3576211385894881,
+          "calmar_excess": 1.4658423131031268
+        },
+        {
+          "window_id": "R31",
+          "start": "2024-08-07",
+          "end": "2025-08-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.0109895573090828,
+            "nar": 1.0109895573090824,
+            "mdd": 0.10454426643320691,
+            "calmar": 9.67044479627203
+          },
+          "reference": {
+            "period_return": 0.5488234913145045,
+            "nar": 0.5488234913145025,
+            "mdd": 0.07223347492708398,
+            "calmar": 7.597910689863832
+          },
+          "nar_excess": 0.4621660659945799,
+          "calmar_excess": 2.072534106408198
+        },
+        {
+          "window_id": "R32",
+          "start": "2024-09-06",
+          "end": "2025-09-09",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.3170093090482364,
+            "nar": 1.317009309048236,
+            "mdd": 0.10454426643320691,
+            "calmar": 12.597623513764574
+          },
+          "reference": {
+            "period_return": 0.7692766623170899,
+            "nar": 0.7692766623170875,
+            "mdd": 0.07223347492708398,
+            "calmar": 10.64986369676432
+          },
+          "nar_excess": 0.5477326467311485,
+          "calmar_excess": 1.9477598170002537
+        },
+        {
+          "window_id": "R33",
+          "start": "2024-10-07",
+          "end": "2025-10-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.3470215043070102,
+            "nar": 1.3470215043070097,
+            "mdd": 0.10454426643320713,
+            "calmar": 12.884699948300042
+          },
+          "reference": {
+            "period_return": 0.9148789082063173,
+            "nar": 0.9148789082063153,
+            "mdd": 0.07223347492708376,
+            "calmar": 12.665580731507681
+          },
+          "nar_excess": 0.4321425961006944,
+          "calmar_excess": 0.21911921679236102
+        },
+        {
+          "window_id": "R34",
+          "start": "2024-11-05",
+          "end": "2025-11-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.3810637365779717,
+            "nar": 1.381063736577972,
+            "mdd": 0.10454426643320713,
+            "calmar": 13.210325001039894
+          },
+          "reference": {
+            "period_return": 1.019800090116532,
+            "nar": 1.0198000901165312,
+            "mdd": 0.07223347492708387,
+            "calmar": 14.118109244307698
+          },
+          "nar_excess": 0.36126364646144093,
+          "calmar_excess": -0.9077842432678036
+        },
+        {
+          "window_id": "R35",
+          "start": "2024-12-05",
+          "end": "2025-12-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.341153018279646,
+            "nar": 1.341153018279646,
+            "mdd": 0.12992803527047903,
+            "calmar": 10.32227583129143
+          },
+          "reference": {
+            "period_return": 0.7889481197564554,
+            "nar": 0.788948119756455,
+            "mdd": 0.07223347492708387,
+            "calmar": 10.922195291765474
+          },
+          "nar_excess": 0.5522048985231911,
+          "calmar_excess": -0.5999194604740445
+        },
+        {
+          "window_id": "R36",
+          "start": "2025-01-07",
+          "end": "2026-01-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.7470074631146173,
+            "nar": 1.7470074631146177,
+            "mdd": 0.12992803527047903,
+            "calmar": 13.445962293493986
+          },
+          "reference": {
+            "period_return": 0.783131906063272,
+            "nar": 0.7831319060632722,
+            "mdd": 0.07223347492708376,
+            "calmar": 10.841675647666216
+          },
+          "nar_excess": 0.9638755570513455,
+          "calmar_excess": 2.60428664582777
+        },
+        {
+          "window_id": "R37",
+          "start": "2025-02-07",
+          "end": "2026-02-09",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.5882165936115786,
+            "nar": 1.5882165936115795,
+            "mdd": 0.12992803527047914,
+            "calmar": 12.22381751794593
+          },
+          "reference": {
+            "period_return": 0.7931572695320732,
+            "nar": 0.7931572695320734,
+            "mdd": 0.07223347492708376,
+            "calmar": 10.98046674803791
+          },
+          "nar_excess": 0.7950593240795061,
+          "calmar_excess": 1.2433507699080195
+        },
+        {
+          "window_id": "R38",
+          "start": "2025-03-11",
+          "end": "2026-03-11",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.8980932530267007,
+            "nar": 1.8980932530267012,
+            "mdd": 0.12992803527047903,
+            "calmar": 14.608804397567669
+          },
+          "reference": {
+            "period_return": 1.019212887309998,
+            "nar": 1.019212887309998,
+            "mdd": 0.05925659141904005,
+            "calmar": 17.19999181361129
+          },
+          "nar_excess": 0.8788803657167032,
+          "calmar_excess": -2.5911874160436223
+        },
+        {
+          "window_id": "R39",
+          "start": "2025-04-09",
+          "end": "2026-04-10",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 2.4065714618228715,
+            "nar": 2.406571461822872,
+            "mdd": 0.12992803527047914,
+            "calmar": 18.52234167024049
+          },
+          "reference": {
+            "period_return": 1.1844238583377473,
+            "nar": 1.1844238583377469,
+            "mdd": 0.07599530191099313,
+            "calmar": 15.585487899304123
+          },
+          "nar_excess": 1.222147603485125,
+          "calmar_excess": 2.9368537709363665
+        },
+        {
+          "window_id": "R40",
+          "start": "2025-05-09",
+          "end": "2026-05-11",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.8072904917193293,
+            "nar": 1.8072904917193302,
+            "mdd": 0.12992803527047914,
+            "calmar": 13.909934741620491
+          },
+          "reference": {
+            "period_return": 0.8941699353710875,
+            "nar": 0.8941699353710868,
+            "mdd": 0.07599530191099313,
+            "calmar": 11.766121232314498
+          },
+          "nar_excess": 0.9131205563482434,
+          "calmar_excess": 2.1438135093059927
+        },
+        {
+          "window_id": "R41",
+          "start": "2025-06-10",
+          "end": "2026-06-10",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 2.3161102156641915,
+            "nar": 2.316110215664191,
+            "mdd": 0.12992803527047903,
+            "calmar": 17.826100508967173
+          },
+          "reference": {
+            "period_return": 1.0815053580387,
+            "nar": 1.0815053580386995,
+            "mdd": 0.07599530191099313,
+            "calmar": 14.231213388761523
+          },
+          "nar_excess": 1.2346048576254915,
+          "calmar_excess": 3.59488712020565
+        },
+        {
+          "window_id": "R42",
+          "start": "2025-07-11",
+          "end": "2026-07-13",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 2.8664803308386406,
+            "nar": 2.8664803308386397,
+            "mdd": 0.12992803527047914,
+            "calmar": 22.062061701089473
+          },
+          "reference": {
+            "period_return": 1.3699323269080486,
+            "nar": 1.3699323269080481,
+            "mdd": 0.07599530191099324,
+            "calmar": 18.026539699947925
+          },
+          "nar_excess": 1.4965480039305916,
+          "calmar_excess": 4.035522001141548
+        },
+        {
+          "window_id": "R43",
+          "start": "2025-08-11",
+          "end": "2026-08-11",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 3.0583732298785318,
+            "nar": 3.0583732298785327,
+            "mdd": 0.12992803527047914,
+            "calmar": 23.538978508462243
+          },
+          "reference": {
+            "period_return": 1.5313089217107052,
+            "nar": 1.5313089217107057,
+            "mdd": 0.09069045768364647,
+            "calmar": 16.885005995364327
+          },
+          "nar_excess": 1.527064308167827,
+          "calmar_excess": 6.653972513097916
+        },
+        {
+          "window_id": "R44",
+          "start": "2025-09-10",
+          "end": "2026-09-10",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 3.244275733935857,
+            "nar": 3.244275733935858,
+            "mdd": 0.12992803527047914,
+            "calmar": 24.969789831594472
+          },
+          "reference": {
+            "period_return": 1.458759642468464,
+            "nar": 1.4587596424684635,
+            "mdd": 0.09069045768364659,
+            "calmar": 16.085040033175495
+          },
+          "nar_excess": 1.7855160914673944,
+          "calmar_excess": 8.884749798418976
+        },
+        {
+          "window_id": "R45",
+          "start": "2025-10-09",
+          "end": "2026-10-09",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 3.806854347495382,
+            "nar": 3.806854347495384,
+            "mdd": 0.12992803527047914,
+            "calmar": 29.299714565608742
+          },
+          "reference": {
+            "period_return": 1.2782076740403134,
+            "nar": 1.278207674040313,
+            "mdd": 0.09069045768364647,
+            "calmar": 14.094180431849365
+          },
+          "nar_excess": 2.528646673455071,
+          "calmar_excess": 15.205534133759377
+        }
+      ],
+      "below_reference_rolling_count": {
+        "nar_excess": 1,
+        "calmar_excess": 10
+      },
+      "consecutive_lagging_rolling_windows": {
+        "nar_excess": {
+          "maximum_count": 1,
+          "segments": [
+            {
+              "count": 1,
+              "first_window": "R11",
+              "last_window": "R11",
+              "first_start": "2022-12-02",
+              "last_start": "2022-12-02",
+              "last_end": "2023-12-04"
+            }
+          ]
+        },
+        "calmar_excess": {
+          "maximum_count": 4,
+          "segments": [
+            {
+              "count": 2,
+              "first_window": "R10",
+              "last_window": "R11",
+              "first_start": "2022-11-02",
+              "last_start": "2022-12-02",
+              "last_end": "2023-12-04"
+            },
+            {
+              "count": 1,
+              "first_window": "R17",
+              "last_window": "R17",
+              "first_start": "2023-06-06",
+              "last_start": "2023-06-06",
+              "last_end": "2024-06-05"
+            },
+            {
+              "count": 4,
+              "first_window": "R24",
+              "last_window": "R27",
+              "first_start": "2024-01-05",
+              "last_start": "2024-04-08",
+              "last_end": "2025-04-08"
+            },
+            {
+              "count": 2,
+              "first_window": "R34",
+              "last_window": "R35",
+              "first_start": "2024-11-05",
+              "last_start": "2024-12-05",
+              "last_end": "2025-12-08"
+            },
+            {
+              "count": 1,
+              "first_window": "R38",
+              "last_window": "R38",
+              "first_start": "2025-03-11",
+              "last_start": "2025-03-11",
+              "last_end": "2026-03-11"
+            }
+          ]
+        }
+      },
+      "consecutive_lagging_calendar_years": {
+        "nar_excess": {
+          "maximum_count": 0,
+          "segments": []
+        },
+        "calmar_excess": {
+          "maximum_count": 1,
+          "segments": [
+            {
+              "count": 1,
+              "first_window": "2025",
+              "last_window": "2025",
+              "first_start": "2025-01-02",
+              "last_start": "2025-01-02",
+              "last_end": "2025-12-31"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "candidate_id": "C1010",
+      "source": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S019",
+          "experiment_id": "EX048_20261111"
+        },
+        "evidence_id": "06d6e9f25f9ddc5383c80f47084fdf89233605f02f7724ceb448ee555b99cd11.json",
+        "sha256": "06d6e9f25f9ddc5383c80f47084fdf89233605f02f7724ceb448ee555b99cd11",
+        "media_type": "application/json",
+        "name": "ramp_linear_winner_participation_joint_0",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "full": {
+        "window_id": "FULL",
+        "start": "2022-01-03",
+        "end": "2026-10-30",
+        "sessions": 1212,
+        "strategy": {
+          "period_return": 10.761839871497893,
+          "nar": 0.6694524909897674,
+          "mdd": 0.1335080753545751,
+          "calmar": 5.014322086598985
+        },
+        "reference": {
+          "period_return": 2.577542032047085,
+          "nar": 0.3034722165863606,
+          "mdd": 0.24111155998695388,
+          "calmar": 1.2586381864178595
+        },
+        "nar_excess": 0.36598027440340686,
+        "calmar_excess": 3.7556839001811255
+      },
+      "years": [
+        {
+          "window_id": "2022",
+          "start": "2022-01-03",
+          "end": "2022-12-30",
+          "sessions": 251,
+          "strategy": {
+            "period_return": 0.0953597016836425,
+            "nar": 0.09575725760871245,
+            "mdd": 0.08451558845395946,
+            "calmar": 1.1330129667247952
+          },
+          "reference": {
+            "period_return": -0.19120311494392095,
+            "nar": -0.19188662172438564,
+            "mdd": 0.24111155998695388,
+            "calmar": -0.7958416499597459
+          },
+          "nar_excess": 0.2876438793330981,
+          "calmar_excess": 1.928854616684541
+        },
+        {
+          "window_id": "2023",
+          "start": "2023-01-03",
+          "end": "2023-12-29",
+          "sessions": 250,
+          "strategy": {
+            "period_return": 0.18851965050502195,
+            "nar": 0.1901629254376267,
+            "mdd": 0.09498743998160541,
+            "calmar": 2.0019796877824296
+          },
+          "reference": {
+            "period_return": 0.11564430422223348,
+            "nar": 0.11662143017293958,
+            "mdd": 0.06494389044177484,
+            "calmar": 1.7957259625136872
+          },
+          "nar_excess": 0.07354149526468712,
+          "calmar_excess": 0.20625372526874242
+        },
+        {
+          "window_id": "2024",
+          "start": "2024-01-02",
+          "end": "2024-12-31",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.2330726841713624,
+            "nar": 0.2330726841713635,
+            "mdd": 0.1335080753545752,
+            "calmar": 1.7457572027187216
+          },
+          "reference": {
+            "period_return": 0.07919758417378908,
+            "nar": 0.07919758417378864,
+            "mdd": 0.07929744694907415,
+            "calmar": 0.9987406558580676
+          },
+          "nar_excess": 0.15387509999757487,
+          "calmar_excess": 0.747016546860654
+        },
+        {
+          "window_id": "2025",
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "sessions": 250,
+          "strategy": {
+            "period_return": 1.3911912730228764,
+            "nar": 1.4079265291177707,
+            "mdd": 0.12328503010676417,
+            "calmar": 11.4200931605282
+          },
+          "reference": {
+            "period_return": 0.937509990011995,
+            "nar": 0.9477889695020694,
+            "mdd": 0.07223347492708387,
+            "calmar": 13.121187516713206
+          },
+          "nar_excess": 0.46013755961570135,
+          "calmar_excess": -1.7010943561850063
+        },
+        {
+          "window_id": "2026",
+          "start": "2026-01-02",
+          "end": "2026-10-30",
+          "sessions": 209,
+          "strategy": {
+            "period_return": 2.0641437987308904,
+            "nar": 2.858008470208398,
+            "mdd": 0.13007745784504587,
+            "calmar": 21.971589217349145
+          },
+          "reference": {
+            "period_return": 0.8961583701326052,
+            "nar": 1.1629425349735096,
+            "mdd": 0.09069045768364647,
+            "calmar": 12.823207255499542
+          },
+          "nar_excess": 1.6950659352348882,
+          "calmar_excess": 9.148381961849603
+        }
+      ],
+      "rolling": [
+        {
+          "window_id": "R00",
+          "start": "2022-01-03",
+          "end": "2023-01-03",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.0953597016836425,
+            "nar": 0.09535970168364205,
+            "mdd": 0.08451558845395946,
+            "calmar": 1.1283090306540315
+          },
+          "reference": {
+            "period_return": -0.188113160143921,
+            "nar": -0.18811316014392065,
+            "mdd": 0.24111155998695388,
+            "calmar": -0.7801913776100122
+          },
+          "nar_excess": 0.2834728618275627,
+          "calmar_excess": 1.9085004082640438
+        },
+        {
+          "window_id": "R01",
+          "start": "2022-02-02",
+          "end": "2023-02-02",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.09922127348693088,
+            "nar": 0.09922127348693044,
+            "mdd": 0.08451558845395912,
+            "calmar": 1.1739996762961948
+          },
+          "reference": {
+            "period_return": -0.08329574617758928,
+            "nar": -0.08329574617758906,
+            "mdd": 0.24111155998695333,
+            "calmar": -0.3454655852340561
+          },
+          "nar_excess": 0.1825170196645195,
+          "calmar_excess": 1.519465261530251
+        },
+        {
+          "window_id": "R02",
+          "start": "2022-03-04",
+          "end": "2023-03-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.04936507885559949,
+            "nar": 0.04936507885559904,
+            "mdd": 0.09871623929401507,
+            "calmar": 0.5000704970999835
+          },
+          "reference": {
+            "period_return": -0.1920307283770737,
+            "nar": -0.19203072837707302,
+            "mdd": 0.2411115599869531,
+            "calmar": -0.7964393262084326
+          },
+          "nar_excess": 0.24139580723267207,
+          "calmar_excess": 1.296509823308416
+        },
+        {
+          "window_id": "R03",
+          "start": "2022-04-04",
+          "end": "2023-04-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.0005297765631946394,
+            "nar": 0.0005297765631944173,
+            "mdd": 0.11569687985074584,
+            "calmar": 0.0045790047568945065
+          },
+          "reference": {
+            "period_return": -0.19936578590372855,
+            "nar": -0.19936578590372822,
+            "mdd": 0.22261998510908187,
+            "calmar": -0.8955430744730339
+          },
+          "nar_excess": 0.19989556246692264,
+          "calmar_excess": 0.9001220792299285
+        },
+        {
+          "window_id": "R04",
+          "start": "2022-05-04",
+          "end": "2023-05-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.022971046721556698,
+            "nar": 0.022971046721556032,
+            "mdd": 0.11791932560697638,
+            "calmar": 0.19480307068680364
+          },
+          "reference": {
+            "period_return": -0.11620072409120807,
+            "nar": -0.11620072409120741,
+            "mdd": 0.18042054593956525,
+            "calmar": -0.6440548302637922
+          },
+          "nar_excess": 0.13917177081276344,
+          "calmar_excess": 0.8388579009505959
+        },
+        {
+          "window_id": "R05",
+          "start": "2022-06-03",
+          "end": "2023-06-05",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.09149066950010165,
+            "nar": 0.09149066950010076,
+            "mdd": 0.11791932560697693,
+            "calmar": 0.7758751080805667
+          },
+          "reference": {
+            "period_return": -0.0665742922362409,
+            "nar": -0.06657429223624012,
+            "mdd": 0.17382479365760706,
+            "calmar": -0.3829965267634687
+          },
+          "nar_excess": 0.15806496173634088,
+          "calmar_excess": 1.1588716348440353
+        },
+        {
+          "window_id": "R06",
+          "start": "2022-07-06",
+          "end": "2023-07-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.14183687409244738,
+            "nar": 0.1418368740924465,
+            "mdd": 0.11791932560697649,
+            "calmar": 1.2028297597731086
+          },
+          "reference": {
+            "period_return": -0.06705091963710685,
+            "nar": -0.0670509196371063,
+            "mdd": 0.17382479365760728,
+            "calmar": -0.3857385257087108
+          },
+          "nar_excess": 0.2088877937295528,
+          "calmar_excess": 1.5885682854818195
+        },
+        {
+          "window_id": "R07",
+          "start": "2022-08-04",
+          "end": "2023-08-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.13081820896953822,
+            "nar": 0.13081820896953733,
+            "mdd": 0.11791932560697604,
+            "calmar": 1.1093873569592243
+          },
+          "reference": {
+            "period_return": -0.05826067420476422,
+            "nar": -0.058260674204763996,
+            "mdd": 0.17382479365760706,
+            "calmar": -0.3351689536276596
+          },
+          "nar_excess": 0.18907888317430133,
+          "calmar_excess": 1.444556310586884
+        },
+        {
+          "window_id": "R08",
+          "start": "2022-09-02",
+          "end": "2023-09-05",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.16383433184187268,
+            "nar": 0.16383433184187246,
+            "mdd": 0.11791932560697593,
+            "calmar": 1.3893764317134143
+          },
+          "reference": {
+            "period_return": -0.07948063368949088,
+            "nar": -0.07948063368949032,
+            "mdd": 0.13157404881410484,
+            "calmar": -0.6040753051673966
+          },
+          "nar_excess": 0.24331496553136278,
+          "calmar_excess": 1.993451736880811
+        },
+        {
+          "window_id": "R09",
+          "start": "2022-10-04",
+          "end": "2023-10-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.14152874660605752,
+            "nar": 0.14152874660605752,
+            "mdd": 0.11791932560697682,
+            "calmar": 1.2002167234043597
+          },
+          "reference": {
+            "period_return": -0.021911356731844633,
+            "nar": -0.02191135673184419,
+            "mdd": 0.06494389044177451,
+            "calmar": -0.33738903818040944
+          },
+          "nar_excess": 0.1634401033379017,
+          "calmar_excess": 1.5376057615847691
+        },
+        {
+          "window_id": "R10",
+          "start": "2022-11-02",
+          "end": "2023-11-02",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.10270615300566321,
+            "nar": 0.10270615300566321,
+            "mdd": 0.11791932560697627,
+            "calmar": 0.870986604417851
+          },
+          "reference": {
+            "period_return": 0.07352986343345247,
+            "nar": 0.07352986343345247,
+            "mdd": 0.06494389044177462,
+            "calmar": 1.1322060155816442
+          },
+          "nar_excess": 0.029176289572210745,
+          "calmar_excess": -0.2612194111637932
+        },
+        {
+          "window_id": "R11",
+          "start": "2022-12-02",
+          "end": "2023-12-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.09177806124018262,
+            "nar": 0.09177806124018262,
+            "mdd": 0.09498743998160586,
+            "calmar": 0.9662125988231209
+          },
+          "reference": {
+            "period_return": 0.08958732777736889,
+            "nar": 0.08958732777736866,
+            "mdd": 0.06494389044177462,
+            "calmar": 1.3794573618543546
+          },
+          "nar_excess": 0.002190733462813954,
+          "calmar_excess": -0.4132447630312337
+        },
+        {
+          "window_id": "R12",
+          "start": "2023-01-04",
+          "end": "2024-01-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.17029232676350414,
+            "nar": 0.17029232676350392,
+            "mdd": 0.09498743998160541,
+            "calmar": 1.7927878338070962
+          },
+          "reference": {
+            "period_return": 0.10688325720959191,
+            "nar": 0.10688325720959169,
+            "mdd": 0.06494389044177495,
+            "calmar": 1.64577847866101
+          },
+          "nar_excess": 0.06340906955391223,
+          "calmar_excess": 0.14700935514608626
+        },
+        {
+          "window_id": "R13",
+          "start": "2023-02-03",
+          "end": "2024-02-05",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.181594065123859,
+            "nar": 0.18159406512385856,
+            "mdd": 0.09498743998160619,
+            "calmar": 1.9117692313744141
+          },
+          "reference": {
+            "period_return": 0.05064069845999586,
+            "nar": 0.05064069845999608,
+            "mdd": 0.06494389044177495,
+            "calmar": 0.7797607768108331
+          },
+          "nar_excess": 0.13095336666386248,
+          "calmar_excess": 1.132008454563581
+        },
+        {
+          "window_id": "R14",
+          "start": "2023-03-07",
+          "end": "2024-03-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.22187910445334347,
+            "nar": 0.22187910445334325,
+            "mdd": 0.09498743998160497,
+            "calmar": 2.335878348719702
+          },
+          "reference": {
+            "period_return": 0.10916318785782497,
+            "nar": 0.10916318785782497,
+            "mdd": 0.06494389044177484,
+            "calmar": 1.680884639267103
+          },
+          "nar_excess": 0.11271591659551827,
+          "calmar_excess": 0.654993709452599
+        },
+        {
+          "window_id": "R15",
+          "start": "2023-04-05",
+          "end": "2024-04-05",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.3150830144199883,
+            "nar": 0.3150830144199883,
+            "mdd": 0.09498743998160597,
+            "calmar": 3.317101866109911
+          },
+          "reference": {
+            "period_return": 0.10392061555622667,
+            "nar": 0.10392061555622645,
+            "mdd": 0.06494389044177429,
+            "calmar": 1.6001599973348826
+          },
+          "nar_excess": 0.21116239886376187,
+          "calmar_excess": 1.7169418687750284
+        },
+        {
+          "window_id": "R16",
+          "start": "2023-05-05",
+          "end": "2024-05-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.2303255250451215,
+            "nar": 0.23032552504512216,
+            "mdd": 0.13350807535457532,
+            "calmar": 1.7251804764124998
+          },
+          "reference": {
+            "period_return": 0.08154172256512271,
+            "nar": 0.08154172256512271,
+            "mdd": 0.07474630854531716,
+            "calmar": 1.0909130384102597
+          },
+          "nar_excess": 0.14878380247999945,
+          "calmar_excess": 0.6342674380022402
+        },
+        {
+          "window_id": "R17",
+          "start": "2023-06-06",
+          "end": "2024-06-05",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.11576757850655639,
+            "nar": 0.1157675785065575,
+            "mdd": 0.13350807535457498,
+            "calmar": 0.8671204209865081
+          },
+          "reference": {
+            "period_return": 0.06792062189287829,
+            "nar": 0.06792062189287806,
+            "mdd": 0.0747463085453175,
+            "calmar": 0.9086819565370091
+          },
+          "nar_excess": 0.04784695661367944,
+          "calmar_excess": -0.041561535550501016
+        },
+        {
+          "window_id": "R18",
+          "start": "2023-07-07",
+          "end": "2024-07-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.1383068066551998,
+            "nar": 0.13830680665520112,
+            "mdd": 0.1335080753545752,
+            "calmar": 1.0359433786149734
+          },
+          "reference": {
+            "period_return": 0.04663704766594012,
+            "nar": 0.0466370476659399,
+            "mdd": 0.0747463085453175,
+            "calmar": 0.623937804736733
+          },
+          "nar_excess": 0.09166975898926122,
+          "calmar_excess": 0.41200557387824044
+        },
+        {
+          "window_id": "R19",
+          "start": "2023-08-07",
+          "end": "2024-08-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.11975307314035155,
+            "nar": 0.1197530731403531,
+            "mdd": 0.13350807535457498,
+            "calmar": 0.8969725076352805
+          },
+          "reference": {
+            "period_return": 0.013962973846403548,
+            "nar": 0.01396297384640377,
+            "mdd": 0.07474630854531739,
+            "calmar": 0.18680486191419424
+          },
+          "nar_excess": 0.10579009929394934,
+          "calmar_excess": 0.7101676457210863
+        },
+        {
+          "window_id": "R20",
+          "start": "2023-09-06",
+          "end": "2024-09-05",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.07788362057774845,
+            "nar": 0.07788362057774934,
+            "mdd": 0.13350807535457498,
+            "calmar": 0.5833626196086158
+          },
+          "reference": {
+            "period_return": 0.04497760193748124,
+            "nar": 0.04497760193748124,
+            "mdd": 0.0747463085453175,
+            "calmar": 0.6017367655047745
+          },
+          "nar_excess": 0.0329060186402681,
+          "calmar_excess": -0.01837414589615871
+        },
+        {
+          "window_id": "R21",
+          "start": "2023-10-05",
+          "end": "2024-10-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.10932564066114092,
+            "nar": 0.10932564066114181,
+            "mdd": 0.13350807535457487,
+            "calmar": 0.8188691236151177
+          },
+          "reference": {
+            "period_return": 0.056194208222003716,
+            "nar": 0.05619420822200327,
+            "mdd": 0.07929744694907337,
+            "calmar": 0.7086509135419262
+          },
+          "nar_excess": 0.05313143243913854,
+          "calmar_excess": 0.11021821007319144
+        },
+        {
+          "window_id": "R22",
+          "start": "2023-11-03",
+          "end": "2024-11-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.07667812990115475,
+            "nar": 0.07667812990115541,
+            "mdd": 0.1335080753545751,
+            "calmar": 0.5743332730811311
+          },
+          "reference": {
+            "period_return": 0.00952080322866422,
+            "nar": 0.009520803228663555,
+            "mdd": 0.0792974469490737,
+            "calmar": 0.1200644358043203
+          },
+          "nar_excess": 0.06715732667249186,
+          "calmar_excess": 0.45426883727681083
+        },
+        {
+          "window_id": "R23",
+          "start": "2023-12-05",
+          "end": "2024-12-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.18323434879461975,
+            "nar": 0.18323434879462042,
+            "mdd": 0.13350807535457465,
+            "calmar": 1.3724589191176735
+          },
+          "reference": {
+            "period_return": 0.11116665743701826,
+            "nar": 0.11116665743701781,
+            "mdd": 0.07929744694907404,
+            "calmar": 1.4018945339868336
+          },
+          "nar_excess": 0.0720676913576026,
+          "calmar_excess": -0.02943561486916013
+        },
+        {
+          "window_id": "R24",
+          "start": "2024-01-05",
+          "end": "2025-01-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.2581193791736389,
+            "nar": 0.25811937917364003,
+            "mdd": 0.13350807535457498,
+            "calmar": 1.9333615475177692
+          },
+          "reference": {
+            "period_return": 0.1774144088041325,
+            "nar": 0.17741440880413206,
+            "mdd": 0.07929744694907426,
+            "calmar": 2.237328131359256
+          },
+          "nar_excess": 0.08070497036950797,
+          "calmar_excess": -0.3039665838414869
+        },
+        {
+          "window_id": "R25",
+          "start": "2024-02-06",
+          "end": "2025-02-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.2424229156821982,
+            "nar": 0.24242291568219954,
+            "mdd": 0.13350807535457532,
+            "calmar": 1.815792153683322
+          },
+          "reference": {
+            "period_return": 0.2418926620276347,
+            "nar": 0.24189266202763426,
+            "mdd": 0.07929744694907392,
+            "calmar": 3.0504470362454614
+          },
+          "nar_excess": 0.0005302536545652714,
+          "calmar_excess": -1.2346548825621395
+        },
+        {
+          "window_id": "R26",
+          "start": "2024-03-07",
+          "end": "2025-03-10",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.20444381388881805,
+            "nar": 0.20444381388881938,
+            "mdd": 0.13350807535457498,
+            "calmar": 1.5313217072888738
+          },
+          "reference": {
+            "period_return": 0.2330658823098961,
+            "nar": 0.23306588230989522,
+            "mdd": 0.0792974469490737,
+            "calmar": 2.9391347549887006
+          },
+          "nar_excess": -0.02862206842107584,
+          "calmar_excess": -1.4078130476998267
+        },
+        {
+          "window_id": "R27",
+          "start": "2024-04-08",
+          "end": "2025-04-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.22430343042114753,
+            "nar": 0.22430343042114864,
+            "mdd": 0.11720176234422852,
+            "calmar": 1.9138230171177475
+          },
+          "reference": {
+            "period_return": 0.19563634163506594,
+            "nar": 0.19563634163506505,
+            "mdd": 0.07929744694907381,
+            "calmar": 2.467120306668966
+          },
+          "nar_excess": 0.028667088786083594,
+          "calmar_excess": -0.5532972895512187
+        },
+        {
+          "window_id": "R28",
+          "start": "2024-05-07",
+          "end": "2025-05-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.6215434071090222,
+            "nar": 0.6215434071090242,
+            "mdd": 0.10456840030925973,
+            "calmar": 5.943893234197113
+          },
+          "reference": {
+            "period_return": 0.35839658826855314,
+            "nar": 0.3583965882685518,
+            "mdd": 0.07929744694907426,
+            "calmar": 4.519648514014811
+          },
+          "nar_excess": 0.2631468188404724,
+          "calmar_excess": 1.424244720182302
+        },
+        {
+          "window_id": "R29",
+          "start": "2024-06-06",
+          "end": "2025-06-09",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.86833681046133,
+            "nar": 0.868336810461332,
+            "mdd": 0.10456840030925962,
+            "calmar": 8.304007787182721
+          },
+          "reference": {
+            "period_return": 0.3981486304169939,
+            "nar": 0.39814863041699233,
+            "mdd": 0.07223347492708398,
+            "calmar": 5.511968388879299
+          },
+          "nar_excess": 0.4701881800443397,
+          "calmar_excess": 2.792039398303422
+        },
+        {
+          "window_id": "R30",
+          "start": "2024-07-09",
+          "end": "2025-07-10",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.7658546259363705,
+            "nar": 0.7658546259363719,
+            "mdd": 0.10456840030925962,
+            "calmar": 7.323958515874463
+          },
+          "reference": {
+            "period_return": 0.4568990243511486,
+            "nar": 0.45689902435114704,
+            "mdd": 0.07223347492708398,
+            "calmar": 6.325308657964515
+          },
+          "nar_excess": 0.30895560158522484,
+          "calmar_excess": 0.9986498579099488
+        },
+        {
+          "window_id": "R31",
+          "start": "2024-08-07",
+          "end": "2025-08-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.9729825884067287,
+            "nar": 0.9729825884067302,
+            "mdd": 0.10456840030925973,
+            "calmar": 9.304747758683755
+          },
+          "reference": {
+            "period_return": 0.5488234913145045,
+            "nar": 0.5488234913145025,
+            "mdd": 0.07223347492708398,
+            "calmar": 7.597910689863832
+          },
+          "nar_excess": 0.42415909709222777,
+          "calmar_excess": 1.7068370688199233
+        },
+        {
+          "window_id": "R32",
+          "start": "2024-09-06",
+          "end": "2025-09-09",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.2629441797829943,
+            "nar": 1.2629441797829957,
+            "mdd": 0.10456840030925962,
+            "calmar": 12.077684807722557
+          },
+          "reference": {
+            "period_return": 0.7692766623170899,
+            "nar": 0.7692766623170875,
+            "mdd": 0.07223347492708398,
+            "calmar": 10.64986369676432
+          },
+          "nar_excess": 0.4936675174659082,
+          "calmar_excess": 1.4278211109582362
+        },
+        {
+          "window_id": "R33",
+          "start": "2024-10-07",
+          "end": "2025-10-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.2902351335181397,
+            "nar": 1.2902351335181406,
+            "mdd": 0.10456840030925973,
+            "calmar": 12.338671431352935
+          },
+          "reference": {
+            "period_return": 0.9148789082063173,
+            "nar": 0.9148789082063153,
+            "mdd": 0.07223347492708376,
+            "calmar": 12.665580731507681
+          },
+          "nar_excess": 0.3753562253118252,
+          "calmar_excess": -0.32690930015474606
+        },
+        {
+          "window_id": "R34",
+          "start": "2024-11-05",
+          "end": "2025-11-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.326279240022156,
+            "nar": 1.3262792400221577,
+            "mdd": 0.10456840030925951,
+            "calmar": 12.683365491866628
+          },
+          "reference": {
+            "period_return": 1.019800090116532,
+            "nar": 1.0198000901165312,
+            "mdd": 0.07223347492708387,
+            "calmar": 14.118109244307698
+          },
+          "nar_excess": 0.3064791499056265,
+          "calmar_excess": -1.4347437524410704
+        },
+        {
+          "window_id": "R35",
+          "start": "2024-12-05",
+          "end": "2025-12-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.177428795995938,
+            "nar": 1.1774287959959397,
+            "mdd": 0.12328503010676406,
+            "calmar": 9.55046038417068
+          },
+          "reference": {
+            "period_return": 0.7889481197564554,
+            "nar": 0.788948119756455,
+            "mdd": 0.07223347492708387,
+            "calmar": 10.922195291765474
+          },
+          "nar_excess": 0.3884806762394848,
+          "calmar_excess": -1.371734907594794
+        },
+        {
+          "window_id": "R36",
+          "start": "2025-01-07",
+          "end": "2026-01-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.5286239223442024,
+            "nar": 1.5286239223442042,
+            "mdd": 0.12328503010676417,
+            "calmar": 12.399104100639178
+          },
+          "reference": {
+            "period_return": 0.783131906063272,
+            "nar": 0.7831319060632722,
+            "mdd": 0.07223347492708376,
+            "calmar": 10.841675647666216
+          },
+          "nar_excess": 0.745492016280932,
+          "calmar_excess": 1.557428452972962
+        },
+        {
+          "window_id": "R37",
+          "start": "2025-02-07",
+          "end": "2026-02-09",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.3847209421518816,
+            "nar": 1.3847209421518825,
+            "mdd": 0.12328503010676417,
+            "calmar": 11.231866033959854
+          },
+          "reference": {
+            "period_return": 0.7931572695320732,
+            "nar": 0.7931572695320734,
+            "mdd": 0.07223347492708376,
+            "calmar": 10.98046674803791
+          },
+          "nar_excess": 0.591563672619809,
+          "calmar_excess": 0.25139928592194316
+        },
+        {
+          "window_id": "R38",
+          "start": "2025-03-11",
+          "end": "2026-03-11",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.6491214627236603,
+            "nar": 1.6491214627236617,
+            "mdd": 0.13007745784504599,
+            "calmar": 12.677995788387625
+          },
+          "reference": {
+            "period_return": 1.019212887309998,
+            "nar": 1.019212887309998,
+            "mdd": 0.05925659141904005,
+            "calmar": 17.19999181361129
+          },
+          "nar_excess": 0.6299085754136637,
+          "calmar_excess": -4.521996025223666
+        },
+        {
+          "window_id": "R39",
+          "start": "2025-04-09",
+          "end": "2026-04-10",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 2.109813616185664,
+            "nar": 2.109813616185665,
+            "mdd": 0.1300774578450462,
+            "calmar": 16.21967134919691
+          },
+          "reference": {
+            "period_return": 1.1844238583377473,
+            "nar": 1.1844238583377469,
+            "mdd": 0.07599530191099313,
+            "calmar": 15.585487899304123
+          },
+          "nar_excess": 0.9253897578479182,
+          "calmar_excess": 0.6341834498927881
+        },
+        {
+          "window_id": "R40",
+          "start": "2025-05-09",
+          "end": "2026-05-11",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.575980999574862,
+            "nar": 1.575980999574862,
+            "mdd": 0.13007745784504599,
+            "calmar": 12.115711866480664
+          },
+          "reference": {
+            "period_return": 0.8941699353710875,
+            "nar": 0.8941699353710868,
+            "mdd": 0.07599530191099313,
+            "calmar": 11.766121232314498
+          },
+          "nar_excess": 0.6818110642037751,
+          "calmar_excess": 0.34959063416616587
+        },
+        {
+          "window_id": "R41",
+          "start": "2025-06-10",
+          "end": "2026-06-10",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 2.0516508544554637,
+            "nar": 2.051650854455464,
+            "mdd": 0.13007745784504599,
+            "calmar": 15.772531908637708
+          },
+          "reference": {
+            "period_return": 1.0815053580387,
+            "nar": 1.0815053580386995,
+            "mdd": 0.07599530191099313,
+            "calmar": 14.231213388761523
+          },
+          "nar_excess": 0.9701454964167646,
+          "calmar_excess": 1.5413185198761852
+        },
+        {
+          "window_id": "R42",
+          "start": "2025-07-11",
+          "end": "2026-07-13",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 2.5944547640145057,
+            "nar": 2.594454764014507,
+            "mdd": 0.13007745784504587,
+            "calmar": 19.945460243427714
+          },
+          "reference": {
+            "period_return": 1.3699323269080486,
+            "nar": 1.3699323269080481,
+            "mdd": 0.07599530191099324,
+            "calmar": 18.026539699947925
+          },
+          "nar_excess": 1.224522437106459,
+          "calmar_excess": 1.9189205434797891
+        },
+        {
+          "window_id": "R43",
+          "start": "2025-08-11",
+          "end": "2026-08-11",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 2.7480545741981453,
+            "nar": 2.748054574198148,
+            "mdd": 0.1300774578450461,
+            "calmar": 21.126293669359296
+          },
+          "reference": {
+            "period_return": 1.5313089217107052,
+            "nar": 1.5313089217107057,
+            "mdd": 0.09069045768364647,
+            "calmar": 16.885005995364327
+          },
+          "nar_excess": 1.2167456524874423,
+          "calmar_excess": 4.241287673994968
+        },
+        {
+          "window_id": "R44",
+          "start": "2025-09-10",
+          "end": "2026-09-10",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 2.889752579493429,
+            "nar": 2.8897525794934302,
+            "mdd": 0.13007745784504587,
+            "calmar": 22.21562926710817
+          },
+          "reference": {
+            "period_return": 1.458759642468464,
+            "nar": 1.4587596424684635,
+            "mdd": 0.09069045768364659,
+            "calmar": 16.085040033175495
+          },
+          "nar_excess": 1.4309929370249668,
+          "calmar_excess": 6.130589233932675
+        },
+        {
+          "window_id": "R45",
+          "start": "2025-10-09",
+          "end": "2026-10-09",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 3.420154425772714,
+            "nar": 3.420154425772716,
+            "mdd": 0.13007745784504587,
+            "calmar": 26.29321392371427
+          },
+          "reference": {
+            "period_return": 1.2782076740403134,
+            "nar": 1.278207674040313,
+            "mdd": 0.09069045768364647,
+            "calmar": 14.094180431849365
+          },
+          "nar_excess": 2.141946751732403,
+          "calmar_excess": 12.199033491864904
+        }
+      ],
+      "below_reference_rolling_count": {
+        "nar_excess": 1,
+        "calmar_excess": 13
+      },
+      "consecutive_lagging_rolling_windows": {
+        "nar_excess": {
+          "maximum_count": 1,
+          "segments": [
+            {
+              "count": 1,
+              "first_window": "R26",
+              "last_window": "R26",
+              "first_start": "2024-03-07",
+              "last_start": "2024-03-07",
+              "last_end": "2025-03-10"
+            }
+          ]
+        },
+        "calmar_excess": {
+          "maximum_count": 5,
+          "segments": [
+            {
+              "count": 2,
+              "first_window": "R10",
+              "last_window": "R11",
+              "first_start": "2022-11-02",
+              "last_start": "2022-12-02",
+              "last_end": "2023-12-04"
+            },
+            {
+              "count": 1,
+              "first_window": "R17",
+              "last_window": "R17",
+              "first_start": "2023-06-06",
+              "last_start": "2023-06-06",
+              "last_end": "2024-06-05"
+            },
+            {
+              "count": 1,
+              "first_window": "R20",
+              "last_window": "R20",
+              "first_start": "2023-09-06",
+              "last_start": "2023-09-06",
+              "last_end": "2024-09-05"
+            },
+            {
+              "count": 5,
+              "first_window": "R23",
+              "last_window": "R27",
+              "first_start": "2023-12-05",
+              "last_start": "2024-04-08",
+              "last_end": "2025-04-08"
+            },
+            {
+              "count": 3,
+              "first_window": "R33",
+              "last_window": "R35",
+              "first_start": "2024-10-07",
+              "last_start": "2024-12-05",
+              "last_end": "2025-12-08"
+            },
+            {
+              "count": 1,
+              "first_window": "R38",
+              "last_window": "R38",
+              "first_start": "2025-03-11",
+              "last_start": "2025-03-11",
+              "last_end": "2026-03-11"
+            }
+          ]
+        }
+      },
+      "consecutive_lagging_calendar_years": {
+        "nar_excess": {
+          "maximum_count": 0,
+          "segments": []
+        },
+        "calmar_excess": {
+          "maximum_count": 1,
+          "segments": [
+            {
+              "count": 1,
+              "first_window": "2025",
+              "last_window": "2025",
+              "first_start": "2025-01-02",
+              "last_start": "2025-01-02",
+              "last_end": "2025-12-31"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "candidate_id": "C0909",
+      "source": {
+        "type": "EvidenceRef",
+        "experiment": {
+          "type": "ExperimentRef",
+          "strategy_id": "S019",
+          "experiment_id": "EX047_20261111"
+        },
+        "evidence_id": "671548da85e11bdaa05d33f2c5361f8c57e4466b489feb80bad4e68513610008.json",
+        "sha256": "671548da85e11bdaa05d33f2c5361f8c57e4466b489feb80bad4e68513610008",
+        "media_type": "application/json",
+        "name": "rebuild_linear_006",
+        "schema": "equity_research",
+        "schema_version": 4
+      },
+      "full": {
+        "window_id": "FULL",
+        "start": "2022-01-03",
+        "end": "2026-10-30",
+        "sessions": 1212,
+        "strategy": {
+          "period_return": 11.05813768240565,
+          "nar": 0.6781108432487752,
+          "mdd": 0.12684778414523112,
+          "calmar": 5.345862742642706
+        },
+        "reference": {
+          "period_return": 2.577542032047085,
+          "nar": 0.3034722165863606,
+          "mdd": 0.24111155998695388,
+          "calmar": 1.2586381864178595
+        },
+        "nar_excess": 0.37463862666241465,
+        "calmar_excess": 4.087224556224847
+      },
+      "years": [
+        {
+          "window_id": "2022",
+          "start": "2022-01-03",
+          "end": "2022-12-30",
+          "sessions": 251,
+          "strategy": {
+            "period_return": 0.07244680413561344,
+            "nar": 0.07274569000371822,
+            "mdd": 0.0980442892604163,
+            "calmar": 0.7419676408739906
+          },
+          "reference": {
+            "period_return": -0.19120311494392095,
+            "nar": -0.19188662172438564,
+            "mdd": 0.24111155998695388,
+            "calmar": -0.7958416499597459
+          },
+          "nar_excess": 0.26463231172810386,
+          "calmar_excess": 1.5378092908337364
+        },
+        {
+          "window_id": "2023",
+          "start": "2023-01-03",
+          "end": "2023-12-29",
+          "sessions": 250,
+          "strategy": {
+            "period_return": 0.19480580503310163,
+            "nar": 0.1965082641231386,
+            "mdd": 0.09292758342804941,
+            "calmar": 2.1146386990175863
+          },
+          "reference": {
+            "period_return": 0.11564430422223348,
+            "nar": 0.11662143017293958,
+            "mdd": 0.06494389044177484,
+            "calmar": 1.7957259625136872
+          },
+          "nar_excess": 0.07988683395019902,
+          "calmar_excess": 0.31891273650389906
+        },
+        {
+          "window_id": "2024",
+          "start": "2024-01-02",
+          "end": "2024-12-31",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.24115087815431746,
+            "nar": 0.24115087815431813,
+            "mdd": 0.12466928240590147,
+            "calmar": 1.9343247470469338
+          },
+          "reference": {
+            "period_return": 0.07919758417378908,
+            "nar": 0.07919758417378864,
+            "mdd": 0.07929744694907415,
+            "calmar": 0.9987406558580676
+          },
+          "nar_excess": 0.1619532939805295,
+          "calmar_excess": 0.9355840911888662
+        },
+        {
+          "window_id": "2025",
+          "start": "2025-01-02",
+          "end": "2025-12-31",
+          "sessions": 250,
+          "strategy": {
+            "period_return": 1.5027250273765058,
+            "nar": 1.5211601949301548,
+            "mdd": 0.11782418014780871,
+            "calmar": 12.910424609124219
+          },
+          "reference": {
+            "period_return": 0.937509990011995,
+            "nar": 0.9477889695020694,
+            "mdd": 0.07223347492708387,
+            "calmar": 13.121187516713206
+          },
+          "nar_excess": 0.5733712254280854,
+          "calmar_excess": -0.21076290758898786
+        },
+        {
+          "window_id": "2026",
+          "start": "2026-01-02",
+          "end": "2026-10-30",
+          "sessions": 209,
+          "strategy": {
+            "period_return": 2.029489416119658,
+            "nar": 2.805460086078959,
+            "mdd": 0.12513440158503963,
+            "calmar": 22.419574877436137
+          },
+          "reference": {
+            "period_return": 0.8961583701326052,
+            "nar": 1.1629425349735096,
+            "mdd": 0.09069045768364647,
+            "calmar": 12.823207255499542
+          },
+          "nar_excess": 1.6425175511054495,
+          "calmar_excess": 9.596367621936595
+        }
+      ],
+      "rolling": [
+        {
+          "window_id": "R00",
+          "start": "2022-01-03",
+          "end": "2023-01-03",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.07640219073561338,
+            "nar": 0.07640219073561227,
+            "mdd": 0.0980442892604163,
+            "calmar": 0.7792620183382608
+          },
+          "reference": {
+            "period_return": -0.188113160143921,
+            "nar": -0.18811316014392065,
+            "mdd": 0.24111155998695388,
+            "calmar": -0.7801913776100122
+          },
+          "nar_excess": 0.26451535087953293,
+          "calmar_excess": 1.559453395948273
+        },
+        {
+          "window_id": "R01",
+          "start": "2022-02-02",
+          "end": "2023-02-02",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.07990834320954598,
+            "nar": 0.0799083432095451,
+            "mdd": 0.09804428926041608,
+            "calmar": 0.815022922929249
+          },
+          "reference": {
+            "period_return": -0.08329574617758928,
+            "nar": -0.08329574617758906,
+            "mdd": 0.24111155998695333,
+            "calmar": -0.3454655852340561
+          },
+          "nar_excess": 0.16320408938713415,
+          "calmar_excess": 1.1604885081633052
+        },
+        {
+          "window_id": "R02",
+          "start": "2022-03-04",
+          "end": "2023-03-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.03218866839750012,
+            "nar": 0.032188668397499454,
+            "mdd": 0.10570928527158807,
+            "calmar": 0.30450180714778646
+          },
+          "reference": {
+            "period_return": -0.1920307283770737,
+            "nar": -0.19203072837707302,
+            "mdd": 0.2411115599869531,
+            "calmar": -0.7964393262084326
+          },
+          "nar_excess": 0.22421939677457248,
+          "calmar_excess": 1.1009411333562191
+        },
+        {
+          "window_id": "R03",
+          "start": "2022-04-04",
+          "end": "2023-04-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": -0.016222367767705803,
+            "nar": -0.016222367767706247,
+            "mdd": 0.12380666786376437,
+            "calmar": -0.13102983908392704
+          },
+          "reference": {
+            "period_return": -0.19936578590372855,
+            "nar": -0.19936578590372822,
+            "mdd": 0.22261998510908187,
+            "calmar": -0.8955430744730339
+          },
+          "nar_excess": 0.18314341813602197,
+          "calmar_excess": 0.7645132353891069
+        },
+        {
+          "window_id": "R04",
+          "start": "2022-05-04",
+          "end": "2023-05-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.010381417787196145,
+            "nar": 0.01038141778719548,
+            "mdd": 0.1268477841452308,
+            "calmar": 0.08184153832210082
+          },
+          "reference": {
+            "period_return": -0.11620072409120807,
+            "nar": -0.11620072409120741,
+            "mdd": 0.18042054593956525,
+            "calmar": -0.6440548302637922
+          },
+          "nar_excess": 0.1265821418784029,
+          "calmar_excess": 0.725896368585893
+        },
+        {
+          "window_id": "R05",
+          "start": "2022-06-03",
+          "end": "2023-06-05",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.07729788240443836,
+            "nar": 0.07729788240443725,
+            "mdd": 0.12684778414523068,
+            "calmar": 0.6093751099028839
+          },
+          "reference": {
+            "period_return": -0.0665742922362409,
+            "nar": -0.06657429223624012,
+            "mdd": 0.17382479365760706,
+            "calmar": -0.3829965267634687
+          },
+          "nar_excess": 0.14387217464067736,
+          "calmar_excess": 0.9923716366663526
+        },
+        {
+          "window_id": "R06",
+          "start": "2022-07-06",
+          "end": "2023-07-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.12451939866401207,
+            "nar": 0.12451939866401074,
+            "mdd": 0.1268477841452309,
+            "calmar": 0.9816442557754549
+          },
+          "reference": {
+            "period_return": -0.06705091963710685,
+            "nar": -0.0670509196371063,
+            "mdd": 0.17382479365760728,
+            "calmar": -0.3857385257087108
+          },
+          "nar_excess": 0.19157031830111704,
+          "calmar_excess": 1.3673827814841657
+        },
+        {
+          "window_id": "R07",
+          "start": "2022-08-04",
+          "end": "2023-08-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.11364927190935692,
+            "nar": 0.11364927190935581,
+            "mdd": 0.126847784145231,
+            "calmar": 0.8959499976699323
+          },
+          "reference": {
+            "period_return": -0.05826067420476422,
+            "nar": -0.058260674204763996,
+            "mdd": 0.17382479365760706,
+            "calmar": -0.3351689536276596
+          },
+          "nar_excess": 0.1719099461141198,
+          "calmar_excess": 1.231118951297592
+        },
+        {
+          "window_id": "R08",
+          "start": "2022-09-02",
+          "end": "2023-09-05",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.15435582259105574,
+            "nar": 0.15435582259105507,
+            "mdd": 0.1268477841452308,
+            "calmar": 1.216858643855613
+          },
+          "reference": {
+            "period_return": -0.07948063368949088,
+            "nar": -0.07948063368949032,
+            "mdd": 0.13157404881410484,
+            "calmar": -0.6040753051673966
+          },
+          "nar_excess": 0.2338364562805454,
+          "calmar_excess": 1.8209339490230096
+        },
+        {
+          "window_id": "R09",
+          "start": "2022-10-04",
+          "end": "2023-10-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.1360687524665909,
+            "nar": 0.13606875246659045,
+            "mdd": 0.12684778414523123,
+            "calmar": 1.0726931761835263
+          },
+          "reference": {
+            "period_return": -0.021911356731844633,
+            "nar": -0.02191135673184419,
+            "mdd": 0.06494389044177451,
+            "calmar": -0.33738903818040944
+          },
+          "nar_excess": 0.15798010919843464,
+          "calmar_excess": 1.4100822143639358
+        },
+        {
+          "window_id": "R10",
+          "start": "2022-11-02",
+          "end": "2023-11-02",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.09929072526075822,
+            "nar": 0.09929072526075733,
+            "mdd": 0.12684778414523046,
+            "calmar": 0.7827549052577653
+          },
+          "reference": {
+            "period_return": 0.07352986343345247,
+            "nar": 0.07352986343345247,
+            "mdd": 0.06494389044177462,
+            "calmar": 1.1322060155816442
+          },
+          "nar_excess": 0.02576086182730486,
+          "calmar_excess": -0.349451110323879
+        },
+        {
+          "window_id": "R11",
+          "start": "2022-12-02",
+          "end": "2023-12-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.08754738744420476,
+            "nar": 0.0875473874442041,
+            "mdd": 0.09320820569964883,
+            "calmar": 0.9392669538807992
+          },
+          "reference": {
+            "period_return": 0.08958732777736889,
+            "nar": 0.08958732777736866,
+            "mdd": 0.06494389044177462,
+            "calmar": 1.3794573618543546
+          },
+          "nar_excess": -0.0020399403331645694,
+          "calmar_excess": -0.44019040797355546
+        },
+        {
+          "window_id": "R12",
+          "start": "2023-01-04",
+          "end": "2024-01-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.17553197323919578,
+            "nar": 0.17553197323919534,
+            "mdd": 0.09292758342804941,
+            "calmar": 1.8889114164375493
+          },
+          "reference": {
+            "period_return": 0.10688325720959191,
+            "nar": 0.10688325720959169,
+            "mdd": 0.06494389044177495,
+            "calmar": 1.64577847866101
+          },
+          "nar_excess": 0.06864871602960365,
+          "calmar_excess": 0.24313293777653944
+        },
+        {
+          "window_id": "R13",
+          "start": "2023-02-03",
+          "end": "2024-02-05",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.18342421765481842,
+            "nar": 0.18342421765481776,
+            "mdd": 0.09292758342804874,
+            "calmar": 1.9738403915005285
+          },
+          "reference": {
+            "period_return": 0.05064069845999586,
+            "nar": 0.05064069845999608,
+            "mdd": 0.06494389044177495,
+            "calmar": 0.7797607768108331
+          },
+          "nar_excess": 0.13278351919482168,
+          "calmar_excess": 1.1940796146896955
+        },
+        {
+          "window_id": "R14",
+          "start": "2023-03-07",
+          "end": "2024-03-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.22591217443361722,
+            "nar": 0.22591217443361633,
+            "mdd": 0.09292758342804908,
+            "calmar": 2.431056163303042
+          },
+          "reference": {
+            "period_return": 0.10916318785782497,
+            "nar": 0.10916318785782497,
+            "mdd": 0.06494389044177484,
+            "calmar": 1.680884639267103
+          },
+          "nar_excess": 0.11674898657579136,
+          "calmar_excess": 0.750171524035939
+        },
+        {
+          "window_id": "R15",
+          "start": "2023-04-05",
+          "end": "2024-04-05",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.326426636815067,
+            "nar": 0.3264266368150659,
+            "mdd": 0.09292758342804919,
+            "calmar": 3.5126990800079017
+          },
+          "reference": {
+            "period_return": 0.10392061555622667,
+            "nar": 0.10392061555622645,
+            "mdd": 0.06494389044177429,
+            "calmar": 1.6001599973348826
+          },
+          "nar_excess": 0.22250602125883945,
+          "calmar_excess": 1.912539082673019
+        },
+        {
+          "window_id": "R16",
+          "start": "2023-05-05",
+          "end": "2024-05-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.23843178216919547,
+            "nar": 0.23843178216919458,
+            "mdd": 0.12466928240590147,
+            "calmar": 1.9125142743093861
+          },
+          "reference": {
+            "period_return": 0.08154172256512271,
+            "nar": 0.08154172256512271,
+            "mdd": 0.07474630854531716,
+            "calmar": 1.0909130384102597
+          },
+          "nar_excess": 0.15689005960407187,
+          "calmar_excess": 0.8216012358991265
+        },
+        {
+          "window_id": "R17",
+          "start": "2023-06-06",
+          "end": "2024-06-05",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.12448359495809336,
+            "nar": 0.12448359495809291,
+            "mdd": 0.12466928240590136,
+            "calmar": 0.9985105597447502
+          },
+          "reference": {
+            "period_return": 0.06792062189287829,
+            "nar": 0.06792062189287806,
+            "mdd": 0.0747463085453175,
+            "calmar": 0.9086819565370091
+          },
+          "nar_excess": 0.05656297306521485,
+          "calmar_excess": 0.08982860320774111
+        },
+        {
+          "window_id": "R18",
+          "start": "2023-07-07",
+          "end": "2024-07-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.14196895342843563,
+            "nar": 0.1419689534284354,
+            "mdd": 0.12466928240590103,
+            "calmar": 1.1387645030811175
+          },
+          "reference": {
+            "period_return": 0.04663704766594012,
+            "nar": 0.0466370476659399,
+            "mdd": 0.0747463085453175,
+            "calmar": 0.623937804736733
+          },
+          "nar_excess": 0.0953319057624955,
+          "calmar_excess": 0.5148266983443845
+        },
+        {
+          "window_id": "R19",
+          "start": "2023-08-07",
+          "end": "2024-08-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.12967747469113755,
+            "nar": 0.12967747469113777,
+            "mdd": 0.12466928240590125,
+            "calmar": 1.0401718225098202
+          },
+          "reference": {
+            "period_return": 0.013962973846403548,
+            "nar": 0.01396297384640377,
+            "mdd": 0.07474630854531739,
+            "calmar": 0.18680486191419424
+          },
+          "nar_excess": 0.115714500844734,
+          "calmar_excess": 0.853366960595626
+        },
+        {
+          "window_id": "R20",
+          "start": "2023-09-06",
+          "end": "2024-09-05",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.08400868441181197,
+            "nar": 0.0840086844118122,
+            "mdd": 0.12466928240590114,
+            "calmar": 0.6738523138225403
+          },
+          "reference": {
+            "period_return": 0.04497760193748124,
+            "nar": 0.04497760193748124,
+            "mdd": 0.0747463085453175,
+            "calmar": 0.6017367655047745
+          },
+          "nar_excess": 0.03903108247433096,
+          "calmar_excess": 0.07211554831776579
+        },
+        {
+          "window_id": "R21",
+          "start": "2023-10-05",
+          "end": "2024-10-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.11358001876808332,
+            "nar": 0.11358001876808332,
+            "mdd": 0.12466928240590114,
+            "calmar": 0.9110505537225029
+          },
+          "reference": {
+            "period_return": 0.056194208222003716,
+            "nar": 0.05619420822200327,
+            "mdd": 0.07929744694907337,
+            "calmar": 0.7086509135419262
+          },
+          "nar_excess": 0.05738581054608005,
+          "calmar_excess": 0.20239964018057666
+        },
+        {
+          "window_id": "R22",
+          "start": "2023-11-03",
+          "end": "2024-11-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.08399198881167536,
+            "nar": 0.08399198881167558,
+            "mdd": 0.12466928240590092,
+            "calmar": 0.6737183947061848
+          },
+          "reference": {
+            "period_return": 0.00952080322866422,
+            "nar": 0.009520803228663555,
+            "mdd": 0.0792974469490737,
+            "calmar": 0.1200644358043203
+          },
+          "nar_excess": 0.07447118558301202,
+          "calmar_excess": 0.5536539589018645
+        },
+        {
+          "window_id": "R23",
+          "start": "2023-12-05",
+          "end": "2024-12-04",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.19223701133737991,
+            "nar": 0.19223701133738036,
+            "mdd": 0.12466928240590092,
+            "calmar": 1.541975758803929
+          },
+          "reference": {
+            "period_return": 0.11116665743701826,
+            "nar": 0.11116665743701781,
+            "mdd": 0.07929744694907404,
+            "calmar": 1.4018945339868336
+          },
+          "nar_excess": 0.08107035390036255,
+          "calmar_excess": 0.14008122481709528
+        },
+        {
+          "window_id": "R24",
+          "start": "2024-01-05",
+          "end": "2025-01-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.2641497203101568,
+            "nar": 0.26414972031015727,
+            "mdd": 0.12466928240590147,
+            "calmar": 2.118803567426752
+          },
+          "reference": {
+            "period_return": 0.1774144088041325,
+            "nar": 0.17741440880413206,
+            "mdd": 0.07929744694907426,
+            "calmar": 2.237328131359256
+          },
+          "nar_excess": 0.0867353115060252,
+          "calmar_excess": -0.1185245639325041
+        },
+        {
+          "window_id": "R25",
+          "start": "2024-02-06",
+          "end": "2025-02-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.2503413335019702,
+            "nar": 0.2503413335019704,
+            "mdd": 0.12466928240590125,
+            "calmar": 2.00804343035282
+          },
+          "reference": {
+            "period_return": 0.2418926620276347,
+            "nar": 0.24189266202763426,
+            "mdd": 0.07929744694907392,
+            "calmar": 3.0504470362454614
+          },
+          "nar_excess": 0.008448671474336145,
+          "calmar_excess": -1.0424036058926416
+        },
+        {
+          "window_id": "R26",
+          "start": "2024-03-07",
+          "end": "2025-03-10",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.215916138268597,
+            "nar": 0.215916138268597,
+            "mdd": 0.12466928240590125,
+            "calmar": 1.7319112944406951
+          },
+          "reference": {
+            "period_return": 0.2330658823098961,
+            "nar": 0.23306588230989522,
+            "mdd": 0.0792974469490737,
+            "calmar": 2.9391347549887006
+          },
+          "nar_excess": -0.01714974404129821,
+          "calmar_excess": -1.2072234605480054
+        },
+        {
+          "window_id": "R27",
+          "start": "2024-04-08",
+          "end": "2025-04-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.23418036590718905,
+            "nar": 0.23418036590718927,
+            "mdd": 0.11080479448515901,
+            "calmar": 2.1134497563510664
+          },
+          "reference": {
+            "period_return": 0.19563634163506594,
+            "nar": 0.19563634163506505,
+            "mdd": 0.07929744694907381,
+            "calmar": 2.467120306668966
+          },
+          "nar_excess": 0.03854402427212422,
+          "calmar_excess": -0.35367055031789985
+        },
+        {
+          "window_id": "R28",
+          "start": "2024-05-07",
+          "end": "2025-05-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.625670985528221,
+            "nar": 0.6256709855282205,
+            "mdd": 0.10453005811995875,
+            "calmar": 5.985560486441137
+          },
+          "reference": {
+            "period_return": 0.35839658826855314,
+            "nar": 0.3583965882685518,
+            "mdd": 0.07929744694907426,
+            "calmar": 4.519648514014811
+          },
+          "nar_excess": 0.26727439725966873,
+          "calmar_excess": 1.4659119724263254
+        },
+        {
+          "window_id": "R29",
+          "start": "2024-06-06",
+          "end": "2025-06-09",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.8816712737057575,
+            "nar": 0.8816712737057577,
+            "mdd": 0.10453005811995864,
+            "calmar": 8.434619568411147
+          },
+          "reference": {
+            "period_return": 0.3981486304169939,
+            "nar": 0.39814863041699233,
+            "mdd": 0.07223347492708398,
+            "calmar": 5.511968388879299
+          },
+          "nar_excess": 0.4835226432887654,
+          "calmar_excess": 2.922651179531848
+        },
+        {
+          "window_id": "R30",
+          "start": "2024-07-09",
+          "end": "2025-07-10",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.7883687090509401,
+            "nar": 0.7883687090509404,
+            "mdd": 0.10453005811995864,
+            "calmar": 7.542028802339408
+          },
+          "reference": {
+            "period_return": 0.4568990243511486,
+            "nar": 0.45689902435114704,
+            "mdd": 0.07223347492708398,
+            "calmar": 6.325308657964515
+          },
+          "nar_excess": 0.3314696846997933,
+          "calmar_excess": 1.2167201443748938
+        },
+        {
+          "window_id": "R31",
+          "start": "2024-08-07",
+          "end": "2025-08-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 0.9857300041766526,
+            "nar": 0.9857300041766524,
+            "mdd": 0.10453005811995886,
+            "calmar": 9.430110552941883
+          },
+          "reference": {
+            "period_return": 0.5488234913145045,
+            "nar": 0.5488234913145025,
+            "mdd": 0.07223347492708398,
+            "calmar": 7.597910689863832
+          },
+          "nar_excess": 0.4369065128621499,
+          "calmar_excess": 1.8321998630780518
+        },
+        {
+          "window_id": "R32",
+          "start": "2024-09-06",
+          "end": "2025-09-09",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.2756767139550589,
+            "nar": 1.275676713955058,
+            "mdd": 0.10453005811995875,
+            "calmar": 12.20392236356638
+          },
+          "reference": {
+            "period_return": 0.7692766623170899,
+            "nar": 0.7692766623170875,
+            "mdd": 0.07223347492708398,
+            "calmar": 10.64986369676432
+          },
+          "nar_excess": 0.5064000516379705,
+          "calmar_excess": 1.5540586668020584
+        },
+        {
+          "window_id": "R33",
+          "start": "2024-10-07",
+          "end": "2025-10-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.3051921499058694,
+            "nar": 1.305192149905869,
+            "mdd": 0.10453005811995875,
+            "calmar": 12.486285508499668
+          },
+          "reference": {
+            "period_return": 0.9148789082063173,
+            "nar": 0.9148789082063153,
+            "mdd": 0.07223347492708376,
+            "calmar": 12.665580731507681
+          },
+          "nar_excess": 0.3903132416995536,
+          "calmar_excess": -0.1792952230080136
+        },
+        {
+          "window_id": "R34",
+          "start": "2024-11-05",
+          "end": "2025-11-06",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.350287464263991,
+            "nar": 1.350287464263991,
+            "mdd": 0.10453005811995875,
+            "calmar": 12.917695527485506
+          },
+          "reference": {
+            "period_return": 1.019800090116532,
+            "nar": 1.0198000901165312,
+            "mdd": 0.07223347492708387,
+            "calmar": 14.118109244307698
+          },
+          "nar_excess": 0.3304873741474599,
+          "calmar_excess": -1.200413716822192
+        },
+        {
+          "window_id": "R35",
+          "start": "2024-12-05",
+          "end": "2025-12-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.2742213693424755,
+            "nar": 1.274221369342476,
+            "mdd": 0.1178241801478086,
+            "calmar": 10.814599921204502
+          },
+          "reference": {
+            "period_return": 0.7889481197564554,
+            "nar": 0.788948119756455,
+            "mdd": 0.07223347492708387,
+            "calmar": 10.922195291765474
+          },
+          "nar_excess": 0.485273249586021,
+          "calmar_excess": -0.10759537056097201
+        },
+        {
+          "window_id": "R36",
+          "start": "2025-01-07",
+          "end": "2026-01-08",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.6205125108213219,
+            "nar": 1.6205125108213219,
+            "mdd": 0.11782418014780838,
+            "calmar": 13.7536497923297
+          },
+          "reference": {
+            "period_return": 0.783131906063272,
+            "nar": 0.7831319060632722,
+            "mdd": 0.07223347492708376,
+            "calmar": 10.841675647666216
+          },
+          "nar_excess": 0.8373806047580497,
+          "calmar_excess": 2.9119741446634837
+        },
+        {
+          "window_id": "R37",
+          "start": "2025-02-07",
+          "end": "2026-02-09",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.484056432619456,
+            "nar": 1.484056432619456,
+            "mdd": 0.1178241801478086,
+            "calmar": 12.595516733133474
+          },
+          "reference": {
+            "period_return": 0.7931572695320732,
+            "nar": 0.7931572695320734,
+            "mdd": 0.07223347492708376,
+            "calmar": 10.98046674803791
+          },
+          "nar_excess": 0.6908991630873826,
+          "calmar_excess": 1.6150499850955633
+        },
+        {
+          "window_id": "R38",
+          "start": "2025-03-11",
+          "end": "2026-03-11",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.7458534581442167,
+            "nar": 1.745853458144217,
+            "mdd": 0.12513440158503963,
+            "calmar": 13.951826484404123
+          },
+          "reference": {
+            "period_return": 1.019212887309998,
+            "nar": 1.019212887309998,
+            "mdd": 0.05925659141904005,
+            "calmar": 17.19999181361129
+          },
+          "nar_excess": 0.7266405708342192,
+          "calmar_excess": -3.2481653292071684
+        },
+        {
+          "window_id": "R39",
+          "start": "2025-04-09",
+          "end": "2026-04-10",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 2.216887282334339,
+            "nar": 2.2168872823343384,
+            "mdd": 0.12513440158503986,
+            "calmar": 17.71604973735195
+          },
+          "reference": {
+            "period_return": 1.1844238583377473,
+            "nar": 1.1844238583377469,
+            "mdd": 0.07599530191099313,
+            "calmar": 15.585487899304123
+          },
+          "nar_excess": 1.0324634239965915,
+          "calmar_excess": 2.130561838047825
+        },
+        {
+          "window_id": "R40",
+          "start": "2025-05-09",
+          "end": "2026-05-11",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 1.665788725517651,
+            "nar": 1.6657887255176518,
+            "mdd": 0.12513440158503986,
+            "calmar": 13.31199657662167
+          },
+          "reference": {
+            "period_return": 0.8941699353710875,
+            "nar": 0.8941699353710868,
+            "mdd": 0.07599530191099313,
+            "calmar": 11.766121232314498
+          },
+          "nar_excess": 0.771618790146565,
+          "calmar_excess": 1.5458753443071718
+        },
+        {
+          "window_id": "R41",
+          "start": "2025-06-10",
+          "end": "2026-06-10",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 2.1421331846612284,
+            "nar": 2.1421331846612284,
+            "mdd": 0.12513440158503975,
+            "calmar": 17.118659277764333
+          },
+          "reference": {
+            "period_return": 1.0815053580387,
+            "nar": 1.0815053580386995,
+            "mdd": 0.07599530191099313,
+            "calmar": 14.231213388761523
+          },
+          "nar_excess": 1.0606278266225289,
+          "calmar_excess": 2.8874458890028105
+        },
+        {
+          "window_id": "R42",
+          "start": "2025-07-11",
+          "end": "2026-07-13",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 2.733644187783238,
+            "nar": 2.73364418778324,
+            "mdd": 0.12513440158503963,
+            "calmar": 21.845664766499024
+          },
+          "reference": {
+            "period_return": 1.3699323269080486,
+            "nar": 1.3699323269080481,
+            "mdd": 0.07599530191099324,
+            "calmar": 18.026539699947925
+          },
+          "nar_excess": 1.363711860875192,
+          "calmar_excess": 3.8191250665510985
+        },
+        {
+          "window_id": "R43",
+          "start": "2025-08-11",
+          "end": "2026-08-11",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 2.8689292107354856,
+            "nar": 2.868929210735488,
+            "mdd": 0.12513440158503963,
+            "calmar": 22.92678251860103
+          },
+          "reference": {
+            "period_return": 1.5313089217107052,
+            "nar": 1.5313089217107057,
+            "mdd": 0.09069045768364647,
+            "calmar": 16.885005995364327
+          },
+          "nar_excess": 1.3376202890247821,
+          "calmar_excess": 6.0417765232367024
+        },
+        {
+          "window_id": "R44",
+          "start": "2025-09-10",
+          "end": "2026-09-10",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 2.9872623541214054,
+            "nar": 2.987262354121408,
+            "mdd": 0.12513440158503986,
+            "calmar": 23.872430892565543
+          },
+          "reference": {
+            "period_return": 1.458759642468464,
+            "nar": 1.4587596424684635,
+            "mdd": 0.09069045768364659,
+            "calmar": 16.085040033175495
+          },
+          "nar_excess": 1.5285027116529446,
+          "calmar_excess": 7.787390859390047
+        },
+        {
+          "window_id": "R45",
+          "start": "2025-10-09",
+          "end": "2026-10-09",
+          "sessions": 252,
+          "strategy": {
+            "period_return": 3.522940765045014,
+            "nar": 3.522940765045016,
+            "mdd": 0.12513440158503986,
+            "calmar": 28.15325538317988
+          },
+          "reference": {
+            "period_return": 1.2782076740403134,
+            "nar": 1.278207674040313,
+            "mdd": 0.09069045768364647,
+            "calmar": 14.094180431849365
+          },
+          "nar_excess": 2.244733091004703,
+          "calmar_excess": 14.059074951330514
+        }
+      ],
+      "below_reference_rolling_count": {
+        "nar_excess": 2,
+        "calmar_excess": 10
+      },
+      "consecutive_lagging_rolling_windows": {
+        "nar_excess": {
+          "maximum_count": 1,
+          "segments": [
+            {
+              "count": 1,
+              "first_window": "R11",
+              "last_window": "R11",
+              "first_start": "2022-12-02",
+              "last_start": "2022-12-02",
+              "last_end": "2023-12-04"
+            },
+            {
+              "count": 1,
+              "first_window": "R26",
+              "last_window": "R26",
+              "first_start": "2024-03-07",
+              "last_start": "2024-03-07",
+              "last_end": "2025-03-10"
+            }
+          ]
+        },
+        "calmar_excess": {
+          "maximum_count": 4,
+          "segments": [
+            {
+              "count": 2,
+              "first_window": "R10",
+              "last_window": "R11",
+              "first_start": "2022-11-02",
+              "last_start": "2022-12-02",
+              "last_end": "2023-12-04"
+            },
+            {
+              "count": 4,
+              "first_window": "R24",
+              "last_window": "R27",
+              "first_start": "2024-01-05",
+              "last_start": "2024-04-08",
+              "last_end": "2025-04-08"
+            },
+            {
+              "count": 3,
+              "first_window": "R33",
+              "last_window": "R35",
+              "first_start": "2024-10-07",
+              "last_start": "2024-12-05",
+              "last_end": "2025-12-08"
+            },
+            {
+              "count": 1,
+              "first_window": "R38",
+              "last_window": "R38",
+              "first_start": "2025-03-11",
+              "last_start": "2025-03-11",
+              "last_end": "2026-03-11"
+            }
+          ]
+        }
+      },
+      "consecutive_lagging_calendar_years": {
+        "nar_excess": {
+          "maximum_count": 0,
+          "segments": []
+        },
+        "calmar_excess": {
+          "maximum_count": 1,
+          "segments": [
+            {
+              "count": 1,
+              "first_window": "2025",
+              "last_window": "2025",
+              "first_start": "2025-01-02",
+              "last_start": "2025-01-02",
+              "last_end": "2025-12-31"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Fixed reference daily execution and current S019 30m execution retain their respective original rules.",
+    "Same 1212 sessions, initial equity, fee and HFQ research convention; comparison is an auxiliary temporal diagnostic.",
+    "No S018 candidate is added to the S019 NAR ranking or original twelve targets.",
+    "Calendar/rolling slices inherit the continuous account; 2026 ends 2026-10-30; overlapping windows are dependent.",
+    "Separate NAR and Calmar lag runs use strict negative differences; zero terminates a run."
+  ]
+}

@@ -1,0 +1,3197 @@
+{
+  "schema_version": 1,
+  "method": "Read-only psutil operating-system process inspection and existing runner JSON snapshots; no replay execution.",
+  "interpreter_version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "logical_cpu_count": 16,
+  "windows_process_pool_limit": 61,
+  "stdlib_process_source_sha256": "86740b978bb5b56c9da50a23e38872154688ef57dcf30214eeeb4064cc79118a",
+  "stdlib_process_source": "Lib/concurrent/futures/process.py",
+  "stdlib_limit_explanation": "Windows WaitForMultipleObjects allows at most 63 objects; two handles are reserved for result queue reader and thread wakeup reader, leaving 61 workers.",
+  "configured_resources": {
+    "workers": 61,
+    "native_threads": 1,
+    "batch_size": 61,
+    "random_seed": 19,
+    "logical_cpu_count_observed": 16,
+    "pool_limit_basis": "Root verified Windows ProcessPoolExecutor maximum 61"
+  },
+  "worker_identification": "Recursive descendants of verified runner PID 32604 whose argv contains --multiprocessing-fork.",
+  "native_thread_verification": "Configured native_threads=1 passed through public ExecutionResources; _execution_session._timed_task uses threadpool_limits. OS thread counts include runtime threads and do not equal native compute limits.",
+  "rss_interpretation": "Point-in-time resident working sets; sum can include shared pages and is not a private-memory or peak measurement.",
+  "throughput_interpretation": "Completed batch timings include evaluate_many and publication/materialization; preparation and incomplete current batch are excluded.",
+  "observations": [
+    {
+      "observed_utc": "2026-11-11T05:24:26.803874+00:00",
+      "main_process": {
+        "pid": 32604,
+        "parent_pid": 22248,
+        "rss_bytes": 845860864,
+        "cpu_seconds": 602.65625,
+        "os_thread_count": 3,
+        "created_utc": "2026-11-11T05:14:17.674619+00:00"
+      },
+      "descendant_count": 0,
+      "actual_worker_count": 0,
+      "workers": [],
+      "worker_rss_bytes_sum": 0,
+      "ram_total_bytes": 137263955968,
+      "ram_available_bytes": 109354422272,
+      "ram_used_percent": 20.3,
+      "attempt": {
+        "attempt": 1,
+        "started_utc": "2026-11-11T05:15:11.527882+00:00",
+        "status": "RUNNING",
+        "statistics_complete": true,
+        "equity_statistics": {
+          "input_snapshots": 1,
+          "candidate_runs": 0,
+          "benchmark_runs": 0,
+          "account_timings": []
+        },
+        "elapsed_seconds": 162.42648409999993,
+        "completed_at_start": 0,
+        "error": null,
+        "resources": {
+          "workers": 61,
+          "native_threads": 1,
+          "batch_size": 61,
+          "random_seed": 19,
+          "logical_cpu_count_observed": 16,
+          "pool_limit_basis": "Root verified Windows ProcessPoolExecutor maximum 61"
+        },
+        "execution_stats": {
+          "elapsed_seconds": 162.4265346000002,
+          "pool_starts": 0,
+          "submitted": 0,
+          "completed": 0,
+          "failed": 0,
+          "unknown": 0,
+          "reused_results": 0,
+          "reused_publications": 0,
+          "phase_wall_seconds": [
+            [
+              "PREPARE",
+              91.74761900000021
+            ]
+          ],
+          "worker_seconds": []
+        }
+      },
+      "results_status": "RUNNING",
+      "completed_scenario_rows": 4,
+      "reused_rows": 4,
+      "completed_batch_count": 0,
+      "completed_batch_seconds_sum": 0,
+      "successful_new_accounts_in_complete_batches": 0,
+      "completed_batch_accounts_per_minute": null,
+      "completed_batches": []
+    },
+    {
+      "observed_utc": "2026-11-11T05:30:55.968028+00:00",
+      "main_process": {
+        "pid": 32604,
+        "parent_pid": 22248,
+        "rss_bytes": 874385408,
+        "cpu_seconds": 990.25,
+        "os_thread_count": 1,
+        "created_utc": "2026-11-11T05:14:17.674619+00:00"
+      },
+      "descendant_count": 0,
+      "actual_worker_count": 0,
+      "workers": [],
+      "worker_rss_bytes_sum": 0,
+      "ram_total_bytes": 137263955968,
+      "ram_available_bytes": 109379805184,
+      "ram_used_percent": 20.3,
+      "attempt": {
+        "attempt": 1,
+        "started_utc": "2026-11-11T05:15:11.527882+00:00",
+        "status": "RUNNING",
+        "statistics_complete": true,
+        "equity_statistics": {
+          "input_snapshots": 1,
+          "candidate_runs": 0,
+          "benchmark_runs": 0,
+          "account_timings": []
+        },
+        "elapsed_seconds": 574.2484125999999,
+        "completed_at_start": 0,
+        "error": null,
+        "resources": {
+          "workers": 61,
+          "native_threads": 1,
+          "batch_size": 61,
+          "random_seed": 19,
+          "logical_cpu_count_observed": 16,
+          "pool_limit_basis": "Root verified Windows ProcessPoolExecutor maximum 61"
+        },
+        "execution_stats": {
+          "elapsed_seconds": 574.2484261,
+          "pool_starts": 0,
+          "submitted": 0,
+          "completed": 0,
+          "failed": 0,
+          "unknown": 0,
+          "reused_results": 0,
+          "reused_publications": 0,
+          "phase_wall_seconds": [
+            [
+              "PREPARE",
+              344.6478711999921
+            ]
+          ],
+          "worker_seconds": []
+        }
+      },
+      "results_status": "RUNNING",
+      "completed_scenario_rows": 6,
+      "reused_rows": 6,
+      "completed_batch_count": 0,
+      "completed_batch_seconds_sum": 0,
+      "successful_new_accounts_in_complete_batches": 0,
+      "completed_batch_accounts_per_minute": null,
+      "completed_batches": []
+    },
+    {
+      "observed_utc": "2026-11-11T05:32:16.293624+00:00",
+      "main_process": {
+        "pid": 32604,
+        "parent_pid": 22248,
+        "rss_bytes": 2537824256,
+        "cpu_seconds": 1053.234375,
+        "os_thread_count": 3,
+        "created_utc": "2026-11-11T05:14:17.674619+00:00"
+      },
+      "descendant_count": 61,
+      "actual_worker_count": 61,
+      "workers": [
+        {
+          "pid": 1440,
+          "parent_pid": 32604,
+          "rss_bytes": 165851136,
+          "cpu_seconds": 4.09375,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:43.230856+00:00"
+        },
+        {
+          "pid": 1600,
+          "parent_pid": 32604,
+          "rss_bytes": 288665600,
+          "cpu_seconds": 5.65625,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.834611+00:00"
+        },
+        {
+          "pid": 2396,
+          "parent_pid": 32604,
+          "rss_bytes": 166596608,
+          "cpu_seconds": 3.9375,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:45.464047+00:00"
+        },
+        {
+          "pid": 2848,
+          "parent_pid": 32604,
+          "rss_bytes": 166776832,
+          "cpu_seconds": 3.484375,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:42.444683+00:00"
+        },
+        {
+          "pid": 3528,
+          "parent_pid": 32604,
+          "rss_bytes": 166010880,
+          "cpu_seconds": 3.921875,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:45.218832+00:00"
+        },
+        {
+          "pid": 3620,
+          "parent_pid": 32604,
+          "rss_bytes": 322310144,
+          "cpu_seconds": 17.484375,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.920917+00:00"
+        },
+        {
+          "pid": 5424,
+          "parent_pid": 32604,
+          "rss_bytes": 166686720,
+          "cpu_seconds": 4.0,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:42.478201+00:00"
+        },
+        {
+          "pid": 5468,
+          "parent_pid": 32604,
+          "rss_bytes": 166391808,
+          "cpu_seconds": 3.84375,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.559250+00:00"
+        },
+        {
+          "pid": 5488,
+          "parent_pid": 32604,
+          "rss_bytes": 166723584,
+          "cpu_seconds": 4.046875,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:46.338046+00:00"
+        },
+        {
+          "pid": 5676,
+          "parent_pid": 32604,
+          "rss_bytes": 166035456,
+          "cpu_seconds": 3.796875,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:43.871549+00:00"
+        },
+        {
+          "pid": 5784,
+          "parent_pid": 32604,
+          "rss_bytes": 325570560,
+          "cpu_seconds": 18.78125,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.876904+00:00"
+        },
+        {
+          "pid": 5820,
+          "parent_pid": 32604,
+          "rss_bytes": 310632448,
+          "cpu_seconds": 11.671875,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.987017+00:00"
+        },
+        {
+          "pid": 6028,
+          "parent_pid": 32604,
+          "rss_bytes": 166469632,
+          "cpu_seconds": 4.0,
+          "os_thread_count": 8,
+          "created_utc": "2026-11-11T05:31:45.684056+00:00"
+        },
+        {
+          "pid": 6460,
+          "parent_pid": 32604,
+          "rss_bytes": 308436992,
+          "cpu_seconds": 9.59375,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.899341+00:00"
+        },
+        {
+          "pid": 7972,
+          "parent_pid": 32604,
+          "rss_bytes": 166780928,
+          "cpu_seconds": 3.890625,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:44.860734+00:00"
+        },
+        {
+          "pid": 9596,
+          "parent_pid": 32604,
+          "rss_bytes": 365649920,
+          "cpu_seconds": 25.421875,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.393698+00:00"
+        },
+        {
+          "pid": 9716,
+          "parent_pid": 32604,
+          "rss_bytes": 166268928,
+          "cpu_seconds": 3.8125,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:42.267477+00:00"
+        },
+        {
+          "pid": 9748,
+          "parent_pid": 32604,
+          "rss_bytes": 166219776,
+          "cpu_seconds": 3.890625,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:44.706836+00:00"
+        },
+        {
+          "pid": 10264,
+          "parent_pid": 32604,
+          "rss_bytes": 166412288,
+          "cpu_seconds": 3.625,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:42.512569+00:00"
+        },
+        {
+          "pid": 11208,
+          "parent_pid": 32604,
+          "rss_bytes": 341536768,
+          "cpu_seconds": 25.078125,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.269851+00:00"
+        },
+        {
+          "pid": 11276,
+          "parent_pid": 32604,
+          "rss_bytes": 166395904,
+          "cpu_seconds": 3.71875,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:45.019583+00:00"
+        },
+        {
+          "pid": 11996,
+          "parent_pid": 32604,
+          "rss_bytes": 342007808,
+          "cpu_seconds": 24.890625,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.258805+00:00"
+        },
+        {
+          "pid": 12320,
+          "parent_pid": 32604,
+          "rss_bytes": 166883328,
+          "cpu_seconds": 3.9375,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:44.657727+00:00"
+        },
+        {
+          "pid": 12332,
+          "parent_pid": 32604,
+          "rss_bytes": 166723584,
+          "cpu_seconds": 4.0625,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:46.956075+00:00"
+        },
+        {
+          "pid": 12356,
+          "parent_pid": 32604,
+          "rss_bytes": 166473728,
+          "cpu_seconds": 4.0,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:43.246691+00:00"
+        },
+        {
+          "pid": 12504,
+          "parent_pid": 32604,
+          "rss_bytes": 166227968,
+          "cpu_seconds": 3.890625,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.838974+00:00"
+        },
+        {
+          "pid": 13124,
+          "parent_pid": 32604,
+          "rss_bytes": 166273024,
+          "cpu_seconds": 3.859375,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.942189+00:00"
+        },
+        {
+          "pid": 14288,
+          "parent_pid": 32604,
+          "rss_bytes": 166223872,
+          "cpu_seconds": 3.828125,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.955326+00:00"
+        },
+        {
+          "pid": 15332,
+          "parent_pid": 32604,
+          "rss_bytes": 166420480,
+          "cpu_seconds": 3.65625,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:46.964688+00:00"
+        },
+        {
+          "pid": 15728,
+          "parent_pid": 32604,
+          "rss_bytes": 166727680,
+          "cpu_seconds": 3.734375,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:45.106303+00:00"
+        },
+        {
+          "pid": 16004,
+          "parent_pid": 32604,
+          "rss_bytes": 166535168,
+          "cpu_seconds": 3.875,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:45.546011+00:00"
+        },
+        {
+          "pid": 16496,
+          "parent_pid": 32604,
+          "rss_bytes": 335187968,
+          "cpu_seconds": 22.34375,
+          "os_thread_count": 8,
+          "created_utc": "2026-11-11T05:31:41.911915+00:00"
+        },
+        {
+          "pid": 17016,
+          "parent_pid": 32604,
+          "rss_bytes": 166572032,
+          "cpu_seconds": 3.6875,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:42.520022+00:00"
+        },
+        {
+          "pid": 17160,
+          "parent_pid": 32604,
+          "rss_bytes": 166625280,
+          "cpu_seconds": 3.84375,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:45.357299+00:00"
+        },
+        {
+          "pid": 17276,
+          "parent_pid": 32604,
+          "rss_bytes": 166924288,
+          "cpu_seconds": 3.796875,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.843736+00:00"
+        },
+        {
+          "pid": 17308,
+          "parent_pid": 32604,
+          "rss_bytes": 329265152,
+          "cpu_seconds": 20.796875,
+          "os_thread_count": 6,
+          "created_utc": "2026-11-11T05:31:42.258629+00:00"
+        },
+        {
+          "pid": 17372,
+          "parent_pid": 32604,
+          "rss_bytes": 318468096,
+          "cpu_seconds": 15.359375,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.861869+00:00"
+        },
+        {
+          "pid": 17380,
+          "parent_pid": 32604,
+          "rss_bytes": 166551552,
+          "cpu_seconds": 3.765625,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:42.862938+00:00"
+        },
+        {
+          "pid": 18664,
+          "parent_pid": 32604,
+          "rss_bytes": 309022720,
+          "cpu_seconds": 10.609375,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.869517+00:00"
+        },
+        {
+          "pid": 22380,
+          "parent_pid": 32604,
+          "rss_bytes": 166547456,
+          "cpu_seconds": 3.875,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:46.163642+00:00"
+        },
+        {
+          "pid": 23116,
+          "parent_pid": 32604,
+          "rss_bytes": 288055296,
+          "cpu_seconds": 5.03125,
+          "os_thread_count": 6,
+          "created_utc": "2026-11-11T05:31:41.973547+00:00"
+        },
+        {
+          "pid": 23560,
+          "parent_pid": 32604,
+          "rss_bytes": 166600704,
+          "cpu_seconds": 3.5625,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.854855+00:00"
+        },
+        {
+          "pid": 24528,
+          "parent_pid": 32604,
+          "rss_bytes": 166461440,
+          "cpu_seconds": 3.78125,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:46.242899+00:00"
+        },
+        {
+          "pid": 27608,
+          "parent_pid": 32604,
+          "rss_bytes": 166199296,
+          "cpu_seconds": 3.828125,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.935611+00:00"
+        },
+        {
+          "pid": 27720,
+          "parent_pid": 32604,
+          "rss_bytes": 166182912,
+          "cpu_seconds": 3.8125,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:44.633393+00:00"
+        },
+        {
+          "pid": 29268,
+          "parent_pid": 32604,
+          "rss_bytes": 166486016,
+          "cpu_seconds": 3.78125,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:45.556784+00:00"
+        },
+        {
+          "pid": 31624,
+          "parent_pid": 32604,
+          "rss_bytes": 166285312,
+          "cpu_seconds": 4.1875,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:46.072277+00:00"
+        },
+        {
+          "pid": 31864,
+          "parent_pid": 32604,
+          "rss_bytes": 166113280,
+          "cpu_seconds": 3.59375,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:45.884049+00:00"
+        },
+        {
+          "pid": 31868,
+          "parent_pid": 32604,
+          "rss_bytes": 323661824,
+          "cpu_seconds": 18.390625,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.928058+00:00"
+        },
+        {
+          "pid": 31888,
+          "parent_pid": 32604,
+          "rss_bytes": 166301696,
+          "cpu_seconds": 3.84375,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:43.887378+00:00"
+        },
+        {
+          "pid": 32668,
+          "parent_pid": 32604,
+          "rss_bytes": 166510592,
+          "cpu_seconds": 3.96875,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:44.679778+00:00"
+        },
+        {
+          "pid": 33028,
+          "parent_pid": 32604,
+          "rss_bytes": 166563840,
+          "cpu_seconds": 3.796875,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.848893+00:00"
+        },
+        {
+          "pid": 33600,
+          "parent_pid": 32604,
+          "rss_bytes": 166760448,
+          "cpu_seconds": 3.890625,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.885054+00:00"
+        },
+        {
+          "pid": 33648,
+          "parent_pid": 32604,
+          "rss_bytes": 330715136,
+          "cpu_seconds": 21.265625,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.829511+00:00"
+        },
+        {
+          "pid": 33732,
+          "parent_pid": 32604,
+          "rss_bytes": 166432768,
+          "cpu_seconds": 3.984375,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:42.882076+00:00"
+        },
+        {
+          "pid": 33944,
+          "parent_pid": 32604,
+          "rss_bytes": 166375424,
+          "cpu_seconds": 3.75,
+          "os_thread_count": 6,
+          "created_utc": "2026-11-11T05:31:41.995250+00:00"
+        },
+        {
+          "pid": 34304,
+          "parent_pid": 32604,
+          "rss_bytes": 166359040,
+          "cpu_seconds": 3.953125,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:45.764356+00:00"
+        },
+        {
+          "pid": 34632,
+          "parent_pid": 32604,
+          "rss_bytes": 166686720,
+          "cpu_seconds": 3.765625,
+          "os_thread_count": 8,
+          "created_utc": "2026-11-11T05:31:42.403699+00:00"
+        },
+        {
+          "pid": 34648,
+          "parent_pid": 32604,
+          "rss_bytes": 166240256,
+          "cpu_seconds": 3.734375,
+          "os_thread_count": 6,
+          "created_utc": "2026-11-11T05:31:42.426005+00:00"
+        },
+        {
+          "pid": 34680,
+          "parent_pid": 32604,
+          "rss_bytes": 166084608,
+          "cpu_seconds": 3.6875,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:41.967013+00:00"
+        },
+        {
+          "pid": 34728,
+          "parent_pid": 32604,
+          "rss_bytes": 166371328,
+          "cpu_seconds": 3.59375,
+          "os_thread_count": 7,
+          "created_utc": "2026-11-11T05:31:46.327685+00:00"
+        }
+      ],
+      "worker_rss_bytes_sum": 12495532032,
+      "ram_total_bytes": 137263955968,
+      "ram_available_bytes": 97581350912,
+      "ram_used_percent": 28.9,
+      "attempt": {
+        "attempt": 1,
+        "started_utc": "2026-11-11T05:15:11.527882+00:00",
+        "status": "RUNNING",
+        "statistics_complete": true,
+        "equity_statistics": {
+          "input_snapshots": 1,
+          "candidate_runs": 0,
+          "benchmark_runs": 0,
+          "account_timings": []
+        },
+        "elapsed_seconds": 967.9192858000001,
+        "completed_at_start": 0,
+        "error": null,
+        "resources": {
+          "workers": 61,
+          "native_threads": 1,
+          "batch_size": 61,
+          "random_seed": 19,
+          "logical_cpu_count_observed": 16,
+          "pool_limit_basis": "Root verified Windows ProcessPoolExecutor maximum 61"
+        },
+        "execution_stats": {
+          "elapsed_seconds": 967.9193063000002,
+          "pool_starts": 0,
+          "submitted": 0,
+          "completed": 0,
+          "failed": 0,
+          "unknown": 0,
+          "reused_results": 0,
+          "reused_publications": 0,
+          "phase_wall_seconds": [
+            [
+              "PREPARE",
+              594.6571557999978
+            ]
+          ],
+          "worker_seconds": []
+        }
+      },
+      "results_status": "RUNNING",
+      "completed_scenario_rows": 6,
+      "reused_rows": 6,
+      "completed_batch_count": 0,
+      "completed_batch_seconds_sum": 0,
+      "successful_new_accounts_in_complete_batches": 0,
+      "completed_batch_accounts_per_minute": null,
+      "completed_batches": []
+    },
+    {
+      "observed_utc": "2026-11-11T05:33:47.834961+00:00",
+      "main_process": {
+        "pid": 32604,
+        "parent_pid": 22248,
+        "rss_bytes": 2605604864,
+        "cpu_seconds": 1074.296875,
+        "os_thread_count": 4,
+        "created_utc": "2026-11-11T05:14:17.674619+00:00"
+      },
+      "descendant_count": 61,
+      "actual_worker_count": 61,
+      "workers": [
+        {
+          "pid": 1440,
+          "parent_pid": 32604,
+          "rss_bytes": 165801984,
+          "cpu_seconds": 4.09375,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:43.230856+00:00"
+        },
+        {
+          "pid": 1600,
+          "parent_pid": 32604,
+          "rss_bytes": 395481088,
+          "cpu_seconds": 47.28125,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.834611+00:00"
+        },
+        {
+          "pid": 2396,
+          "parent_pid": 32604,
+          "rss_bytes": 166535168,
+          "cpu_seconds": 3.9375,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:45.464047+00:00"
+        },
+        {
+          "pid": 2848,
+          "parent_pid": 32604,
+          "rss_bytes": 421728256,
+          "cpu_seconds": 56.1875,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:42.444683+00:00"
+        },
+        {
+          "pid": 3528,
+          "parent_pid": 32604,
+          "rss_bytes": 165953536,
+          "cpu_seconds": 3.921875,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:45.218832+00:00"
+        },
+        {
+          "pid": 3620,
+          "parent_pid": 32604,
+          "rss_bytes": 536948736,
+          "cpu_seconds": 98.046875,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.920917+00:00"
+        },
+        {
+          "pid": 5424,
+          "parent_pid": 32604,
+          "rss_bytes": 166629376,
+          "cpu_seconds": 4.0,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:42.478201+00:00"
+        },
+        {
+          "pid": 5468,
+          "parent_pid": 32604,
+          "rss_bytes": 287830016,
+          "cpu_seconds": 5.484375,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.559250+00:00"
+        },
+        {
+          "pid": 5488,
+          "parent_pid": 32604,
+          "rss_bytes": 166653952,
+          "cpu_seconds": 4.046875,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:46.338046+00:00"
+        },
+        {
+          "pid": 5676,
+          "parent_pid": 32604,
+          "rss_bytes": 165982208,
+          "cpu_seconds": 3.796875,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:43.871549+00:00"
+        },
+        {
+          "pid": 5784,
+          "parent_pid": 32604,
+          "rss_bytes": 424185856,
+          "cpu_seconds": 57.25,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.876904+00:00"
+        },
+        {
+          "pid": 5820,
+          "parent_pid": 32604,
+          "rss_bytes": 454680576,
+          "cpu_seconds": 68.125,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.987017+00:00"
+        },
+        {
+          "pid": 6028,
+          "parent_pid": 32604,
+          "rss_bytes": 166416384,
+          "cpu_seconds": 4.0,
+          "os_thread_count": 5,
+          "created_utc": "2026-11-11T05:31:45.684056+00:00"
+        },
+        {
+          "pid": 6460,
+          "parent_pid": 32604,
+          "rss_bytes": 475381760,
+          "cpu_seconds": 76.5625,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.899341+00:00"
+        },
+        {
+          "pid": 7972,
+          "parent_pid": 32604,
+          "rss_bytes": 166739968,
+          "cpu_seconds": 3.890625,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:44.860734+00:00"
+        },
+        {
+          "pid": 9596,
+          "parent_pid": 32604,
+          "rss_bytes": 309395456,
+          "cpu_seconds": 45.296875,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.393698+00:00"
+        },
+        {
+          "pid": 9716,
+          "parent_pid": 32604,
+          "rss_bytes": 331382784,
+          "cpu_seconds": 22.953125,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:42.267477+00:00"
+        },
+        {
+          "pid": 9748,
+          "parent_pid": 32604,
+          "rss_bytes": 166166528,
+          "cpu_seconds": 3.890625,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:44.706836+00:00"
+        },
+        {
+          "pid": 10264,
+          "parent_pid": 32604,
+          "rss_bytes": 321839104,
+          "cpu_seconds": 17.96875,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:42.512569+00:00"
+        },
+        {
+          "pid": 11208,
+          "parent_pid": 32604,
+          "rss_bytes": 554774528,
+          "cpu_seconds": 105.78125,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.269851+00:00"
+        },
+        {
+          "pid": 11276,
+          "parent_pid": 32604,
+          "rss_bytes": 313946112,
+          "cpu_seconds": 13.671875,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:45.019583+00:00"
+        },
+        {
+          "pid": 11996,
+          "parent_pid": 32604,
+          "rss_bytes": 392859648,
+          "cpu_seconds": 46.109375,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.258805+00:00"
+        },
+        {
+          "pid": 12320,
+          "parent_pid": 32604,
+          "rss_bytes": 166830080,
+          "cpu_seconds": 3.9375,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:44.657727+00:00"
+        },
+        {
+          "pid": 12332,
+          "parent_pid": 32604,
+          "rss_bytes": 166666240,
+          "cpu_seconds": 4.0625,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:46.956075+00:00"
+        },
+        {
+          "pid": 12356,
+          "parent_pid": 32604,
+          "rss_bytes": 166420480,
+          "cpu_seconds": 4.0,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:43.246691+00:00"
+        },
+        {
+          "pid": 12504,
+          "parent_pid": 32604,
+          "rss_bytes": 306401280,
+          "cpu_seconds": 4.765625,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.838974+00:00"
+        },
+        {
+          "pid": 13124,
+          "parent_pid": 32604,
+          "rss_bytes": 431304704,
+          "cpu_seconds": 60.4375,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.942189+00:00"
+        },
+        {
+          "pid": 14288,
+          "parent_pid": 32604,
+          "rss_bytes": 394022912,
+          "cpu_seconds": 46.375,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.955326+00:00"
+        },
+        {
+          "pid": 15332,
+          "parent_pid": 32604,
+          "rss_bytes": 166354944,
+          "cpu_seconds": 3.65625,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:46.964688+00:00"
+        },
+        {
+          "pid": 15728,
+          "parent_pid": 32604,
+          "rss_bytes": 166666240,
+          "cpu_seconds": 3.734375,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:45.106303+00:00"
+        },
+        {
+          "pid": 16004,
+          "parent_pid": 32604,
+          "rss_bytes": 166473728,
+          "cpu_seconds": 3.875,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:45.546011+00:00"
+        },
+        {
+          "pid": 16496,
+          "parent_pid": 32604,
+          "rss_bytes": 466653184,
+          "cpu_seconds": 72.59375,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:41.911915+00:00"
+        },
+        {
+          "pid": 17016,
+          "parent_pid": 32604,
+          "rss_bytes": 166502400,
+          "cpu_seconds": 3.6875,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:42.520022+00:00"
+        },
+        {
+          "pid": 17160,
+          "parent_pid": 32604,
+          "rss_bytes": 166563840,
+          "cpu_seconds": 3.84375,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:45.357299+00:00"
+        },
+        {
+          "pid": 17276,
+          "parent_pid": 32604,
+          "rss_bytes": 305831936,
+          "cpu_seconds": 7.921875,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.843736+00:00"
+        },
+        {
+          "pid": 17308,
+          "parent_pid": 32604,
+          "rss_bytes": 446443520,
+          "cpu_seconds": 66.09375,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:42.258629+00:00"
+        },
+        {
+          "pid": 17372,
+          "parent_pid": 32604,
+          "rss_bytes": 484397056,
+          "cpu_seconds": 80.515625,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.861869+00:00"
+        },
+        {
+          "pid": 17380,
+          "parent_pid": 32604,
+          "rss_bytes": 336945152,
+          "cpu_seconds": 23.125,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:42.862938+00:00"
+        },
+        {
+          "pid": 18664,
+          "parent_pid": 32604,
+          "rss_bytes": 411140096,
+          "cpu_seconds": 52.953125,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.869517+00:00"
+        },
+        {
+          "pid": 22380,
+          "parent_pid": 32604,
+          "rss_bytes": 166498304,
+          "cpu_seconds": 3.875,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:46.163642+00:00"
+        },
+        {
+          "pid": 23116,
+          "parent_pid": 32604,
+          "rss_bytes": 394801152,
+          "cpu_seconds": 47.421875,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.973547+00:00"
+        },
+        {
+          "pid": 23560,
+          "parent_pid": 32604,
+          "rss_bytes": 394272768,
+          "cpu_seconds": 44.640625,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.854855+00:00"
+        },
+        {
+          "pid": 24528,
+          "parent_pid": 32604,
+          "rss_bytes": 166408192,
+          "cpu_seconds": 3.78125,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:46.242899+00:00"
+        },
+        {
+          "pid": 27608,
+          "parent_pid": 32604,
+          "rss_bytes": 436854784,
+          "cpu_seconds": 61.546875,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.935611+00:00"
+        },
+        {
+          "pid": 27720,
+          "parent_pid": 32604,
+          "rss_bytes": 355610624,
+          "cpu_seconds": 30.359375,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:44.633393+00:00"
+        },
+        {
+          "pid": 29268,
+          "parent_pid": 32604,
+          "rss_bytes": 166420480,
+          "cpu_seconds": 3.78125,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:45.556784+00:00"
+        },
+        {
+          "pid": 31624,
+          "parent_pid": 32604,
+          "rss_bytes": 304054272,
+          "cpu_seconds": 7.1875,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:46.072277+00:00"
+        },
+        {
+          "pid": 31864,
+          "parent_pid": 32604,
+          "rss_bytes": 166055936,
+          "cpu_seconds": 3.59375,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:45.884049+00:00"
+        },
+        {
+          "pid": 31868,
+          "parent_pid": 32604,
+          "rss_bytes": 532131840,
+          "cpu_seconds": 97.65625,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.928058+00:00"
+        },
+        {
+          "pid": 31888,
+          "parent_pid": 32604,
+          "rss_bytes": 166240256,
+          "cpu_seconds": 3.84375,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:43.887378+00:00"
+        },
+        {
+          "pid": 32668,
+          "parent_pid": 32604,
+          "rss_bytes": 166449152,
+          "cpu_seconds": 3.96875,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:44.679778+00:00"
+        },
+        {
+          "pid": 33028,
+          "parent_pid": 32604,
+          "rss_bytes": 324657152,
+          "cpu_seconds": 18.640625,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.848893+00:00"
+        },
+        {
+          "pid": 33600,
+          "parent_pid": 32604,
+          "rss_bytes": 332750848,
+          "cpu_seconds": 22.6875,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.885054+00:00"
+        },
+        {
+          "pid": 33648,
+          "parent_pid": 32604,
+          "rss_bytes": 431951872,
+          "cpu_seconds": 59.796875,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.829511+00:00"
+        },
+        {
+          "pid": 33732,
+          "parent_pid": 32604,
+          "rss_bytes": 166383616,
+          "cpu_seconds": 3.984375,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:42.882076+00:00"
+        },
+        {
+          "pid": 33944,
+          "parent_pid": 32604,
+          "rss_bytes": 417710080,
+          "cpu_seconds": 55.671875,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.995250+00:00"
+        },
+        {
+          "pid": 34304,
+          "parent_pid": 32604,
+          "rss_bytes": 166297600,
+          "cpu_seconds": 3.953125,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:45.764356+00:00"
+        },
+        {
+          "pid": 34632,
+          "parent_pid": 32604,
+          "rss_bytes": 308224000,
+          "cpu_seconds": 9.828125,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:42.403699+00:00"
+        },
+        {
+          "pid": 34648,
+          "parent_pid": 32604,
+          "rss_bytes": 436916224,
+          "cpu_seconds": 61.4375,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:42.426005+00:00"
+        },
+        {
+          "pid": 34680,
+          "parent_pid": 32604,
+          "rss_bytes": 306089984,
+          "cpu_seconds": 8.6875,
+          "os_thread_count": 3,
+          "created_utc": "2026-11-11T05:31:41.967013+00:00"
+        },
+        {
+          "pid": 34728,
+          "parent_pid": 32604,
+          "rss_bytes": 166313984,
+          "cpu_seconds": 3.59375,
+          "os_thread_count": 4,
+          "created_utc": "2026-11-11T05:31:46.327685+00:00"
+        }
+      ],
+      "worker_rss_bytes_sum": 18106023936,
+      "ram_total_bytes": 137263955968,
+      "ram_available_bytes": 92033142784,
+      "ram_used_percent": 33.0,
+      "attempt": {
+        "attempt": 1,
+        "started_utc": "2026-11-11T05:15:11.527882+00:00",
+        "status": "RUNNING",
+        "statistics_complete": true,
+        "equity_statistics": {
+          "input_snapshots": 1,
+          "candidate_runs": 0,
+          "benchmark_runs": 0,
+          "account_timings": []
+        },
+        "elapsed_seconds": 967.9192858000001,
+        "completed_at_start": 0,
+        "error": null,
+        "resources": {
+          "workers": 61,
+          "native_threads": 1,
+          "batch_size": 61,
+          "random_seed": 19,
+          "logical_cpu_count_observed": 16,
+          "pool_limit_basis": "Root verified Windows ProcessPoolExecutor maximum 61"
+        },
+        "execution_stats": {
+          "elapsed_seconds": 967.9193063000002,
+          "pool_starts": 0,
+          "submitted": 0,
+          "completed": 0,
+          "failed": 0,
+          "unknown": 0,
+          "reused_results": 0,
+          "reused_publications": 0,
+          "phase_wall_seconds": [
+            [
+              "PREPARE",
+              594.6571557999978
+            ]
+          ],
+          "worker_seconds": []
+        }
+      },
+      "results_status": "RUNNING",
+      "completed_scenario_rows": 6,
+      "reused_rows": 6,
+      "completed_batch_count": 0,
+      "completed_batch_seconds_sum": 0,
+      "successful_new_accounts_in_complete_batches": 0,
+      "completed_batch_accounts_per_minute": null,
+      "completed_batches": []
+    },
+    {
+      "observed_utc": "2026-11-11T05:40:41.794278+00:00",
+      "main_process": {
+        "pid": 32604,
+        "parent_pid": 22248,
+        "rss_bytes": 5542449152,
+        "cpu_seconds": 1109.171875,
+        "os_thread_count": 3,
+        "created_utc": "2026-11-11T05:14:17.674619+00:00"
+      },
+      "descendant_count": 61,
+      "actual_worker_count": 61,
+      "workers": [
+        {
+          "pid": 1440,
+          "parent_pid": 32604,
+          "rss_bytes": 530595840,
+          "cpu_seconds": 131.53125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:43.230856+00:00"
+        },
+        {
+          "pid": 1600,
+          "parent_pid": 32604,
+          "rss_bytes": 525127680,
+          "cpu_seconds": 134.03125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.834611+00:00"
+        },
+        {
+          "pid": 2396,
+          "parent_pid": 32604,
+          "rss_bytes": 524431360,
+          "cpu_seconds": 132.203125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:45.464047+00:00"
+        },
+        {
+          "pid": 2848,
+          "parent_pid": 32604,
+          "rss_bytes": 526376960,
+          "cpu_seconds": 131.53125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:42.444683+00:00"
+        },
+        {
+          "pid": 3528,
+          "parent_pid": 32604,
+          "rss_bytes": 525594624,
+          "cpu_seconds": 131.984375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:45.218832+00:00"
+        },
+        {
+          "pid": 3620,
+          "parent_pid": 32604,
+          "rss_bytes": 530178048,
+          "cpu_seconds": 128.96875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.920917+00:00"
+        },
+        {
+          "pid": 5424,
+          "parent_pid": 32604,
+          "rss_bytes": 531484672,
+          "cpu_seconds": 129.4375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:42.478201+00:00"
+        },
+        {
+          "pid": 5468,
+          "parent_pid": 32604,
+          "rss_bytes": 530395136,
+          "cpu_seconds": 132.953125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.559250+00:00"
+        },
+        {
+          "pid": 5488,
+          "parent_pid": 32604,
+          "rss_bytes": 687370240,
+          "cpu_seconds": 134.828125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:46.338046+00:00"
+        },
+        {
+          "pid": 5676,
+          "parent_pid": 32604,
+          "rss_bytes": 528912384,
+          "cpu_seconds": 130.453125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:43.871549+00:00"
+        },
+        {
+          "pid": 5784,
+          "parent_pid": 32604,
+          "rss_bytes": 529207296,
+          "cpu_seconds": 130.515625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.876904+00:00"
+        },
+        {
+          "pid": 5820,
+          "parent_pid": 32604,
+          "rss_bytes": 527192064,
+          "cpu_seconds": 132.515625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.987017+00:00"
+        },
+        {
+          "pid": 6028,
+          "parent_pid": 32604,
+          "rss_bytes": 610144256,
+          "cpu_seconds": 124.703125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:45.684056+00:00"
+        },
+        {
+          "pid": 6460,
+          "parent_pid": 32604,
+          "rss_bytes": 522559488,
+          "cpu_seconds": 132.53125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.899341+00:00"
+        },
+        {
+          "pid": 7972,
+          "parent_pid": 32604,
+          "rss_bytes": 529793024,
+          "cpu_seconds": 132.0,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:44.860734+00:00"
+        },
+        {
+          "pid": 9596,
+          "parent_pid": 32604,
+          "rss_bytes": 508846080,
+          "cpu_seconds": 129.203125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.393698+00:00"
+        },
+        {
+          "pid": 9716,
+          "parent_pid": 32604,
+          "rss_bytes": 527859712,
+          "cpu_seconds": 134.6875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:42.267477+00:00"
+        },
+        {
+          "pid": 9748,
+          "parent_pid": 32604,
+          "rss_bytes": 523653120,
+          "cpu_seconds": 129.9375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:44.706836+00:00"
+        },
+        {
+          "pid": 10264,
+          "parent_pid": 32604,
+          "rss_bytes": 529616896,
+          "cpu_seconds": 132.71875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:42.512569+00:00"
+        },
+        {
+          "pid": 11208,
+          "parent_pid": 32604,
+          "rss_bytes": 529743872,
+          "cpu_seconds": 131.109375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.269851+00:00"
+        },
+        {
+          "pid": 11276,
+          "parent_pid": 32604,
+          "rss_bytes": 530190336,
+          "cpu_seconds": 132.0625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:45.019583+00:00"
+        },
+        {
+          "pid": 11996,
+          "parent_pid": 32604,
+          "rss_bytes": 527990784,
+          "cpu_seconds": 136.609375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.258805+00:00"
+        },
+        {
+          "pid": 12320,
+          "parent_pid": 32604,
+          "rss_bytes": 525135872,
+          "cpu_seconds": 95.765625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:44.657727+00:00"
+        },
+        {
+          "pid": 12332,
+          "parent_pid": 32604,
+          "rss_bytes": 576053248,
+          "cpu_seconds": 116.59375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:46.956075+00:00"
+        },
+        {
+          "pid": 12356,
+          "parent_pid": 32604,
+          "rss_bytes": 528408576,
+          "cpu_seconds": 134.359375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:43.246691+00:00"
+        },
+        {
+          "pid": 12504,
+          "parent_pid": 32604,
+          "rss_bytes": 609292288,
+          "cpu_seconds": 121.734375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.838974+00:00"
+        },
+        {
+          "pid": 13124,
+          "parent_pid": 32604,
+          "rss_bytes": 530886656,
+          "cpu_seconds": 132.046875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.942189+00:00"
+        },
+        {
+          "pid": 14288,
+          "parent_pid": 32604,
+          "rss_bytes": 526336000,
+          "cpu_seconds": 132.578125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.955326+00:00"
+        },
+        {
+          "pid": 15332,
+          "parent_pid": 32604,
+          "rss_bytes": 534859776,
+          "cpu_seconds": 98.953125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:46.964688+00:00"
+        },
+        {
+          "pid": 15728,
+          "parent_pid": 32604,
+          "rss_bytes": 481673216,
+          "cpu_seconds": 80.9375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:45.106303+00:00"
+        },
+        {
+          "pid": 16004,
+          "parent_pid": 32604,
+          "rss_bytes": 529125376,
+          "cpu_seconds": 131.609375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:45.546011+00:00"
+        },
+        {
+          "pid": 16496,
+          "parent_pid": 32604,
+          "rss_bytes": 528220160,
+          "cpu_seconds": 132.609375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.911915+00:00"
+        },
+        {
+          "pid": 17016,
+          "parent_pid": 32604,
+          "rss_bytes": 529465344,
+          "cpu_seconds": 129.765625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:42.520022+00:00"
+        },
+        {
+          "pid": 17160,
+          "parent_pid": 32604,
+          "rss_bytes": 576815104,
+          "cpu_seconds": 118.40625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:45.357299+00:00"
+        },
+        {
+          "pid": 17276,
+          "parent_pid": 32604,
+          "rss_bytes": 525201408,
+          "cpu_seconds": 132.015625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.843736+00:00"
+        },
+        {
+          "pid": 17308,
+          "parent_pid": 32604,
+          "rss_bytes": 524685312,
+          "cpu_seconds": 134.015625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:42.258629+00:00"
+        },
+        {
+          "pid": 17372,
+          "parent_pid": 32604,
+          "rss_bytes": 531279872,
+          "cpu_seconds": 131.9375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.861869+00:00"
+        },
+        {
+          "pid": 17380,
+          "parent_pid": 32604,
+          "rss_bytes": 524566528,
+          "cpu_seconds": 130.5,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:42.862938+00:00"
+        },
+        {
+          "pid": 18664,
+          "parent_pid": 32604,
+          "rss_bytes": 528703488,
+          "cpu_seconds": 131.84375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.869517+00:00"
+        },
+        {
+          "pid": 22380,
+          "parent_pid": 32604,
+          "rss_bytes": 531677184,
+          "cpu_seconds": 133.734375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:46.163642+00:00"
+        },
+        {
+          "pid": 23116,
+          "parent_pid": 32604,
+          "rss_bytes": 531308544,
+          "cpu_seconds": 134.765625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.973547+00:00"
+        },
+        {
+          "pid": 23560,
+          "parent_pid": 32604,
+          "rss_bytes": 528412672,
+          "cpu_seconds": 128.75,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.854855+00:00"
+        },
+        {
+          "pid": 24528,
+          "parent_pid": 32604,
+          "rss_bytes": 531738624,
+          "cpu_seconds": 132.203125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:46.242899+00:00"
+        },
+        {
+          "pid": 27608,
+          "parent_pid": 32604,
+          "rss_bytes": 529035264,
+          "cpu_seconds": 129.90625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.935611+00:00"
+        },
+        {
+          "pid": 27720,
+          "parent_pid": 32604,
+          "rss_bytes": 532365312,
+          "cpu_seconds": 131.546875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:44.633393+00:00"
+        },
+        {
+          "pid": 29268,
+          "parent_pid": 32604,
+          "rss_bytes": 565784576,
+          "cpu_seconds": 113.546875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:45.556784+00:00"
+        },
+        {
+          "pid": 31624,
+          "parent_pid": 32604,
+          "rss_bytes": 522850304,
+          "cpu_seconds": 134.421875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:46.072277+00:00"
+        },
+        {
+          "pid": 31864,
+          "parent_pid": 32604,
+          "rss_bytes": 473853952,
+          "cpu_seconds": 76.90625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:45.884049+00:00"
+        },
+        {
+          "pid": 31868,
+          "parent_pid": 32604,
+          "rss_bytes": 528650240,
+          "cpu_seconds": 130.625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.928058+00:00"
+        },
+        {
+          "pid": 31888,
+          "parent_pid": 32604,
+          "rss_bytes": 530165760,
+          "cpu_seconds": 129.8125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:43.887378+00:00"
+        },
+        {
+          "pid": 32668,
+          "parent_pid": 32604,
+          "rss_bytes": 532717568,
+          "cpu_seconds": 98.109375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:44.679778+00:00"
+        },
+        {
+          "pid": 33028,
+          "parent_pid": 32604,
+          "rss_bytes": 530087936,
+          "cpu_seconds": 129.625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.848893+00:00"
+        },
+        {
+          "pid": 33600,
+          "parent_pid": 32604,
+          "rss_bytes": 531406848,
+          "cpu_seconds": 134.015625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.885054+00:00"
+        },
+        {
+          "pid": 33648,
+          "parent_pid": 32604,
+          "rss_bytes": 532275200,
+          "cpu_seconds": 131.6875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.829511+00:00"
+        },
+        {
+          "pid": 33732,
+          "parent_pid": 32604,
+          "rss_bytes": 527290368,
+          "cpu_seconds": 132.984375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:42.882076+00:00"
+        },
+        {
+          "pid": 33944,
+          "parent_pid": 32604,
+          "rss_bytes": 528728064,
+          "cpu_seconds": 132.796875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.995250+00:00"
+        },
+        {
+          "pid": 34304,
+          "parent_pid": 32604,
+          "rss_bytes": 484315136,
+          "cpu_seconds": 82.328125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:45.764356+00:00"
+        },
+        {
+          "pid": 34632,
+          "parent_pid": 32604,
+          "rss_bytes": 594112512,
+          "cpu_seconds": 122.9375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:42.403699+00:00"
+        },
+        {
+          "pid": 34648,
+          "parent_pid": 32604,
+          "rss_bytes": 528654336,
+          "cpu_seconds": 134.1875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:42.426005+00:00"
+        },
+        {
+          "pid": 34680,
+          "parent_pid": 32604,
+          "rss_bytes": 523837440,
+          "cpu_seconds": 134.203125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.967013+00:00"
+        },
+        {
+          "pid": 34728,
+          "parent_pid": 32604,
+          "rss_bytes": 525090816,
+          "cpu_seconds": 129.5,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:46.327685+00:00"
+        }
+      ],
+      "worker_rss_bytes_sum": 32592330752,
+      "ram_total_bytes": 137263955968,
+      "ram_available_bytes": 74679463936,
+      "ram_used_percent": 45.6,
+      "attempt": {
+        "attempt": 1,
+        "started_utc": "2026-11-11T05:15:11.527882+00:00",
+        "status": "RUNNING",
+        "statistics_complete": true,
+        "equity_statistics": {
+          "input_snapshots": 1,
+          "candidate_runs": 0,
+          "benchmark_runs": 0,
+          "account_timings": []
+        },
+        "elapsed_seconds": 967.9192858000001,
+        "completed_at_start": 0,
+        "error": null,
+        "resources": {
+          "workers": 61,
+          "native_threads": 1,
+          "batch_size": 61,
+          "random_seed": 19,
+          "logical_cpu_count_observed": 16,
+          "pool_limit_basis": "Root verified Windows ProcessPoolExecutor maximum 61"
+        },
+        "execution_stats": {
+          "elapsed_seconds": 967.9193063000002,
+          "pool_starts": 0,
+          "submitted": 0,
+          "completed": 0,
+          "failed": 0,
+          "unknown": 0,
+          "reused_results": 0,
+          "reused_publications": 0,
+          "phase_wall_seconds": [
+            [
+              "PREPARE",
+              594.6571557999978
+            ]
+          ],
+          "worker_seconds": []
+        }
+      },
+      "results_status": "RUNNING",
+      "completed_scenario_rows": 6,
+      "reused_rows": 6,
+      "completed_batch_count": 0,
+      "completed_batch_seconds_sum": 0,
+      "successful_new_accounts_in_complete_batches": 0,
+      "completed_batch_accounts_per_minute": null,
+      "completed_batches": []
+    },
+    {
+      "observed_utc": "2026-11-11T05:50:04.901239+00:00",
+      "main_process": {
+        "pid": 32604,
+        "parent_pid": 22248,
+        "rss_bytes": 6517415936,
+        "cpu_seconds": 1564.96875,
+        "os_thread_count": 3,
+        "created_utc": "2026-11-11T05:14:17.674619+00:00"
+      },
+      "descendant_count": 61,
+      "actual_worker_count": 61,
+      "workers": [
+        {
+          "pid": 1440,
+          "parent_pid": 32604,
+          "rss_bytes": 530665472,
+          "cpu_seconds": 131.53125,
+          "os_thread_count": 2,
+          "created_utc": "2026-11-11T05:31:43.230856+00:00"
+        },
+        {
+          "pid": 1600,
+          "parent_pid": 32604,
+          "rss_bytes": 525172736,
+          "cpu_seconds": 134.03125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.834611+00:00"
+        },
+        {
+          "pid": 2396,
+          "parent_pid": 32604,
+          "rss_bytes": 524439552,
+          "cpu_seconds": 132.203125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:45.464047+00:00"
+        },
+        {
+          "pid": 2848,
+          "parent_pid": 32604,
+          "rss_bytes": 535773184,
+          "cpu_seconds": 136.953125,
+          "os_thread_count": 2,
+          "created_utc": "2026-11-11T05:31:42.444683+00:00"
+        },
+        {
+          "pid": 3528,
+          "parent_pid": 32604,
+          "rss_bytes": 525639680,
+          "cpu_seconds": 131.984375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:45.218832+00:00"
+        },
+        {
+          "pid": 3620,
+          "parent_pid": 32604,
+          "rss_bytes": 539746304,
+          "cpu_seconds": 136.875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.920917+00:00"
+        },
+        {
+          "pid": 5424,
+          "parent_pid": 32604,
+          "rss_bytes": 531533824,
+          "cpu_seconds": 129.4375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:42.478201+00:00"
+        },
+        {
+          "pid": 5468,
+          "parent_pid": 32604,
+          "rss_bytes": 530440192,
+          "cpu_seconds": 132.96875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.559250+00:00"
+        },
+        {
+          "pid": 5488,
+          "parent_pid": 32604,
+          "rss_bytes": 530427904,
+          "cpu_seconds": 135.125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:46.338046+00:00"
+        },
+        {
+          "pid": 5676,
+          "parent_pid": 32604,
+          "rss_bytes": 528920576,
+          "cpu_seconds": 130.453125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:43.871549+00:00"
+        },
+        {
+          "pid": 5784,
+          "parent_pid": 32604,
+          "rss_bytes": 537624576,
+          "cpu_seconds": 133.46875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.876904+00:00"
+        },
+        {
+          "pid": 5820,
+          "parent_pid": 32604,
+          "rss_bytes": 556822528,
+          "cpu_seconds": 132.953125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.987017+00:00"
+        },
+        {
+          "pid": 6028,
+          "parent_pid": 32604,
+          "rss_bytes": 527523840,
+          "cpu_seconds": 133.265625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:45.684056+00:00"
+        },
+        {
+          "pid": 6460,
+          "parent_pid": 32604,
+          "rss_bytes": 530747392,
+          "cpu_seconds": 137.078125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.899341+00:00"
+        },
+        {
+          "pid": 7972,
+          "parent_pid": 32604,
+          "rss_bytes": 529842176,
+          "cpu_seconds": 132.0,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:44.860734+00:00"
+        },
+        {
+          "pid": 9596,
+          "parent_pid": 32604,
+          "rss_bytes": 538968064,
+          "cpu_seconds": 166.359375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.393698+00:00"
+        },
+        {
+          "pid": 9716,
+          "parent_pid": 32604,
+          "rss_bytes": 527949824,
+          "cpu_seconds": 134.6875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:42.267477+00:00"
+        },
+        {
+          "pid": 9748,
+          "parent_pid": 32604,
+          "rss_bytes": 523665408,
+          "cpu_seconds": 129.9375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:44.706836+00:00"
+        },
+        {
+          "pid": 10264,
+          "parent_pid": 32604,
+          "rss_bytes": 529637376,
+          "cpu_seconds": 132.734375,
+          "os_thread_count": 2,
+          "created_utc": "2026-11-11T05:31:42.512569+00:00"
+        },
+        {
+          "pid": 11208,
+          "parent_pid": 32604,
+          "rss_bytes": 539295744,
+          "cpu_seconds": 139.234375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.269851+00:00"
+        },
+        {
+          "pid": 11276,
+          "parent_pid": 32604,
+          "rss_bytes": 530288640,
+          "cpu_seconds": 132.0625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:45.019583+00:00"
+        },
+        {
+          "pid": 11996,
+          "parent_pid": 32604,
+          "rss_bytes": 528035840,
+          "cpu_seconds": 136.609375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.258805+00:00"
+        },
+        {
+          "pid": 12320,
+          "parent_pid": 32604,
+          "rss_bytes": 527777792,
+          "cpu_seconds": 127.34375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:44.657727+00:00"
+        },
+        {
+          "pid": 12332,
+          "parent_pid": 32604,
+          "rss_bytes": 528302080,
+          "cpu_seconds": 132.890625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:46.956075+00:00"
+        },
+        {
+          "pid": 12356,
+          "parent_pid": 32604,
+          "rss_bytes": 528424960,
+          "cpu_seconds": 134.375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:43.246691+00:00"
+        },
+        {
+          "pid": 12504,
+          "parent_pid": 32604,
+          "rss_bytes": 526536704,
+          "cpu_seconds": 130.1875,
+          "os_thread_count": 2,
+          "created_utc": "2026-11-11T05:31:41.838974+00:00"
+        },
+        {
+          "pid": 13124,
+          "parent_pid": 32604,
+          "rss_bytes": 538271744,
+          "cpu_seconds": 138.4375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.942189+00:00"
+        },
+        {
+          "pid": 14288,
+          "parent_pid": 32604,
+          "rss_bytes": 526422016,
+          "cpu_seconds": 132.578125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.955326+00:00"
+        },
+        {
+          "pid": 15332,
+          "parent_pid": 32604,
+          "rss_bytes": 530952192,
+          "cpu_seconds": 128.15625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:46.964688+00:00"
+        },
+        {
+          "pid": 15728,
+          "parent_pid": 32604,
+          "rss_bytes": 526635008,
+          "cpu_seconds": 121.515625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:45.106303+00:00"
+        },
+        {
+          "pid": 16004,
+          "parent_pid": 32604,
+          "rss_bytes": 529170432,
+          "cpu_seconds": 131.609375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:45.546011+00:00"
+        },
+        {
+          "pid": 16496,
+          "parent_pid": 32604,
+          "rss_bytes": 528265216,
+          "cpu_seconds": 132.609375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.911915+00:00"
+        },
+        {
+          "pid": 17016,
+          "parent_pid": 32604,
+          "rss_bytes": 529510400,
+          "cpu_seconds": 129.765625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:42.520022+00:00"
+        },
+        {
+          "pid": 17160,
+          "parent_pid": 32604,
+          "rss_bytes": 526733312,
+          "cpu_seconds": 133.78125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:45.357299+00:00"
+        },
+        {
+          "pid": 17276,
+          "parent_pid": 32604,
+          "rss_bytes": 525242368,
+          "cpu_seconds": 132.015625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.843736+00:00"
+        },
+        {
+          "pid": 17308,
+          "parent_pid": 32604,
+          "rss_bytes": 524734464,
+          "cpu_seconds": 134.015625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:42.258629+00:00"
+        },
+        {
+          "pid": 17372,
+          "parent_pid": 32604,
+          "rss_bytes": 539389952,
+          "cpu_seconds": 138.6875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.861869+00:00"
+        },
+        {
+          "pid": 17380,
+          "parent_pid": 32604,
+          "rss_bytes": 524627968,
+          "cpu_seconds": 130.5,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:42.862938+00:00"
+        },
+        {
+          "pid": 18664,
+          "parent_pid": 32604,
+          "rss_bytes": 538439680,
+          "cpu_seconds": 135.546875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.869517+00:00"
+        },
+        {
+          "pid": 22380,
+          "parent_pid": 32604,
+          "rss_bytes": 531738624,
+          "cpu_seconds": 133.734375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:46.163642+00:00"
+        },
+        {
+          "pid": 23116,
+          "parent_pid": 32604,
+          "rss_bytes": 531361792,
+          "cpu_seconds": 134.765625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.973547+00:00"
+        },
+        {
+          "pid": 23560,
+          "parent_pid": 32604,
+          "rss_bytes": 532078592,
+          "cpu_seconds": 129.90625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.854855+00:00"
+        },
+        {
+          "pid": 24528,
+          "parent_pid": 32604,
+          "rss_bytes": 531755008,
+          "cpu_seconds": 132.203125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:46.242899+00:00"
+        },
+        {
+          "pid": 27608,
+          "parent_pid": 32604,
+          "rss_bytes": 537751552,
+          "cpu_seconds": 135.703125,
+          "os_thread_count": 2,
+          "created_utc": "2026-11-11T05:31:41.935611+00:00"
+        },
+        {
+          "pid": 27720,
+          "parent_pid": 32604,
+          "rss_bytes": 541507584,
+          "cpu_seconds": 134.265625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:44.633393+00:00"
+        },
+        {
+          "pid": 29268,
+          "parent_pid": 32604,
+          "rss_bytes": 531906560,
+          "cpu_seconds": 133.390625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:45.556784+00:00"
+        },
+        {
+          "pid": 31624,
+          "parent_pid": 32604,
+          "rss_bytes": 522915840,
+          "cpu_seconds": 134.4375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:46.072277+00:00"
+        },
+        {
+          "pid": 31864,
+          "parent_pid": 32604,
+          "rss_bytes": 528805888,
+          "cpu_seconds": 119.046875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:45.884049+00:00"
+        },
+        {
+          "pid": 31868,
+          "parent_pid": 32604,
+          "rss_bytes": 538112000,
+          "cpu_seconds": 138.0625,
+          "os_thread_count": 2,
+          "created_utc": "2026-11-11T05:31:41.928058+00:00"
+        },
+        {
+          "pid": 31888,
+          "parent_pid": 32604,
+          "rss_bytes": 530251776,
+          "cpu_seconds": 129.8125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:43.887378+00:00"
+        },
+        {
+          "pid": 32668,
+          "parent_pid": 32604,
+          "rss_bytes": 530276352,
+          "cpu_seconds": 128.234375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:44.679778+00:00"
+        },
+        {
+          "pid": 33028,
+          "parent_pid": 32604,
+          "rss_bytes": 530137088,
+          "cpu_seconds": 129.625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.848893+00:00"
+        },
+        {
+          "pid": 33600,
+          "parent_pid": 32604,
+          "rss_bytes": 531456000,
+          "cpu_seconds": 134.015625,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.885054+00:00"
+        },
+        {
+          "pid": 33648,
+          "parent_pid": 32604,
+          "rss_bytes": 532279296,
+          "cpu_seconds": 131.6875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.829511+00:00"
+        },
+        {
+          "pid": 33732,
+          "parent_pid": 32604,
+          "rss_bytes": 527302656,
+          "cpu_seconds": 132.984375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:42.882076+00:00"
+        },
+        {
+          "pid": 33944,
+          "parent_pid": 32604,
+          "rss_bytes": 528777216,
+          "cpu_seconds": 132.796875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.995250+00:00"
+        },
+        {
+          "pid": 34304,
+          "parent_pid": 32604,
+          "rss_bytes": 527208448,
+          "cpu_seconds": 122.4375,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:45.764356+00:00"
+        },
+        {
+          "pid": 34632,
+          "parent_pid": 32604,
+          "rss_bytes": 526794752,
+          "cpu_seconds": 133.1875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:42.403699+00:00"
+        },
+        {
+          "pid": 34648,
+          "parent_pid": 32604,
+          "rss_bytes": 528703488,
+          "cpu_seconds": 134.1875,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:42.426005+00:00"
+        },
+        {
+          "pid": 34680,
+          "parent_pid": 32604,
+          "rss_bytes": 523886592,
+          "cpu_seconds": 134.203125,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:41.967013+00:00"
+        },
+        {
+          "pid": 34728,
+          "parent_pid": 32604,
+          "rss_bytes": 525094912,
+          "cpu_seconds": 129.5,
+          "os_thread_count": 1,
+          "created_utc": "2026-11-11T05:31:46.327685+00:00"
+        }
+      ],
+      "worker_rss_bytes_sum": 32372699136,
+      "ram_total_bytes": 137263955968,
+      "ram_available_bytes": 81673781248,
+      "ram_used_percent": 40.5,
+      "attempt": {
+        "attempt": 1,
+        "started_utc": "2026-11-11T05:15:11.527882+00:00",
+        "status": "RUNNING",
+        "statistics_complete": true,
+        "equity_statistics": {
+          "input_snapshots": 1,
+          "candidate_runs": 61,
+          "benchmark_runs": 1,
+          "account_timings": [
+            {
+              "kind": "BENCHMARK",
+              "owner": "benchmark:abf8237a412cc25462378459822b2aa6cc2e7aaae1ddfb484afe8d8521bd7f24",
+              "feature_seconds": 0.0,
+              "replay_seconds": 43.92942149999999,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1074:5d40bbaafaebd5a92da00953784853b987084e11fea966e656efd5531f372a2a",
+              "feature_seconds": 0.0,
+              "replay_seconds": 517.5724289999998,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1075:e2d952b8ad046da8b8000acc7707cd9dc9580b43753167c071ec5a2a00397507",
+              "feature_seconds": 0.0,
+              "replay_seconds": 132.36862199999996,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1076:02127f6dc25b945dc74239864b04b83f6186d608224d53511eae23f90b34686e",
+              "feature_seconds": 0.0,
+              "replay_seconds": 362.78627129999995,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1077:fff4c6ec78c258e53437109555672bc788b8a0d45a518e18fb9d7cc248cfbbb0",
+              "feature_seconds": 0.0,
+              "replay_seconds": 387.55899869999985,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1078:8c5b3532caa4a2699e3aa8024f94d2d3921368bdb0fbceae595297c0f87ae9e1",
+              "feature_seconds": 0.0,
+              "replay_seconds": 333.56313690000025,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1079:18e1be12bf8687d31529072182f09e1480e458eaac5afc0f6af7547afe4e91dd",
+              "feature_seconds": 0.0,
+              "replay_seconds": 215.15282339999976,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1080:850fe5b8e1703f0112daa9f3ff070cfce0eacd29b42f1ea068b3e5a109600c41",
+              "feature_seconds": 0.0,
+              "replay_seconds": 133.25450630000023,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1081:c4cdd3b1968b71499831b6a7f1173d8264d2f27bd1cc9ed2ea1cef4d9097ee59",
+              "feature_seconds": 0.0,
+              "replay_seconds": 134.44131739999966,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1082:3534353e43b2b3c2ab5cc4552b48e7e764f52715ff27ee06bc824ad6429b7957",
+              "feature_seconds": 0.0,
+              "replay_seconds": 152.90828269999975,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1083:fd0d0884ac32ae10af3af408c549891db4540b439b907394f937ebed6fcf0e2c",
+              "feature_seconds": 0.0,
+              "replay_seconds": 179.63498990000016,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1084:a172d77f2eb3c2645de07f4af820dabb328ed93ad8003e38ea63db40dac1a0ca",
+              "feature_seconds": 0.0,
+              "replay_seconds": 257.2734115999997,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1085:25295f1a34d002d861c0e609da19aae9b8d0078e5c8932d65f4d68914b0c2768",
+              "feature_seconds": 0.0,
+              "replay_seconds": 147.99368090000007,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1086:8cf0ff3f6784afd837d735820a6eae560314b1c89b24cecc5f4f88e34a78ff9a",
+              "feature_seconds": 0.0,
+              "replay_seconds": 273.01621449999993,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1087:239c83e6d203df19a46b7567f78c527f0cbf3af030e5ecaa425c91d127b9430c",
+              "feature_seconds": 0.0,
+              "replay_seconds": 414.16033449999986,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1088:ae92cb69c6eb6b95df6ffa3d9a79c963b27cfdb7038622c6e8088e0635914aaa",
+              "feature_seconds": 0.0,
+              "replay_seconds": 319.49916710000025,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1089:5ff2cc260411cdac8dd07bf858a7a9e7654a313dfe01c916d5ce47362afebaa2",
+              "feature_seconds": 0.0,
+              "replay_seconds": 303.6869059999999,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1090:b3de5df17ef214625ee79f880d8a0f83412ba0a27d139506560e35ab16298c1a",
+              "feature_seconds": 0.0,
+              "replay_seconds": 371.5141331,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1091:d704dde4475c77c4f68a86dbf2cc74d047da4f78150c051c9020cc8751d9f4b8",
+              "feature_seconds": 0.0,
+              "replay_seconds": 159.6655584,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1092:0648b332388c6ae886518d24ea90619e518fc78b6477d673ab84c51b64522f9c",
+              "feature_seconds": 0.0,
+              "replay_seconds": 146.92756959999997,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1093:d4e25bee58cdad915e9a0bfa16ec9d9a6a54ccfb007b6d3f596ef9b07403cb78",
+              "feature_seconds": 0.0,
+              "replay_seconds": 162.21644650000007,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1094:4c8f20b2a934b5f80fd52cff4b131d9ceafd7ecdfea598b0df23310dc9241578",
+              "feature_seconds": 0.0,
+              "replay_seconds": 340.1604349000004,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1095:8298712115ad73f6e6c85b6f79622a52467f067d7ba0eadad7d1be5bf5801c8e",
+              "feature_seconds": 0.0,
+              "replay_seconds": 246.42860710000014,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1096:88a458d9db9f3279a780c897c6854945de2a7caf741c08c0654fac624ad0ae63",
+              "feature_seconds": 0.0,
+              "replay_seconds": 184.54790490000005,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1097:1397fd7f2fb697347ec5b5c0e965fe869dc49f1198fb58a9e4b8ee0b96cd8375",
+              "feature_seconds": 0.0,
+              "replay_seconds": 144.1516330000004,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1098:2ade413bd9a090e54d607543dde2abdf589c2a1a90478c3ce43ee95674ff7bd0",
+              "feature_seconds": 0.0,
+              "replay_seconds": 387.66786479999973,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1099:b74fc4e3a2a367746449f98a9be67a671c4fc96003c9b28ada332ddab9f09431",
+              "feature_seconds": 0.0,
+              "replay_seconds": 280.80248100000017,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1100:3f3439f799bc11c79b0e37835e4a48ea763dc191b644753c227fdf8059544539",
+              "feature_seconds": 0.0,
+              "replay_seconds": 179.58732039999995,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1101:c8b45d80ec8a7432905d27e46f11675fb16d94f05eb2800be5a3573341e8f46f",
+              "feature_seconds": 0.0,
+              "replay_seconds": 251.76276849999977,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1102:06df85b6c78336a64dbea98431b8a65dd90cd7566b5b54d67a173429d3fdd8f8",
+              "feature_seconds": 0.0,
+              "replay_seconds": 436.3451054000002,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1103:9898b83e3f04458c7ab6e878f649e259933f382fac5779e32175e446039ca3af",
+              "feature_seconds": 0.0,
+              "replay_seconds": 405.98599739999963,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1104:dfceb647b71b7bf94508e3f7d2fec788ab2511339020acd375cc3a21e75742b5",
+              "feature_seconds": 0.0,
+              "replay_seconds": 234.32415870000023,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1105:eeeb72356daffa005c038a822c1653bffca6671cde6e2635bf7997c2f7a217ac",
+              "feature_seconds": 0.0,
+              "replay_seconds": 352.0447674000002,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1106:fb4e70bcf6674279544e60e137e9d2a95058f46895cbdf2ece746bb1be703780",
+              "feature_seconds": 0.0,
+              "replay_seconds": 285.12843250000014,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1107:33a79ef68050eba45735e988793f44e4732fdd8ff05ff10f87ccefc56c4e26cd",
+              "feature_seconds": 0.0,
+              "replay_seconds": 399.8992592999998,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1108:0303d8c04d793fb77df853880a8aa8cb6b4b076d7caaf0653d7e4943434061cb",
+              "feature_seconds": 0.0,
+              "replay_seconds": 259.73400800000036,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1109:bb44622fafbadddad86c5739fe87d9712e60b39939d26f40e71593f477e79f97",
+              "feature_seconds": 0.0,
+              "replay_seconds": 178.6275983999999,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1110:e98bfb05b32594346355f76f65a25ba6d74bcbd19fbfcd217e01f59126e861ec",
+              "feature_seconds": 0.0,
+              "replay_seconds": 145.37591049999992,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1111:e9f2c6b183bcea3a7ea79c20e18aa04fbf265225d4862b9b1b08bc0f7703eeeb",
+              "feature_seconds": 0.0,
+              "replay_seconds": 230.38769599999978,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1112:d71dff20b418d3bd3015cf77ee5e43a6d9737ec4f3e99dee319f2fbf4df2ec48",
+              "feature_seconds": 0.0,
+              "replay_seconds": 332.3399294000001,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1113:6c17e4000bd3b37ffaab82f410026a241edfdcc6dc9ef823c3fa2e63e94f5a78",
+              "feature_seconds": 0.0,
+              "replay_seconds": 147.76364019999983,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1114:5805fb3d1bd0476083820a4f749c3a7b79864facd7b70f06e9538837a0d3641f",
+              "feature_seconds": 0.0,
+              "replay_seconds": 257.5298957,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1115:134841a340027b44e4aeb62c8888fd5d75700213eabe208b6fdf5ef79a2404e7",
+              "feature_seconds": 0.0,
+              "replay_seconds": 202.43259190000026,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1116:243a3658d6810f80557a3cc94ad7d5b8274bacaaa29f59d186f69eb533ebe174",
+              "feature_seconds": 0.0,
+              "replay_seconds": 255.73964799999976,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1117:89610bdc716af1a0c25d5e6c5546fdd8c4c6b53f054c13f4ce6fabc93df71faf",
+              "feature_seconds": 0.0,
+              "replay_seconds": 274.60299910000003,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1118:ae1463f2d942f760819a615c4142e387c98471f68e1415339c40a36ad83db9e8",
+              "feature_seconds": 0.0,
+              "replay_seconds": 180.03769720000037,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1119:9fa3b52c6c8b35f738270aa1a2be8a1da3805d4f5e8af159acfdc2eb0649e1b5",
+              "feature_seconds": 0.0,
+              "replay_seconds": 293.60944949999976,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1120:216a9d0ea688b4e112bf306cfbff36b80109c2c274c6e44f48d122d981ea5945",
+              "feature_seconds": 0.0,
+              "replay_seconds": 296.0007467999999,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1121:809282fe26909123ff390207488a2f7b32372fe1f84f6d667eb99513e95a5570",
+              "feature_seconds": 0.0,
+              "replay_seconds": 284.7148239999997,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1122:882cca4551e81bd3d1ebc95934099ad924c95db7ab1e1a8b0953d9bc74a41382",
+              "feature_seconds": 0.0,
+              "replay_seconds": 189.20068139999967,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1123:196cc7d2d265484bf856cf654ac01c72be5e53db19bc4added79c18687e511a8",
+              "feature_seconds": 0.0,
+              "replay_seconds": 194.02416540000013,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1124:755e67b519e0992982b550e45906ee812ac602064e5170c8ae2716abff4aa1c7",
+              "feature_seconds": 0.0,
+              "replay_seconds": 241.23787489999995,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1125:0b2393e5b239691b82097ec37640e74eb346c2d9ec864776c27254ff38ae11c2",
+              "feature_seconds": 0.0,
+              "replay_seconds": 239.7521383000003,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1126:a47a7fabfaa42535e514e2c6829ed3e02b87fbc35b8886de9bd9ffbd65517ced",
+              "feature_seconds": 0.0,
+              "replay_seconds": 195.53659419999985,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1127:672623026b5e68b35411448265b7570a8392ec65ccb292060723c91c88d74c0f",
+              "feature_seconds": 0.0,
+              "replay_seconds": 219.59677059999967,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1128:b56202929bc79ce3daf7f003c6225d1e9fec8a76e2cd96211a30d619e3d69b33",
+              "feature_seconds": 0.0,
+              "replay_seconds": 238.95192150000003,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1129:3f4e26157d27de9308aaee237a455fec4766aada5c3b266d21349f481a613d33",
+              "feature_seconds": 0.0,
+              "replay_seconds": 214.3456041000004,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1130:ea00ecf9ebccf41eba4e63d9296948bf732661a57f18004ab677ec0b27c715ac",
+              "feature_seconds": 0.0,
+              "replay_seconds": 217.7759016,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1131:1248d925a2c25c56c5e9b4ce68d7ce280d82c22399cbedb68ab31b3c9ba44ff0",
+              "feature_seconds": 0.0,
+              "replay_seconds": 198.76686740000014,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1132:588166b38551207e08a121f05190ebe104fae371a7db0654d22689c622fc2c52",
+              "feature_seconds": 0.0,
+              "replay_seconds": 199.76302459999988,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1133:a2fc424b7840d1876dbec72fd27284204855780f08dc4daaff5f7495bc5cad0e",
+              "feature_seconds": 0.0,
+              "replay_seconds": 183.87267070000007,
+              "rows": 15702,
+              "decisions": 15702
+            },
+            {
+              "kind": "CANDIDATE",
+              "owner": "candidate:S019:C1134:094cb4a7593f0c122f2e6f6982699705ab1deaa923199e0ea39fb1d143e50ef8",
+              "feature_seconds": 0.0,
+              "replay_seconds": 183.67497390000017,
+              "rows": 15702,
+              "decisions": 15702
+            }
+          ]
+        },
+        "elapsed_seconds": 2062.3400531999996,
+        "completed_at_start": 0,
+        "error": null,
+        "resources": {
+          "workers": 61,
+          "native_threads": 1,
+          "batch_size": 61,
+          "random_seed": 19,
+          "logical_cpu_count_observed": 16,
+          "pool_limit_basis": "Root verified Windows ProcessPoolExecutor maximum 61"
+        },
+        "execution_stats": {
+          "elapsed_seconds": 2062.3407358,
+          "pool_starts": 1,
+          "submitted": 62,
+          "completed": 62,
+          "failed": 0,
+          "unknown": 0,
+          "reused_results": 0,
+          "reused_publications": 0,
+          "phase_wall_seconds": [
+            [
+              "COMPUTE",
+              586.0584972000001
+            ],
+            [
+              "PREPARE",
+              596.0963849000009
+            ]
+          ],
+          "worker_seconds": [
+            [
+              "COMPUTE",
+              16856.109700399997
+            ]
+          ]
+        }
+      },
+      "results_status": "RUNNING",
+      "completed_scenario_rows": 67,
+      "reused_rows": 6,
+      "completed_batch_count": 1,
+      "completed_batch_seconds_sum": 1094.4170893000005,
+      "successful_new_accounts_in_complete_batches": 61,
+      "completed_batch_accounts_per_minute": 3.344246024466751,
+      "completed_batches": [
+        {
+          "attempt": 1,
+          "statuses": [
+            {
+              "key": "C0966_P000",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P001",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P002",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P003",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P004",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P005",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P006",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P007",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P008",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P009",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P010",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P011",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P012",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P013",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P014",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P015",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P016",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P017",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P018",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P019",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P020",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P021",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P022",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P023",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P024",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P025",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P026",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P027",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P028",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P029",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P030",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P031",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P032",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P033",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P034",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P035",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P036",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P037",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P038",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P039",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P040",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P041",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P042",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P043",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P044",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P045",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P046",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P047",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P048",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P049",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P050",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P051",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P052",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P053",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P054",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P055",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P056",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P057",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P058",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P059",
+              "status": "SUCCEEDED",
+              "error": null
+            },
+            {
+              "key": "C0966_P060",
+              "status": "SUCCEEDED",
+              "error": null
+            }
+          ],
+          "seconds": 1094.4170893000005
+        }
+      ]
+    }
+  ],
+  "public_execution_session_source": "src/czsc_trader/research_tools/_execution_session.py",
+  "public_execution_session_sha256": "081642492de887d4a82b951aaa6c4b4860c2986beef7b0525d5cde958d2e573b"
+}

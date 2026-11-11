@@ -1,0 +1,54 @@
+{
+  "status": "VERIFIED_HEADER_COMPONENT_DIFFERENCE",
+  "new_accounts": 0,
+  "representatives": [
+    {
+      "candidate_id": "C0006",
+      "reference": {
+        "evidence_id": "07330ab2451ce9a9c95c12f559338e0a3db95bc0fc4adbad4bd58b5f35bd8ccc.json",
+        "experiment": {
+          "experiment_id": "EX005_20261110",
+          "strategy_id": "S019",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "prototype-all",
+        "schema": "equity_research",
+        "schema_version": 4,
+        "sha256": "07330ab2451ce9a9c95c12f559338e0a3db95bc0fc4adbad4bd58b5f35bd8ccc",
+        "type": "EvidenceRef"
+      },
+      "context_proxy": "a616054f1808234475e2cb86608069f1f6e976ef5f45fb76e8f98509529b2ba5"
+    },
+    {
+      "candidate_id": "C0031",
+      "reference": {
+        "evidence_id": "7a4d2cdfc60c59d86fdd0df37c3e7635d548b8515a6d65fe7c24c12ff82184cf.json",
+        "experiment": {
+          "experiment_id": "EX013_20261110",
+          "strategy_id": "S019",
+          "type": "ExperimentRef"
+        },
+        "media_type": "application/json",
+        "name": "sector_gate",
+        "schema": "equity_research",
+        "schema_version": 4,
+        "sha256": "7a4d2cdfc60c59d86fdd0df37c3e7635d548b8515a6d65fe7c24c12ff82184cf",
+        "type": "EvidenceRef"
+      },
+      "context_proxy": "f4b1b04808b6d4a0d698c716312f82231504f4f8c5ea48c70b7cf76d653142bd"
+    }
+  ],
+  "group_unique_counts": [
+    25,
+    994
+  ],
+  "different_top_level_component": "data",
+  "later_group_only_keys": [
+    "auxiliary:soxx_open:bars",
+    "auxiliary:soxx_open:sessions"
+  ],
+  "earlier_group_only_keys": [],
+  "different_common_data_entries": [],
+  "interpretation": "Later structure families include SOXX opening 30m auxiliary input. Shared data entries are exact matches. Preserve both groups in history; formal comparable grouping is determined separately by public SelectionWindowFacts source contexts."
+}

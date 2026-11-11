@@ -1,0 +1,107 @@
+{
+  "status": "PREPARED_BEFORE_STATISTICAL_COMPUTATION",
+  "version": "S019-EX050-statistics-v1",
+  "centers": [
+    "C0966",
+    "C1010",
+    "C0909"
+  ],
+  "scope": "3 user-selected of 112; remaining 109 NOT_ASSESSED",
+  "selection_order": "All applicable original twelve targets, then unrounded standard NAR descending; exact ties share rank.",
+  "selection_history_rule": "Six original center gates, then unrounded NAR descending; source-specific BH and comparable contexts.",
+  "new_hard_gates": [],
+  "sample": [
+    "2022-01-03",
+    "2026-10-30"
+  ],
+  "bootstrap": {
+    "repetitions": 10000,
+    "mean_block_length": 21,
+    "seed": 20261110,
+    "pairs": [
+      [
+        "C0966",
+        "MU_BUY_HOLD"
+      ],
+      [
+        "C1010",
+        "MU_BUY_HOLD"
+      ],
+      [
+        "C0909",
+        "MU_BUY_HOLD"
+      ],
+      [
+        "C0966",
+        "C1010"
+      ],
+      [
+        "C0966",
+        "C0909"
+      ],
+      [
+        "C1010",
+        "C0909"
+      ]
+    ],
+    "metrics": [
+      "NAR",
+      "negative_MDD",
+      "Calmar"
+    ],
+    "interval": "percentile_95"
+  },
+  "temporal": {
+    "rolling_days": 252,
+    "step_days": 21,
+    "expected_windows": 46,
+    "years": [
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "2026_end": "2026-10-30"
+  },
+  "concentration": "MAX_SINGLE: max positive closed PnL / sum positive closed PnL",
+  "family_selection": {
+    "annual_pairs": [
+      "2022->2023",
+      "2023->2024",
+      "2024->2025",
+      "2025->2026_partial"
+    ],
+    "status": "PENDING_INCREMENTAL_PUBLIC_PROJECTION_PREPARATION",
+    "reuse": "EX039 published projection + EX041 incremental projection; only later unique sources projected."
+  },
+  "actual_adaptive_nar_gated_selection_bias": "NOT_ESTIMATED",
+  "sharpe_proxy": "Optional auxiliary, no eligibility/ranking weight; never substitute for NAR-gated selection.",
+  "limitations": [
+    "Repeatedly seen development sample; selfcheck feedback entered subsequent optimization.",
+    "Overlapping time windows are dependent; incomplete 2026 annualization is labeled.",
+    "Bootstrap conditions on observed returns and rearranges chronology.",
+    "Selection-history counts include source identity changes; economic aliases remain explicit."
+  ],
+  "resources": {
+    "processes": 1,
+    "native_threads": 1,
+    "new_accounts": 0
+  },
+  "inventory_sha256": "064614c9ea187d88756b7c2994626f0af12462ec61f261d5a6f340f685d560a0",
+  "centers_sha256": "1d2ae26121ed1ddfbf6ec32e80138196f6a5ce237b7d8bae8ca6e511ab9f16b3",
+  "source_sha256": "65c56980a68ab8a8902ae18e89581e5b5b8a4a560500a4d34f90e8346cbecf62",
+  "dependencies": {
+    "research/S019/experiments/EX041_20261110/src/statistics_analysis.py": "02b742b3cc350afb80289f2184a029c4c57eb61d71b175a6c6fc92c6caaa948a",
+    "research/S019/experiments/EX041_20261110/src/statistics_verification.py": "dc4253bc51ab2c04b57f35a0e97bf795b3b81e8640183ab3d57cd0589b22dd96",
+    "research/S019/experiments/EX041_20261110/src/assess.py": "0922d5fe0d7bbaab307c5fdfa87a3da640b4263f982c4fcf371d9837c021d8d4",
+    "research/S019/experiments/EX041_20261110/protocols/plan.md": "07b59b99f605e5236f8cbfe5cf6257b3a185e519471e75050564e9e745e608e9",
+    "research/S019/experiments/EX041_20261110/protocols/statistics_protocol.json": "b4d18e0436011c29f8ba64739cff9a7260e99ce9f2ea5171d5a1fababbdc61dc",
+    "research/S019/experiments/EX041_20261110/others/statistics_inventory.json": "c1053149621b00c902d262330a6996c1d71d8fa03351cbfc6ba246956622963b",
+    "research/S019/experiments/EX041_20261110/others/statistics_returns.json": "d9c0f4eab1cec15360120d348615eecfb27b3b097704edf968a7055f1eb2b8bb",
+    "research/S019/experiments/EX041_20261110/others/statistics_incremental_projection.json": "1bc644de1a18626d96dd7069b9950b649e30afeb5fb0690d2e1a2b13523fa912",
+    "research/S019/experiments/EX049_20261111/others/fee_gate_review.json": "530a2500d3c286316882e1432375387a7af4dad8566e980dfcf53394e23a3794",
+    "research/S019/experiments/EX049_20261111/others/stage_summary.json": "837447656c01736c4aacc2010197f96853dbeabeee4f1ce70e8e8f9852a19c24",
+    "research/S019/assets/deliveries/MANDATE/2/delivery.json": "44b8ad52160e62fc7654e6b73cc4d62fa43ba76020bb3d16d5ceb1605aa9ae0c"
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "status": "PREPARED_NOT_COMPUTED",
+  "new_accounts": 0,
+  "reuse_sources": {
+    "research/S019/experiments/EX039_20261110/others/statistics_selection_projection.json": "4be0d0716b002e5ce8116ef3102167ffa50588cc972260d4d47fec42ce48c80e",
+    "research/S019/experiments/EX041_20261110/others/statistics_incremental_projection.json": "1bc644de1a18626d96dd7069b9950b649e30afeb5fb0690d2e1a2b13523fa912"
+  },
+  "source_sha256": "1f8482fd33866fd01ef1c2bb4445d46be2a81e5df264d235ba0c574a3a2e1775",
+  "request_sha256": "e03a1a17e0a762c7aa0ce9e56938582768bf071678410be5cb6ce66b2a2fffb6",
+  "protocol_sha256": "cfd15103299727c35497a07c010ab978cf27ab42bd10f592b6e49d2f1620417c",
+  "inventory_sha256": "064614c9ea187d88756b7c2994626f0af12462ec61f261d5a6f340f685d560a0",
+  "reused_implementations": 371,
+  "incremental_implementations": 648,
+  "incremental_candidate_bytes": 39487342268,
+  "public_projection_budget": {
+    "type": "SelectionProjectionBudget",
+    "max_window_facts": 10000,
+    "max_source_bytes": 50000000000,
+    "max_shared_bytes": 5000000000
+  },
+  "rule": {
+    "type": "SelectionRule",
+    "version": "S019-original-center-gates-NAR-v1",
+    "source_sha256": "9498020efabf0f02a0b115b4633a4a62713ef57a501fc23c2382ea59da0a01fc",
+    "targets": {
+      "type": "ResearchTargets",
+      "requirements": [
+        {
+          "type": "ResearchTarget",
+          "target_id": "center-nar",
+          "metric": "NET_ANNUAL_RETURN",
+          "lower": {
+            "type": "ConstantBound",
+            "value": 0.55,
+            "inclusive": true
+          },
+          "upper": null,
+          "when": null,
+          "scope": "STANDARD",
+          "one_way_cost": null
+        },
+        {
+          "type": "ResearchTarget",
+          "target_id": "center-calmar",
+          "metric": "NET_CALMAR",
+          "lower": {
+            "type": "ConstantBound",
+            "value": 5.0,
+            "inclusive": true
+          },
+          "upper": null,
+          "when": null,
+          "scope": "STANDARD",
+          "one_way_cost": null
+        },
+        {
+          "type": "ResearchTarget",
+          "target_id": "center-risk",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "lower": null,
+          "upper": {
+            "type": "ConstantBound",
+            "value": 0.25,
+            "inclusive": true
+          },
+          "when": null,
+          "scope": "STANDARD",
+          "one_way_cost": null
+        },
+        {
+          "type": "ResearchTarget",
+          "target_id": "center-relative-risk",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "lower": null,
+          "upper": {
+            "type": "BenchmarkBound",
+            "multiplier": 0.8,
+            "inclusive": true
+          },
+          "when": null,
+          "scope": "STANDARD",
+          "one_way_cost": null
+        },
+        {
+          "type": "ResearchTarget",
+          "target_id": "center-frequency",
+          "metric": "FREQUENCY_MEDIAN",
+          "lower": {
+            "type": "ConstantBound",
+            "value": 6.0,
+            "inclusive": true
+          },
+          "upper": null,
+          "when": null,
+          "scope": "STANDARD",
+          "one_way_cost": null
+        },
+        {
+          "type": "FrequencyCoverageTarget",
+          "target_id": "center-coverage",
+          "window_days": 60,
+          "minimum_closed_cycles": 3,
+          "minimum_numerator": 9,
+          "minimum_denominator": 10
+        }
+      ],
+      "frequency_window_days": 60
+    },
+    "order": [
+      {
+        "type": "SelectionMetricOrder",
+        "metric": "NET_ANNUAL_RETURN",
+        "direction": "MAXIMIZE",
+        "bin_spec": null
+      }
+    ],
+    "frequency_window_days": 60,
+    "minimum_closed_cycles": 3
+  },
+  "limitations": [
+    "Repeatedly seen development sample; selfcheck feedback entered subsequent optimization.",
+    "Overlapping time windows are dependent; incomplete 2026 annualization is labeled.",
+    "Bootstrap conditions on observed returns and rearranges chronology.",
+    "Selection-history counts include source identity changes; economic aliases remain explicit.",
+    "Historical candidate universe was chosen using the full seen sample; annual results are retrospective diagnostics.",
+    "Adaptive gated-NAR selection bias remains NOT_ESTIMATED; this measures observed chronological selection sensitivity.",
+    "Sharpe-proxy PBO/DSR are omitted in this preparation to avoid a second full-family return extraction."
+  ]
+}

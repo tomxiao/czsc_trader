@@ -1,0 +1,75 @@
+{
+  "status": "READY_FOR_FORMAL_ARCHIVE",
+  "new_accounts": 0,
+  "formal_output_layout": "src/*.py writes statistics*.json and temporal_s018_reference.json in sibling others/; copy identical protocol to protocols/ if required by plan.",
+  "sources": {
+    "statistics_analysis.py": "65c56980a68ab8a8902ae18e89581e5b5b8a4a560500a4d34f90e8346cbecf62",
+    "statistics_selection.py": "1f8482fd33866fd01ef1c2bb4445d46be2a81e5df264d235ba0c574a3a2e1775",
+    "statistics_verification.py": "e1fc5e93a1abe6aef5b21af45e8b17a30de5361eafe2764fe781bf9ec65ae3e9",
+    "temporal_s018_reference.py": "2997021ce945fe623a03c6a4d5f1d64947b24c1ac3bb5188a10f97dcfc4e08a9"
+  },
+  "artifacts": {
+    "statistics_centers.json": "1d2ae26121ed1ddfbf6ec32e80138196f6a5ce237b7d8bae8ca6e511ab9f16b3",
+    "statistics_center_returns.json": "b6d1f68a2a0e53092986460a9870fd6ba532f26ad6e9e61b30469c3657b83b75",
+    "statistics_inventory.json": "064614c9ea187d88756b7c2994626f0af12462ec61f261d5a6f340f685d560a0",
+    "statistics_protocol.json": "cfd15103299727c35497a07c010ab978cf27ab42bd10f592b6e49d2f1620417c",
+    "statistics_selection_preparation.json": "6c681cf1882fbd34f5d8f76756751ab2c895a6d9b97ce77d8757ec9cb7291931",
+    "statistics_selection_request.json": "e03a1a17e0a762c7aa0ce9e56938582768bf071678410be5cb6ce66b2a2fffb6",
+    "statistics_temporal.json": "0b66b7ee97d6a8f5b40c08f7ea5211e1a8bd0936a9bf0282682ee14830baaf41",
+    "statistics_verification.json": "c25d9de8a865484b31b846552a17af50a1e028389369ae257bdbaa61f73d0f57",
+    "temporal_s018_reference.json": "877b4f1938f116c7fc2f44f662d9f66c86ca44b6badb3c2d2b0e84c701a00068"
+  },
+  "commands": [
+    ".venv/Scripts/python.exe research/S019/experiments/EX050_20261111/src/statistics_analysis.py bootstrap",
+    ".venv/Scripts/python.exe research/S019/experiments/EX050_20261111/src/statistics_selection.py compute",
+    ".venv/Scripts/python.exe research/S019/experiments/EX050_20261111/src/statistics_verification.py"
+  ],
+  "already_completed": [
+    "Header inventory and typed request preparation",
+    "3 centers and 3 stress public fact projections; metrics checked against EX049",
+    "Fixed S018-v1 source, five-year and 46-window comparison"
+  ],
+  "pending": [
+    "Formal source/artifact archive receipt",
+    "Six paired bootstrap computations and native assessment CI equality",
+    "648-source public annual fact projection and six-gate NAR selection stability",
+    "Full completion verification extension after these computations"
+  ],
+  "resources": {
+    "new_accounts": 0,
+    "processes": 1,
+    "native_threads": 1,
+    "incremental_candidate_bytes": 39487342268,
+    "projection_source_budget": 50000000000,
+    "projection_shared_budget": 5000000000
+  },
+  "public_dependencies": {
+    "paired_stationary_bootstrap": {
+      "source": "packages/strategy_evaluator/src/strategy_evaluator/bootstrap.py",
+      "sha256": "6d21997384f9801d5ba5bc38822c88baec2877355a37b01b5cfb3c4b914984c3"
+    },
+    "performance_metrics": {
+      "source": "packages/strategy_evaluator/src/strategy_evaluator/bootstrap.py",
+      "sha256": "6d21997384f9801d5ba5bc38822c88baec2877355a37b01b5cfb3c4b914984c3"
+    },
+    "project_selection_window_facts": {
+      "source": "src/czsc_trader/application/selection_stability_service.py",
+      "sha256": "f82853fcd24d29030d66dce7940190c8e694a5776ef9903d24c6553e792e5e05"
+    },
+    "assess_selection_stability": {
+      "source": "packages/strategy_evaluator/src/strategy_evaluator/selection_stability.py",
+      "sha256": "f29285e63141c7b7c1b2832b8465f97182288b013d605fa9c1e02e43fac4c022"
+    }
+  },
+  "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "third_party_packages": {
+    "numpy": "2.5.2",
+    "pandas": "3.0.5"
+  },
+  "local_modules": [
+    "strategy_evaluator",
+    "strategy_runtime",
+    "czsc_trader.research_tools"
+  ],
+  "bootstrap_alignment": "Same exact session returns, shared public projection, paired_stationary_bootstrap, repetitions10000/block21/seed20261110; numeric CI equality will be checked against formal assess output."
+}
