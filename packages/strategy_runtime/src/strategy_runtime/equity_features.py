@@ -1,9 +1,11 @@
 """Typed finite-window features evaluated on the history visible at a decision."""
+from collections import OrderedDict
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 import math
 import re
+from threading import Lock
 from types import MappingProxyType
 from typing import NamedTuple
 
@@ -317,6 +319,50 @@ def _history_rows(root, skip=0):
     yield from _history_rows(root.right, max(0, skip - left_count - 1))
 
 
+class _HistoryFrames:
+    """Bounded copies of already-visible windows; never retain history roots."""
+    max_rows = 512
+    max_entries = 64
+    max_bytes = 4 * 1024 * 1024
+
+    def __init__(self):
+        self.entries = OrderedDict()
+        self.bytes = 0
+        self.lock = Lock()
+
+    def frame(self, rows, columns):
+        import pandas as pd
+        # Single-bar views usually advance every decision. Avoid cache accounting
+        # for those and for full-history exports that could retain large frames.
+        if not 1 < len(rows) <= self.max_rows:
+            return pd.DataFrame([dict(row) for row in rows], columns=columns or None)
+        key = tuple(id(row) for row in rows), columns
+        with self.lock:
+            cached = self.entries.get(key)
+            if cached is not None:
+                self.entries.move_to_end(key)
+                return cached[1].copy(deep=True)
+        frame = pd.DataFrame([dict(row) for row in rows], columns=columns or None)
+        size = int(frame.memory_usage(index=True, deep=True).sum())
+        if size <= self.max_bytes:
+            with self.lock:
+                # Rows are retained only with the bounded frame, so their object
+                # IDs cannot be recycled while this key is installed.
+                prior = self.entries.pop(key, None)
+                if prior is not None:
+                    self.bytes -= prior[2]
+                self.entries[key] = rows, frame, size
+                self.bytes += size
+                while len(self.entries) > self.max_entries or self.bytes > self.max_bytes:
+                    _, removed = self.entries.popitem(last=False)
+                    self.bytes -= removed[2]
+            return frame.copy(deep=True)
+        return frame
+
+
+_history_frames = _HistoryFrames()
+
+
 @dataclass(frozen=True, slots=True)
 class HistoryView:
     """Complete visible history; materialization is an explicit independent copy."""
@@ -350,8 +396,7 @@ class HistoryView:
         return self._recent[offset]
 
     def to_frame(self, *, tail: int | None = None):
-        import pandas as pd
         if tail is not None:
             _positive_integer(tail)
         skip = 0 if tail is None else max(0, self._count - tail)
-        return pd.DataFrame([dict(row) for row in _history_rows(self._root, skip)], columns=self._columns or None)
+        return _history_frames.frame(tuple(_history_rows(self._root, skip)), self._columns)

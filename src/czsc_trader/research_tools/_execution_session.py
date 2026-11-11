@@ -55,6 +55,7 @@ class ExecutionExecutor:
         self.reused_results = self.reused_publications = 0
         self.wall = defaultdict(float)
         self.worker = defaultdict(float)
+        self.account_inputs = None
 
     def __enter__(self):
         return self
@@ -66,6 +67,8 @@ class ExecutionExecutor:
             if self.pool is not None:
                 self.pool.shutdown(wait=True, cancel_futures=True)
         finally:
+            if self.account_inputs is not None:
+                self.account_inputs.close()
             self.closed = True
             self.finished = perf_counter()
 

@@ -6,6 +6,7 @@ Prepared market inputs never form part of a durable account's state binding.
 from contextlib import nullcontext
 from dataclasses import dataclass
 from datetime import datetime
+import math
 
 from dataflows import BarFrequency, TimeInterval
 
@@ -121,6 +122,7 @@ class AccountDecisionEngine:
         self._intervals = dict(prepared._calendar_intervals)
         self._rows = dict(zip(zip(prepared._data.starts, prepared._data.ends), range(len(prepared._data.rows)), strict=True))
         self._observed_at = None
+        self._observation_cache = None
 
     def table_views(self, when):
         import pandas as pd
@@ -148,14 +150,17 @@ class AccountDecisionEngine:
         return result
 
     def state_binding(self, owner, fee_rate):
-        if type(owner) is not str or not owner:
-            raise TypeError('account planning requires an owner identity')
-        import math
-        if type(fee_rate) not in (float, int) or not math.isfinite(fee_rate) or not 0 <= fee_rate < 1:
-            raise ValueError('account fee must be finite in [0,1)')
+        self._validate_owner_fee(owner, fee_rate)
         return equity_hash({'owner': owner, 'implementation': self.candidate.implementation_hash,
                            'specification': self.candidate.definition.execution_spec.fingerprint,
                            'fee_rate': fee_rate})
+
+    @staticmethod
+    def _validate_owner_fee(owner, fee_rate):
+        if type(owner) is not str or not owner:
+            raise TypeError('account planning requires an owner identity')
+        if type(fee_rate) not in (float, int) or not math.isfinite(fee_rate) or not 0 <= fee_rate < 1:
+            raise ValueError('account fee must be finite in [0,1)')
 
     def observation(self, interval):
         if type(interval) is not TimeInterval:
@@ -165,6 +170,9 @@ class AccountDecisionEngine:
             raise ValueError('execution interval absent from declared calendar or input grid')
         if self._observed_at is not None and interval.start < self._observed_at:
             raise ValueError('account observations must be requested in causal time order')
+        if self._observation_cache is not None and self._observation_cache[0] == key:
+            observation = self._observation_cache[1]
+            return (*observation[:3], dict(observation[3]), *observation[4:])
         self._observed_at = interval.start
         definition, data, visibility = self.candidate.definition, self.prepared._data, self._visibility
         visibility.advance(interval.start)
@@ -190,8 +198,10 @@ class AccountDecisionEngine:
             raise ValueError('prepared session timezone differs from instrument')
         if available > interval.start:
             raise ValueError('session calendar is not yet available')
-        return (point, self._features.at(interval.start), visibility.history_view(interval.start),
-                views, session, available, not data.observed[visibility.latest_completed])
+        observation = (point, self._features.at(interval.start), visibility.history_view(interval.start),
+                       views, session, available, not data.observed[visibility.latest_completed])
+        self._observation_cache = key, observation
+        return (*observation[:3], dict(views), *observation[4:])
 
     def propose(self, interval, portfolio, account, state, position, *, owner, fee_rate,
              budget=None, events=(), next_event_cursor=None, binding=None):
@@ -204,8 +214,10 @@ class AccountDecisionEngine:
                           fee_rate, budget=None, events=(),
                           next_event_cursor=None, binding=None):
         definition, spec = self.candidate.definition, self.candidate.definition.execution_spec
-        default_binding = self.state_binding(owner, fee_rate)
-        binding = default_binding if binding is None else binding
+        if binding is None:
+            binding = self.state_binding(owner, fee_rate)
+        else:
+            self._validate_owner_fee(owner, fee_rate)
         if type(binding) is not str or not binding:
             raise ValueError('account planning requires an explicit state binding')
         if type(state) is not AccountStrategyState or type(portfolio) is not EquityPortfolio:

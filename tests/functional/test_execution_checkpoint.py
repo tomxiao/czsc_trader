@@ -54,9 +54,9 @@ def test_TDR_08_C01_equity_checkpoint_shares_artifacts_and_restores_without_repl
         assert all(item.result is not None for item in outcomes), [item.error for item in outcomes]
         originals = tuple(item.result for item in outcomes)
         cache = execution.checkpoint.root
-        paths = tuple((cache / "artifacts").glob("*.json"))
-        # One input, one shared benchmark and two candidate ledgers.
-        assert len(paths) == 4
+        paths = tuple((cache / "blobs").glob("*.json"))
+        # One input, one shared benchmark, two candidate ledgers and two headers.
+        assert len(paths) == 6
         before = {path.name: path.stat().st_mtime_ns for path in paths}
         reads = []
         original_read = execution.checkpoint._read
@@ -66,12 +66,15 @@ def test_TDR_08_C01_equity_checkpoint_shares_artifacts_and_restores_without_repl
         monkeypatch.setattr(execution.checkpoint, '_read', counted_read)
         for result in originals:
             document = json.loads((cache / "results" / f"{result.request_hash}.json").read_bytes())["payload"]
-            assert document["schema_version"] == 2 and len(document["artifact_refs"]) == 3
-            assert "artifacts" not in document
+            assert document["schema_version"] == 3 and len(document["artifact_refs"]) == 3
+            assert "artifacts" not in document and 'content' not in document
             assert all(set(ref) == {"kind", "sha256"} for ref in document["artifact_refs"])
+            assert (cache/'blobs'/f'{result.result_hash}.json').read_bytes() == result.content
+            for artifact in result.artifacts:
+                assert (cache/'blobs'/f'{artifact.sha256}.json').read_bytes() == artifact.content
             execution.checkpoint.save_equity_result(result.request_hash, result)
         assert {path.name: path.stat().st_mtime_ns for path in paths} == before
-        assert not any(name.startswith('artifacts/') for name in reads)
+        assert not any(name.startswith('blobs/') for name in reads)
 
     def unexpected(*args, **kwargs):
         raise AssertionError("completed checkpoint must not replay candidate or benchmark")
@@ -80,11 +83,11 @@ def test_TDR_08_C01_equity_checkpoint_shares_artifacts_and_restores_without_repl
     with ResearchExecutionSession(context, experiment=request.experiment,
             checkpoint=ExecutionCheckpointRequest("shared-artifacts", CheckpointMode.RESUME)) as execution:
         restored_reads = []
-        original_read = execution.checkpoint._read
-        def counted_restore(name, **kwargs):
-            restored_reads.append(name)
-            return original_read(name, **kwargs)
-        monkeypatch.setattr(execution.checkpoint, '_read', counted_restore)
+        original_read = execution.checkpoint._read_blob
+        def counted_restore(digest):
+            restored_reads.append(digest)
+            return original_read(digest)
+        monkeypatch.setattr(execution.checkpoint, '_read_blob', counted_restore)
         prepared = tuple(context.evaluation.prepare(item, execution=execution) for item in (request, other))
         restored = context.evaluation.evaluate_many(prepared, execution=execution)
         assert all(item.result is not None for item in restored), [item.error for item in restored]
@@ -93,10 +96,11 @@ def test_TDR_08_C01_equity_checkpoint_shares_artifacts_and_restores_without_repl
             assert outcome.result.artifacts == original.artifacts
         assert execution.stats.reused_results == 2 and execution.stats.submitted == 0
         assert execution.equity_statistics.candidate_runs == execution.equity_statistics.benchmark_runs == 0
-        assert len([name for name in restored_reads if name.startswith('artifacts/')]) == 4
+        assert len(restored_reads) == 6
 
 
-@pytest.mark.parametrize('corruption', [pytest.param('missing', id='TDR-08-C02'), pytest.param('bytes', id='TDR-08-C03')])
+@pytest.mark.parametrize('corruption', [pytest.param('missing', id='TDR-08-C02'),
+    pytest.param('bytes', id='TDR-08-C03'), 'header', 'reference', 'closure', 'legacy'])
 def test_equity_checkpoint_rejects_broken_artifact_closure(tmp_path, corruption, account_facts):
     prepared, result = account_facts
     with CheckpointStore(tmp_path, prepared.experiment, "damaged-artifacts", "CREATE", "a" * 64) as store:
@@ -104,24 +108,22 @@ def test_equity_checkpoint_rejects_broken_artifact_closure(tmp_path, corruption,
         path = store.root / "results" / f"{result.request_hash}.json"
         document = json.loads(path.read_bytes())["payload"]
         reference = document["artifact_refs"][0]
-        artifact_path = store.root / "artifacts" / f"{reference['sha256']}.json"
+        artifact_path = store.root / "blobs" / f"{reference['sha256']}.json"
         assert store.load_equity_result(prepared, result.request_hash) is not None
         if corruption == "missing":
             artifact_path.unlink()
-        elif corruption in {"bytes", "kind"}:
-            value = json.loads(artifact_path.read_bytes())["payload"]
-            value["content" if corruption == "bytes" else "kind"] = "changed"
-            artifact_path.write_bytes(_checkpoint_envelope(value))
+        elif corruption == 'bytes':
+            artifact_path.write_bytes(b'changed')
+        elif corruption == 'header':
+            (store.root/'blobs'/f'{result.result_hash}.json').write_bytes(b'changed')
         else:
             if corruption == "reference":
                 reference["sha256"] = "../outside"
             elif corruption == "closure":
                 document["artifact_refs"][1] = reference
             else:
-                document.pop("schema_version")
-                document["artifacts"] = [{"kind": item.kind, "sha256": item.sha256,
-                                          "content": item.content.decode()} for item in result.artifacts]
-                document.pop("artifact_refs")
+                document['schema_version'] = 2
+                document['content'] = result.content.decode()
             path.write_bytes(_checkpoint_envelope(document))
         with pytest.raises(CheckpointIntegrityError, match="cannot restore equity checkpoint"):
             store.load_equity_result(prepared, result.request_hash)
@@ -143,7 +145,7 @@ def test_checkpoint_read_replacement_is_rejected_without_caching_old_bytes(tmp_p
     with CheckpointStore(tmp_path, prepared.experiment, "read-replacement", "CREATE", "a" * 64) as store:
         store.save_equity_result(result.request_hash, result)
         artifact = result.artifacts[0]
-        target = store.root / 'artifacts' / f'{artifact.sha256}.json'
+        target = store.root / 'blobs' / f'{artifact.sha256}.json'
         original_read = Path.read_bytes
         replaced = []
 
@@ -173,6 +175,36 @@ def test_TDR_08_C05_checkpoint_execution_identity_drift_is_rejected(tmp_path):
         pass
     with pytest.raises(CheckpointIntegrityError, match='implementation identity differs'):
         CheckpointStore(tmp_path, experiment, 'run', 'RESUME', 'b' * 64)
+
+
+def test_checkpoint_does_not_expose_result_until_all_raw_bytes_are_committed(tmp_path, account_facts, monkeypatch):
+    prepared, result = account_facts
+    with CheckpointStore(tmp_path, prepared.experiment, 'partial-blobs', 'CREATE', 'a'*64) as store:
+        write = store._write
+        def interrupt_result(name, payload):
+            if name.startswith('results/'):
+                raise OSError('result index interrupted')
+            return write(name, payload)
+        monkeypatch.setattr(store, '_write', interrupt_result)
+        with pytest.raises(OSError, match='index interrupted'):
+            store.save_equity_result(result.request_hash, result)
+        assert len(list((store.root/'blobs').glob('*.json'))) == 4
+        assert store.load_equity_result(prepared, result.request_hash) is None
+        monkeypatch.setattr(store, '_write', write)
+        store.save_equity_result(result.request_hash, result)
+        restored = store.load_equity_result(prepared, result.request_hash)
+        assert restored == result
+
+
+def test_checkpoint_rejects_old_blob_storage_manifest(tmp_path):
+    experiment = ExperimentRef('S900', 'EX001_20261022')
+    with CheckpointStore(tmp_path, experiment, 'old-format', 'CREATE', 'a'*64) as store:
+        manifest = store.root/'manifest.json'
+        payload = json.loads(manifest.read_bytes())['payload']
+    payload['schema_version'] = 1
+    manifest.write_bytes(_checkpoint_envelope(payload))
+    with pytest.raises(CheckpointIntegrityError, match='identity differs'):
+        CheckpointStore(tmp_path, experiment, 'old-format', 'RESUME', 'a'*64)
 
 
 def test_TDR_08_C04_source_drift_blocks_preparation_before_checkpoint_reuse(tmp_path, monkeypatch):

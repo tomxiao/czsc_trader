@@ -38,9 +38,18 @@ def _serial(value):
             return item.isoformat()
         if isinstance(item, Decimal):
             return str(item)
-        return item
-    import json
-    return json.loads(json.dumps(facts(value), allow_nan=False))
+        if item is None or type(item) is bool:
+            return item
+        if isinstance(item, str):
+            return str(item)
+        if isinstance(item, int):
+            return int(item)
+        if isinstance(item, float):
+            if not math.isfinite(item):
+                raise ValueError('execution facts require finite JSON numbers')
+            return float(item)
+        raise TypeError(f'unsupported execution fact: {type(item).__name__}')
+    return facts(value)
 
 
 @dataclass(frozen=True, slots=True)

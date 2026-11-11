@@ -80,6 +80,12 @@ def _freeze(value):
     return value
 
 
+@lru_cache(maxsize=256)
+def _immutable_parameters(content):
+    """Reuse frozen parameter values without adding mappingproxy to pickle state."""
+    return _freeze(json.loads(content))
+
+
 @lru_cache(maxsize=1)
 def _package_distributions():
     return metadata.packages_distributions()
@@ -658,7 +664,7 @@ class EquityStrategyDefinition:
 
     @property
     def parameters(self):
-        return _freeze(json.loads(self.parameters_json))
+        return _immutable_parameters(self.parameters_json)
 
     def to_dict(self):
         # Policy settings are immutable mappings; dataclasses.asdict cannot

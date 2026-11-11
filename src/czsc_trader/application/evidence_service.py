@@ -25,7 +25,7 @@ def _file_identity(path):
     return (value.st_dev, value.st_ino, value.st_size, value.st_mtime_ns, value.st_ctime_ns)
 
 
-def _install_artifact(context, request, artifact, seen, *, restore=False):
+def _install_artifact(context, request, artifact, seen, *, restore=False, checkpoint=None):
     key = (request.experiment, artifact.sha256)
     target = managed_path(context.repository.root,
         f'{request.experiment.repository_path.replace("/experiments/", "/assets/evidence/")}/{artifact.sha256}.json')
@@ -40,7 +40,10 @@ def _install_artifact(context, request, artifact, seen, *, restore=False):
     elif restore:
         raise FileNotFoundError('equity publication checkpoint dependency is missing')
     else:
-        _publish_bytes(context.repository.root, target, artifact.content)
+        if checkpoint is None:
+            _publish_bytes(context.repository.root, target, artifact.content)
+        else:
+            _publish_checkpoint_blob(context.repository.root, target, artifact.content, artifact.sha256, checkpoint)
         identity = _file_identity(target)
     seen[key] = identity
 
@@ -99,6 +102,34 @@ def _publish_bytes(repository_root: Path, target: Path, data: bytes) -> None:
         temporary.unlink(missing_ok=True)
 
 
+def _publish_checkpoint_blob(repository_root: Path, target: Path, data: bytes,
+                             digest: str, checkpoint) -> None:
+    """Explicitly publish a durable checkpoint blob without copying its bytes."""
+    root = Path(repository_root).resolve()
+    if checkpoint.repository_root != root:
+        raise ValueError('publication checkpoint belongs to another repository')
+    relative = Path(target).relative_to(root).as_posix()
+    target = managed_path(root, relative)
+    if not relative.startswith('research/'):
+        raise ValueError('research evidence must stay within the research directory')
+    source = checkpoint.publication_blob(digest, data)
+    before = _file_identity(source)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        os.link(source, target)
+    except FileExistsError:
+        existing = _file_identity(target)
+        if target.read_bytes() != data:
+            raise ValueError('published evidence cannot be overwritten') from None
+        if _file_identity(target) != existing:
+            raise ValueError('published evidence changed while reading')
+        return
+    # Creating the hard link legitimately changes ctime. The linked inode,
+    # size and mtime must still identify the checked source bytes.
+    if _file_identity(source)[:4] != before[:4] or _file_identity(target)[:4] != before[:4]:
+        raise ValueError('checkpoint blob changed during publication')
+
+
 def _validate_request(context: ResearchContext, request: EvidenceWriteRequest, *, execution=None) -> None:
     if type(context) is not ResearchContext or type(request) not in (
         MaterialEvidenceWrite, EvaluationEvidenceWrite, ExperimentReportWrite,
@@ -123,7 +154,8 @@ def _validate_request(context: ResearchContext, request: EvidenceWriteRequest, *
         validate_equity_result(context.evaluation, request.request, request.result, execution=execution)
 
 
-def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest, data: bytes, *, artifacts_seen=None) -> EvidenceRef:
+def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest, data: bytes, *,
+                        artifacts_seen=None, checkpoint=None) -> EvidenceRef:
     if isinstance(request, EvaluationEvidenceWrite):
         version = 4
         media_type, suffix, schema = "application/json", "json", "equity_research"
@@ -133,7 +165,7 @@ def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest,
         # Install each immutable dependency once before exposing the result.
         seen = {} if artifacts_seen is None else artifacts_seen
         for artifact in request.result.artifacts:
-            _install_artifact(context, request, artifact, seen)
+            _install_artifact(context, request, artifact, seen, checkpoint=checkpoint)
     else:
         media_type, suffix = request.media_type, request.suffix
         schema, version = None, None
@@ -141,7 +173,11 @@ def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest,
     reference = EvidenceRef(request.experiment, f"{digest}.{suffix}", digest,
                             media_type, request.name, schema, version)
     root = context.repository.root
-    _publish_bytes(root, managed_path(root, reference.repository_path), data)
+    target = managed_path(root, reference.repository_path)
+    if checkpoint is not None and isinstance(request, EvaluationEvidenceWrite):
+        _publish_checkpoint_blob(root, target, data, digest, checkpoint)
+    else:
+        _publish_bytes(root, target, data)
     return reference
 
 
@@ -165,7 +201,8 @@ def publish_evidence(context: ResearchContext, request: EvidenceWriteRequest, *,
             reference = _restored_publication(context, request, execution, key, seen)
             if reference is not None:
                 return reference
-        reference = _publish_serialized(context, request, data, artifacts_seen=seen)
+        reference = _publish_serialized(context, request, data, artifacts_seen=seen,
+            checkpoint=None if execution is None else execution.checkpoint)
         if key is not None:
             execution.checkpoint.save_publication(key, reference)
         return reference
@@ -179,12 +216,13 @@ def _failed(index: int, error: BaseException, status: PublicationStatus = Public
     ))
 
 
-def _publish_outcome(context, index, request, data, *, artifacts_seen=None):
+def _publish_outcome(context, index, request, data, *, artifacts_seen=None, checkpoint=None):
     if type(data) is not bytes or not data:
         return _failed(index, TypeError("publication requires nonempty serialized bytes"))
     try:
         return PublicationOutcome(index, PublicationStatus.PUBLISHED,
-                                  _publish_serialized(context, request, data, artifacts_seen=artifacts_seen))
+                                  _publish_serialized(context, request, data,
+                                      artifacts_seen=artifacts_seen, checkpoint=checkpoint))
     except BaseException as exc:
         return _publication_failure(context, index, request, data, exc)
 
@@ -267,7 +305,7 @@ def publish_evidence_many(context: ResearchContext,
         else:
             with executor.measure(ExecutionPhase.PUBLISH):
                 outcomes[index] = _publish_outcome(context, index, request, request.result.content,
-                                                 artifacts_seen=artifacts_seen)
+                                                 artifacts_seen=artifacts_seen, checkpoint=checkpoint)
             if checkpoint is not None and outcomes[index].status is PublicationStatus.PUBLISHED:
                 try:
                     with executor.measure(ExecutionPhase.CHECKPOINT):

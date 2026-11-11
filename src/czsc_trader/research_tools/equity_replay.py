@@ -335,9 +335,41 @@ def _compute_account(replay, candidate, request, owner, execution_bars, output):
     metrics = summarize_equity_ledger(ledger)
     run.update(metrics=_json_value(asdict(metrics)), data_quality=_data_quality(
         output.bars, run, timezone=candidate.instrument.timezone, execution_bars=output.execution_bars))
-    artifact = EquityArtifact("equity_account", _bytes({"schema": "equity-account/v1",
-        "owner": _read(output.owner_content), "input_sha256": output.input_sha256, "run": run}))
+    # Records, metrics and owner have already been normalized to JSON values.
+    # Encode the large account once; a JSON round-trip here duplicates all rows.
+    artifact = EquityArtifact("equity_account", json.dumps({"schema": "equity-account/v1",
+        "owner": _read(output.owner_content), "input_sha256": output.input_sha256, "run": run},
+        sort_keys=True, separators=(",", ":"), allow_nan=False).encode())
     return artifact, outcome.statistics
+
+
+def _compute_transported_account(shared, candidate, request, owner, input_sha256, owner_content):
+    from ._account_transport import AccountInputRef, read_account_input
+    replay, quotes, bars, execution_bars, constraints = (
+        read_account_input(shared) if type(shared) is AccountInputRef else shared)
+    output = _AccountOutputContext(input_sha256, owner_content, bars, execution_bars, constraints)
+    return _compute_account(replay, candidate, request, owner, quotes, output)
+
+
+def _transport_tasks(tasks, execution):
+    """Share repeated immutable inputs; one-off inputs travel in their own task."""
+    from collections import Counter
+    from ._account_transport import AccountInputStore
+    keys = [(id(args[0]), id(args[4]), args[5].input_sha256) for _, args in tasks]
+    counts = Counter(keys)
+    selected = {key for key, count in counts.most_common(8) if count > 1}
+    store = execution.executor.account_inputs
+    if store is None:
+        store = execution.executor.account_inputs = AccountInputStore()
+    store.retain(selected)
+    result = []
+    for (task_key, args), key in zip(tasks, keys, strict=True):
+        replay, candidate, request, owner, quotes, output = args
+        shared = (replay, quotes, output.bars, output.execution_bars, output.constraints)
+        if key in selected:
+            shared = store.put(key, shared)
+        result.append((task_key, (shared, candidate, request, owner, output.input_sha256, output.owner_content)))
+    return result
 
 
 def _account_owner(prepared, *, benchmark):
@@ -447,9 +479,14 @@ def evaluate_many_equity(access, requests, *, execution):
             except Exception as exc:
                 failures[key] = exc
     accounts = {}
+    operation = _compute_account
+    if tasks and execution.executor.resources.max_workers > 1:
+        with execution.executor.measure(ExecutionPhase.PREPARE):
+            tasks = _transport_tasks(tasks, execution)
+        operation = _compute_transported_account
     # Consume each finished result immediately rather than retaining all raw runs.
     # COMPUTE wall time includes streamed handling; worker time is separate.
-    with closing(execution.executor.run(_compute_account, iter(tasks), phase=ExecutionPhase.COMPUTE, total=len(tasks))) as values:
+    with closing(execution.executor.run(operation, iter(tasks), phase=ExecutionPhase.COMPUTE, total=len(tasks))) as values:
         for key, value, error in values:
             if error is not None:
                 failures[key] = error

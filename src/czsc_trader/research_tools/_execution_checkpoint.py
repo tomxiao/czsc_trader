@@ -59,7 +59,7 @@ class CheckpointStore:
         self.root = managed_path(self.repository_root, self.relative)
         self._closed = True
         self._lock = None
-        self._installed_artifacts = {}
+        self._installed_blobs = {}
         # Bound decoded byte retention: current input, benchmark and adjacent
         # candidate results. Never retain the entire experiment's accounts.
         self._loaded_artifacts = OrderedDict()
@@ -71,7 +71,7 @@ class CheckpointStore:
         self._lock = RegistryWriteLock(self.root).hold()
         self._lock.__enter__()
         self._closed = False
-        manifest = {"schema_version": 1, "experiment": experiment.to_dict(),
+        manifest = {"schema_version": 2, "experiment": experiment.to_dict(),
                     "run_id": run_id, "implementation_identity": implementation_identity}
         try:
             if mode == "CREATE":
@@ -85,7 +85,7 @@ class CheckpointStore:
     def close(self):
         if not self._closed:
             self._closed = True
-            self._installed_artifacts.clear()
+            self._installed_blobs.clear()
             self._loaded_artifacts.clear()
             self._lock.__exit__(None, None, None)
 
@@ -128,18 +128,71 @@ class CheckpointStore:
             if self._read(name, required=True) != payload:
                 raise CheckpointIntegrityError("completed checkpoint cannot be replaced with different facts")
             return
-        encoded = _json({"sha256": sha256(_json(payload)).hexdigest(), "payload": payload})
+        body = _json(payload)
+        # Encode the metadata once; preserve the canonical envelope bytes.
+        encoded = b'{"payload":' + body + b',"sha256":"' + sha256(body).hexdigest().encode('ascii') + b'"}'
+        self._write_bytes(name, encoded)
+
+    def _write_bytes(self, name: str, content: bytes) -> None:
+        """Durably install immutable bytes; never replace an existing fact."""
+        if type(content) is not bytes or not content:
+            raise TypeError('checkpoint content requires nonempty bytes')
+        target = self._target(name)
+        if target.exists():
+            before = _file_identity(target)
+            if target.read_bytes() != content:
+                raise CheckpointIntegrityError('completed checkpoint cannot be replaced with different facts')
+            if _file_identity(target) != before:
+                raise CheckpointIntegrityError('checkpoint changed while reading')
+            return
         target.parent.mkdir(parents=True, exist_ok=True)
         temporary = self._target(f"{name}.{uuid4().hex}.pending")
         try:
             with temporary.open("xb") as handle:
-                handle.write(encoded)
+                handle.write(content)
                 handle.flush()
                 os.fsync(handle.fileno())
-            os.replace(temporary, target)
+            # Atomic create-without-replace, also under external filesystem races.
+            try:
+                os.link(temporary, target)
+            except FileExistsError:
+                if target.read_bytes() != content:
+                    raise CheckpointIntegrityError('completed checkpoint cannot be replaced with different facts') from None
         finally:
             temporary.unlink(missing_ok=True)
 
+    def _save_blob(self, digest: str, content: bytes) -> None:
+        _hash(digest)
+        target = self._target(f'blobs/{digest}.json')
+        cached = self._installed_blobs.get(digest)
+        if cached is not None and target.exists() and _file_identity(target) == cached:
+            return
+        self._write_bytes(f'blobs/{digest}.json', content)
+        self._installed_blobs[digest] = _file_identity(target)
+
+    def _read_blob(self, digest: str) -> bytes:
+        _hash(digest)
+        target = self._target(f'blobs/{digest}.json')
+        before = _file_identity(target)
+        content = target.read_bytes()
+        if sha256(content).hexdigest() != digest:
+            raise CheckpointIntegrityError('cannot authenticate checkpoint blob content')
+        if _file_identity(target) != before:
+            raise CheckpointIntegrityError('checkpoint blob changed while reading')
+        self._installed_blobs[digest] = before
+        return content
+
+    def publication_blob(self, digest: str, content: bytes) -> Path:
+        """Return the exact saved bytes for an explicit evidence publication."""
+        _hash(digest)
+        if type(content) is not bytes or not content:
+            raise TypeError('publication blob requires nonempty bytes')
+        target = self._target(f'blobs/{digest}.json')
+        before = _file_identity(target)
+        if self._installed_blobs.get(digest) != before:
+            if self._read_blob(digest) != content:
+                raise CheckpointIntegrityError('checkpoint publication bytes differ')
+        return target
 
 
     def save_equity_result(self, request_hash, result):
@@ -150,25 +203,15 @@ class CheckpointStore:
         payload = encode_result(result)
         # Commit dependencies first. An interrupted result commit can leave an
         # unused object, but cannot expose a completed result without its bytes.
-        for artifact, reference in zip(result.artifacts, payload["artifact_refs"], strict=True):
-            name = f"artifacts/{reference['sha256']}.json"
-            target = self._target(name)
-            before = _file_identity(target) if target.exists() else None
-            cached = self._installed_artifacts.get((artifact.kind, artifact.sha256))
-            if cached is not None and before == cached:
-                continue
-            self._write(name, {
-                **reference, "content": artifact.content.decode("utf-8")})
-            after = _file_identity(target)
-            if before is not None and before != after:
-                raise CheckpointIntegrityError("checkpoint artifact changed while saving")
-            self._installed_artifacts[(artifact.kind, artifact.sha256)] = after
+        for artifact in result.artifacts:
+            self._save_blob(artifact.sha256, artifact.content)
+        self._save_blob(result.result_hash, result.content)
         self._write(f"results/{request_hash}.json", payload)
 
     def _load_equity_artifact(self, kind, digest):
         from .equity_evaluation import EquityArtifact
         _hash(digest)
-        name = f"artifacts/{digest}.json"
+        name = f"blobs/{digest}.json"
         target = self._target(name)
         key = (kind, digest)
         cached = self._loaded_artifacts.get(key)
@@ -176,11 +219,7 @@ class CheckpointStore:
             self._loaded_artifacts.move_to_end(key)
             return cached[1]
         before = _file_identity(target) if target.exists() else None
-        payload = self._read(name, required=True)
-        if (type(payload) is not dict or set(payload) != {"kind", "sha256", "content"}
-                or payload["kind"] != kind or payload["sha256"] != digest):
-            raise CheckpointIntegrityError("equity checkpoint artifact identity differs")
-        artifact = EquityArtifact(kind, payload["content"].encode("utf-8"))
+        artifact = EquityArtifact(kind, self._read_blob(digest))
         if artifact.sha256 != digest:
             raise CheckpointIntegrityError("equity checkpoint artifact bytes differ")
         after = _file_identity(target)
@@ -205,8 +244,8 @@ class CheckpointStore:
         if payload is None:
             return None
         try:
-            return decode_result(payload, request_hash, self._load_equity_artifact)
-        except (TypeError, KeyError, ValueError, AttributeError) as exc:
+            return decode_result(payload, request_hash, self._load_equity_artifact, self._read_blob)
+        except (OSError, TypeError, KeyError, ValueError, AttributeError) as exc:
             raise CheckpointIntegrityError(f"cannot restore equity checkpoint: {exc}") from exc
 
     def save_publication(self, publication_key: str, reference: EvidenceRef):

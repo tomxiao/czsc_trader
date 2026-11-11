@@ -189,3 +189,87 @@ def test_batch_checkpoint_failure_preserves_other_publication_outcomes(tmp_path,
         assert failed.status is expected
         assert failed.error.code == 'OSError'
         assert failed.reference is None and failed_calls == [second_key]
+
+
+def test_checkpoint_publication_links_raw_bytes_and_survives_cache_removal(tmp_path, monkeypatch):
+    """Publication owns separate names for the same durable, immutable blobs."""
+    import os
+    from equity_test_support import setup_account_research
+    from czsc_trader.application import publish_evidence
+    from czsc_trader.research_tools import (
+        ResearchExecutionSession, EvaluationEvidenceWrite, ExecutionCheckpointRequest)
+    context, request, _, _ = setup_account_research(tmp_path)
+    with ResearchExecutionSession(context, experiment=request.experiment,
+            checkpoint=ExecutionCheckpointRequest('linked-blobs')) as execution:
+        handle = context.evaluation.prepare(request, execution=execution)
+        outcome, = context.evaluation.evaluate_many((handle,), execution=execution)
+        assert outcome.result is not None, outcome.error
+        result = outcome.result
+        folder = tmp_path/request.experiment.repository_path.replace('/experiments/', '/assets/evidence/')
+        assert not folder.exists()
+        blobs = execution.checkpoint.root/'blobs'
+        def unexpected_copy(*args, **kwargs):
+            raise AssertionError('checkpoint-backed publication must link existing durable bytes')
+        monkeypatch.setattr(evidence_service, '_publish_bytes', unexpected_copy)
+        reference = publish_evidence(context, EvaluationEvidenceWrite(request.experiment,'account',handle,result),
+            execution=execution)
+        expected = [(a.sha256,a.content) for a in result.artifacts]+[(result.result_hash,result.content)]
+        for digest, content in expected:
+            cached, published = blobs/f'{digest}.json', folder/f'{digest}.json'
+            assert cached.read_bytes() == published.read_bytes() == content
+            assert cached.stat().st_size == len(content)
+            assert os.path.samefile(cached,published)
+    for cached in blobs.glob('*.json'):
+        cached.unlink()
+    assert reference._read_verified(tmp_path)[1] == result.content
+    for digest, content in expected:
+        assert (folder/f'{digest}.json').read_bytes() == content
+
+
+@pytest.mark.parametrize('after_link', [False, True])
+def test_checkpoint_link_failure_preserves_publication_status(tmp_path, monkeypatch, after_link):
+    from dataclasses import replace
+    from pathlib import Path
+    from equity_test_support import setup_account_research
+    from czsc_trader.research_tools import (
+        ResearchExecutionSession, EvaluationEvidenceWrite, ExecutionCheckpointRequest)
+    context, request, _, _ = setup_account_research(tmp_path)
+    other = replace(request,candidate=replace(request.candidate,candidate_id='C0002'))
+    with ResearchExecutionSession(context, experiment=request.experiment,
+            checkpoint=ExecutionCheckpointRequest('link-failure')) as execution:
+        handles = tuple(context.evaluation.prepare(r,execution=execution) for r in (request,other))
+        outcomes = context.evaluation.evaluate_many(handles,execution=execution)
+        assert all(o.result is not None for o in outcomes)
+        writes = tuple(EvaluationEvidenceWrite(request.experiment,'account',h,o.result)
+            for h,o in zip(handles,outcomes,strict=True))
+        original = evidence_service.os.link
+        calls = []
+        def fail_second_header(source,target):
+            if Path(target).name == writes[1].result.result_hash+'.json':
+                calls.append(target)
+                if after_link:
+                    original(source,target)
+                raise OSError('synthetic link failure')
+            return original(source,target)
+        monkeypatch.setattr(evidence_service.os,'link',fail_second_header)
+        first, second = publish_evidence_many(context,writes,execution=execution)
+        assert first.status is PublicationStatus.PUBLISHED
+        assert second.status is (PublicationStatus.UNKNOWN if after_link else PublicationStatus.FAILED)
+        assert second.error.code == 'OSError' and len(calls)==1
+
+
+def test_changed_checkpoint_blob_blocks_publication(tmp_path):
+    from equity_test_support import setup_account_research
+    from czsc_trader.research_tools import (
+        ResearchExecutionSession, EvaluationEvidenceWrite, ExecutionCheckpointRequest)
+    context, request, _, _ = setup_account_research(tmp_path)
+    with ResearchExecutionSession(context,experiment=request.experiment,
+            checkpoint=ExecutionCheckpointRequest('changed-blob')) as execution:
+        handle = context.evaluation.prepare(request,execution=execution)
+        outcome, = context.evaluation.evaluate_many((handle,),execution=execution)
+        assert outcome.result is not None
+        artifact = outcome.result.artifacts[0]
+        (execution.checkpoint.root/'blobs'/f'{artifact.sha256}.json').write_bytes(b'corrupt blob')
+        failed, = publish_evidence_many(context,(EvaluationEvidenceWrite(request.experiment,'account',handle,outcome.result),),execution=execution)
+        assert failed.status is PublicationStatus.FAILED
+        assert 'authenticate checkpoint blob' in failed.error.message

@@ -6,22 +6,22 @@ def encode_result(result):
     if type(result) is EquityEvaluationResult and result.payload.get("schema") == "equity-research/v4":
         if len(result.artifacts) != 3:
             raise ValueError("account checkpoints require the complete immutable artifact closure")
-        return {"schema_version": 2, "kind": result.payload["schema"], "request_hash": result.request_hash,
-            "result_hash": result.result_hash, "content": result.content.decode("utf-8"),
+        return {"schema_version": 3, "kind": result.payload["schema"], "request_hash": result.request_hash,
+            "result_hash": result.result_hash,
             "artifact_refs": [{"kind": item.kind, "sha256": item.sha256} for item in result.artifacts]}
     raise TypeError("equity checkpoints require a V4 result")
 
 
-def decode_result(payload, request_hash, load_artifact=None):
+def decode_result(payload, request_hash, load_artifact=None, load_content=None):
     if type(payload) is dict and payload.get("kind") == "equity-research/v4":
-        if (set(payload) != {"schema_version", "kind", "request_hash", "result_hash", "content", "artifact_refs"}
-                or type(payload["schema_version"]) is not int or payload["schema_version"] != 2
+        if (set(payload) != {"schema_version", "kind", "request_hash", "result_hash", "artifact_refs"}
+                or type(payload["schema_version"]) is not int or payload["schema_version"] != 3
                 or payload["request_hash"] != request_hash):
             raise ValueError("equity checkpoint fields or request identity differ")
         if type(payload["artifact_refs"]) is not list or len(payload["artifact_refs"]) != 3:
             raise ValueError("equity checkpoint requires the complete artifact closure")
-        if not callable(load_artifact):
-            raise TypeError("equity checkpoint requires an explicit artifact resolver")
+        if not callable(load_artifact) or not callable(load_content):
+            raise TypeError("equity checkpoint requires explicit artifact and header resolvers")
         artifacts = []
         for row in payload["artifact_refs"]:
             if type(row) is not dict or set(row) != {"kind", "sha256"}:
@@ -30,10 +30,14 @@ def decode_result(payload, request_hash, load_artifact=None):
             if type(item) is not EquityArtifact or item.kind != row["kind"] or item.sha256 != row["sha256"]:
                 raise ValueError("equity checkpoint artifact identity differs")
             artifacts.append(item)
-        result = EquityEvaluationResult(request_hash, payload["content"].encode("utf-8"), tuple(artifacts))
-        if result.payload.get("schema") != payload["kind"]:
+        result = EquityEvaluationResult(request_hash, load_content(payload["result_hash"]), tuple(artifacts))
+        header = result.payload
+        if header.get("schema") != payload["kind"] or header.get('request_hash') != request_hash:
             raise ValueError("checkpoint kind differs from account schema")
         if result.result_hash != payload["result_hash"] or len(artifacts) != 3:
             raise ValueError("equity checkpoint result bytes or artifact closure differ")
+        if tuple(header.get(name) for name in ('input_ref', 'candidate_ref', 'benchmark_ref')) != tuple(
+                item.reference() for item in artifacts):
+            raise ValueError('equity checkpoint artifact references differ from the result')
         return result
     raise ValueError("equity checkpoints require V4 artifact closure")
