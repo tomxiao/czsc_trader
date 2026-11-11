@@ -395,16 +395,19 @@ def _record_timing(state, prepared, benchmark, timing):
 def _account_output_context(state, prepared, *, benchmark):
     digest = prepared.snapshot.sha256
     if digest not in state.input_records:
-        state.input_records[digest] = _read(prepared.snapshot.artifact.content)["products"]
-    products = state.input_records[digest]
+        products = _read(prepared.snapshot.artifact.content)["products"]
+        state.input_records[digest] = (
+            tuple(products["bars"]),
+            tuple(products["execution:bars"]) if "execution:bars" in products else None,
+            tuple(state.products[digest]["constraints"].to_dict("records")),
+        )
+    bars, execution_bars, constraints = state.input_records[digest]
     owner = ({"kind": "BENCHMARK", "run_identity": prepared.benchmark_identity.to_dict(),
               "run_sha256": prepared.benchmark_identity.sha256} if benchmark else
              {"kind": "CANDIDATE", "candidate": asdict(prepared.candidate.key),
               "content_sha256": prepared.candidate.content_identity.content_sha256})
     return _AccountOutputContext(_primary_input_sha256(prepared.snapshot) if benchmark else digest,
-        _bytes(owner), tuple(products["bars"]), tuple(products["execution:bars"])
-        if not benchmark and prepared.candidate.definition.execution_input is not None else None,
-        tuple(state.products[digest]['constraints'].to_dict('records')))
+        _bytes(owner), bars, None if benchmark else execution_bars, constraints)
 
 
 def _result(prepared, candidate, benchmark):

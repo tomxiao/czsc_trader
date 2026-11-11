@@ -267,36 +267,81 @@ class TableObservationStatus(StrEnum):
     INACTIVE = 'INACTIVE'
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, init=False, eq=False)
 class TableHistoryView:
     """Immutable visible rows in source order; no access to future row storage."""
     as_of: datetime
-    rows: tuple
     columns: tuple[str, ...]
-    source_time_field: str = 'Date'
-    status: TableObservationStatus = TableObservationStatus.ACTIVE
+    source_time_field: str
+    status: TableObservationStatus
+    _rows: tuple | None = field(repr=False)
+    _prefix: _TablePrefix | None = field(repr=False)
 
-    def __post_init__(self):
-        if type(self.as_of) is not datetime or self.as_of.utcoffset() is None:
+    def __init__(self, as_of, rows, columns, source_time_field='Date', status=TableObservationStatus.ACTIVE):
+        if type(as_of) is not datetime or as_of.utcoffset() is None:
             raise ValueError('observation view requires aware time')
-        if type(self.status) is not TableObservationStatus or (self.status is TableObservationStatus.INACTIVE and self.rows):
+        if type(status) is not TableObservationStatus or (status is TableObservationStatus.INACTIVE and rows):
             raise ValueError('inactive observations must have no rows')
         from .equity_replay import _Row
-        object.__setattr__(self, 'rows', tuple(row if type(row) is _Row else _Row(dict(row)) for row in self.rows))
+        object.__setattr__(self, 'as_of', as_of)
+        object.__setattr__(self, 'columns', columns)
+        object.__setattr__(self, 'source_time_field', source_time_field)
+        object.__setattr__(self, 'status', status)
+        object.__setattr__(self, '_rows', tuple(row if type(row) is _Row else _Row(dict(row)) for row in rows))
+        object.__setattr__(self, '_prefix', None)
+
+    @classmethod
+    def _from_prefix(cls, when, columns, source_time_field, prefix):
+        view = cls(when, (), columns, source_time_field)
+        object.__setattr__(view, '_rows', None)
+        object.__setattr__(view, '_prefix', prefix)
+        return view
+
+    @property
+    def rows(self):
+        if self._rows is None:
+            from .equity_features import _history_rows
+            object.__setattr__(self, '_rows', tuple(_history_rows(self._prefix.root)))
+        return self._rows
+
+    def __eq__(self, other):
+        if type(other) is not TableHistoryView:
+            return NotImplemented
+        return (self.as_of, self.columns, self.source_time_field, self.status, self.rows) == (
+            other.as_of, other.columns, other.source_time_field, other.status, other.rows)
+
+    def __hash__(self):
+        return hash((self.as_of, self.rows, self.columns, self.source_time_field, self.status))
 
     def __len__(self):
-        return len(self.rows)
+        return self.observation_count
 
     def to_frame(self):
         return pd.DataFrame([dict(row) for row in self.rows], columns=self.columns)
 
     @property
     def observation_count(self):
-        return len(self.rows)
+        return self._prefix.observation_count if self._prefix is not None else len(self.rows)
 
     @property
     def session_count(self):
+        if self._prefix is not None:
+            return self._prefix.session_count
         return len({pd.Timestamp(row[self.source_time_field]).date() for row in self.rows})
+
+    @property
+    def latest_session(self):
+        if self._prefix is not None:
+            return self._prefix.latest_session
+        return max((pd.Timestamp(row[self.source_time_field]).date() for row in self.rows), default=None)
+
+
+@dataclass(frozen=True, slots=True)
+class _TablePrefix:
+    root: object
+    observation_count: int
+    session_count: int
+    latest_session: date
 
 
 @dataclass(frozen=True, slots=True)
@@ -311,6 +356,7 @@ class PreparedObservationTable:
     _monotonic_availability: bool = False
     source_timezone: str = 'UTC'
     _inactive_before: datetime | None = None
+    _prefixes: tuple[_TablePrefix, ...] = field(init=False, compare=False, repr=False)
 
     def __post_init__(self):
         if not re.fullmatch('[a-f0-9]{64}', self.content_sha256):
@@ -319,6 +365,29 @@ class PreparedObservationTable:
             raise ValueError('prepared observation index differs from rows')
         if any(type(stamp) is not datetime or stamp.utcoffset() is None for stamp in self._available) or tuple(sorted(self._available)) != self._available:
             raise ValueError('prepared observation availability must be ordered and aware')
+        from .equity_features import _HistoryAppend, _history_insert
+        from .equity_replay import _Row
+        rows = tuple(row if type(row) is _Row else _Row(dict(row)) for row in self._rows)
+        object.__setattr__(self, '_rows', rows)
+        source_order = self._order == tuple(range(len(rows)))
+        prefixes, days = [], set()
+        root, latest = None, None
+        for count, (index, ready) in enumerate(zip(self._order, self._available, strict=True), 1):
+            row = rows[index]
+            day = pd.Timestamp(row[self.source_time_field]).date()
+            days.add(day)
+            latest = day if latest is None else max(latest, day)
+            root = (_HistoryAppend(row, root, count, ready) if source_order else
+                    _history_insert(root, index, row, ready))
+            prefixes.append(_TablePrefix(root, count, len(days), latest))
+        object.__setattr__(self, '_prefixes', tuple(prefixes))
+
+    def __reduce__(self):
+        # Serialize source rows once; independently flattening every prefix
+        # would duplicate the same history in transit.
+        return type(self), (self.content_sha256, self.columns, self.primary_key, self._rows,
+                            self._available, self._order, self.source_time_field,
+                            self._monotonic_availability, self.source_timezone, self._inactive_before)
 
     @classmethod
     def from_frame(cls, frame, identity: DataIdentity, *, declaration=None):
@@ -377,8 +446,9 @@ class PreparedObservationTable:
         if self._inactive_before is not None and when < self._inactive_before:
             return TableHistoryView(when, (), self.columns, self.source_time_field, TableObservationStatus.INACTIVE)
         count = bisect_right(self._available, when)
-        positions = self._order[:count] if self._monotonic_availability else sorted(self._order[:count])
-        return TableHistoryView(when, tuple(self._rows[i] for i in positions), self.columns, self.source_time_field)
+        if count == 0:
+            return TableHistoryView(when, (), self.columns, self.source_time_field)
+        return TableHistoryView._from_prefix(when, self.columns, self.source_time_field, self._prefixes[count - 1])
 
 
 @dataclass(frozen=True, slots=True)

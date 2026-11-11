@@ -200,10 +200,9 @@ class HistoricalReplayChannel:
         self._account(account_id)
         if self._failed or self._clock != at or self._pending is not None:
             raise RuntimeError('historical snapshot requires an advanced, unblocked clock')
-        end = bisect_right(self._ends, at)
-        if not end:
+        if not self._ends or self._ends[0] > at:
             raise ValueError('historical snapshot has no completed reference observation')
-        reference = self._ends[end-1] if observed_through is None else observed_through
+        reference = self._ends[bisect_right(self._ends, at) - 1] if observed_through is None else observed_through
         if reference not in self._end_set or reference > at:
             raise ValueError('historical reference must identify a completed observation')
         portfolio = self.executor.snapshot_at(reference, at)

@@ -188,12 +188,10 @@ class AccountExecutionPlan:
     def __post_init__(self):
         from .identity import freeze as _freeze
         from collections.abc import Mapping
-        import json
         if not isinstance(self.evidence, Mapping):
             raise TypeError('plan evidence requires mapping')
-        # Evidence is immutable JSON facts, never arbitrary model objects.
-        json.dumps(dict(self.evidence), allow_nan=False)
-        object.__setattr__(self, 'evidence', _freeze(dict(self.evidence)))
+        # Freezing also validates the complete JSON-compatible fact tree.
+        object.__setattr__(self, 'evidence', _freeze(self.evidence))
         import re
         if type(self.plan_identity) is not str or re.fullmatch(r"[0-9a-f]{64}", self.plan_identity) is None:
             raise ValueError("plan requires content identity")

@@ -141,6 +141,8 @@ class _EquityAccount:
             return self.snapshot()
 
     def _pay(self, through, *, inclusive):
+        if not self.pending:
+            return
         remaining = []
         for stamp, amount, identity, kind in sorted(self.pending, key=lambda item: item[0]):
             if stamp < through or (inclusive and stamp == through):

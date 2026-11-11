@@ -120,7 +120,6 @@ class AccountDecisionEngine:
         if set(self._tables) != {item.name for item in definition.observation_inputs}:
             raise ValueError('prepared table observations differ from declaration')
         self._intervals = dict(prepared._calendar_intervals)
-        self._rows = dict(zip(zip(prepared._data.starts, prepared._data.ends), range(len(prepared._data.rows)), strict=True))
         self._observed_at = None
         self._observation_cache = None
 
@@ -140,9 +139,9 @@ class AccountDecisionEngine:
                     or view.session_count < declaration.coverage.minimum_sessions):
                 raise ValueError('OBSERVATION_WARMUP_INSUFFICIENT: ' + declaration.name)
             if declaration.max_staleness_days is not None:
-                latest = max(pd.Timestamp(row[view.source_time_field]).date() for row in view.rows)
+                latest = view.latest_session
                 zone = self._tables[declaration.name].source_timezone
-                if (pd.Timestamp(when).tz_convert(zone).date() - latest).days > declaration.max_staleness_days:
+                if latest is None or (pd.Timestamp(when).tz_convert(zone).date() - latest).days > declaration.max_staleness_days:
                     raise ValueError('OBSERVATION_INPUT_STALE: ' + declaration.name)
             views[declaration.name] = view
         result = MappingProxyType(views)

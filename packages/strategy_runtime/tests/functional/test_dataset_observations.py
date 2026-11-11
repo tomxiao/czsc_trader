@@ -53,6 +53,13 @@ def test_SRT_17_C01_panel_visibility_keeps_same_day_rows_and_delayed_publication
     table = PreparedObservationTable.from_frame(frame, identity())
     table = pickle.loads(pickle.dumps(table))
     view = table.view(datetime(2026, 1, 2, tzinfo=timezone.utc))
+    assert view.observation_count == view.session_count == 2
+    assert view.latest_session == date(2026, 1, 2)
+    later = table.view(datetime(2026, 1, 3, tzinfo=timezone.utc))
+    assert later.observation_count == 3
+    assert later.session_count == 2
+    assert later.latest_session == view.latest_session
+    assert tuple(row["Weight"] for row in pickle.loads(pickle.dumps(later)).rows) == (1., 2., 3.)
     assert [(row["ConstituentSymbol"], row["Weight"]) for row in view.rows] == [
         ("A", 1.0),
         ("A", 3.0),
