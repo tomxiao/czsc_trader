@@ -1,15 +1,17 @@
-# S019三候选阶段四：已暂停
+# S019 三候选阶段四自检收尾
 
-Status: PAUSED；按用户指令，在第三批完整留证后暂停。
+Status: COMPLETED
 
-已完成183/1698个参数邻点，另复用3个中心和3个双倍费用账户，共189份场景证据。主进程和61个工作进程均已停止。C0966剩59点，C1010和C0909各剩728点，合计1515点。完整邻域尚待完成，当前验收结论保持待定。
+用户批准的 C0966、C1010、C0909 全部完成非参数检查与 1,698 个邻点计算。此前暂停点已由新版 V4 回放续完。[迁移校验](others/v4_migration/budget_validation.json)复现了标准与压力中心及抽样邻点的账户结果。
 
-已完成的Bootstrap、时间与集中性、S018-v1对照和研究族年度分析保留。原目标、完整点集、61进程资源设置与剩余7轮优化额度保持。暂停前已完成账户的身份与请求逐份核验PASS；执行器时间统计截止最后已提交批次，停止期间的准备/清理未包含在该时间统计中。
+| 候选 | 邻点联合通过 | 通过率 | 80% 门槛 |
+| --- | ---: | ---: | --- |
+| C0966 | 161 / 242 | 66.53% | 未通过 |
+| C1010 | 728 / 728 | 100.00% | 通过 |
+| C0909 | 552 / 728 | 75.82% | 未通过 |
 
-恢复须等待用户明确指令，随后使用同一源码、协议与公共检查点执行：
+C1010 是本批唯一通过全部适用数值目标的候选。标准费率下 NAR 66.9452%、MDD 13.3508%、Calmar 5.014322，双倍费用下 Calmar 4.588179。C0966 和 C0909 的中心及费用检查完成，均在邻点联合通过率一项未达标。结果来自批次已见历史。本批新 `ASSESSMENT` 面板及阶段五待后续决定。
 
-```powershell
-.venv/Scripts/python.exe -B research/S019/experiments/EX050_20261111/src/run_accounts.py --experiment research/S019/experiments/EX050_20261111 --run --recover
-```
+[非参数检查](others/nonparameter_selfcheck.json)、[完整邻域结果](others/v4_parameter_selfcheck/result.json)、[统计及时间诊断](others/statistics_report.md)与[S018-v1 同窗参考](others/temporal_s018_reference.json)保留各自的计算口径。研究绩效对标为 S018-v1，同条件 MU 买持用于原相对回撤约束。
 
-[恢复检查点](others/pause_checkpoint.json)、[进程停止记录](others/process_pause.json)、[执行清单](protocols/run_manifest.json)、[已保存账户](others/account_results.json)、[统计报告](others/statistics_report.md)。
+后续的[持仓再平衡对照](../EX051_20261112/report.md)独立记录。此前[暂停检查点](others/pause_checkpoint.json)和[停止记录](others/process_pause.json)保留当时的执行状态。
