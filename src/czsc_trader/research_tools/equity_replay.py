@@ -496,10 +496,11 @@ def evaluate_many_equity(access, requests, *, execution):
                 failures[key] = exc
     accounts = {}
     operation = _compute_account
-    if tasks and execution.executor.resources.max_workers > 1:
+    if tasks:
         with execution.executor.measure(ExecutionPhase.PREPARE):
-            tasks = _transport_tasks(tasks, execution)
-        operation = _compute_transported_account
+            if execution.executor.configure_replay():
+                tasks = _transport_tasks(tasks, execution)
+                operation = _compute_transported_account
     # Consume each finished result immediately rather than retaining all raw runs.
     # COMPUTE wall time includes streamed handling; worker time is separate.
     with closing(execution.executor.run(operation, iter(tasks), phase=ExecutionPhase.COMPUTE, total=len(tasks))) as values:

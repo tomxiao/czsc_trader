@@ -70,6 +70,10 @@ class ExecutionStats:
     reused_publications: int
     phase_wall_seconds: tuple[tuple[str, float], ...]
     worker_seconds: tuple[tuple[str, float], ...]
+    worker_limit: int = 1
+    native_threads_per_worker: int = 1
+    peak_in_flight: int = 0
+    worker_bindings: tuple[tuple[int, int], ...] = ()
 
     def __post_init__(self):
         for name in ("pool_starts", "submitted", "completed", "failed", "unknown",
@@ -78,6 +82,10 @@ class ExecutionStats:
                 raise ValueError("execution counters must be nonnegative integers")
         if self.failed + self.unknown > self.completed:
             raise ValueError("execution outcome counters are inconsistent")
+        if any(type(value) is not int or value < 1 for value in (self.worker_limit, self.native_threads_per_worker)):
+            raise ValueError("worker and thread limits must be positive integers")
+        if type(self.peak_in_flight) is not int or not 0 <= self.peak_in_flight <= self.worker_limit:
+            raise ValueError("peak in-flight tasks must fit within the worker limit")
         if type(self.elapsed_seconds) not in (float, int) or not isfinite(self.elapsed_seconds) or self.elapsed_seconds < 0:
             raise ValueError("execution elapsed seconds must be finite and nonnegative")
         for items in (self.phase_wall_seconds, self.worker_seconds):
@@ -232,7 +240,7 @@ class ResearchExecutionSession:
             raise RuntimeError("execution session already has an active operation")
         if self.context.evaluation is not access:
             raise ValueError("execution session belongs to another research context")
-        if access.resources != self.executor.resources:
+        if access.resources != self.executor.requested_resources:
             raise ValueError("execution resources changed during the session")
         if experiment_id is not None and experiment_id != self.experiment.experiment_id:
             raise ValueError("execution request belongs to another experiment")

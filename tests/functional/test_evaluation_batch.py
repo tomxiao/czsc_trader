@@ -54,7 +54,7 @@ def test_TDR_07_C03_v4_worker_loss_is_unknown_and_does_not_restart_pool(tmp_path
     from czsc_trader.research_tools import equity_replay
     context, request, _, _ = setup_account_research(tmp_path)
     context.evaluation.resources = ExecutionResources(2)
-    monkeypatch.setattr(equity_replay, '_compute_account', terminated_worker)
+    monkeypatch.setattr(equity_replay, '_compute_transported_account', terminated_worker)
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         prepared = context.evaluation.prepare(request, execution=execution)
         outcome, = context.evaluation.evaluate_many((prepared,), execution=execution)

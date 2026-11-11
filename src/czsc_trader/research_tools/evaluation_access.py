@@ -65,9 +65,9 @@ class EvaluationAccess:
         if not isinstance(dataflows, Dataflows):
             raise TypeError("evaluation requires Dataflows")
         self.data = dataflows
-        self.resources = resources if resources is not None else ExecutionResources()
-        if type(self.resources) is not ExecutionResources:
+        if resources is not None and type(resources) is not ExecutionResources:
             raise TypeError("evaluation requires ExecutionResources")
+        self.resources = resources
         self._context = None
         self.strategy_id = strategy_id
         if execution_spec is not None and type(execution_spec) is not ResearchExecutionSpec:

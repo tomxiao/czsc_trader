@@ -4,15 +4,37 @@ from concurrent.futures import CancelledError, ProcessPoolExecutor, wait, FIRST_
 from concurrent.futures.process import BrokenProcessPool
 from contextlib import contextmanager
 from multiprocessing import get_context
+import os
 from time import perf_counter
 
 from strategy_runtime.resources import ExecutionResources
 from threadpoolctl import threadpool_limits
 
+from ._cpu_affinity import bind_worker, replay_resources
 from .execution import ExecutionProgress, ExecutionStats
 
 
+_worker_binding_error = None
+
+
+def _initialize_replay_worker(slots, pids, claim_lock):
+    global _worker_binding_error
+    with claim_lock:
+        index = next(i for i, pid in enumerate(pids) if pid == 0)
+        pids[index] = -1
+    cpu = slots[index]
+    try:
+        bind_worker(cpu)
+    except (OSError, RuntimeError) as exc:
+        # Surface the actual setup failure via the normal task outcome channel.
+        _worker_binding_error = f"cannot bind V4 replay worker to logical CPU {cpu}: {exc}"
+    else:
+        pids[index] = os.getpid()
+
+
 def _timed_task(operation, args, native_threads):
+    if _worker_binding_error is not None:
+        raise RuntimeError(_worker_binding_error)
     start = perf_counter()
     with threadpool_limits(limits=native_threads):
         value = operation(*args)
@@ -41,9 +63,14 @@ def implementation_identity():
 
 class ExecutionExecutor:
     def __init__(self, resources, *, on_progress=None):
-        if type(resources) is not ExecutionResources:
+        if resources is not None and type(resources) is not ExecutionResources:
             raise TypeError("execution requires ExecutionResources")
-        self.resources = resources
+        self.resources = resources if resources is not None else ExecutionResources()
+        self.requested_resources = resources
+        self._replay_configured = False
+        self._cpu_slots = ()
+        self._worker_pids = ()
+        self.peak_in_flight = 0
         self.on_progress = on_progress
         self.pool = None
         self.broken = False
@@ -59,6 +86,25 @@ class ExecutionExecutor:
 
     def __enter__(self):
         return self
+
+    def configure_replay(self):
+        """Resolve the replay budget once, only when a session has accounts to run."""
+        if not self._replay_configured:
+            self.resources, self._cpu_slots = replay_resources(self.requested_resources)
+            self._replay_configured = True
+        return bool(self._cpu_slots)
+
+    def _start_pool(self):
+        context = get_context("spawn")
+        options = {}
+        if self._cpu_slots:
+            # Claiming requires a lock. Reading PID telemetry must remain safe
+            # after cancellation, even if a worker died holding that lock.
+            self._worker_pids = context.RawArray("q", len(self._cpu_slots))
+            options = {"initializer": _initialize_replay_worker,
+                       "initargs": (self._cpu_slots, self._worker_pids, context.Lock())}
+        self.pool = ProcessPoolExecutor(max_workers=self.resources.max_workers, mp_context=context, **options)
+        self.pool_starts += 1
 
     def __exit__(self, *exc):
         try:
@@ -103,11 +149,13 @@ class ExecutionExecutor:
 
     @property
     def stats(self):
+        bindings = tuple((pid, cpu) for pid, cpu in zip(self._worker_pids, self._cpu_slots) if pid > 0)
         return ExecutionStats(
             (self.finished or perf_counter()) - self.started, self.pool_starts,
             self.submitted, self.completed, self.failed, self.unknown,
             self.reused_results, self.reused_publications,
             tuple(sorted(self.wall.items())), tuple(sorted(self.worker.items())),
+            self.resources.max_workers, self.resources.native_threads_per_worker, self.peak_in_flight, bindings,
         )
 
     def run(self, operation, tasks, *, phase, total):
@@ -139,9 +187,10 @@ class ExecutionExecutor:
 
         iterator = iter(tasks)
         try:
-            if min(total, self.resources.max_workers) <= 1 and self.pool is None:
+            if (not self._cpu_slots or total == 0) and min(total, self.resources.max_workers) <= 1 and self.pool is None:
                 for key, args in iterator:
                     self.submitted += 1
+                    self.peak_in_flight = max(self.peak_in_flight, 1)
                     try:
                         value, seconds = _timed_task(operation, args, self.resources.native_threads_per_worker)
                         self.worker[phase.value] += seconds
@@ -161,9 +210,7 @@ class ExecutionExecutor:
                         break
                     try:
                         if self.pool is None:
-                            self.pool = ProcessPoolExecutor(max_workers=self.resources.max_workers,
-                                                            mp_context=get_context("spawn"))
-                            self.pool_starts += 1
+                            self._start_pool()
                         future = self.pool.submit(_timed_task, operation, args,
                                                   self.resources.native_threads_per_worker)
                     except BaseException as exc:
@@ -173,6 +220,7 @@ class ExecutionExecutor:
                     else:
                         self.submitted += 1
                         pending[future] = key
+                        self.peak_in_flight = max(self.peak_in_flight, len(pending))
                 if self.broken and not exhausted:
                     for key, _ in iterator:
                         yield outcome(key, error=CancelledError("task was not submitted: broken process pool"))

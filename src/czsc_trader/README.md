@@ -73,7 +73,7 @@ A股、美股的新账户研究统一使用显式会话内的V4接口，详细�
 `update_research_intent(repository, batch, ResearchIntentUpdate, *, actor, reason)`。
 重复启动同族的研究轮次需要显式且符合该策略ID的立项凭据，既有名称及范围须一致。
 
-下面的连续示例在仓库根目录使用已获准并已登记的 `S900`。实际策略、日期、资源与费率按研究合同填写。
+下面的连续示例在仓库根目录使用已获准并已登记的 `S900`。实际策略、日期与费率按研究合同填写。
 
 ```python
 from datetime import date
@@ -81,13 +81,10 @@ from pathlib import Path
 from czsc_trader.application import (
     RepositoryContext, create_research_context, create_experiment, ExperimentRequest,
 )
-from czsc_trader.research_tools import ResearchBatchRef, ExecutionResources
+from czsc_trader.research_tools import ResearchBatchRef
 
 repository = RepositoryContext.discover(Path.cwd())
-research = create_research_context(
-    repository, ResearchBatchRef("S900"),
-    resources=ExecutionResources(max_workers=2, native_threads_per_worker=1, random_seed=42),
-)
+research = create_research_context(repository, ResearchBatchRef("S900"))
 experiment = create_experiment(
     research, ExperimentRequest("收益机会检验", "该机制能否改善账户收益？", date(2026, 10, 7)),
 )
@@ -204,8 +201,9 @@ with ResearchExecutionSession(research, experiment=experiment) as execution:
 
 ### 资源与显式恢复
 
-通过`ExecutionResources(max_workers=..., native_threads_per_worker=...)`限制公共执行资源。
-工作进程使用公共执行器；不要在批量评价外再嵌套进程池。准备、共享基准、账户计算和发布采用同一会话生命周期。
+V4 回放由会话自动安排并发，RSCH 直接调用 `prepare` 和 `evaluate_many`。
+准备、共享基准、账户计算和发布采用同一会话生命周期。工作进程按需启动并跨批复用。
+已有脚本可移除手工指定的回放进程数和外层账户进程池，调度规则见[下文](#一次准备共享基准与可审计事实)。
 同批重复使用的只读账户输入在父进程编码一次，通过会话持有的共享内存传递引用；工作进程首次读取后有界复用，
 候选参数和账户状态分别传递。每批最多共享八组输入，单次输入直接随任务传递；进程池关闭后释放共享块。
 共享内存仅用于当前本机执行的内部二进制传输，不是可恢复检查点或外部数据入口。
@@ -942,13 +940,20 @@ V4结果为 `equity-research/v4`，发布引用为 `EvidenceRef(schema="equity_r
 `worker_seconds`只统计工作进程任务耗时；阶段计时可嵌套，不能直接相加。合成基准见
 [回放基准](../../scripts/benchmarks/README.md)，不能由接口成功推导任意策略秒级。
 
-并发统一使用`ResearchExecutionSession`和`ExecutionResources(max_workers=12,
-native_threads_per_worker=1)`等显式资源配置。公共执行器复用一个`spawn`进程池并有界提交；
-调用方在同一会话内分批准备、计算、发布和释放结果，基准仍可跨批复用。不要在外层再套账户进程池。
+`ResearchExecutionSession` 在首次实际回放时识别调用进程可用的物理核。每个物理核选一个允许使用的逻辑 CPU，
+每个工作进程绑定其中一个，计算时原生线程池限制为单线程。可用 8 个物理核时，会话最多并发执行 8 个账户任务，
+任务较少时按需启动。会话复用一个 `spawn` 进程池并有界提交。RSCH 可按证据交付、检查点或内存需求分批，
+同一会话的行情和买持基准可以跨批复用。
+
+首次实际回放后，`execution.stats.worker_limit` 和 `native_threads_per_worker` 给出已解析的资源上限，
+`peak_in_flight` 记录峰值在途任务数（含已提交待执行的任务），`worker_bindings` 记录成功绑定的 `(PID, 逻辑 CPU)`。
+自动绑核支持具有单个处理器组的 64 位 Windows（进程池上限为 61）和可读取 CPU 拓扑的 Linux。
+拓扑识别失败会报错，绑核失败会作为相应账户任务的失败原因返回。已有显式 `ExecutionResources` 的调用仍可限制上限，
+并受可用物理核数量约束。显式 `max_workers=1` 保留进程内串行测量能力。V4 的原生线程池上限固定为 1。
+
 同一次`evaluate_many`内相同完整请求只计算一次；再次显式调用仍属于新执行，免计算恢复须使用
 明确检查点或直接复用已有结果。会话通过弱引用登记句柄及结果，调用方释放后不再强制保留其原账。
-账户结果完成即编码，不先累积全部原始回放对象。公共资源合同没有自动内存调度字段，调用方需按
-实际内存和任务规模确定并发，不将12进程视为所有工作量下的资源保证。失败不自动重试或降级。
+账户结果完成即编码，`evaluate_many` 返回本批全部结果。失败不自动重试或降级。
 
 V1回调、V2/V3研究计算及证据读取认证链已删除，不提供别名、转换或失败兜底。
 历史研究原件保留供查阅；保留原件不等于平台继续支持旧schema机器复算。
