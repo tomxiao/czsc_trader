@@ -97,6 +97,12 @@ export function decisionExecutionLabel(decision){
   if(effect.status==='NOT_EXECUTED'&&effect.planning_status==='SUPPRESSED')return '观察不足，未规划';
   return {WAITING:'等待执行',PARTIAL:'部分执行',NOT_EXECUTED:'未执行',UNKNOWN:'执行结果待确认'}[effect.status]||'执行效果不可用';
 }
+function decisionPlanActionLabel(decision){
+  const action=decision.action,label=actionLabel(action),effect=decision.execution_effect;
+  if(!['BUY','SELL'].includes(action)||effect?.availability!=='AVAILABLE')return label;
+  const quantity=(effect.orders||[]).reduce((total,order)=>order.side===action?total+order.quantity:total,0);
+  return quantity?`${label} ${formatQuantity(quantity)}`:label;
+}
 const planningLabel=value=>({READY:'可执行',CONSTRAINED:'受约束执行',BLOCKED:'规划受阻',NO_CHANGE:'无需调整',SUPPRESSED:'观察不足，未规划'}[value]||value||'—');
 const executionReasonLabel=value=>({INSUFFICIENT_CASH:'可用资金不足',BELOW_MINIMUM_UNIT:'不足最小交易单位',BELOW_PRICE_TICK:'不足最小报价单位',INSUFFICIENT_SELLABLE_QUANTITY:'可卖数量不足',ORDER_QUANTITY_LIMIT:'订单数量限制',DEPENDENCY_UNAVAILABLE:'依赖条件不可执行',NORMAL_UNFILLED:'限价单正常结束，未成交',NORMAL_PARTIAL:'部分成交，剩余委托按计划结束',ORDER_REJECTED:'渠道明确拒单，本次未成交',EXECUTION_CONSTRAINED:'资金或可卖数量不足，本次未执行',EXECUTION_EXPIRED:'本地委托未提交，执行窗口已结束',DEPENDENCY_NOT_TRIGGERED:'前序条件未触发'}[value]||value);
 export function executionEffectMarkup(decision,currency='CNY'){
@@ -117,9 +123,10 @@ export function executionEffectMarkup(decision,currency='CNY'){
 export function decisionDetailsMarkup(decision,currency='CNY'){
   const d=decision||{},explanation=d.strategy_output?.explanation;
   return detailFacts([
-    ['决策 ID',d.decision_id],['动作',d.decision_id?actionLabel(d.action):'暂无决策'],['决策流程状态',d.status==='COMPLETED'?'流程结束':d.status&&statusLabel(d.status)],
+    ['决策 ID',d.decision_id],['策略判断',explanation?.judgment],['执行计划',d.decision_id?decisionPlanActionLabel(d):'暂无决策'],
+    ['决策流程状态',d.status==='COMPLETED'?'流程结束':d.status&&statusLabel(d.status)],
     ['信号日期',d.signal_date],['有效交易日',d.valid_session],
-    ['判断',explanation?.judgment],['依据',explanation?.basis?.map(item=>item.text).join('；')],['后续观察',explanation?.next_watch],
+    ['依据',explanation?.basis?.map(item=>item.text).join('；')],['后续观察',explanation?.next_watch],
   ])+executionEffectMarkup(d,currency);
 }
 const DECISION_INPUT_REASON_TEMPLATES=new Map([
@@ -289,6 +296,10 @@ function accountRecords(kind,title,columns,rows,view){
 export function accountMarkup(snapshot,accountList=state.accounts,view={}){
   const a=snapshot.account,m=snapshot.metrics||{},d=snapshot.decision||{},scope=snapshot.scope,intents=snapshot.intents||[],orders=snapshot.orders||[],fills=snapshot.fills||[];
   const executionState=decisionExecutionLabel(d),effect=d.execution_effect;
+  const judgment=d.decision_id?d.strategy_output?.explanation?.judgment:null;
+  const orderAction=d.decision_id?`执行计划 ${decisionPlanActionLabel(d)}`:'暂无决策';
+  const decisionHeadline=judgment||orderAction;
+  const orderSummary=judgment?` · ${orderAction}`:'';
   const weightSummary=effect?.availability==='AVAILABLE'?`目标 ${pct(effect.target_weight)} · 实际 ${pct(effect.actual_weight)}`:'仓位对照不可用';
   const currency=scope.currency||'CNY';
   const cash=value=>value==null?'—':`${money(value)} ${currency}`;
@@ -304,7 +315,7 @@ export function accountMarkup(snapshot,accountList=state.accounts,view={}){
       <section class="panel hero account-hero" data-account-section="hero"><div class="account-heading"><div class="subtle">${marketName(scope.market)} · ${esc(scope.release_id)} · ${esc(a.symbol)} · Futu</div><h1>${esc(a.name)} <span class="badge">${esc(accountOperatingStatus(a))}</span></h1></div><div class="account-actions"><a class="button" data-account-audit href="/audit-events?${auditQuery({account_id:scope.account_id})}">审计事件</a><button type="button" id="accountDetails" class="button" aria-haspopup="dialog">账户详情</button><button id="accountSwitch" ${a.run_state==='RETIRED'?'disabled':''} class="switch ${a.run_state==='PAUSED'?'paused':''}" role="switch" aria-checked="${a.run_state==='RUNNING'}">${a.run_state==='RETIRED'?'已退出':a.run_state==='PAUSED'?'恢复账户':'暂停账户'}</button></div></section>
       <div data-account-section="alerts">${alerts(snapshot.alerts)}${gapActions}</div>
       <div class="grid account-metrics primary-metrics" data-account-section="metrics">${metric(a.run_state==='RETIRED'?'已回收资金':'总资产',cash(a.run_state==='RETIRED'?a.released_cash:a.total_assets))}${metric('可用现金',cash(a.cash))}${metric('冻结资金',cash(a.frozen_cash))}${metric('持仓',formatQuantity(a.quantity))}${metric('累计收益率',pct(m.current_total_return))}</div>
-      <section class="panel account-decision" data-account-section="decision"><div class="decision-summary"><div><span class="subtle">最近决策 · 信号日 ${esc(d.signal_date||'—')} · 有效日 ${esc(d.valid_session||'—')}</span><div><strong>${esc(d.decision_id?actionLabel(d.action):'暂无决策')}</strong> <span>· ${esc(weightSummary)} · ${esc(executionState)}</span></div></div><button type="button" class="button secondary" id="decisionDetails" aria-haspopup="dialog">决策详情</button></div></section>
+      <section class="panel account-decision" data-account-section="decision"><div class="decision-summary"><div><span class="subtle">最近决策 · 信号日 ${esc(d.signal_date||'—')} · 有效日 ${esc(d.valid_session||'—')}</span><div><strong>${esc(decisionHeadline)}</strong><span>${esc(orderSummary)} · ${esc(weightSummary)} · ${esc(executionState)}</span></div></div><button type="button" class="button secondary" id="decisionDetails" aria-haspopup="dialog">决策详情</button></div></section>
       <div class="account-tabs" role="tablist" aria-label="账户视图">${[['chart','前瞻观察'],['records','交易记录'],['performance','绩效']].map(([key,label])=>`<button type="button" role="tab" id="account-tab-${key}" aria-controls="account-panel-${key}" aria-selected="${tab===key}" tabindex="${tab===key?0:-1}" data-account-tab="${key}">${label}</button>`).join('')}</div>
       <section id="account-panel-chart" role="tabpanel" aria-labelledby="account-tab-chart" data-account-panel="chart" ${tab==='chart'?'':'hidden'} class="panel section account-chart" data-account-section="chart"><div class="section-head"><span class="subtle">选型截止 ${esc(a.selection_data_cutoff)} · 首个信号前为行情背景</span><a id="expandAccountChart" class="button" target="_blank" rel="noopener" hidden>展开大图 ↗</a></div><div id="accountChartMessage" class="chart-message" hidden></div><div id="accountChartFrameHost" class="chart-frame-host"><div class="loading">正在加载前瞻观察图…</div></div></section>
       <div id="account-panel-records" role="tabpanel" aria-labelledby="account-tab-records" data-account-panel="records" ${tab==='records'?'':'hidden'}><div class="record-tabs" role="tablist" aria-label="交易记录类型">${[['intents','订单意图'],['orders','订单'],['fills','成交']].map(([key,label])=>`<button type="button" role="tab" id="record-tab-${key}" aria-controls="record-panel-${key}" aria-selected="${recordTab===key}" tabindex="${recordTab===key?0:-1}" data-record-tab="${key}">${label}</button>`).join('')}</div>

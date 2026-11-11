@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {readFileSync} from 'node:fs';
 import {runInNewContext} from 'node:vm';
+import {decisionDetailsMarkup} from '../../src/paper_trading_engine/static/app.js';
 import {recordPage, ACCOUNT_REFRESH_SECTIONS, ScopedLoader, accountMarkup, accountOperatingStatus, actionLabel, actionsForRoute, auditCategoryLabel, auditEventLabel, auditOutcomeLabel, auditQuery, auditScopeLabel, auditSeverityLabel, auditSummary, channelMarkup, channelOrderAccountLabel, chartIsPending, chartShouldReload, chooseAccountId, comparisonQuery, decisionExecutionLabel, displayFillId, formatBeijingTime, formatPrice, formatQuantity, navigationOptions, orderPriceLabel, parseRoute, qualificationLabel, releaseVersionLabel, sideLabel, snapshotFingerprint, sortVirtualAccounts, statusLabel, systemAlertCount, systemEventLabel} from '../../src/paper_trading_engine/static/app.js';
 
 test('forward chart keeps signal series, only fill markers on candles, and business details without IDs', () => {
@@ -238,6 +239,27 @@ test('account health and operating state stay consistent across account and chan
   }
   assert.equal(accountOperatingStatus({run_state:'UNKNOWN',health:'OK'}),'运行状态异常');
   assert.equal(statusLabel('READY'),'就绪');
+});
+
+test('account decision shows the continuing strategy judgment alongside a pending top-up', () => {
+  for(const [version,actual,topUp,weight,weightLabel] of [
+    ['v1',74600,300,.9947014437140961,'99.47%'],
+    ['v2',71600,400,.9934395718424899,'99.34%'],
+  ]){
+    const account_id=`s001-${version}`,account={account_id,quantity:actual};
+    const decision={
+      decision_id:'decision',action:'BUY',signal_date:'2026-11-11',valid_session:'2026-11-12',
+      strategy_output:{explanation:{judgment:'延续目标仓位'}},
+      execution_effect:{availability:'AVAILABLE',status:'WAITING',planning_status:'READY',
+        target_weight:1,actual_weight:weight,actual_quantity:actual,planned_quantity:actual+topUp,
+        orders:[{side:'BUY',quantity:topUp,status:'PENDING_SUBMIT'}]},
+    };
+    const html=accountMarkup({scope:{account_id},account,decision},[]);
+    assert.ok(html.includes(`<strong>延续目标仓位</strong><span> · 执行计划 买入 ${topUp} 股 · 目标 100.00% · 实际 ${weightLabel} · 等待执行`));
+    const details=decisionDetailsMarkup(decision);
+    assert.match(details,/策略判断<\/dt><dd>延续目标仓位/);
+    assert.ok(details.includes(`执行计划</dt><dd>买入 ${topUp} 股`));
+  }
 });
 
 test('virtual account orders show order time and remain newest first', () => {
