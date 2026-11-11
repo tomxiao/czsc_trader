@@ -1,0 +1,1278 @@
+{
+  "status": "NONPARAMETER_SELFCHECK_COMPLETE",
+  "full_stage_four_status": "PENDING_PARAMETER_SENSITIVITY",
+  "deferred_target": "parameters",
+  "checked_target_count": 11,
+  "account_replays": 0,
+  "neighbor_accounts_read": 0,
+  "existing_account_evidence": 6,
+  "seconds": 6.173203099999228,
+  "protocol": {
+    "type": "NeighborhoodSelfCheckProtocol",
+    "version": "s019-ex050-nonparameter-selfcheck-v1",
+    "baseline_window": "FULL",
+    "standard_scenario": "STANDARD",
+    "stress_scenario": "STRESS",
+    "rolling_window_days": 252,
+    "rolling_step_days": 21,
+    "quantile_method": "LINEAR",
+    "minimum_rolling_windows": 1,
+    "bootstrap_repetitions": 10000,
+    "bootstrap_block_length": 21,
+    "seed": 20261110,
+    "reconciliation_tolerance": 1e-08,
+    "parameter_protocol": {
+      "type": "ParameterNeighborhoodProtocol",
+      "purpose": "LOCAL_SENSITIVITY",
+      "max_combinations": 1000000,
+      "quantile_method": "LINEAR",
+      "version": "parameter-cartesian-neighborhood-v2"
+    },
+    "pbo_blocks": 10,
+    "frequency_min_closed_cycles": 3
+  },
+  "original_targets_sha256": "ed6a406472854fcf628492fb82384bc3ab130eaa0460df17f2b41ed87df9a71e",
+  "checked_targets_sha256": "e7f4256a287f97b1962150f6ecdbf810db4c3626aae4822c957dde559b1bc7e7",
+  "native_panel_sha256": "e5172a2a1461164001c2011c090049e698086ae5db24699286861c4418e53fd7",
+  "native_comparison_sha256": "77ea764b7780a1bfab4183fe50aef2867e96914734b7feeaef10de7c85e2c8c2",
+  "archive_sha256": {
+    "statistics_temporal.json": "0b66b7ee97d6a8f5b40c08f7ea5211e1a8bd0936a9bf0282682ee14830baaf41",
+    "statistics_bootstrap.json": "a07db23cbacffeca04b223f5dc181e85ce8023a0f70be026ff0d0077046ff3c7",
+    "statistics_summary.json": "68ef7be46b6057a9ae7adb5ef0b332892db3b4487fa4e79187e221e3dd30e6fc",
+    "temporal_s018_reference.json": "877b4f1938f116c7fc2f44f662d9f66c86ca44b6badb3c2d2b0e84c701a00068"
+  },
+  "candidates": [
+    {
+      "candidate_id": "C0966",
+      "sources": {
+        "STANDARD": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX048_20261111"
+          },
+          "evidence_id": "0f40ecb58030f18f234ee8e580bad6e741564ab2d3678cba1520a2add524f1fb.json",
+          "sha256": "0f40ecb58030f18f234ee8e580bad6e741564ab2d3678cba1520a2add524f1fb",
+          "media_type": "application/json",
+          "name": "hard_linear_winner_participation_joint_4",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "STRESS": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX049_20261111"
+          },
+          "evidence_id": "8eb8a4403b2d6c3a7a4325e94fbc895051ed653d7bead1be6531d2511a80da62.json",
+          "sha256": "8eb8a4403b2d6c3a7a4325e94fbc895051ed653d7bead1be6531d2511a80da62",
+          "media_type": "application/json",
+          "name": "C0966_stress",
+          "schema": "equity_research",
+          "schema_version": 4
+        }
+      },
+      "decision": "KEEP_FOR_PARAMETER_CHECK",
+      "failed_targets": [],
+      "unresolved_targets": [],
+      "target_checks": [
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-nar",
+            "metric": "NET_ANNUAL_RETURN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 0.55,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.7148029571827641,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 0.55,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "64cae275aebbf56e34b7e2319636d471b74d59636a3a0b957291bffe065c5db7"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-calmar",
+            "metric": "NET_CALMAR",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 5.0,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 5.065577252846313,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 5.0,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "64cae275aebbf56e34b7e2319636d471b74d59636a3a0b957291bffe065c5db7"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-risk",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.1411098718869841,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.25,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "64cae275aebbf56e34b7e2319636d471b74d59636a3a0b957291bffe065c5db7"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-relative-risk",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 0.8,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.1411098718869841,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.45561986197962145,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "64cae275aebbf56e34b7e2319636d471b74d59636a3a0b957291bffe065c5db7"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-frequency",
+            "metric": "FREQUENCY_MEDIAN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 6.0,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 6.0,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 6.0,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "64cae275aebbf56e34b7e2319636d471b74d59636a3a0b957291bffe065c5db7"
+          ]
+        },
+        {
+          "type": "FrequencyCoverageCheck",
+          "target": {
+            "type": "FrequencyCoverageTarget",
+            "target_id": "center-coverage",
+            "window_days": 60,
+            "minimum_closed_cycles": 3,
+            "minimum_numerator": 9,
+            "minimum_denominator": 10
+          },
+          "facts": {
+            "type": "FrequencyCoverageFacts",
+            "window_days": 60,
+            "minimum_closed_cycles": 3,
+            "total_windows": 1153,
+            "covered_windows": 1151,
+            "evaluation_ids": [
+              "64cae275aebbf56e34b7e2319636d471b74d59636a3a0b957291bffe065c5db7"
+            ]
+          },
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-nar",
+            "metric": "NET_ANNUAL_RETURN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 0.5,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.6628439563184905,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 0.5,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "d65a09a7a62947a757f2c460047125e9a385ba5cdbe4183110c22fcb75e1d608"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-calmar",
+            "metric": "NET_CALMAR",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 4.5,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 4.628892395551555,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 4.5,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "d65a09a7a62947a757f2c460047125e9a385ba5cdbe4183110c22fcb75e1d608"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-risk",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.14319709763733002,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.25,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "d65a09a7a62947a757f2c460047125e9a385ba5cdbe4183110c22fcb75e1d608"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-relative-risk",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.0,
+              "inclusive": false
+            },
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "operator": "GT",
+              "value": 0.0
+            },
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.14319709763733002,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.5698708374873833,
+          "condition_observed": 0.5698708374873833,
+          "evaluation_ids": [
+            "d65a09a7a62947a757f2c460047125e9a385ba5cdbe4183110c22fcb75e1d608"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-zero-risk",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.0,
+              "inclusive": true
+            },
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "operator": "LE",
+              "value": 0.0
+            },
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.14319709763733002,
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE",
+          "resolved_lower": null,
+          "resolved_upper": null,
+          "condition_observed": 0.5698708374873833,
+          "evaluation_ids": [
+            "d65a09a7a62947a757f2c460047125e9a385ba5cdbe4183110c22fcb75e1d608"
+          ]
+        }
+      ],
+      "standard": {
+        "nar": 0.7148029571827641,
+        "calmar": 5.065577252846313,
+        "mdd": 0.1411098718869841,
+        "frequency_median": 6.0,
+        "frequency_coverage": {
+          "type": "FrequencyCoverageFacts",
+          "window_days": 60,
+          "minimum_closed_cycles": 3,
+          "total_windows": 1153,
+          "covered_windows": 1151,
+          "evaluation_ids": [
+            "64cae275aebbf56e34b7e2319636d471b74d59636a3a0b957291bffe065c5db7"
+          ]
+        }
+      },
+      "pressure": {
+        "type": "PerformanceFacts",
+        "candidate": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S019-C0966",
+          "content_sha256": "00ea721398df1c0ca6498449ea87c8aeb99125d2e17ba875b963dcd7191b2c53"
+        },
+        "evaluation_id": "d65a09a7a62947a757f2c460047125e9a385ba5cdbe4183110c22fcb75e1d608",
+        "scenario": {
+          "type": "EvaluationScenarioContext",
+          "one_way_cost": 0.002,
+          "measurement_tier": "STRESS",
+          "benchmark_id": "BuyHold",
+          "benchmark_kind": "BUYHOLD",
+          "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+        },
+        "annual_return": 0.6628439563184905,
+        "drawdown": 0.14319709763733002,
+        "benchmark_return": 0.5930480147097801,
+        "benchmark_drawdown": 0.5698708374873833,
+        "point_index": null,
+        "calmar": 4.628892395551555
+      },
+      "rolling": {
+        "windows": 46,
+        "nar_below_buy_hold": 27,
+        "calmar_below_buy_hold": 14,
+        "nar_excess_q10": -2.874352152118883
+      },
+      "concentration": 0.14957297907002845,
+      "paired_intervals": {
+        "champion_id": "C0966",
+        "comparator_id": "MU_BUY_HOLD",
+        "repetitions": 10000,
+        "mean_block_length": 21,
+        "cagr": {
+          "metric": "cagr",
+          "direction": "higher_is_better",
+          "point_difference": 0.12171982021967676,
+          "lower_95": -0.7793815084706546,
+          "upper_95": 0.6892207959444232,
+          "probability_favorable": 0.6269
+        },
+        "max_drawdown": {
+          "metric": "max_drawdown",
+          "direction": "higher_is_better",
+          "point_difference": 0.42841495558754195,
+          "lower_95": 0.182364409367988,
+          "upper_95": 0.6107035079646131,
+          "probability_favorable": 0.9999
+        },
+        "calmar": {
+          "metric": "calmar",
+          "direction": "higher_is_better",
+          "point_difference": 4.024212402093393,
+          "lower_95": 0.13023777361409977,
+          "upper_95": 6.7624020619491665,
+          "probability_favorable": 0.9808
+        }
+      },
+      "native_archive_crosscheck": "PASS"
+    },
+    {
+      "candidate_id": "C1010",
+      "sources": {
+        "STANDARD": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX048_20261111"
+          },
+          "evidence_id": "06d6e9f25f9ddc5383c80f47084fdf89233605f02f7724ceb448ee555b99cd11.json",
+          "sha256": "06d6e9f25f9ddc5383c80f47084fdf89233605f02f7724ceb448ee555b99cd11",
+          "media_type": "application/json",
+          "name": "ramp_linear_winner_participation_joint_0",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "STRESS": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX049_20261111"
+          },
+          "evidence_id": "5b6ca5b7efa48091ce370dd6ade2b4861e6d1f9e9729170164fa9a5c54c20408.json",
+          "sha256": "5b6ca5b7efa48091ce370dd6ade2b4861e6d1f9e9729170164fa9a5c54c20408",
+          "media_type": "application/json",
+          "name": "C1010_stress",
+          "schema": "equity_research",
+          "schema_version": 4
+        }
+      },
+      "decision": "KEEP_FOR_PARAMETER_CHECK",
+      "failed_targets": [],
+      "unresolved_targets": [],
+      "target_checks": [
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-nar",
+            "metric": "NET_ANNUAL_RETURN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 0.55,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.6694524909897672,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 0.55,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "564c2249978a0c55dce25f5053652631d46b45787118c69b57569f4eec7dd7de"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-calmar",
+            "metric": "NET_CALMAR",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 5.0,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 5.014322086598979,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 5.0,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "564c2249978a0c55dce25f5053652631d46b45787118c69b57569f4eec7dd7de"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-risk",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.1335080753545752,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.25,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "564c2249978a0c55dce25f5053652631d46b45787118c69b57569f4eec7dd7de"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-relative-risk",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 0.8,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.1335080753545752,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.45561986197962145,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "564c2249978a0c55dce25f5053652631d46b45787118c69b57569f4eec7dd7de"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-frequency",
+            "metric": "FREQUENCY_MEDIAN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 6.0,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 6.0,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 6.0,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "564c2249978a0c55dce25f5053652631d46b45787118c69b57569f4eec7dd7de"
+          ]
+        },
+        {
+          "type": "FrequencyCoverageCheck",
+          "target": {
+            "type": "FrequencyCoverageTarget",
+            "target_id": "center-coverage",
+            "window_days": 60,
+            "minimum_closed_cycles": 3,
+            "minimum_numerator": 9,
+            "minimum_denominator": 10
+          },
+          "facts": {
+            "type": "FrequencyCoverageFacts",
+            "window_days": 60,
+            "minimum_closed_cycles": 3,
+            "total_windows": 1153,
+            "covered_windows": 1151,
+            "evaluation_ids": [
+              "564c2249978a0c55dce25f5053652631d46b45787118c69b57569f4eec7dd7de"
+            ]
+          },
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-nar",
+            "metric": "NET_ANNUAL_RETURN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 0.5,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.6220424351247611,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 0.5,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "accc5128943821c6b9290899308b5e7bc0786e5863e361ebc0ff63f9039cf7d3"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-calmar",
+            "metric": "NET_CALMAR",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 4.5,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 4.588179340878424,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 4.5,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "accc5128943821c6b9290899308b5e7bc0786e5863e361ebc0ff63f9039cf7d3"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-risk",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.13557500457374638,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.25,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "accc5128943821c6b9290899308b5e7bc0786e5863e361ebc0ff63f9039cf7d3"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-relative-risk",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.0,
+              "inclusive": false
+            },
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "operator": "GT",
+              "value": 0.0
+            },
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.13557500457374638,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.5698708374873833,
+          "condition_observed": 0.5698708374873833,
+          "evaluation_ids": [
+            "accc5128943821c6b9290899308b5e7bc0786e5863e361ebc0ff63f9039cf7d3"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-zero-risk",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.0,
+              "inclusive": true
+            },
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "operator": "LE",
+              "value": 0.0
+            },
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.13557500457374638,
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE",
+          "resolved_lower": null,
+          "resolved_upper": null,
+          "condition_observed": 0.5698708374873833,
+          "evaluation_ids": [
+            "accc5128943821c6b9290899308b5e7bc0786e5863e361ebc0ff63f9039cf7d3"
+          ]
+        }
+      ],
+      "standard": {
+        "nar": 0.6694524909897672,
+        "calmar": 5.014322086598979,
+        "mdd": 0.1335080753545752,
+        "frequency_median": 6.0,
+        "frequency_coverage": {
+          "type": "FrequencyCoverageFacts",
+          "window_days": 60,
+          "minimum_closed_cycles": 3,
+          "total_windows": 1153,
+          "covered_windows": 1151,
+          "evaluation_ids": [
+            "564c2249978a0c55dce25f5053652631d46b45787118c69b57569f4eec7dd7de"
+          ]
+        }
+      },
+      "pressure": {
+        "type": "PerformanceFacts",
+        "candidate": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S019-C1010",
+          "content_sha256": "815a762dc0b86a2424bded90a0d0adcdca1a7e2b9752f19af1e13465b99b6ea0"
+        },
+        "evaluation_id": "accc5128943821c6b9290899308b5e7bc0786e5863e361ebc0ff63f9039cf7d3",
+        "scenario": {
+          "type": "EvaluationScenarioContext",
+          "one_way_cost": 0.002,
+          "measurement_tier": "STRESS",
+          "benchmark_id": "BuyHold",
+          "benchmark_kind": "BUYHOLD",
+          "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+        },
+        "annual_return": 0.6220424351247611,
+        "drawdown": 0.13557500457374638,
+        "benchmark_return": 0.5930480147097801,
+        "benchmark_drawdown": 0.5698708374873833,
+        "point_index": null,
+        "calmar": 4.588179340878424
+      },
+      "rolling": {
+        "windows": 46,
+        "nar_below_buy_hold": 27,
+        "calmar_below_buy_hold": 17,
+        "nar_excess_q10": -3.199992652158702
+      },
+      "concentration": 0.14922510288782842,
+      "paired_intervals": {
+        "champion_id": "C1010",
+        "comparator_id": "MU_BUY_HOLD",
+        "repetitions": 10000,
+        "mean_block_length": 21,
+        "cagr": {
+          "metric": "cagr",
+          "direction": "higher_is_better",
+          "point_difference": 0.07636935402667966,
+          "lower_95": -0.8414853452438569,
+          "upper_95": 0.6426782949584325,
+          "probability_favorable": 0.5782
+        },
+        "max_drawdown": {
+          "metric": "max_drawdown",
+          "direction": "higher_is_better",
+          "point_difference": 0.4360167521199513,
+          "lower_95": 0.18615147744978394,
+          "upper_95": 0.6141565136043108,
+          "probability_favorable": 0.9999
+        },
+        "calmar": {
+          "metric": "calmar",
+          "direction": "higher_is_better",
+          "point_difference": 3.9729572358460734,
+          "lower_95": 0.012329476781364411,
+          "upper_95": 6.453043301169462,
+          "probability_favorable": 0.9753
+        }
+      },
+      "native_archive_crosscheck": "PASS"
+    },
+    {
+      "candidate_id": "C0909",
+      "sources": {
+        "STANDARD": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX047_20261111"
+          },
+          "evidence_id": "671548da85e11bdaa05d33f2c5361f8c57e4466b489feb80bad4e68513610008.json",
+          "sha256": "671548da85e11bdaa05d33f2c5361f8c57e4466b489feb80bad4e68513610008",
+          "media_type": "application/json",
+          "name": "rebuild_linear_006",
+          "schema": "equity_research",
+          "schema_version": 4
+        },
+        "STRESS": {
+          "type": "EvidenceRef",
+          "experiment": {
+            "type": "ExperimentRef",
+            "strategy_id": "S019",
+            "experiment_id": "EX049_20261111"
+          },
+          "evidence_id": "6239c0c25f12700b062a974e550ad35ea7afaaba0cc6efa8a7e3e48a9b6be11f.json",
+          "sha256": "6239c0c25f12700b062a974e550ad35ea7afaaba0cc6efa8a7e3e48a9b6be11f",
+          "media_type": "application/json",
+          "name": "C0909_stress",
+          "schema": "equity_research",
+          "schema_version": 4
+        }
+      },
+      "decision": "KEEP_FOR_PARAMETER_CHECK",
+      "failed_targets": [],
+      "unresolved_targets": [],
+      "target_checks": [
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-nar",
+            "metric": "NET_ANNUAL_RETURN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 0.55,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.6781108432487748,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 0.55,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "79a78f84309c2e074daefb9731bca22d7e7ab35e4048bcded9dac1eec775cd0d"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-calmar",
+            "metric": "NET_CALMAR",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 5.0,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 5.3458627426426935,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 5.0,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "79a78f84309c2e074daefb9731bca22d7e7ab35e4048bcded9dac1eec775cd0d"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-risk",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.12684778414523135,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.25,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "79a78f84309c2e074daefb9731bca22d7e7ab35e4048bcded9dac1eec775cd0d"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-relative-risk",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 0.8,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 0.12684778414523135,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.45561986197962145,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "79a78f84309c2e074daefb9731bca22d7e7ab35e4048bcded9dac1eec775cd0d"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "center-frequency",
+            "metric": "FREQUENCY_MEDIAN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 6.0,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STANDARD",
+            "one_way_cost": null
+          },
+          "observed": 6.0,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 6.0,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "79a78f84309c2e074daefb9731bca22d7e7ab35e4048bcded9dac1eec775cd0d"
+          ]
+        },
+        {
+          "type": "FrequencyCoverageCheck",
+          "target": {
+            "type": "FrequencyCoverageTarget",
+            "target_id": "center-coverage",
+            "window_days": 60,
+            "minimum_closed_cycles": 3,
+            "minimum_numerator": 9,
+            "minimum_denominator": 10
+          },
+          "facts": {
+            "type": "FrequencyCoverageFacts",
+            "window_days": 60,
+            "minimum_closed_cycles": 3,
+            "total_windows": 1153,
+            "covered_windows": 1151,
+            "evaluation_ids": [
+              "79a78f84309c2e074daefb9731bca22d7e7ab35e4048bcded9dac1eec775cd0d"
+            ]
+          },
+          "status": "PASSED",
+          "reason": null
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-nar",
+            "metric": "NET_ANNUAL_RETURN",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 0.5,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.6293909460753062,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 0.5,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "27027d6a901d4fdee925a9de83f06c542ef031dd8df2b4630f2b06937c796281"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-calmar",
+            "metric": "NET_CALMAR",
+            "lower": {
+              "type": "ConstantBound",
+              "value": 4.5,
+              "inclusive": true
+            },
+            "upper": null,
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 4.727664465587067,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": 4.5,
+          "resolved_upper": null,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "27027d6a901d4fdee925a9de83f06c542ef031dd8df2b4630f2b06937c796281"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-risk",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.25,
+              "inclusive": true
+            },
+            "when": null,
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.13312936031240752,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.25,
+          "condition_observed": null,
+          "evaluation_ids": [
+            "27027d6a901d4fdee925a9de83f06c542ef031dd8df2b4630f2b06937c796281"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-relative-risk",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "BenchmarkBound",
+              "multiplier": 1.0,
+              "inclusive": false
+            },
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "operator": "GT",
+              "value": 0.0
+            },
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.13312936031240752,
+          "status": "PASSED",
+          "reason": null,
+          "resolved_lower": null,
+          "resolved_upper": 0.5698708374873833,
+          "condition_observed": 0.5698708374873833,
+          "evaluation_ids": [
+            "27027d6a901d4fdee925a9de83f06c542ef031dd8df2b4630f2b06937c796281"
+          ]
+        },
+        {
+          "type": "TargetCheck",
+          "target": {
+            "type": "ResearchTarget",
+            "target_id": "stress-zero-risk",
+            "metric": "DRAWDOWN_MAGNITUDE",
+            "lower": null,
+            "upper": {
+              "type": "ConstantBound",
+              "value": 0.0,
+              "inclusive": true
+            },
+            "when": {
+              "type": "BenchmarkCondition",
+              "metric": "DRAWDOWN_MAGNITUDE",
+              "operator": "LE",
+              "value": 0.0
+            },
+            "scope": "STRESS",
+            "one_way_cost": 0.002
+          },
+          "observed": 0.13312936031240752,
+          "status": "NOT_APPLICABLE",
+          "reason": "CONDITION_FALSE",
+          "resolved_lower": null,
+          "resolved_upper": null,
+          "condition_observed": 0.5698708374873833,
+          "evaluation_ids": [
+            "27027d6a901d4fdee925a9de83f06c542ef031dd8df2b4630f2b06937c796281"
+          ]
+        }
+      ],
+      "standard": {
+        "nar": 0.6781108432487748,
+        "calmar": 5.3458627426426935,
+        "mdd": 0.12684778414523135,
+        "frequency_median": 6.0,
+        "frequency_coverage": {
+          "type": "FrequencyCoverageFacts",
+          "window_days": 60,
+          "minimum_closed_cycles": 3,
+          "total_windows": 1153,
+          "covered_windows": 1151,
+          "evaluation_ids": [
+            "79a78f84309c2e074daefb9731bca22d7e7ab35e4048bcded9dac1eec775cd0d"
+          ]
+        }
+      },
+      "pressure": {
+        "type": "PerformanceFacts",
+        "candidate": {
+          "type": "AssessmentCandidate",
+          "candidate_id": "S019-C0909",
+          "content_sha256": "4accfb1320d76376283085438ba897d968bdd7f0248ad7219fc072f130c09d62"
+        },
+        "evaluation_id": "27027d6a901d4fdee925a9de83f06c542ef031dd8df2b4630f2b06937c796281",
+        "scenario": {
+          "type": "EvaluationScenarioContext",
+          "one_way_cost": 0.002,
+          "measurement_tier": "STRESS",
+          "benchmark_id": "BuyHold",
+          "benchmark_kind": "BUYHOLD",
+          "benchmark_contract_sha256": "c2c2801e4c292322376035d3a02468a7c8f68276fe6cac961972cbdc39318995"
+        },
+        "annual_return": 0.6293909460753062,
+        "drawdown": 0.13312936031240752,
+        "benchmark_return": 0.5930480147097801,
+        "benchmark_drawdown": 0.5698708374873833,
+        "point_index": null,
+        "calmar": 4.727664465587067
+      },
+      "rolling": {
+        "windows": 46,
+        "nar_below_buy_hold": 27,
+        "calmar_below_buy_hold": 14,
+        "nar_excess_q10": -3.097700931770377
+      },
+      "concentration": 0.15270264832492794,
+      "paired_intervals": {
+        "champion_id": "C0909",
+        "comparator_id": "MU_BUY_HOLD",
+        "repetitions": 10000,
+        "mean_block_length": 21,
+        "cagr": {
+          "metric": "cagr",
+          "direction": "higher_is_better",
+          "point_difference": 0.08502770628568745,
+          "lower_95": -0.8291024417388758,
+          "upper_95": 0.646513100523515,
+          "probability_favorable": 0.5886
+        },
+        "max_drawdown": {
+          "metric": "max_drawdown",
+          "direction": "higher_is_better",
+          "point_difference": 0.44267704332929525,
+          "lower_95": 0.1931631603338731,
+          "upper_95": 0.6184517212170679,
+          "probability_favorable": 0.9999
+        },
+        "calmar": {
+          "metric": "calmar",
+          "direction": "higher_is_better",
+          "point_difference": 4.3044978918897945,
+          "lower_95": 0.11512968105047097,
+          "upper_95": 6.845469754836814,
+          "probability_favorable": 0.9794
+        }
+      },
+      "native_archive_crosscheck": "PASS"
+    }
+  ],
+  "family_selection_history": {
+    "planned_windows": 4,
+    "selected_windows": 2,
+    "no_eligible_windows": 2,
+    "passed_observations": 0,
+    "failed_observations": 2
+  },
+  "family_actual_adaptive_selection_bias": "NOT_ESTIMATED"
+}
