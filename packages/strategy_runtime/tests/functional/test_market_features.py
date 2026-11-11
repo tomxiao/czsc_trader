@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from strategy_runtime import equity_source_runtime
+from strategy_runtime import MarketFeature, MarketWindow
 from strategy_runtime.equity_features import HistoryView, _HistoryAppend
 from strategy_runtime.equity_replay import _Row
 from strategy_runtime.market_features import _market_cache, _market_feature
@@ -27,25 +28,29 @@ def test_shared_market_windows_are_causal_and_isolated(monkeypatch):
     later = when + timedelta(minutes=30)
     first = _HistoryAppend(_Row({"Close": 10.0}), None, 1, when)
     second = _HistoryAppend(_Row({"Close": 20.0}), first, 2, later)
-    early = SimpleNamespace(history=HistoryView(when, first, 1), auxiliary_histories={})
-    late = SimpleNamespace(history=HistoryView(later, second, 2), auxiliary_histories={})
-    candidate = SimpleNamespace(definition=SimpleNamespace(source_sha256="source", dependencies=()))
+    early = HistoryView(when, first, 1)
+    late = HistoryView(later, second, 2)
+    candidate = SimpleNamespace(definition=SimpleNamespace(source_sha256="source", dependencies=(), parameters={'scale': 2}))
     prepared = SimpleNamespace(identity="market-a")
+    declaration = MarketFeature('sum_close', 'test_market_features:_sum_close', (MarketWindow(None, 2),), ('scale',))
+    narrow = MarketFeature('sum_close', 'test_market_features:_sum_close', (MarketWindow(None, 1),), ('scale',))
+    invalid = MarketFeature('mutable', 'test_market_features:_mutable', (MarketWindow(None, 1),))
     monkeypatch.setattr(equity_source_runtime, "active_invocation",
-                        lambda _: SimpleNamespace(prefix=__name__))
+                        lambda _: SimpleNamespace(market_functions={'sum_close': _sum_close, 'mutable': _mutable}))
     _market_cache.cache_clear()
     _calls.clear()
     try:
-        assert _market_feature(candidate, prepared, early, _sum_close, ((None, 2),), (2,)) == 20.0
+        assert _market_feature(candidate, prepared, declaration, early, {}, {}, None) == 20.0
         other_candidate = SimpleNamespace(definition=candidate.definition)
-        assert _market_feature(other_candidate, prepared, early, _sum_close, ((None, 2),), (2,)) == 20.0
-        assert _market_feature(candidate, prepared, late, _sum_close, ((None, 2),), (2,)) == 60.0
-        assert _market_feature(candidate, prepared, late, _sum_close, ((None, 2),), (3,)) == 90.0
-        assert _market_feature(candidate, prepared, late, _sum_close, ((None, 1),), (2,)) == 40.0
-        assert _market_feature(candidate, SimpleNamespace(identity="market-b"), early, _sum_close,
-                               ((None, 2),), (2,)) == 20.0
+        assert _market_feature(other_candidate, prepared, declaration, early, {}, {}, None) == 20.0
+        assert _market_feature(candidate, prepared, declaration, late, {}, {}, None) == 60.0
+        candidate.definition.parameters['scale'] = 3
+        assert _market_feature(candidate, prepared, declaration, late, {}, {}, None) == 90.0
+        candidate.definition.parameters['scale'] = 2
+        assert _market_feature(candidate, prepared, narrow, late, {}, {}, None) == 40.0
+        assert _market_feature(candidate, SimpleNamespace(identity="market-b"), declaration, early, {}, {}, None) == 20.0
         assert _calls == [1, 2, 2, 1, 1]
         with pytest.raises(TypeError, match="immutable"):
-            _market_feature(candidate, prepared, early, _mutable, ((None, 1),), ())
+            _market_feature(candidate, prepared, invalid, early, {}, {}, None)
     finally:
         _market_cache.cache_clear()

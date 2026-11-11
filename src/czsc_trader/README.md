@@ -210,6 +210,24 @@ V4 回放由会话自动安排并发，RSCH 直接调用 `prepare` 和 `evaluate
 Optuna负责参数提议和搜索轨迹，tsfresh负责适用的特征提取，expr_codegen负责表达式生成；
 pandas、NumPy等负责批量数据处理。研究员选择方法并控制计算规模，TDR执行明确请求。
 
+### 策略性能验收
+
+V4 `prepare` 校验策略声明和源码，逐步决策与批量观察统一使用有界输入。
+自定义行情计算须声明窗口及参数，迁移方式见 [SRT 可见特征契约](../../packages/strategy_runtime/README.md#可见特征与显式状态)。
+
+从 `strategy_runtime` 导入 `StrategyPerformanceBudget`，使用
+`ResearchExecutionSession(..., performance_budget=StrategyPerformanceBudget())` 采集策略 CPU 基线。
+在 `execution.equity_statistics.account_timings` 的 `strategy_performance` 中读取策略总 CPU、单次峰值、
+约半段决策及完整窗口的累计 CPU、内置特征图和自定义行情特征 CPU。自定义特征时间包含在策略时间内。
+预算使用工作线程 CPU 时间，需按目标机器、样本和计算分支校准。完整回放墙钟继续单独计量。
+
+给 `StrategyPerformanceBudget` 配置 `max_call_seconds` 或 `max_seconds_per_1000_calls` 后，
+TDR 先对同源码、同特征和状态声明、同输入及执行窗口的组运行一个实际候选。首个账户的结果直接进入本批，
+通过后才提交同组其他账户，每个账户仍独立执行预算检查。失败返回 `StrategyPerformanceExceeded` 或具体技术错误。
+`PERFORMANCE` 单独记录首账户的执行时间与进度。同一会话可复用已通过的组，检查点身份绑定当前预算。
+结构约束始终生效，数值上限由调用者按已校准预算启用。
+代表性样本应覆盖最大声明窗口及主要计算分支。CPU 计时在调用返回时判断上限，批次墙钟和进程超时需分别管理。
+
 通过`ResearchExecutionSession(..., checkpoint=ExecutionCheckpointRequest(run_id, CheckpointMode.CREATE或RESUME))`显式创建或恢复检查点。V4检查点保存结果、输入和账户依赖的不可变字节，恢复核对请求及对象身份，
 不重新执行策略、提取账户事实或复算指标。缺失或损坏明确失败，不读取磁盘pickle、不退回旧格式恢复。
 当前检查点采用manifest v2及结果索引v3：原始材料和结果头在`blobs/`按内容摘要保存一次，小型索引引用这些字节。

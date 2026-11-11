@@ -134,6 +134,10 @@ V4 可声明 `DatasetObservationInput` 观察表，使用 `EquityInputBinding.ob
 技术检验、研究回放和正式决策复用同一可用时点裁剪。日期型发布必须显式声明时区、发布时间和日期偏移，
 市场开盘时间不能替代数据实际可用时间；严格前日快照、滞后及填充仍由冻结策略规则决定。
 
+PTE 的原生 V4 决策经共享 `AccountDecisionEngine` 使用有界策略输入。已声明的 `MarketFeature`
+从冻结包源码解析，只消费当前时点已可见的固定窗口。需要整段历史或观察表的旧策略应先迁移并重新进行技术检验。
+PTE 使用同一 [SRT 策略契约](../strategy_runtime/README.md#可见特征与显式状态)，研究批次 CPU 预算由 TDR 会话持有。
+
 `FormalV4Inputs` 使用 schema 3，独立保存 SRT 的 HFQ `binding` 与 PTE 的 RAW `execution_reference`。
 `strategy_requests` 仅交给 SRT；`requests` 包含两类独立请求，用于 DFLS 准备。自动配方按观察表自身的
 发布时点推进查询范围，资金流先用声明交易日历生成日期集合；冻结种子保持原固定区间，

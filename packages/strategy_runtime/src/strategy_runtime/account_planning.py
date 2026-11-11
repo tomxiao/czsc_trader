@@ -12,7 +12,7 @@ import math
 from dataflows import BarFrequency, TimeInterval
 
 from .account_strategy import (AccountDecision, AccountStepContext, AccountStepResult,
-    AccountStrategyState, BatchAccountContext, BatchObservation, PositionFeedback)
+    AccountStrategyState, BatchAccountContext, BatchObservation, DecisionHistory, DecisionTable, PositionFeedback)
 from .equity import DecisionPoint, EquityPortfolio, equity_hash
 from .equity_definition import EquityStrategyCandidate
 from .equity_replay import PreparedObservations, StateRecord, _FeatureEvaluator, _Visibility
@@ -75,12 +75,9 @@ def check_account_batch_consistency(candidate, prepared, *, start, end):
         raise ValueError('batch comparison window must align with complete observations')
     observations = []
     for a, b in ticks:
-        point, features, history, views, session, available, suppressed = engine.observation(TimeInterval(a, b))
-        if not suppressed:
-            observations.append(BatchObservation(point, features, history, views,
-                session if candidate.definition.session_context else None,
-                available if candidate.definition.session_context else None,
-                engine.table_views(point.decision_at)))
+        observation = engine.observation(TimeInterval(a, b))
+        if not observation[-1]:
+            observations.append(BatchObservation(*engine._decision_inputs(observation)))
     from .equity_source_runtime import active_invocation
     scope = nullcontext() if active_invocation(candidate) is not None else candidate.bind_replay()
     with scope:
@@ -101,7 +98,7 @@ class AccountDecisionEngine:
     accepting implementations that depend on a sequence of batch observations.
     """
 
-    def __init__(self, candidate, prepared):
+    def __init__(self, candidate, prepared, *, performance=None):
         if type(candidate) is not EquityStrategyCandidate or type(prepared) is not PreparedObservations:
             raise TypeError('account planning requires typed candidate and prepared inputs')
         definition, spec = candidate.definition, candidate.definition.execution_spec
@@ -114,9 +111,12 @@ class AccountDecisionEngine:
         if not prepared._sessions or not prepared._calendar_intervals:
             raise ValueError('account planning requires explicit session evidence')
         self.candidate, self.prepared = candidate, prepared
-        self._market_feature_provider = partial(_market_feature, candidate, prepared)
+        self._performance = performance
+        self._market_features = {item.name: item for item in definition.market_features}
         self._visibility = _Visibility(prepared._data)
-        self._features = _FeatureEvaluator(prepared._data, prepared.graph, self._visibility)
+        feature_args = (prepared._data, prepared.graph, self._visibility)
+        self._features = (_FeatureEvaluator(*feature_args) if performance is None else
+                          performance.graph(_FeatureEvaluator, *feature_args))
         self._auxiliary = {name: (_Visibility(data), data) for name, data in prepared._auxiliary}
         self._tables = dict(prepared._observations)
         self._table_cache = None
@@ -125,6 +125,22 @@ class AccountDecisionEngine:
         self._intervals = dict(prepared._calendar_intervals)
         self._observed_at = None
         self._observation_cache = None
+
+    def _market_feature(self, history, views, tables, session, name):
+        if name not in self._market_features:
+            raise ValueError('undeclared market feature: ' + name)
+        args = (self.candidate, self.prepared, self._market_features[name], history, views, tables, session)
+        return _market_feature(*args) if self._performance is None else self._performance.feature(_market_feature, *args)
+
+    def _decision_inputs(self, observation):
+        point, features, history, views, session, available, _ = observation
+        tables = self.table_views(point.decision_at)
+        provider = partial(self._market_feature, history, views, tables, session) if self._market_features else None
+        expose_session = self.candidate.definition.session_context
+        return (point, features, DecisionHistory._from_history(history),
+                {name: DecisionHistory._from_history(view) for name, view in views.items()},
+                session if expose_session else None, available if expose_session else None,
+                {name: DecisionTable._from_table(view) for name, view in tables.items()}, provider)
 
     def table_views(self, when):
         import pandas as pd
@@ -200,7 +216,9 @@ class AccountDecisionEngine:
             raise ValueError('prepared session timezone differs from instrument')
         if available > interval.start:
             raise ValueError('session calendar is not yet available')
-        observation = (point, self._features.at(interval.start), visibility.history_view(interval.start),
+        features = (self._features.at(interval.start) if self._performance is None else
+                    self._performance.graph(self._features.at, interval.start))
+        observation = (point, features, visibility.history_view(interval.start),
                        views, session, available, not data.observed[visibility.latest_completed])
         self._observation_cache = key, observation
         return (*observation[:3], dict(views), *observation[4:])
@@ -241,16 +259,11 @@ class AccountDecisionEngine:
             raise ValueError('strategy cycle differs from confirmed fills')
         if not portfolio.quantity and position.active is not None:
             raise ValueError('flat portfolio cannot carry an active position')
-        point, features, history, views, session, available, suppressed = observation
+        point, _, _, _, session, _, suppressed = observation
         replay_point = ReplayPoint(point.observed_through, point.decision_at,
             point.execution_interval.start, point.execution_interval.end,
             session.session_date.isoformat(), ExecutionPrecision.BAR_INTERVAL)
-        context = AccountStepContext(point, portfolio, account, position, definition.parameters,
-            features, history, budget=budget, events=events, auxiliary_histories=views,
-            session=session if definition.session_context else None,
-            session_available_at=available if definition.session_context else None,
-            observations=self.table_views(point.decision_at),
-            _market_feature_provider=self._market_feature_provider)
+        decision_inputs = self._decision_inputs(observation)
         cursor = state.event_cursor + len(events) if next_event_cursor is None else next_event_cursor
         if type(cursor) is not int or cursor < state.event_cursor + len(events):
             raise ValueError('recognized account event cursor cannot regress')
@@ -263,11 +276,15 @@ class AccountDecisionEngine:
         scope = nullcontext() if active_invocation(self.candidate) is not None else self.candidate.bind_replay()
         with scope:
             if definition.computation is StrategyComputation.BATCH_HISTORY:
-                batch_decision, = self.candidate.calculate_account_batch(BatchAccountContext((
-                    BatchObservation(point, features, history, views, context.session,
-                                     context.session_available_at, context.observations),), definition.parameters))
+                batch_decision, = self.candidate.calculate_account_batch(
+                    BatchAccountContext((BatchObservation(*decision_inputs),), definition.parameters))
                 proposal = AccountStepResult(batch_decision, state.account, StateRecord())
             else:
+                _, features, history, views, session, available, tables, provider = decision_inputs
+                context = AccountStepContext(point, portfolio, account, position, definition.parameters,
+                    features, history, budget=budget, events=events, auxiliary_histories=views,
+                    session=session, session_available_at=available, observations=tables,
+                    _market_feature_provider=provider)
                 proposal = self.candidate.account_step(context, state)
         if (portfolio.quantity or proposal.decision.target) and proposal.cycle_values is None:
             raise ValueError('holding/entry requires typed cycle state')

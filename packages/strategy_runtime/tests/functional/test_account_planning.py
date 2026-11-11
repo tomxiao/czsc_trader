@@ -40,6 +40,33 @@ def facts(candidate, prepared, index=1):
     return interval, portfolio, account
 
 
+@pytest.mark.parametrize('line, message', [
+    ('return context.history.to_frame()', 'declared market feature for history windows'),
+    ("return context.market_feature(lambda x: 1, windows=((None, 1),))", 'declared market feature name'),
+    ("return context.market_feature('missing')", 'undeclared market feature'),
+])
+def test_V4_rejects_undeclared_decision_window_before_replay(tmp_path, line, message):
+    candidate, *_ = setup(tmp_path, MarketId.US, BarFrequency.DAILY, StrategyComputation.STATEFUL_STEP,
+                          with_executor=False)
+    (tmp_path / 'strategy.py').write_text('def step(context, state):\n    ' + line + '\n', encoding='utf-8')
+    definition = replace(candidate.definition, source_sha256=equity_source_hash(tmp_path, ('strategy.py',)))
+    with pytest.raises(ValueError, match=message):
+        replace(candidate, definition=definition)
+
+
+def test_V4_decision_alias_exposes_only_recent_rows(tmp_path):
+    candidate, prepared, *_ = setup(tmp_path, MarketId.US, BarFrequency.DAILY,
+                                    StrategyComputation.STATEFUL_STEP, with_executor=False)
+    (tmp_path / 'strategy.py').write_text('def step(ctx, state):\n    view = ctx.history\n    return view.to_frame()\n',
+                                         encoding='utf-8')
+    candidate = replace(candidate, definition=replace(candidate.definition,
+        source_sha256=equity_source_hash(tmp_path, ('strategy.py',))))
+    interval, portfolio, account = facts(candidate, prepared)
+    with pytest.raises(AttributeError, match='DecisionHistory.*to_frame'):
+        AccountDecisionEngine(candidate, prepared).propose(interval, portfolio, account, AccountStrategyState(),
+            PositionFeedback(), owner='durable-account', fee_rate=.001)
+
+
 @pytest.mark.parametrize(
     "market,frequency,computation",
     [

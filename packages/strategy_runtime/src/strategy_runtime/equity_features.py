@@ -400,3 +400,6 @@ class HistoryView:
             _positive_integer(tail)
         skip = 0 if tail is None else max(0, self._count - tail)
         return _history_frames.frame(tuple(_history_rows(self._root, skip)), self._columns)
+
+    def _tail(self, count):
+        return tuple(_history_rows(self._root, max(0, self._count - count)))

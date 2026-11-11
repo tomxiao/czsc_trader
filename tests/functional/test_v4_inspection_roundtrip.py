@@ -10,7 +10,7 @@ from uuid import uuid4
 
 import pytest
 from dataflows import MarketId, EquityProduct, TimeInterval
-from strategy_runtime import InspectionControl, StrategyComputation
+from strategy_runtime import InspectionControl, MarketFeature, MarketWindow, StrategyComputation, equity_source_hash
 from strategy_runtime.deployment import validate_release_package
 from strategy_manager import CandidateEvidence, StrategyRegistry, freeze_contracts as f
 from czsc_trader.application import (CandidateInspectionRequest, EquityInspectionReplay,
@@ -32,8 +32,8 @@ pytestmark = pytest.mark.usefixtures('pinned_inspection_environment')
 
 
 def native_fixture(tmp_path, market, computation=StrategyComputation.STATEFUL_STEP, *, initial_state=False,
-                   etf=False, auxiliary=True):
-    key = (market, computation, initial_state, etf, auxiliary)
+                   etf=False, auxiliary=True, declared_feature=False):
+    key = (market, computation, initial_state, etf, auxiliary, declared_feature)
     saved = _PREPARED_SEEDS.get(key)
     if saved is not None:
         seed, prepared_request, reference = saved
@@ -46,8 +46,17 @@ def native_fixture(tmp_path, market, computation=StrategyComputation.STATEFUL_ST
     if not auxiliary:
         request = replace(request, candidate=replace(request.candidate,
             definition=replace(request.candidate.definition, auxiliary_inputs=())))
+    if declared_feature:
+        source = request.candidate.source_root / 'strategy.py'
+        content = source.read_text(encoding='utf-8')
+        content = content.replace("float(ctx.history.last()['Close'])", "ctx.market_feature('visible_close')")
+        source.write_text(content + "\ndef visible_close(windows):\n    return float(windows[0][-1]['Close'])\n",
+                          encoding='utf-8')
+        definition = replace(request.candidate.definition, source_sha256=equity_source_hash(source.parent, ('strategy.py',)),
+            market_features=(MarketFeature('visible_close', 'strategy:visible_close', (MarketWindow(None, 1),)),))
+        request = replace(request, candidate=replace(request.candidate, definition=definition))
     if initial_state:
-        from strategy_runtime import equity_source_hash, StateRecord
+        from strategy_runtime import StateRecord
         from strategy_runtime.equity_replay import StrategyStateSchema, StateField, StateValueType
         source = request.candidate.source_root / 'strategy.py'
         source.write_text(source.read_text().replace('AccountStepResult(decision(ctx), cycle_values=',
@@ -114,7 +123,6 @@ def native_protocol(context, request, products):
 
 
 def test_native_technical_replay_rejects_batch_that_changes_in_online_context(tmp_path):
-    from strategy_runtime import equity_source_hash
     context, request, _, replay = native_fixture(tmp_path, MarketId.US, StrategyComputation.BATCH_HISTORY)
     source = request.candidate.source_root / 'strategy.py'
     source.write_text("from strategy_runtime import AccountDecision\n"
@@ -178,7 +186,8 @@ def freeze_native_inspection(repository, inspection, source, *, version='v1'):
 
 @pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
 def test_native_dual_market_inspection_freezes_exact_v4_package(tmp_path, market):
-    context, request, products, replay = native_fixture(tmp_path, market, initial_state=True, auxiliary=False)
+    context, request, products, replay = native_fixture(tmp_path, market, initial_state=True, auxiliary=False,
+                                                        declared_feature=True)
     repository = context.repository
     inspection, source = native_inspection_request(tmp_path, context, request, products, replay)
     wrong = replace(inspection, protocol=replace(inspection.protocol, method_version='candidate-inspection-v2'))
@@ -205,6 +214,7 @@ def test_native_dual_market_inspection_freezes_exact_v4_package(tmp_path, market
     from strategy_runtime import EquityStrategyDefinition
     restored = EquityStrategyDefinition.from_dict(package.release.payload['equity_definition'])
     assert restored.initial_account == request.candidate.definition.initial_account
+    assert restored.market_features == request.candidate.definition.market_features
     assert restored.content_identity == request.candidate.definition.content_identity
     assert json.loads((package.source_root.parent.parent/'runtime_binding.json').read_text())['observation_sha256']
     if market is MarketId.US:

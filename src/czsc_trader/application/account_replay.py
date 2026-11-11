@@ -9,6 +9,8 @@ from strategy_runtime import AccountDecisionEngine, AccountStrategyState, StateR
 from strategy_runtime.equity_replay import PreparedObservations, ReplayOutcome, ReplayStatistics, ReplayFailure
 from strategy_runtime.equity import equity_hash
 from strategy_runtime.replay_contracts import StrategyComputation
+from strategy_runtime.strategy_performance import (StrategyPerformanceBudget, StrategyPerformanceExceeded,
+                                                    _StrategyPerformanceProbe)
 from execution_channels.historical import HistoricalReplayChannel, HistoricalDecision, AdoptionStatus
 from execution_channels.historical.input_facts import normalize_constraint_times
 from execution_channels.state import AccountStrategyState as ChannelStrategyState, StateRecord as ChannelStateRecord
@@ -16,7 +18,8 @@ from .ec_boundary import (execution_instrument, execution_plan, strategy_budget,
                           strategy_feedback, strategy_portfolio, strategy_snapshot)
 
 
-def run_replay(prepared, candidate, executor, *, constraints, start, end, fee_rate, initial_state=None, owner=None):
+def run_replay(prepared, candidate, executor, *, constraints, start, end, fee_rate, initial_state=None, owner=None,
+               performance_budget: StrategyPerformanceBudget | None = None):
     """Execute a supplied historical window with exactly the online strategy entry."""
     if type(prepared) is not PreparedObservations or candidate.definition.contract_version != 4:
         raise TypeError('historical account requires prepared V4 observations')
@@ -50,14 +53,17 @@ def run_replay(prepared, candidate, executor, *, constraints, start, end, fee_ra
     channel = HistoricalReplayChannel.from_executor(executor, account_id=owner,
         instrument=execution_instrument(candidate.instrument), bars=data.rows, constraints=constraint_rows,
         initial_state=ChannelStrategyState.from_dict(state.to_dict()))
-    engine = AccountDecisionEngine(candidate, prepared)
+    if performance_budget is not None and type(performance_budget) is not StrategyPerformanceBudget:
+        raise TypeError('replay performance requires StrategyPerformanceBudget')
+    performance = None if performance_budget is None else _StrategyPerformanceProbe(performance_budget, len(ticks))
+    engine = AccountDecisionEngine(candidate, prepared, performance=performance)
     # The stateful strategy validates its returned records inside account_step.
     # Batch proposals synthesize their state and need the schema check here.
     batch = definition.computation is StrategyComputation.BATCH_HISTORY
     projected_channel_state = None
     decisions = 0
     started = perf_counter()
-    with candidate.bind_replay() as scope:
+    with candidate.bind_replay(performance=performance) as scope:
         for a, b in ticks:
             prior = state
             try:
@@ -99,12 +105,15 @@ def run_replay(prepared, candidate, executor, *, constraints, start, end, fee_ra
                 projected_channel_state = channel.state
                 state = AccountStrategyState.from_dict(projected_channel_state.to_dict())
                 decisions += not result.suppressed
+            except StrategyPerformanceExceeded:
+                raise
             except Exception as exc:
                 # An accepted decision or preceding confirmed fill cannot be
                 # erased merely because a later execution operation failed.
                 committed = AccountStrategyState.from_dict(channel.state.to_dict()) if channel.state.revision > prior.revision else prior
                 raise ReplayFailure(committed, a, exc) from exc
+        profile = None if performance is None else performance.finish()
         account_result = channel.finish()
-    stats = ReplayStatistics(0., perf_counter()-started, len(ticks), decisions)
+    stats = ReplayStatistics(0., perf_counter()-started, len(ticks), decisions, strategy_performance=profile)
     stats = replace(stats, source_checks=scope.checks, source_bytes_read=scope.bytes_read, module_loads=scope.loads)
     return ReplayOutcome(account_result, state, stats)

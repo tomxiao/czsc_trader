@@ -26,6 +26,7 @@ from dataflows.equity_contracts import EquityParameters
 from .identity import CandidateContentIdentity, ImplementationDependency
 from .models import canonical_sha256, ExecutionPolicy
 from .dataset_observations import DatasetObservationInput, DatasetObservationBinding
+from .market_features import MarketFeature, _parameter_key
 from .signal_explanation import SignalExplanationSnapshot, SignalBasisSnapshot
 from .equity import (ResearchExecutionSpec, UsEquitySpec, CnEquitySpec, AccountPolicy,
                      CashAvailabilityPolicy, ExecutionModel, EquityPortfolio, DecisionPoint)
@@ -64,6 +65,32 @@ def _read_equity_sources(root, files):
 
 def equity_source_hash(root, files):
     return _read_equity_sources(root, files)[0]
+
+
+def _verify_decision_access(tree, filename, definition):
+    module, entrypoint = definition.entrypoint.split(':')
+    if filename != module.replace('.', '/') + '.py':
+        return
+    names = {item.name for item in definition.market_features}
+    for function in tree.body:
+        if type(function) is not ast.FunctionDef or function.name != entrypoint:
+            continue
+        args = (*function.args.posonlyargs, *function.args.args)
+        if not args:
+            return
+        context = args[0].arg
+        for node in ast.walk(function):
+            if isinstance(node, ast.Attribute) and node.attr in ('to_frame', 'rows'):
+                origin = node.value.value if isinstance(node.value, ast.Subscript) else node.value
+                if (isinstance(origin, ast.Attribute) and origin.attr in ('history', 'auxiliary_histories', 'observations')
+                        and isinstance(origin.value, ast.Name) and origin.value.id == context):
+                    raise ValueError(f'{filename}:{node.lineno}: V4 decisions require a declared market feature for history windows')
+            if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == 'market_feature'
+                    and isinstance(node.func.value, ast.Name) and node.func.value.id == context):
+                if len(node.args) != 1 or node.keywords:
+                    raise ValueError(f'{filename}:{node.lineno}: V4 decisions require a declared market feature name')
+                if isinstance(node.args[0], ast.Constant) and node.args[0].value not in names:
+                    raise ValueError(f'{filename}:{node.lineno}: undeclared market feature {node.args[0].value!r}')
 
 
 @lru_cache(maxsize=128)
@@ -520,6 +547,7 @@ class EquityStrategyDefinition:
     initial_account: object | None = None
     observation_inputs: tuple[DatasetObservationInput, ...] = ()
     execution_policy: ExecutionPolicy | None = None
+    market_features: tuple[MarketFeature, ...] = ()
 
     def __post_init__(self):
         import re
@@ -641,6 +669,34 @@ class EquityStrategyDefinition:
             raise ValueError("duplicate dependency")
         object.__setattr__(self, 'dependencies', tuple(sorted(self.dependencies)))
         object.__setattr__(self, 'source_files', tuple(sorted(self.source_files)))
+        self._validate_market_features()
+
+    def _validate_market_features(self):
+        features = self.market_features
+        if type(features) is not tuple or any(type(item) is not MarketFeature for item in features):
+            raise TypeError('market_features requires a tuple of MarketFeature declarations')
+        if not features:
+            return
+        if self.contract_version != 4 or len({item.name for item in features}) != len(features):
+            raise ValueError('declared market features require V4 and unique names')
+        bar_depth = {None: self.warmup_bars, **{item.name: item.warmup_bars for item in self.auxiliary_inputs}}
+        tables = {item.name for item in self.observation_inputs}
+        for feature in features:
+            module = feature.entrypoint.split(':')[0].replace('.', '/')
+            if module + '.py' not in self.source_files and module + '/__init__.py' not in self.source_files:
+                raise ValueError('market feature entrypoint is outside declared source: ' + feature.name)
+            if feature.session_date and not self.session_context:
+                raise ValueError('market feature session_date requires declared session context')
+            for name in feature.parameters:
+                if name not in self.parameters:
+                    raise ValueError('market feature uses an undeclared parameter: ' + name)
+                _parameter_key(self.parameters[name])
+            for window in feature.windows:
+                if window.table:
+                    if window.source not in tables:
+                        raise ValueError('market feature uses an undeclared observation table: ' + str(window.source))
+                elif window.rows > bar_depth.get(window.source, 0):
+                    raise ValueError('market feature window exceeds declared bar warmup: ' + str(window.source))
 
     @cached_property
     def content_identity(self):
@@ -698,6 +754,8 @@ class EquityStrategyDefinition:
             result.pop('initial_account')
         else:
             result['initial_account'] = self.initial_account.to_dict()
+        if not self.market_features:
+            result.pop('market_features')
         if self.contract_version == 2:
             result.pop('feature_graph')
             result.pop('state_schema')
@@ -723,6 +781,7 @@ class EquityStrategyDefinition:
         value['dependencies'] = tuple(ImplementationDependency(**x) for x in value['dependencies'])
         value['auxiliary_inputs'] = tuple(EquityAuxiliaryInput.from_dict(x) for x in value.get('auxiliary_inputs', ()))
         value['observation_inputs'] = tuple(DatasetObservationInput.from_dict(x) for x in value.get('observation_inputs', ()))
+        value['market_features'] = tuple(MarketFeature.from_dict(x) for x in value.get('market_features', ()))
         if value.get('contract_version', 2) == 4:
             from .equity_features import FeatureGraph
             from .equity_replay import StrategyStateSchema
@@ -801,7 +860,8 @@ class EquityStrategyCandidate:
     def verify(self):
         for asset in self.definition.frozen_assets:
             asset.resolve(self.source_root)
-        if equity_source_hash(self.source_root, self.definition.source_files) != self.definition.source_sha256:
+        digest, sources = _read_equity_sources(self.source_root, self.definition.source_files)
+        if digest != self.definition.source_sha256:
             raise ValueError('equity source closure changed')
         for dep in self.definition.dependencies:
             if metadata.version(dep.name) != dep.version:
@@ -810,8 +870,14 @@ class EquityStrategyCandidate:
         distributions = _package_distributions()
         pinned = {x.name.replace('_', '-').lower() for x in self.definition.dependencies}
         modules = {n[:-3].replace('/', '.') for n in self.definition.source_files}
-        for name in self.definition.source_files:
-            for node in ast.walk(ast.parse((self.source_root / name).read_text(encoding='utf-8'))):
+        functions = {}
+        for name, content in sources.items():
+            tree = ast.parse(content.decode('utf-8'), filename=name)
+            if self.definition.contract_version == 4:
+                _verify_decision_access(tree, name, self.definition)
+            if self.definition.market_features:
+                functions[name] = {node.name for node in tree.body if type(node) is ast.FunctionDef}
+            for node in ast.walk(tree):
                 if isinstance(node, ast.Import):
                     imports = [x.name for x in node.names]
                 elif isinstance(node, ast.ImportFrom):
@@ -834,6 +900,12 @@ class EquityStrategyCandidate:
                         raise ValueError('local imports must be relative for isolated loading')
                     if not any(x.replace('_', '-').lower() in pinned for x in distributions.get(top, ())):
                         raise ValueError(f'undeclared equity dependency: {top}')
+        for feature in self.definition.market_features:
+            module, function = feature.entrypoint.split(':')
+            path = module.replace('.', '/')
+            filename = path + '/__init__.py' if path + '/__init__.py' in sources else path + '.py'
+            if function not in functions[filename]:
+                raise ValueError('market feature is not a declared top-level function: ' + feature.entrypoint)
 
     def decide(self, context):
         if self.definition.contract_version != 2:
@@ -904,11 +976,11 @@ class EquityStrategyCandidate:
             raise TypeError('batch strategy must return one AccountDecision per observation')
         return result
 
-    def bind_replay(self):
+    def bind_replay(self, *, performance=None):
         from .equity_source_runtime import BoundEquityInvocation
         if self.definition.contract_version != 4:
             raise TypeError('bound strategy module scopes require explicit replay definitions')
-        return BoundEquityInvocation(self)
+        return BoundEquityInvocation(self, performance=performance)
 
     def _invoke(self, context):
         actual, sources = _read_equity_sources(self.source_root, self.definition.source_files)

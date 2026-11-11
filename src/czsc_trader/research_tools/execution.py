@@ -1,12 +1,13 @@
 """Explicit, bounded research execution and resumable local computation."""
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from enum import StrEnum
 from math import isfinite
 import re
 from typing import Callable, Literal
 from .context import ResearchContext, ExperimentRef
+from strategy_runtime import StrategyPerformanceBudget, StrategyPerformanceStatistics, canonical_sha256
 
 
 class CheckpointMode(StrEnum):
@@ -28,6 +29,7 @@ class ExecutionCheckpointRequest:
 
 class ExecutionPhase(StrEnum):
     PREPARE = "PREPARE"
+    PERFORMANCE = "PERFORMANCE"
     COMPUTE = "COMPUTE"
     BENCHMARK = "BENCHMARK"
     SERIALIZE = "SERIALIZE"
@@ -110,6 +112,7 @@ class EquityAccountTiming:
     replay_seconds includes feature_seconds. Both are worker elapsed seconds,
     not end-to-end wall time, and exclude subsequent metrics and encoding.
     Repeated executions of the same owner are added rather than overwritten.
+    strategy_performance is the most recent replay's optional CPU profile.
     """
     kind: Literal["CANDIDATE", "BENCHMARK"]
     owner: str
@@ -117,6 +120,7 @@ class EquityAccountTiming:
     replay_seconds: float
     rows: int
     decisions: int
+    strategy_performance: StrategyPerformanceStatistics | None = None
 
     def __post_init__(self):
         if type(self.kind) is not str or self.kind not in {"CANDIDATE", "BENCHMARK"}:
@@ -164,7 +168,8 @@ class ResearchExecutionSession:
 
     def __init__(self, context: ResearchContext, *, experiment: ExperimentRef,
                  checkpoint: ExecutionCheckpointRequest | None = None,
-                 on_progress: Callable[[ExecutionProgress], None] | None = None):
+                 on_progress: Callable[[ExecutionProgress], None] | None = None,
+                 performance_budget: StrategyPerformanceBudget | None = None):
         from ._execution_session import ExecutionExecutor
 
         if type(context) is not ResearchContext or type(experiment) is not ExperimentRef:
@@ -175,9 +180,12 @@ class ResearchExecutionSession:
             raise TypeError("checkpoint requires ExecutionCheckpointRequest")
         if on_progress is not None and not callable(on_progress):
             raise TypeError("on_progress must be callable")
+        if performance_budget is not None and type(performance_budget) is not StrategyPerformanceBudget:
+            raise TypeError("performance_budget requires StrategyPerformanceBudget")
         self.context = context
         self.experiment = experiment
         self.checkpoint_request = checkpoint
+        self._performance_budget = performance_budget
         self.executor = ExecutionExecutor(context.evaluation.resources, on_progress=on_progress)
         self.checkpoint = None
         self._active = False
@@ -201,10 +209,14 @@ class ResearchExecutionSession:
             if self.checkpoint_request is not None:
                 from ._execution_checkpoint import CheckpointStore
                 from ._execution_session import implementation_identity
+                implementation = implementation_identity()
+                if self._performance_budget is not None:
+                    implementation = canonical_sha256({"implementation": implementation,
+                                                       "performance_budget": asdict(self._performance_budget)})
                 self.checkpoint = CheckpointStore(
                     self.context.repository.root, self.experiment,
                     self.checkpoint_request.run_id, self.checkpoint_request.mode.value,
-                    implementation_identity(),
+                    implementation,
                 )
         except BaseException:
             access._session_lock.release()
@@ -256,7 +268,7 @@ class ResearchExecutionSession:
         if state is None:
             return None
         timings = tuple(EquityAccountTiming(kind, owner, item.feature_seconds, item.replay_seconds,
-                                           item.rows, item.decisions)
+                                           item.rows, item.decisions, item.strategy_performance)
                         for (kind, owner), item in sorted(state.replay_statistics.items()))
         return EquityExecutionStatistics(len(state.products), state.candidate_runs, state.benchmark_runs, timings)
 

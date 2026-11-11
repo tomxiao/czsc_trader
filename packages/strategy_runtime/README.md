@@ -89,6 +89,7 @@ CN/US共用策略计算、回放内核与计划契约；市场差异由 `Researc
 | `computation` | 必须显式选择 `StrategyComputation.BATCH_HISTORY` 或 `STATEFUL_STEP` |
 | 决策时钟 | `BarFrequency.DAILY` 或 `M30`；两者都要求真实交易段、可用时间及完整网格 |
 | 输入 | 主行情、辅助行情及历史执行报价统一HFQ；观察按可用时间裁剪，不读取公司行动或RAW执行价 |
+| 历史窗口 | `market_features: tuple[MarketFeature, ...]` 声明自定义有界窗口、参数及结果形状 |
 | 决策 | `AccountDecision(target, explanation)`，目标为有限0至1；不含报价、资金、股数或订单 |
 | 状态 | `StrategyStateSchema`及匹配的 `initial_account: StateRecord`；字段非空时必须声明初值 |
 | 成交反馈 | `AccountSnapshot`、`PositionFeedback`和已确认的 `RecognizedAccountEvent` |
@@ -164,18 +165,40 @@ graph = FeatureGraph(
 相同特征图可在回放初始化时生成因果特征列。Raw/Lag/TR 和同槽中位数按列计算，Mean 仍对每个固定窗口
 使用上述 Python float 规则。非单调到达保持逐时点求值；这是同一算子的内部计算选择，不提供用户切换模式。
 
-`ctx.history` 保留完整可见历史。`last(0)`、`last(1)` 返回最近两根观察柱的只读 Mapping；
-`to_frame(tail=None)` 显式生成独立 DataFrame 副本，`tail=N` 仅返回末尾 N 根。
-相同已可见窗口的中间DataFrame采用有界复用，返回值始终为独立副本，列、dtype及因果可见性保持原语义。
-缓存最多64个窗口、4MiB表格，单窗口最多512行；单行与大窗口直接构造，缓存不保留完整历史树。
-DataFrame 物化本身包含遍历和复制成本，频繁导出完整历史仍可能产生二次增长，不能承诺任意策略秒级。
-持有旧视图不会看到后续到达数据，也不能通过改动导出副本污染准备数据。
-内部根据已认证的到达顺序选择不可变追加链或持久化有序树，不提供用户切换模式。
-有效可见时间非递减时，N 行历史的可见性推进总计 O(N)，观察序列的 Lag 索引为 O(1)；
-存在晚到插入时保留有序树及秩索引，单次插入 O(log N)，晚到数据的可见语义不变。
-顺序历史导出最近 k 行的遍历为 O(k)，完整导出为 O(N)；旧视图、复制及序列化仍保留各自时点的历史。
-两种结构都只包含当时已可见行；策略视图不持有完整未来数组的引用，
-也不提供 BarStatus、ExecutionBlocked 等执行专用注释。行视图直接委托底层只读 Mapping，保持不可变性。
+`ctx.history` 与 `ctx.auxiliary_histories` 提供 `DecisionHistory`。`last(0)` 和 `last(1)`
+读取最近两根已可见柱的只读行，`len(view)` 返回已可见柱数。`DecisionTable` 提供最新可见行
+`last()`、就绪状态和计数。上述接口移除 `to_frame()` 和整表 `rows`。状态模式和批量观察使用相同输入契约。
+可用性由运行时逐时点推进，晚到行只影响其可见时间之后的决策。
+
+长窗口优先使用特征图。自定义计算在 `EquityStrategyDefinition.market_features` 声明后，决策按名称读取。
+
+```python
+from strategy_runtime import MarketFeature, MarketWindow
+
+# 策略源码 strategy.py
+def mean_close(windows, scale):
+    rows, = windows
+    return float(sum(row['Close'] for row in rows) / len(rows) * scale)
+
+# 策略定义中的 market_features 字段
+market_features = (
+    MarketFeature('mean_close', 'strategy:mean_close', (MarketWindow(None, 20),), ('scale',)),
+)
+
+# step(ctx, state) 或批量模式中的单条 BatchObservation
+# scaled_mean = ctx.market_feature('mean_close')
+```
+
+`MarketWindow(None, rows)` 指主行情，字符串指声明的辅助行情，`table=True` 指观察表。
+行情窗口上限受相应 `warmup_bars` 约束。观察表返回当时可见的至多 `rows` 行，未启用时返回空元组。
+回调必须是源闭包中的顶层纯函数。回调接收按声明顺序排列的只读行元组，随后是按顺序声明的参数。
+启用 `session_date=True` 时，会话日期位于窗口之后、策略参数之前。返回有限标量或不超过
+`max_values` 的标量元组。相同准备输入、可见窗口、声明、源码及相关参数的结果在进程内有界复用。
+
+迁移时将逐根 `to_frame()`、整表读取及旧式 `market_feature(function, windows=..., parameters=...)`
+改为声明式窗口。参数影响历史长度时声明获准范围内的最大窗口，在纯函数内按实际参数选取后缀。
+依赖成交的累计量继续用账户或持仓周期标量状态。研究和 PTE 统一执行此契约。
+契约限定平台交付给策略的数据和状态形状，纯 Python 回调的实际 CPU 成本由代表性回放测量。
 
 ### 状态与成交事务
 

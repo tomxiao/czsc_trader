@@ -95,7 +95,9 @@ __version__ = "0.1.0"
 
 from .account_strategy import (AccountDecision, AccountStepResult, AccountStepContext,
     PositionCycle, PositionFeedback, BatchObservation, BatchAccountContext, SellRemainderPolicy,
-    AccountStrategyState, RecognizedAccountEvent, RecognizedEventKind)
+    AccountStrategyState, DecisionHistory, DecisionTable, RecognizedAccountEvent, RecognizedEventKind)
+from .market_features import MarketFeature, MarketWindow
+from .strategy_performance import StrategyPerformanceBudget, StrategyPerformanceStatistics, StrategyPerformanceExceeded
 from .account_planning import (AccountDecisionEngine, AccountDecisionProposal,
     AccountBatchConsistency, check_account_batch_consistency)
 from .equity_definition import ExecutionInput, ExecutionInputBinding
@@ -108,6 +110,8 @@ __all__ = [
     "CycleTarget", "EntryCycleState", "EntryCyclePhase", "EntryCyclePlanStatus",
     "validate_entry_cycle_plan_facts",
     "ExecutionResources", "default_worker_count",
+    "MarketFeature", "MarketWindow", "DecisionHistory", "DecisionTable",
+    "StrategyPerformanceBudget", "StrategyPerformanceStatistics", "StrategyPerformanceExceeded",
     "VerifiedReleasePackage", "load_inspection_deployment", "validate_release_package",
     "InspectionControl", "InspectionProgress", "InspectionStage", "InspectionEnvironment",
     "ImplementationFileIdentity", "InspectionRuntimePermit", "collect_inspection_environment",

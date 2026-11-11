@@ -41,7 +41,7 @@ def fixture(tmp_path, market, *, start=date(2026, 10, 14), missing=False):
         "def step(ctx, state):\n"
         '    view = ctx.observations["increment"]\n'
         "    active = view.status is TableObservationStatus.ACTIVE\n"
-        "    assert bool(view.rows) == active\n"
+        "    assert bool(len(view)) == active\n"
         '    return AccountStepResult(AccountDecision.from_facts(int(active), "activation", '
         'facts={"status":view.status.value}, next_watch="next source day"), cycle_values=StateRecord())\n',
         encoding="utf-8",

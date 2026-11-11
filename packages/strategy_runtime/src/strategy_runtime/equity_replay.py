@@ -17,6 +17,7 @@ from .equity import equity_hash
 from .equity_features import (FeatureGraph, FeatureView, HistoryView, Lag, Mean,
                               NotReady, RawField, ReadyValue, SameLocalSlotMedian, TrueRange,
                               _HistoryAppend, _history_insert)
+from .strategy_performance import StrategyPerformanceStatistics
 
 
 class StateValueType(StrEnum):
@@ -588,6 +589,7 @@ class ReplayStatistics:
     source_checks: int = 0
     source_bytes_read: int = 0
     module_loads: int = 0
+    strategy_performance: StrategyPerformanceStatistics | None = None
 
 
 @dataclass(frozen=True, slots=True)

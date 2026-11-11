@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING
 from dataflows import EquityDataRequest, EquityProduct, PreparePolicy, TimeInterval
 from strategy_runtime.equity import ResearchExecutionSpec, equity_hash
 from strategy_runtime.equity_definition import EquityAuxiliaryBinding, EquityInputBinding, EquityStrategyCandidate, ExecutionInputBinding
+from strategy_runtime.strategy_performance import StrategyPerformanceBudget, StrategyPerformanceExceeded
 from strategy_evaluator.equity_metrics import summarize_equity_ledger
 
 from .equity_evaluation import (EquityArtifact, EquityEvaluationRequest, EquityEvaluationResult,
@@ -93,6 +94,7 @@ class _SessionState:
         self.input_fact_hashes = {}
         self.replay_statistics = {}
         self.observation_selections = {}
+        self.performance_pilots = set()
         self.candidate_runs = 0
         self.benchmark_runs = 0
 
@@ -303,6 +305,7 @@ class _ReplayAccountRequest:
     window: TimeInterval
     initial_cash: float
     fee_rate: float
+    performance_budget: StrategyPerformanceBudget | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -319,11 +322,18 @@ def _compute_account(replay, candidate, request, owner, execution_bars, output):
     from czsc_trader.application.account_replay import run_replay
     from czsc_trader.application.ec_boundary import execution_spec
     from execution_channels.historical.portfolio import PortfolioHistoricalExecutor
+    from strategy_runtime.equity_replay import ReplayFailure
     executor = PortfolioHistoricalExecutor(specification=execution_spec(candidate.definition.execution_spec),
         initial_cash=request.initial_cash, fee_rate=request.fee_rate,
         price_basis="HFQ", execution_bars=execution_bars)
-    outcome = run_replay(replay, candidate, executor, start=request.window.start,
-        end=request.window.end, fee_rate=request.fee_rate, owner=owner, constraints=output.constraints)
+    try:
+        outcome = run_replay(replay, candidate, executor, start=request.window.start,
+            end=request.window.end, fee_rate=request.fee_rate, owner=owner, constraints=output.constraints,
+            performance_budget=request.performance_budget)
+    except ReplayFailure as exc:
+        # A failed research account publishes no partial state. Transfer its
+        # message without serializing a strategy module's exception or state.
+        raise RuntimeError(str(exc)) from None
     account = outcome.execution_result
     run = {"orders": _records(account.orders), "fills": _records(account.fills),
         "price_basis": account.price_basis, "quantity_basis": account.quantity_basis,
@@ -383,6 +393,18 @@ def _transport_tasks(tasks, execution):
             shared = store.put(key, shared)
         result.append((task_key, (shared, candidate, request, owner, output.input_sha256, output.owner_content)))
     return result
+
+
+def _performance_group(prepared):
+    definition = prepared.candidate.definition
+    request = prepared.request
+    # Every later account still enforces the budget on its actual branches.
+    return (definition.source_sha256, definition.dependencies, definition.entrypoint,
+            definition.computation, definition.feature_graph, definition.market_features,
+            definition.state_schema, definition.warmup_bars,
+            tuple((item.name, item.warmup_bars) for item in definition.auxiliary_inputs),
+            definition.session_context, definition.parameter_schema_json,
+            prepared.snapshot.sha256, request.window, request.initial_cash, request.fee_rate)
 
 
 def _account_owner(prepared, *, benchmark):
@@ -466,6 +488,7 @@ def evaluate_many_equity(access, requests, *, execution):
             restored[i] = cached
             execution.executor.reused_results += 1
     tasks, task_meta, failures = [], {}, {}
+    budget = execution._performance_budget
     for i, prepared in enumerate(requests):
         if i in restored:
             continue
@@ -478,7 +501,8 @@ def evaluate_many_equity(access, requests, *, execution):
                 with execution.executor.measure(ExecutionPhase.PREPARE):
                     candidate, replay = _replay(state, prepared, benchmark=benchmark)
                 owner = _account_owner(prepared, benchmark=benchmark)
-                contract = _ReplayAccountRequest(prepared.request.window, prepared.request.initial_cash, prepared.request.fee_rate)
+                contract = _ReplayAccountRequest(prepared.request.window, prepared.request.initial_cash,
+                    prepared.request.fee_rate, None if benchmark else budget)
                 quotes = None
                 if candidate.definition.execution_input is not None:
                     from execution_channels.historical import PreparedExecutionQuotes
@@ -501,24 +525,31 @@ def evaluate_many_equity(access, requests, *, execution):
             if execution.executor.configure_replay():
                 tasks = _transport_tasks(tasks, execution)
                 operation = _compute_transported_account
-    # Consume each finished result immediately rather than retaining all raw runs.
-    # COMPUTE wall time includes streamed handling; worker time is separate.
-    with closing(execution.executor.run(operation, iter(tasks), phase=ExecutionPhase.COMPUTE, total=len(tasks))) as values:
-        for key, value, error in values:
-            if error is not None:
-                failures[key] = error
-                continue
-            prepared, benchmark = task_meta[key]
-            _record_timing(state, prepared, benchmark, value[1])
-            try:
-                artifact = value[0]
-                if type(artifact) is not EquityArtifact or artifact.kind != "equity_account":
-                    raise TypeError("account worker must return an immutable equity account artifact")
-                accounts[key] = artifact
-                if benchmark:
-                    state.benchmarks[key[1]] = artifact
-            except Exception as exc:
-                failures[key] = exc
+    def compute(batch, phase=ExecutionPhase.COMPUTE):
+        # Qualification retains the first account's ordinary result.
+        with closing(execution.executor.run(operation, iter(batch), phase=phase, total=len(batch))) as values:
+            for key, value, error in values:
+                if error is not None:
+                    failures[key] = error
+                    continue
+                prepared, benchmark = task_meta[key]
+                _record_timing(state, prepared, benchmark, value[1])
+                try:
+                    artifact = value[0]
+                    if type(artifact) is not EquityArtifact or artifact.kind != "equity_account":
+                        raise TypeError("account worker must return an immutable equity account artifact")
+                    accounts[key] = artifact
+                    if benchmark:
+                        state.benchmarks[key[1]] = artifact
+                except Exception as exc:
+                    failures[key] = exc
+
+    if budget is not None and budget.enforces_limits:
+        tasks = _qualify_performance(tasks, task_meta, compute, accounts, failures, state.performance_pilots)
+    if tasks and execution.executor.broken:
+        failures.update((key, CancelledError('task was not submitted: broken process pool')) for key, _ in tasks)
+    elif tasks:
+        compute(tasks)
     outcomes = []
     for i, prepared in enumerate(requests):
         request_hash = request_hashes[i]
@@ -546,6 +577,35 @@ def evaluate_many_equity(access, requests, *, execution):
             outcomes.append(EvaluationOutcome(EvaluationStatus.FAILED, request_hash,
                 error=EvaluationError(type(exc).__name__, str(exc) or type(exc).__name__)))
     return tuple(outcomes)
+
+
+def _qualify_performance(tasks, task_meta, compute, accounts, failures, qualified):
+    groups, pilots = {}, {}
+    for task in tasks:
+        key, _ = task
+        if key[0] == 'candidate':
+            group = groups[key] = _performance_group(task_meta[key][0])
+            if group not in qualified:
+                pilots.setdefault(group, task)
+    if pilots:
+        compute(tuple(pilots.values()), ExecutionPhase.PERFORMANCE)
+        qualified.update(group for group, (key, _) in pilots.items() if key in accounts)
+    remaining, benchmarks = [], set()
+    for key, group in groups.items():
+        if group in qualified:
+            benchmarks.add(task_meta[key][0].benchmark_identity.sha256)
+        elif key not in failures:
+            pilot_key = pilots[group][0]
+            cause = failures[pilot_key]
+            if isinstance(cause, StrategyPerformanceExceeded):
+                failures[key] = StrategyPerformanceExceeded(f'strategy pilot did not qualify: {cause}')
+            else:
+                failures[key] = CancelledError(f'task was not submitted: strategy pilot failed: {cause}')
+    for task in tasks:
+        key, _ = task
+        if (key[0] == 'benchmark' and key[1] in benchmarks) or (key in groups and key not in accounts and key not in failures):
+            remaining.append(task)
+    return remaining
 
 
 def _authenticate_restore(state, prepared, result):

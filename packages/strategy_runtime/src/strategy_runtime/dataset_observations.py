@@ -319,6 +319,12 @@ class TableHistoryView:
     def to_frame(self):
         return pd.DataFrame([dict(row) for row in self.rows], columns=self.columns)
 
+    def _tail(self, count):
+        if self._rows is not None:
+            return self._rows[-count:]
+        from .equity_features import _history_rows
+        return tuple(_history_rows(self._prefix.root, max(0, self.observation_count - count)))
+
     @property
     def observation_count(self):
         return self._prefix.observation_count if self._prefix is not None else len(self.rows)

@@ -14,13 +14,15 @@ _active = ContextVar('equity_source_invocation', default=None)
 class BoundEquityInvocation:
     """One account owns a module namespace and an in-memory source snapshot."""
 
-    def __init__(self, candidate):
+    def __init__(self, candidate, *, performance=None):
         self.candidate = candidate
+        self.performance = performance
         self.token = None
         self.namespace = '_equity_' + uuid4().hex
         self.prefix = self.namespace + '.'
         self.finder = None
         self.function = None
+        self.market_functions = {}
         self.checks = 0
         self.bytes_read = 0
         self.loads = 0
@@ -93,15 +95,25 @@ class BoundEquityInvocation:
         if not callable(function):
             raise TypeError('equity strategy entrypoint must be callable')
         self.function = function
+        from .market_features import resolve_market_function
+        for feature in self.candidate.definition.market_features:
+            module_name, function_name = feature.entrypoint.split(':')
+            module = import_module(prefix + module_name)
+            self.market_functions[feature.name] = resolve_market_function(
+                getattr(module, function_name), module.__name__, function_name)
         self.loads = 1
 
     def invoke(self, context, state=None):
         if self.function is None:
             raise RuntimeError('strategy module scope is not active')
+        if self.performance is not None:
+            args = (context,) if state is None else (context, state)
+            return self.performance.strategy(self.function, *args)
         return self.function(context) if state is None else self.function(context, state)
 
     def _cleanup(self):
         self.function = None
+        self.market_functions.clear()
         if self.finder is not None:
             sys.meta_path.remove(self.finder)
             self.finder = None

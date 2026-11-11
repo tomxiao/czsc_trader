@@ -142,13 +142,13 @@ class EquityEvaluationRequest:
         from execution_channels.planning import intent, session_rules, result as planning_result
         from execution_channels.market_rules import constraints as rule_constraints
         from execution_channels.historical import market, input_facts
-        from strategy_runtime import data_preparation
+        from strategy_runtime import data_preparation, market_features, strategy_performance
         engine_sources = {item.__module__: sha256(Path(inspect.getsourcefile(item)).read_bytes()).hexdigest()
             for item in (EquityEvaluationRequest, EquityStrategyCandidate, StrategyRuntime,
                 PortfolioHistoricalExecutor, resolve_fill, summarize_equity_ledger)}
         for module in (equity_features, srt_replay, equity_buy_hold_v4, equity_source_runtime,
                 replay_contracts, account_strategy, account_replay, dataset_observations,
-                observation_preparation, account_planning, se_assessment,
+                observation_preparation, account_planning, market_features, strategy_performance, se_assessment,
                 equity_replay, equity_assessment, parameter_evaluation, account_preparation, accounting,
                 portfolio, account_ledger, channel, contracts, policy, state, serialization,
                 entry_cycle, planning, intent, session_rules, planning_result, market_rules, rule_constraints,

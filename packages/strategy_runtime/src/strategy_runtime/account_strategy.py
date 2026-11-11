@@ -1,7 +1,7 @@
 """V4 market-neutral strategy decisions and confirmed position feedback."""
 from __future__ import annotations
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import date, datetime
 from collections.abc import Mapping
 import math
 from enum import StrEnum
@@ -11,7 +11,7 @@ from .replay_contracts import AccountSnapshot, CycleBudget
 from .equity import EquityPortfolio, DecisionPoint
 from .equity_replay import StateRecord, StrategyState
 from .equity_features import FeatureView, HistoryView
-from .dataset_observations import TableHistoryView
+from .dataset_observations import TableHistoryView, TableObservationStatus
 
 
 class RecognizedEventKind(StrEnum):
@@ -156,41 +156,91 @@ class AccountStepResult:
             raise TypeError('cycle state must be StateRecord')
 
 
+@dataclass(frozen=True, slots=True)
+class DecisionHistory:
+    """Only the latest two observed bars and a constant-time count."""
+
+    as_of: datetime
+    _recent: tuple
+    _count: int
+
+    @classmethod
+    def _from_history(cls, value: HistoryView):
+        return cls(value.as_of, value._recent, len(value))
+
+    def __len__(self):
+        return self._count
+
+    def last(self, offset: int = 0):
+        if type(offset) is not int or offset not in (0, 1):
+            raise ValueError('decision history exposes offsets zero and one; declare a market feature for a window')
+        if offset >= len(self._recent):
+            raise IndexError('requested recent observation is unavailable')
+        return self._recent[offset]
+
+
+@dataclass(frozen=True, slots=True)
+class DecisionTable:
+    """A bounded projection of table observations at the current decision."""
+
+    as_of: datetime
+    columns: tuple[str, ...]
+    status: TableObservationStatus
+    observation_count: int
+    session_count: int
+    latest_session: date | None
+    _latest: tuple
+
+    @classmethod
+    def _from_table(cls, value: TableHistoryView):
+        return cls(value.as_of, value.columns, value.status, value.observation_count,
+                   value.session_count, value.latest_session, value._tail(1))
+
+    def __len__(self):
+        return self.observation_count
+
+    def last(self):
+        if not self._latest:
+            raise IndexError('no visible table observation')
+        return self._latest[0]
+
+
 def _observation_views(values, when):
     from types import MappingProxyType
-    if not isinstance(values, Mapping) or any(type(name) is not str or type(view) is not TableHistoryView or view.as_of != when
+    if not isinstance(values, Mapping) or any(type(name) is not str or type(view) is not DecisionTable or view.as_of != when
                                             for name, view in values.items()):
         raise ValueError('table observations must belong to current decision')
     return MappingProxyType(dict(values))
 
 
+class _MarketFeatureInput:
+    __slots__ = ()
+
+    def market_feature(self, name: str):
+        """Read a named feature declared in the strategy definition."""
+        if type(name) is not str or not name:
+            raise TypeError('market_feature requires a declared feature name')
+        if self._market_feature_provider is None:
+            raise ValueError('undeclared market feature: ' + name)
+        return self._market_feature_provider(name)
+
+
 @dataclass(frozen=True, slots=True)
-class AccountStepContext:
+class AccountStepContext(_MarketFeatureInput):
     point: DecisionPoint
     portfolio: EquityPortfolio
     account: AccountSnapshot
     position: PositionFeedback
     parameters: Mapping
     features: FeatureView
-    history: HistoryView
+    history: DecisionHistory
     budget: CycleBudget | None = None
     events: tuple[RecognizedAccountEvent,...] = ()
     auxiliary_histories: Mapping = field(default_factory=dict)
     session: TradingSession | None = None
     session_available_at: datetime | None = None
-    observations: Mapping[str, TableHistoryView] = field(default_factory=dict)
+    observations: Mapping[str, DecisionTable] = field(default_factory=dict)
     _market_feature_provider: object = field(default=None, repr=False, compare=False)
-
-    def market_feature(self, function, *, windows, parameters=()):
-        """Share a pure market calculation across accounts using these inputs.
-
-        The function receives tuples of immutable visible rows, followed by
-        its explicit parameters. It must depend only on those arguments.
-        Use None for the primary history or an auxiliary history name.
-        """
-        if self._market_feature_provider is None:
-            raise RuntimeError('market features require a prepared account decision')
-        return self._market_feature_provider(self, function, windows, parameters)
 
     def __post_init__(self):
         from .equity_definition import _freeze
@@ -214,11 +264,11 @@ class AccountStepContext:
         if any(event.effective_at>self.point.decision_at for event in self.events):
             raise ValueError('recognized event feedback contains future facts')
 
-        if type(self.features) is not FeatureView or type(self.history) is not HistoryView:
+        if type(self.features) is not FeatureView or type(self.history) is not DecisionHistory:
             raise TypeError('account step requires immutable visible inputs')
         if self.features.as_of != self.point.decision_at or self.history.as_of != self.point.decision_at:
             raise ValueError('account views differ from decision time')
-        if any(type(view) is not HistoryView or view.as_of!=self.point.decision_at for view in self.auxiliary_histories.values()):
+        if any(type(view) is not DecisionHistory or view.as_of!=self.point.decision_at for view in self.auxiliary_histories.values()):
             raise ValueError('auxiliary observations must belong to the current decision')
         if (self.session is None)!=(self.session_available_at is None):
             raise ValueError('session context requires calendar and availability together')
@@ -230,23 +280,24 @@ class AccountStepContext:
 
 
 @dataclass(frozen=True, slots=True)
-class BatchObservation:
+class BatchObservation(_MarketFeatureInput):
     point: DecisionPoint
     features: FeatureView
-    history: HistoryView
+    history: DecisionHistory
     auxiliary_histories: Mapping = field(default_factory=dict)
     session: TradingSession | None = None
     session_available_at: datetime | None = None
-    observations: Mapping[str, TableHistoryView] = field(default_factory=dict)
+    observations: Mapping[str, DecisionTable] = field(default_factory=dict)
+    _market_feature_provider: object = field(default=None, repr=False, compare=False)
 
     def __post_init__(self):
         object.__setattr__(self, 'observations', _observation_views(self.observations, self.point.decision_at))
-        if type(self.point) is not DecisionPoint or type(self.features) is not FeatureView or type(self.history) is not HistoryView:
+        if type(self.point) is not DecisionPoint or type(self.features) is not FeatureView or type(self.history) is not DecisionHistory:
             raise TypeError('batch observations require typed causal views')
         if self.features.as_of != self.point.decision_at or self.history.as_of != self.point.decision_at:
             raise ValueError('batch observation views differ from decision time')
         from types import MappingProxyType
-        if any(type(view) is not HistoryView or view.as_of!=self.point.decision_at for view in self.auxiliary_histories.values()):
+        if any(type(view) is not DecisionHistory or view.as_of!=self.point.decision_at for view in self.auxiliary_histories.values()):
             raise ValueError('batch auxiliary observations differ from decision time')
         if (self.session is None)!=(self.session_available_at is None):
             raise ValueError('batch session requires declared availability')
