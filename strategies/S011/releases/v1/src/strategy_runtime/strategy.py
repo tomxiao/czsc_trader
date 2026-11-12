@@ -1,4 +1,5 @@
 """S011 pressure signal: HFQ observations and current-account-equity targets."""
+from types import SimpleNamespace
 import pandas as pd
 from strategy_runtime import (AccountDecision, AccountStepResult, StateRecord,
     SignalBasisSnapshot, SignalExplanationSnapshot)
@@ -6,7 +7,7 @@ from .signal_math import features, policy
 
 
 def local_frame(view, *, timezone='Asia/Shanghai', daily=False):
-    frame = view.to_frame()
+    frame = pd.DataFrame([dict(row) for row in view])
     stamp = pd.to_datetime(frame.Date)
     if stamp.dt.tz is not None:
         stamp = stamp.dt.tz_convert(timezone).dt.tz_localize(None)
@@ -28,19 +29,28 @@ def signal_history(inputs, parameters):
 
 def _decision(target, judgment, summary, details, watch):
     basis = (SignalBasisSnapshot('summary', summary), SignalBasisSnapshot('conditions', details),
-             SignalBasisSnapshot('target_weight', f'目标仓位为账户权益的 {target:.2%}。'))
+             SignalBasisSnapshot('target_weight', '本轮以开仓周期锁定的股数为准。' if target else '目标空仓。'))
     return AccountDecision(target, SignalExplanationSnapshot(
         'target', 'long' if target else 'flat', judgment, basis, watch,
         ' '.join(item.text for item in basis)))
 
 
+def financial_signal(windows, entry, exit_, lookback, max_days, spx_weight, tail_weight):
+    inputs = dict(zip(('market', 'spx', 'price_daily', 'price_intraday'), windows, strict=True))
+    parameters = dict(zip(('entry', 'exit', 'lookback', 'max_days', 'spx_weight', 'tail_weight'), (entry, exit_, lookback, max_days, spx_weight, tail_weight), strict=True))
+    observed = {'daily': local_frame(inputs['price_daily'], daily=True),
+        'bars': local_frame(inputs['price_intraday']),
+        'market': local_frame(inputs['market'], daily=True),
+        'spx': local_frame(inputs['spx'], timezone='America/New_York', daily=True)}
+    row = signal_history(observed, parameters).iloc[-1]
+    return float(row.target_position), str(row.reason), float(row.score), int(row.intent_age)
+
+
 def step(ctx, state):
-    inputs = {'daily': local_frame(ctx.history, daily=True),
-        'bars': local_frame(ctx.auxiliary_histories['intraday']),
-        'market': local_frame(ctx.observations['market'], daily=True),
-        'spx': local_frame(ctx.observations['spx'], timezone='America/New_York', daily=True)}
-    history = signal_history(inputs, ctx.parameters)
-    row = history.iloc[-1]
+    for name, count in {'market': 16384, 'spx': 16384, 'price_daily': 16384, 'price_intraday': 131072}.items():
+        if len(ctx.observations[name]) > count:
+            raise ValueError('Canonical observation exceeds declared history: ' + name)
+    row = SimpleNamespace(**dict(zip(('target_position', 'reason', 'score', 'intent_age'), ctx.market_feature('financial_signal'), strict=True)))
     target = float(row.target_position)
     reason = str(row.reason)
     judgment, summary = {

@@ -1,12 +1,13 @@
 """S001 completed-week financial signals expressed only as equity target weights."""
+import json
 import pandas as pd
 from strategy_runtime import (AccountDecision, AccountStepResult, StateRecord,
     SignalBasisSnapshot, SignalExplanationSnapshot)
 from .signal_math import calculate_s001_history
 
 
-def local_frame(view, *, daily=False):
-    frame = view.to_frame()
+def local_frame(rows, *, daily=False):
+    frame = pd.DataFrame([dict(row) for row in rows])
     dates = pd.to_datetime(frame['Date'])
     if dates.dt.tz is not None:
         dates = dates.dt.tz_convert('Asia/Shanghai').dt.tz_localize(None)
@@ -14,36 +15,41 @@ def local_frame(view, *, daily=False):
     return frame
 
 
-def signal_history(observations, rule):
+def financial_signal(windows, encoded_rule):
+    observations = dict(zip(('adjusted_daily', 'adjusted_30m', 'adjusted_weekly'), windows, strict=True))
+    rule = json.loads(encoded_rule)
     daily = local_frame(observations['adjusted_daily'], daily=True)
     intraday = local_frame(observations['adjusted_30m'])
     weekly = local_frame(observations['adjusted_weekly'], daily=True)
     if daily.Date.iloc[0] != pd.Timestamp('2020-11-16'):
         raise ValueError('S001 requires its frozen canonical history from 2020-11-16')
-    return calculate_s001_history(intraday, daily, weekly, rule, '588080.SH')
+    history = calculate_s001_history(intraday, daily, weekly, rule, '588080.SH')
+    row = history.iloc[-1]
+    previous = bool(history.target_position.iloc[-2]) if len(history) > 1 else False
+    score = float(row.factor_score) if pd.notna(row.factor_score) else None
+    return history.index[-1].date(), float(row.target_position), previous, score, str(row.regime)
 
 
 def _decision(target, judgment, summary, details, watch):
     basis = (SignalBasisSnapshot('summary', summary), SignalBasisSnapshot('conditions', details),
-             SignalBasisSnapshot('target_weight', f'目标仓位为账户权益的 {target:.2%}。'))
+             SignalBasisSnapshot('target_weight', '本轮以开仓周期锁定的股数为准。' if target else '目标空仓。'))
     return AccountDecision(target, SignalExplanationSnapshot(
         'target', 'long' if target else 'flat', judgment, basis, watch,
         ' '.join(item.text for item in basis)))
 
 
 def step(ctx, state):
-    rule = ctx.parameters['rule']
-    history = signal_history(ctx.observations, rule)
-    row = history.iloc[-1]
-    day = history.index[-1]
-    observation_day = pd.Timestamp(ctx.history.last()['Date']).tz_convert('Asia/Shanghai').normalize().tz_localize(None)
+    for name, count in {'adjusted_daily': 16384, 'adjusted_30m': 131072, 'adjusted_weekly': 4096}.items():
+        if len(ctx.observations[name]) > count:
+            raise ValueError('S001 canonical history exceeds its declared window: ' + name)
+    rule = json.loads(ctx.parameters['rule'])
+    day, target, previous, score, regime = ctx.market_feature('financial_signal')
+    observation_day = pd.Timestamp(ctx.history.last()['Date']).tz_convert('Asia/Shanghai').date()
     if day != observation_day:
         raise ValueError('S001 signal and primary observation sessions differ')
-    target = float(row.target_position)
-    previous = bool(history.target_position.iloc[-2]) if len(history) > 1 else False
-    score = float(row.factor_score)
+    score = float('nan') if score is None else score
     entry, exit_ = float(rule['entry_threshold']), float(rule['exit_threshold'])
-    regime = {'trend': '趋势', 'range': '震荡', 'warmup': '预热'}[str(row.regime)]
+    regime = {'trend': '趋势', 'range': '震荡', 'warmup': '预热'}[regime]
     if target and not previous:
         judgment, summary = '触发入场', f'{regime}档综合评分达到入场线，确认条件已满足。'
     elif previous and not target:

@@ -1,5 +1,6 @@
 """S015 repair signal using HFQ daily/30m observations, target equity allocation."""
 from math import exp
+from types import SimpleNamespace
 import pandas as pd
 from strategy_runtime import (AccountDecision, AccountStepResult, StateRecord,
     SignalBasisSnapshot, SignalExplanationSnapshot)
@@ -7,7 +8,7 @@ from .signal_math import causal_features, intentions
 
 
 def local_frame(view, *, daily=False):
-    frame = view.to_frame()
+    frame = pd.DataFrame([dict(row) for row in view])
     dates = pd.to_datetime(frame.Date)
     if dates.dt.tz is not None:
         dates = dates.dt.tz_convert('Asia/Shanghai').dt.tz_localize(None)
@@ -23,16 +24,25 @@ def signal_history(hfq, intraday, parameters):
 
 def _decision(target, judgment, summary, details, watch):
     basis = (SignalBasisSnapshot('summary', summary), SignalBasisSnapshot('conditions', details),
-             SignalBasisSnapshot('target_weight', f'目标仓位为账户权益的 {target:.2%}。'))
+             SignalBasisSnapshot('target_weight', f'按首次入场可用现金的 {target:.2%} 锁定本轮预算。' if target else '目标空仓。'))
     return AccountDecision(target, SignalExplanationSnapshot(
         'target', 'long' if target else 'flat', judgment, basis, watch,
         ' '.join(item.text for item in basis)))
 
 
+def financial_signal(windows, allocation, center_kind, lookback, minimum_repair_space):
+    inputs = dict(zip(('price_daily', 'price_intraday'), windows, strict=True))
+    parameters = dict(zip(('allocation', 'center_kind', 'lookback', 'minimum_repair_space'), (allocation, center_kind, lookback, minimum_repair_space), strict=True))
+    row = signal_history(local_frame(inputs['price_daily'], daily=True),
+        local_frame(inputs['price_intraday']), parameters).iloc[-1]
+    return tuple(float(row[key]) for key in ('target_position', 'entry_signal', 'exit_signal', 'feature_ready', 'center_gain', 'p', 'm', 'repair_space', 'repair_target', 'invalidation_origin'))
+
+
 def step(ctx, state):
-    history = signal_history(local_frame(ctx.history, daily=True),
-        local_frame(ctx.auxiliary_histories['intraday']), ctx.parameters)
-    row = history.iloc[-1]
+    for name, count in {'price_daily': 16384, 'price_intraday': 131072}.items():
+        if len(ctx.observations[name]) > count:
+            raise ValueError('Canonical observation exceeds declared history: ' + name)
+    row = SimpleNamespace(**dict(zip(('target_position', 'entry_signal', 'exit_signal', 'feature_ready', 'center_gain', 'p', 'm', 'repair_space', 'repair_target', 'invalidation_origin'), ctx.market_feature('financial_signal'), strict=True)))
     target = float(row.target_position) * float(ctx.parameters['allocation'])
     minimum = ctx.parameters['minimum_repair_space']
     if row.entry_signal:

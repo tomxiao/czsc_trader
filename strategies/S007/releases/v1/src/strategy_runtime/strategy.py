@@ -1,4 +1,5 @@
 """S007 financial signals produce equity targets; EC owns execution and funding."""
+import json
 import pandas as pd
 from strategy_runtime import (AccountDecision, AccountStepResult, StateRecord,
     SignalBasisSnapshot, SignalExplanationSnapshot)
@@ -16,28 +17,41 @@ def signal_history(inputs, parameters, signal_date):
 
 def _decision(target, judgment, summary, details, watch):
     basis = (SignalBasisSnapshot('summary', summary), SignalBasisSnapshot('conditions', details),
-             SignalBasisSnapshot('target_weight', f'目标仓位为账户权益的 {target:.2%}。'))
+             SignalBasisSnapshot('target_weight', '本轮以开仓周期锁定的股数为准。' if target else '目标空仓。'))
     return AccountDecision(target, SignalExplanationSnapshot(
         'target', 'long' if target else 'flat', judgment, basis, watch,
         ' '.join(item.text for item in basis)))
 
 
-def step(ctx, state):
-    market = ctx.history.to_frame()
-    market['Date'] = pd.to_datetime(market.Date).dt.tz_convert('Asia/Shanghai').dt.tz_localize(None).dt.normalize()
+def financial_signal(windows, rule):
+    inputs = dict(zip(('feature_seed', 'incremental_shibor_daily', 'incremental_chinext_daily_basic', 'incremental_etf_share_size', 'incremental_spx_daily', 'price_daily'), windows, strict=True))
+    market = pd.DataFrame([dict(row) for row in inputs.pop('price_daily')])
+    dates = pd.to_datetime(market.Date)
+    if dates.dt.tz is not None:
+        dates = dates.dt.tz_convert('Asia/Shanghai').dt.tz_localize(None)
+    market['Date'] = dates.dt.normalize()
     day = market.Date.iloc[-1]
-    inputs = {name: view.to_frame() for name, view in ctx.observations.items()}
-    inputs['adjusted_daily'] = market
-    history = signal_history(inputs, ctx.parameters, day)
+    frames = {name: pd.DataFrame([dict(row) for row in rows]) for name, rows in inputs.items()}
+    frames['adjusted_daily'] = market
+    history = signal_history(frames, {'rule': json.loads(rule)}, day)
     if day not in history.index:
         raise ValueError('S007 signal session is missing')
-    current = history.loc[day]
-    target = float(current.target_position)
-    score = ctx.parameters['rule']['score']
-    base, confirmation = float(current.base_score), float(current.confirmation_score)
+    row = history.loc[day]
+    base = None if pd.isna(row.base_score) else float(row.base_score)
+    confirmation = None if pd.isna(row.confirmation_score) else float(row.confirmation_score)
+    return float(row.target_position), base, confirmation, str(row.action)
+
+
+def step(ctx, state):
+    for name, count in {'feature_seed': 16384, 'incremental_shibor_daily': 16384, 'incremental_chinext_daily_basic': 16384, 'incremental_etf_share_size': 16384, 'incremental_spx_daily': 16384, 'price_daily': 16384}.items():
+        if len(ctx.observations[name]) > count:
+            raise ValueError('Canonical observation exceeds declared history: ' + name)
+    target, base, confirmation, action = ctx.market_feature('financial_signal')
+    base = float('nan') if base is None else base
+    confirmation = float('nan') if confirmation is None else confirmation
+    score = json.loads(ctx.parameters['rule'])['score']
     entry, exit_, confirm = (float(score[key]) for key in
                              ('entry_threshold', 'exit_threshold', 'confirmation_threshold'))
-    action = str(current.action)
     if action == 'ENTER':
         judgment, summary = '触发入场', '主评分与确认评分均达到各自的买入门槛。'
     elif action == 'EXIT':
