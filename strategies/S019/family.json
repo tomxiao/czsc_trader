@@ -1,0 +1,1279 @@
+{
+  "created_at": "2026-11-10T12:21:07+08:00",
+  "created_by": "RSCH",
+  "name": "MU独立多周期只做多择时研究",
+  "research_intent": {
+    "active_experiment": {
+      "experiment_id": "EX050_20261111",
+      "strategy_id": "S019",
+      "type": "ExperimentRef"
+    },
+    "authorization_source": "当前会话用户明确提出独立研究，确认55%与卡玛5及默认回撤/频率，并指示新开研究分支，然后继续。",
+    "branch": "codex/mu-independent-research",
+    "center_optimization_decision": {
+      "decision_id": "S019-RESUME-CENTER-20261110",
+      "evidence": {
+        "owner": {
+          "experiment_id": null,
+          "strategy_id": "S019",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "decisions/S019-RESUME-CENTER-20261110.json",
+        "sha256": "938f268329aeccade03d7f84de0365af6b4763fb044f9300f9b7ecf4636e0156",
+        "type": "ResearchEvidenceRef"
+      },
+      "type": "DecisionReference"
+    },
+    "confirmed_center_targets": {
+      "drawdown_buyhold_multiplier_max": 0.8,
+      "drawdown_max": 0.25,
+      "frequency_coverage_min_cycles": 3,
+      "frequency_coverage_min_fraction": 0.9,
+      "frequency_median_min": 6,
+      "frequency_window_sessions": 60,
+      "net_annual_return_min": 0.55,
+      "net_calmar_min": 5.0
+    },
+    "continuous_stage3_budget": {
+      "all_round_replay_statistics_complete": true,
+      "authorization_decision": "S019-STAGE3-CONTINUOUS-20261111",
+      "authorized_rounds": 10,
+      "benchmark_accounts": 3,
+      "candidate_accounts": 268,
+      "counting_note": "New stage-three ten-round allocation; old authorization and its remaining two rounds stay separate. Imported historical observations, new proposals, exact aliases and control replays are recorded separately; unknown tasks are not counted as successful accounts.",
+      "current_round_replay_statistics_complete": true,
+      "fee_diagnostic_pairs": 7,
+      "imported_observation_uses": 21,
+      "remaining_rounds": 7,
+      "reused_evidence_accounts": 13,
+      "rounds": [
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 144,
+          "control_replays": 3,
+          "design_configurations": 144,
+          "distinct_accounts": 144,
+          "eligible_ids": [
+            "C0924",
+            "C0829",
+            "C0909",
+            "C0826",
+            "C0807",
+            "C0854",
+            "C0903",
+            "C0925",
+            "C0842",
+            "C0855",
+            "C0921",
+            "C0899",
+            "C0872",
+            "C0881",
+            "C0849",
+            "C0940",
+            "C0891",
+            "C0882",
+            "C0880",
+            "C0894",
+            "C0837",
+            "C0892"
+          ],
+          "exact_aliases": 0,
+          "experiment": "EX047_20261111",
+          "imported_observations": 21,
+          "imported_trial_counts": {
+            "hard_linear": 5,
+            "ramp_linear": 8,
+            "rebuild_linear": 8
+          },
+          "optimization_round": 1,
+          "proposed_configurations": 144,
+          "protocol_sha256": "adce6ea688b0a11665fb51b24627fc8cfc072f189525f3a8652d2f9d0e7640aa",
+          "replay_statistics_complete": true,
+          "round": 1,
+          "search_protocol_sha256": "4cf76959baae0b0a086b804c026b4e0ab866304f00b8470f4a889c0482a737a7",
+          "stage": "STAGE_THREE",
+          "structural_accounts": 141,
+          "unknown_compute_tasks": 0
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 117,
+          "control_replays": 5,
+          "design_configurations": 123,
+          "eligible_ids": [
+            "C0966",
+            "C0962",
+            "C0956",
+            "C1045",
+            "C0967",
+            "C0963",
+            "C1027",
+            "C1031",
+            "C1020",
+            "C1032",
+            "C1021",
+            "C1028",
+            "C0987",
+            "C1023",
+            "C0988",
+            "C0977",
+            "C0983",
+            "C0984",
+            "C0958",
+            "C0955",
+            "C0953",
+            "C1068",
+            "C0951",
+            "C0952",
+            "C0954",
+            "C1069",
+            "C1052",
+            "C1064",
+            "C0959",
+            "C1072",
+            "C1065",
+            "C0976",
+            "C0979",
+            "C0974",
+            "C0972",
+            "C0973",
+            "C0968",
+            "C0980",
+            "C0975",
+            "C1010",
+            "C0964",
+            "C0800",
+            "C1051",
+            "C1011",
+            "C0957",
+            "C1054",
+            "C1049",
+            "C0969",
+            "C1058",
+            "C1047",
+            "C1059",
+            "C0805",
+            "C1060",
+            "C1048",
+            "C1061",
+            "C1055",
+            "C1063",
+            "C0806",
+            "C1062",
+            "C1050",
+            "C0965",
+            "C1008",
+            "C0803",
+            "C1009",
+            "C0997",
+            "C0989",
+            "C1000",
+            "C0995",
+            "C1004",
+            "C0993",
+            "C1005",
+            "C0994",
+            "C0990",
+            "C1001",
+            "C0996",
+            "C0978",
+            "C0985",
+            "C1070",
+            "C0986",
+            "C1071",
+            "C1053",
+            "C1066",
+            "C1019",
+            "C1067",
+            "C1006",
+            "C0802",
+            "C1007",
+            "C1016",
+            "C1017",
+            "C0999",
+            "C1012",
+            "C1013"
+          ],
+          "experiment": "EX048_20261111",
+          "optimization_round": 2,
+          "protocol_sha256": "8c89adeec0b05d6739582116e776dbbd7de2d5394f04b01874818b8646125178",
+          "replay_statistics_complete": true,
+          "reused_evidence_accounts": 6,
+          "round": 2,
+          "stage": "STAGE_THREE",
+          "structural_accounts": 112,
+          "unknown_compute_tasks": 0
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 7,
+          "control_replays": 0,
+          "design_configurations": 7,
+          "eligible_ids": [
+            "C0966",
+            "C1045",
+            "C0909",
+            "C0798",
+            "C1010",
+            "C0804",
+            "C0801"
+          ],
+          "experiment": "EX049_20261111",
+          "fee_pairs_sha256": "ff5feca237d7c5168a33352a0282bd8cbae03001b3dde4d878768d264bf9bcf3",
+          "new_parameter_configurations": 0,
+          "optimization_round": 3,
+          "paired_configurations": 7,
+          "pressure_pass_ids": [
+            "C0798",
+            "C0801",
+            "C0804",
+            "C0966",
+            "C1010",
+            "C0909"
+          ],
+          "protocol_sha256": "8ed0fbdc76dcc716557c96ce35636c8e035bcbc6ccfd4e0c1bd1a6dc445b53e4",
+          "replay_statistics_complete": true,
+          "research_kind": "PAIRED_FEE_DEVELOPMENT_DIAGNOSTIC",
+          "reused_evidence_accounts": 7,
+          "round": 3,
+          "scenario_accounts": 14,
+          "stage": "STAGE_THREE",
+          "structural_accounts": 0,
+          "unknown_compute_tasks": 0
+        }
+      ],
+      "structural_design_configurations": 267,
+      "unknown_compute_tasks": 0,
+      "used_rounds": 3
+    },
+    "continuous_stage3_decision": {
+      "decision_id": "S019-STAGE3-CONTINUOUS-20261111",
+      "evidence": {
+        "owner": {
+          "experiment_id": null,
+          "strategy_id": "S019",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "decisions/S019-STAGE3-CONTINUOUS-20261111.json",
+        "sha256": "ced734829c83f163aaba43691ec35b773927f7656926d9180a21461de45df246",
+        "type": "ResearchEvidenceRef"
+      },
+      "type": "DecisionReference"
+    },
+    "continuous_stage3_delivery": {
+      "batch": {
+        "strategy_id": "S019",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "f98a039780ad4413b09a95532a43f045ae504d661cf8e5f44fdb14e94df67461",
+      "revision": 7,
+      "stage": "CANDIDATES",
+      "type": "DeliveryReference"
+    },
+    "continuous_stage3_next_stage_approval": "APPROVED_THREE_CANDIDATES",
+    "continuous_stage3_qualified_candidates": [
+      "C0966",
+      "C0962",
+      "C0956",
+      "C1045",
+      "C0967",
+      "C0963",
+      "C1027",
+      "C1031",
+      "C0924",
+      "C1032",
+      "C1021",
+      "C1028",
+      "C0987",
+      "C1023",
+      "C0988",
+      "C0977",
+      "C0983",
+      "C0984",
+      "C0958",
+      "C0955",
+      "C0953",
+      "C1068",
+      "C0829",
+      "C0952",
+      "C0954",
+      "C1069",
+      "C1052",
+      "C1064",
+      "C0959",
+      "C1072",
+      "C1065",
+      "C0909",
+      "C0976",
+      "C0979",
+      "C0974",
+      "C0826",
+      "C0720",
+      "C0798",
+      "C0973",
+      "C0968",
+      "C0980",
+      "C0854",
+      "C0975",
+      "C1010",
+      "C0964",
+      "C0800",
+      "C1051",
+      "C1011",
+      "C0957",
+      "C1054",
+      "C1049",
+      "C0969",
+      "C1058",
+      "C0804",
+      "C0925",
+      "C1059",
+      "C0805",
+      "C1060",
+      "C1048",
+      "C1061",
+      "C1055",
+      "C1063",
+      "C0806",
+      "C1062",
+      "C1050",
+      "C0965",
+      "C1008",
+      "C0803",
+      "C1009",
+      "C0842",
+      "C0796",
+      "C0997",
+      "C0989",
+      "C1000",
+      "C0995",
+      "C1004",
+      "C0801",
+      "C1005",
+      "C0994",
+      "C0990",
+      "C1001",
+      "C0921",
+      "C0996",
+      "C0792",
+      "C0978",
+      "C0985",
+      "C0899",
+      "C1070",
+      "C0986",
+      "C0872",
+      "C1071",
+      "C1053",
+      "C1066",
+      "C1019",
+      "C1067",
+      "C0881",
+      "C1006",
+      "C0849",
+      "C0802",
+      "C1007",
+      "C1016",
+      "C1017",
+      "C0940",
+      "C0999",
+      "C1012",
+      "C0891",
+      "C1013",
+      "C0882",
+      "C0880",
+      "C0894",
+      "C0837",
+      "C0892"
+    ],
+    "continuous_stage3_status": "COMPLETE",
+    "decision_interval": {
+      "maximum": "daily",
+      "minimum": "30m"
+    },
+    "development": {
+      "end": "2026-10-30",
+      "exposure": "SEEN_HISTORY",
+      "history_start": "2021-01-01",
+      "start": "2022-01-03"
+    },
+    "experiment_budget": {
+      "authorization_quote": "授权10轮实验额度，你自主推进阶段二研究，争取产出达标原型",
+      "authorized_rounds": 10,
+      "benchmark_accounts": 10,
+      "candidate_accounts": 31,
+      "eligible_prototypes": 0,
+      "remaining_rounds": 0,
+      "rounds": [
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 2,
+          "eligible_ids": [],
+          "experiment": "EX006_20261110",
+          "protocol_sha256": "874f81cdcd14db3de5258cd4394fdd1e265a6621c73fa8922a060896509b0758",
+          "round": 1
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 4,
+          "eligible_ids": [],
+          "experiment": "EX007_20261110",
+          "protocol_sha256": "09b083982299160c0c1fe81397135e6dc0b5fdf32ddec9a8d44362954e95dcac",
+          "round": 2
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX008_20261110",
+          "protocol_sha256": "2e5767bc347a86c4519ac99c01062e7011aaa1934b646df069d48ad946f20c1b",
+          "round": 3
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX009_20261110",
+          "protocol_sha256": "dd0bdf352c2170bb5ffdce15a16e27fcb7125e99946e9c1c56ac967098a60924",
+          "round": 4
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX010_20261110",
+          "protocol_sha256": "2611c4c292a6c2490fb3c5533787e28375486eba0edbea6b2446c3519653781e",
+          "round": 5
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX011_20261110",
+          "protocol_sha256": "70a0fb5eace96e313f0605dda5a30ecdaddda0f332d6f09ed81862214fc88038",
+          "round": 6
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX012_20261110",
+          "protocol_sha256": "10b2f66ec6fb661cfdbe18e8dfba5e6d0518ce31173aab33c968ce5b461be7c6",
+          "round": 7
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 4,
+          "eligible_ids": [],
+          "experiment": "EX013_20261110",
+          "protocol_sha256": "3244a76f3efc943de0794df4ca35892f626e485c88a041592e386b00b08b6c31",
+          "round": 8
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX014_20261110",
+          "protocol_sha256": "bc220b9983119cb7ee8bd0707a1db8a82911841279930a824b7d0ca495eb7847",
+          "round": 9
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX015_20261110",
+          "protocol_sha256": "45dbcf8e717b3df15f54cda038cce93376c2f717eada4b7472ae14549ebb6018",
+          "round": 10
+        }
+      ],
+      "used_rounds": 10
+    },
+    "extension_budget": {
+      "authorization_decision": "S019-REOPEN-20261110",
+      "authorized_rounds": 10,
+      "benchmark_accounts": 9,
+      "candidate_accounts": 29,
+      "eligible_candidates": 0,
+      "eligible_ids_by_nar": [],
+      "remaining_rounds": 0,
+      "rounds": [
+        {
+          "benchmark_accounts": 0,
+          "candidate_accounts": 0,
+          "eligible_ids": [],
+          "experiment": "EX026_20261110",
+          "protocol_sha256": "e708e227abe44f3d969d09fe758fca9533c70ac06900f3c1c84e79fc64960fb7",
+          "round": 1,
+          "stage": "STAGE_TWO"
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX027_20261110",
+          "protocol_sha256": "e78500f7f77613924fc002ab3495dafd8695063dbca9a93f90a1f9069885775c",
+          "round": 2,
+          "stage": "STAGE_TWO"
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX028_20261110",
+          "protocol_sha256": "f6a8ab24bd2532b17e27cea5a003021ea6ad2a9ad9aa18d5f3e4f841fc213d0a",
+          "round": 3,
+          "stage": "STAGE_TWO"
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 4,
+          "eligible_ids": [],
+          "experiment": "EX029_20261110",
+          "protocol_sha256": "517fd50107924a9ff031dc08d9800851adaec35b94fd7329d144e64955ad3cc3",
+          "round": 4,
+          "stage": "STAGE_TWO"
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 4,
+          "eligible_ids": [],
+          "experiment": "EX030_20261110",
+          "protocol_sha256": "936c8ec50b102486104d1b6f291e7d396ca9786c9b286d750ea1e57663a90727",
+          "round": 5,
+          "stage": "STAGE_THREE"
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX031_20261110",
+          "protocol_sha256": "aea926e63c7aeee17d3d01e0173eccf802a3106e093b673c5df7dc888f8e91a6",
+          "round": 6,
+          "stage": "STAGE_THREE"
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX032_20261110",
+          "protocol_sha256": "a115698fc4e493126b3ce85b3cdadcf7c3077547ea3ce71474ad8db7077069d5",
+          "round": 7,
+          "stage": "STAGE_THREE"
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX033_20261110",
+          "protocol_sha256": "6f71136da183969c710f15c2f271d2c5fd350b68ea8987d34bb28b759944de84",
+          "round": 8,
+          "stage": "STAGE_THREE"
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX034_20261110",
+          "protocol_sha256": "7cbffef01796e6fd65706ffeb5a20a09d6808f5ab299a1e75f552fab16010975",
+          "round": 9,
+          "stage": "STAGE_THREE"
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX035_20261110",
+          "protocol_sha256": "644dd7f7fe7811d58bc6add7316e2be9d02dda10874a0e440324e63bb8eadbe3",
+          "round": 10,
+          "stage": "STAGE_THREE"
+        }
+      ],
+      "used_rounds": 10
+    },
+    "extension_decision": {
+      "decision_id": "S019-REOPEN-20261110",
+      "evidence": {
+        "owner": {
+          "experiment_id": null,
+          "strategy_id": "S019",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "decisions/S019-REOPEN-20261110.json",
+        "sha256": "ecd8c288ccf156830babad4e8bbb9380cca3e7eea433054c3e14772f65265ac9",
+        "type": "ResearchEvidenceRef"
+      },
+      "type": "DecisionReference"
+    },
+    "extension_delivery": {
+      "batch": {
+        "strategy_id": "S019",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "0bed99d849922132a48f69feac800eb8c2b116182ed1ca351dbbd34c5b3630a3",
+      "revision": 2,
+      "stage": "CANDIDATES",
+      "type": "DeliveryReference"
+    },
+    "extension_mechanism_delivery": {
+      "batch": {
+        "strategy_id": "S019",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "1a9973d809b8a9804fbbfda848c3c016e180fc3eb25d04cff93fd9f8597ed1f5",
+      "revision": 2,
+      "stage": "PROTOTYPES",
+      "type": "DeliveryReference"
+    },
+    "extension_stage_authority": [
+      "STAGE_TWO",
+      "STAGE_THREE"
+    ],
+    "extension_status": "COMPLETE",
+    "joint_search_budget": {
+      "all_round_replay_statistics_complete": true,
+      "authorization_decision": "S019-JOINT-20261110",
+      "authorized_rounds": 10,
+      "benchmark_accounts": 9,
+      "candidate_accounts": 356,
+      "configuration_count_basis": "unique_configurations sums within-round unique counts; exact cross-round repetition reported separately",
+      "counting_note": "Prior optimization proposal counts retained. New mechanism configurations and economic control replays recorded separately; unknown technical tasks are not inferred as successful replays.",
+      "current_round_replay_statistics_complete": true,
+      "distinct_configurations_across_rounds": 189,
+      "eligible_candidates": 21,
+      "imported_observation_count_this_round": 81,
+      "proposals": 192,
+      "remaining_rounds": 2,
+      "repeated_configurations_across_rounds": 1,
+      "rounds": [
+        {
+          "benchmark_accounts": 2,
+          "candidate_accounts": 46,
+          "eligible_ids": [],
+          "experiment": "EX036_20261110",
+          "parent": "C0067",
+          "proposals": 48,
+          "protocol_sha256": "8909076c5f79f45ecbc83f41582be79e9e2b0f40c95e54a28df82efffcc541a6",
+          "round": 1,
+          "unique_configurations": 46
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 48,
+          "eligible_ids": [],
+          "experiment": "EX037_20261110",
+          "parent": "C0101",
+          "proposals": 48,
+          "protocol_sha256": "f9939df8f89b2c897834412a58192c445dc5967be965f37afd2bd0a4df5e6c56",
+          "round": 2,
+          "unique_configurations": 48
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 48,
+          "eligible_ids": [],
+          "experiment": "EX038_20261110",
+          "parent": "C0196",
+          "proposals": 48,
+          "protocol_sha256": "9e810f0ecd2dae1a3d4e2b863c7803b72383865a479b84db2cf7496f57ca458a",
+          "round": 3,
+          "unique_configurations": 48
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 48,
+          "eligible_ids": [
+            "C0367",
+            "C0375",
+            "C0368",
+            "C0373",
+            "C0362",
+            "C0359",
+            "C0365",
+            "C0379",
+            "C0355",
+            "C0360",
+            "C0351",
+            "C0300",
+            "C0298",
+            "C0299",
+            "C0341",
+            "C0282",
+            "C0280",
+            "C0281",
+            "C0264",
+            "C0262",
+            "C0263"
+          ],
+          "experiment": "EX040_20261110",
+          "imported_observations": 81,
+          "inherited_qualified_implementations": 9,
+          "parent": "C0300",
+          "proposals": 48,
+          "protocol_sha256": "d1b5ada0959e3b153a29145b8a6c083ba08ae3d5f9b1905a8b74c339caec3adf",
+          "round": 4,
+          "unique_configurations": 48
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 19,
+          "control_replays": 3,
+          "design_configurations": 19,
+          "eligible_ids": [
+            "C0646",
+            "C0642"
+          ],
+          "experiment": "EX043_20261110",
+          "mechanism_round": 1,
+          "preceding_technical_failure": {
+            "debited_rounds": 0,
+            "experiment": "EX042_20261110",
+            "unknown_tasks": 8,
+            "valid_accounts": 0
+          },
+          "protocol_sha256": "c582c6ecd97f708b2ef8f24c77ffb2e99ac8a39ce74d8e4fd59b8ec120bdb307",
+          "replay_statistics_complete": true,
+          "round": 5,
+          "stage": "STAGE_TWO",
+          "structural_accounts": 16,
+          "unknown_compute_tasks": 0
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 24,
+          "control_replays": 2,
+          "design_configurations": 24,
+          "eligible_ids": [
+            "C0660",
+            "C0662",
+            "C0667",
+            "C0663",
+            "C0670"
+          ],
+          "experiment": "EX044_20261110",
+          "mechanism_round": 2,
+          "protocol_sha256": "832edcf9caf4407d90b46d38c6ea728d4cbbacfb4b7cce5e20f4311ad6ca4a04",
+          "replay_statistics_complete": true,
+          "round": 6,
+          "stage": "STAGE_TWO",
+          "structural_accounts": 22,
+          "unknown_compute_tasks": 0
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 96,
+          "control_replays": 4,
+          "design_configurations": 96,
+          "distinct_accounts": 96,
+          "eligible_ids": [
+            "C0684",
+            "C0720",
+            "C0705",
+            "C0754",
+            "C0726"
+          ],
+          "exact_aliases": 0,
+          "experiment": "EX045_20261111",
+          "mechanism_round": 3,
+          "proposed_configurations": 96,
+          "protocol_sha256": "f0d4f17c8bc3e70d9ba27f4609ebcf8bb6cf6c50d78761ecd37febf1b680cd4e",
+          "replay_statistics_complete": true,
+          "round": 7,
+          "search_protocol_sha256": "5c0fcdac0214bf81071df1efb8e5198a7911c76246d117f430ef6916b0615a50",
+          "stage": "STAGE_TWO",
+          "structural_accounts": 92,
+          "unknown_compute_tasks": 0
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 27,
+          "control_replays": 3,
+          "design_configurations": 27,
+          "eligible_ids": [
+            "C0798",
+            "C0800",
+            "C0804",
+            "C0805",
+            "C0806",
+            "C0803",
+            "C0789",
+            "C0796",
+            "C0801",
+            "C0792",
+            "C0802"
+          ],
+          "experiment": "EX046_20261111",
+          "mechanism_round": 4,
+          "protocol_sha256": "03e0b07f8ee9cf5cd0f26817917819c73a8952a1d181bcd86951d78d94b102b7",
+          "replay_statistics_complete": true,
+          "round": 8,
+          "stage": "STAGE_TWO",
+          "structural_accounts": 24,
+          "unknown_compute_tasks": 0
+        }
+      ],
+      "structural_design_configurations": 166,
+      "unique_configurations": 190,
+      "unknown_compute_tasks": 0,
+      "used_rounds": 8
+    },
+    "joint_search_decision": {
+      "decision_id": "S019-JOINT-20261110",
+      "evidence": {
+        "owner": {
+          "experiment_id": null,
+          "strategy_id": "S019",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "decisions/S019-JOINT-20261110.json",
+        "sha256": "a91d882cb38846e91993e0cc5160f876e7e1b33561af971a9f62adfea01b49ce",
+        "type": "ResearchEvidenceRef"
+      },
+      "type": "DecisionReference"
+    },
+    "joint_search_delivery": {
+      "batch": {
+        "strategy_id": "S019",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "f23eabeb82c5dee731197bcb5a842e6175f4b3c85a4052ce40126dd1a6262cf9",
+      "revision": 6,
+      "stage": "CANDIDATES",
+      "type": "DeliveryReference"
+    },
+    "joint_search_status": "ROUND_FOUR_COMPLETE",
+    "latest_experiment_report": {
+      "evidence_id": "ccd1ecf9ca80f94cdb9f82ca523c45cfe262616a9b18fd858e8770e00579110b.json",
+      "experiment": {
+        "experiment_id": "EX049_20261111",
+        "strategy_id": "S019",
+        "type": "ExperimentRef"
+      },
+      "media_type": "application/json",
+      "name": "experiment-report",
+      "schema": "experiment_report",
+      "schema_version": 1,
+      "sha256": "ccd1ecf9ca80f94cdb9f82ca523c45cfe262616a9b18fd858e8770e00579110b",
+      "type": "EvidenceRef"
+    },
+    "mandate": {
+      "batch": {
+        "strategy_id": "S019",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "7c7b7922e860951e241c4131df3da860173cc7bdfdca1d922bc4f402587ebc0f",
+      "revision": 2,
+      "stage": "MANDATE",
+      "type": "DeliveryReference"
+    },
+    "mechanism_completed_rounds": 4,
+    "mechanism_frontier": [
+      {
+        "delivery": {
+          "batch": {
+            "strategy_id": "S019",
+            "type": "ResearchBatchRef"
+          },
+          "content_sha256": "55e29687912eb5333615d041238b83974717c423d94fddee0ef1af77cce682f1",
+          "revision": 3,
+          "stage": "PROTOTYPES",
+          "type": "DeliveryReference"
+        },
+        "prototype_id": "C0804",
+        "type": "PrototypeReference"
+      },
+      {
+        "delivery": {
+          "batch": {
+            "strategy_id": "S019",
+            "type": "ResearchBatchRef"
+          },
+          "content_sha256": "55e29687912eb5333615d041238b83974717c423d94fddee0ef1af77cce682f1",
+          "revision": 3,
+          "stage": "PROTOTYPES",
+          "type": "DeliveryReference"
+        },
+        "prototype_id": "C0801",
+        "type": "PrototypeReference"
+      },
+      {
+        "delivery": {
+          "batch": {
+            "strategy_id": "S019",
+            "type": "ResearchBatchRef"
+          },
+          "content_sha256": "55e29687912eb5333615d041238b83974717c423d94fddee0ef1af77cce682f1",
+          "revision": 3,
+          "stage": "PROTOTYPES",
+          "type": "DeliveryReference"
+        },
+        "prototype_id": "C0720",
+        "type": "PrototypeReference"
+      }
+    ],
+    "mechanism_remaining_authorized_rounds": 2,
+    "mechanism_research_delivery": {
+      "batch": {
+        "strategy_id": "S019",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "55e29687912eb5333615d041238b83974717c423d94fddee0ef1af77cce682f1",
+      "revision": 3,
+      "stage": "PROTOTYPES",
+      "type": "DeliveryReference"
+    },
+    "mechanism_research_status": "STAGE_TWO_COMPLETE",
+    "mechanism_resume_decision": {
+      "decision_id": "S019-RESUME-MECHANISMS-20261110",
+      "evidence": {
+        "owner": {
+          "experiment_id": null,
+          "strategy_id": "S019",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "decisions/S019-RESUME-MECHANISMS-20261110.json",
+        "sha256": "b5c745c4200f465b1e8c1033015d1755bd24f553d4d33e25340723c5ccc5671a",
+        "type": "ResearchEvidenceRef"
+      },
+      "type": "DecisionReference"
+    },
+    "next_action": "用户要求暂停。已保留3个完整批次、183邻点和6份复用证据；等待用户恢复后以61进程从C0966_P183续跑，剩余7轮优化额度保持。",
+    "next_stage_four_approval": "APPROVED_THREE_CANDIDATES",
+    "objective": "独立经济假设；中心净年化收益至少55%，净卡玛至少5；达标后优先提高净年化。",
+    "parameter_joint_pass_rate_min": 0.8,
+    "prior_sample_exposure": "2022为S018已用预热；2023-01-03至2026-10-30为反复使用开发池；2026-11-06存在决策视觉预览记录。",
+    "reference_release": {
+      "release_hash": "80a7ca699f5814ad3e9162de1828d9848b5a0e7077857eb92002aec10c3f631e",
+      "runtime_candidate": "C9397",
+      "strategy_version": "S018-v1"
+    },
+    "sample_selection_authority": "RSCH_WITHIN_AUTHORIZED_SCOPE",
+    "stage": "STAGE_FOUR",
+    "stage_four_approval": {
+      "decision_id": "S019-STAGE4-THREE-20261110",
+      "evidence": {
+        "owner": {
+          "experiment_id": null,
+          "strategy_id": "S019",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "decisions/S019-STAGE4-THREE-20261110.json",
+        "sha256": "60f214660507f6427091e2ae1e475ee854f5c69780bd6b473dd6704f08cbdb94",
+        "type": "ResearchEvidenceRef"
+      },
+      "type": "DecisionReference"
+    },
+    "stage_four_candidates": [
+      "C0367",
+      "C0355",
+      "C0264"
+    ],
+    "stage_four_continuous_approval": {
+      "decision_id": "S019-STAGE4-CONTINUOUS-20261111",
+      "evidence": {
+        "owner": {
+          "experiment_id": null,
+          "strategy_id": "S019",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "decisions/S019-STAGE4-CONTINUOUS-20261111.json",
+        "sha256": "f6b1f41c6f092f5a76dfab38ad9be8394d1979e19f26768fffd1857275eec1d0",
+        "type": "ResearchEvidenceRef"
+      },
+      "type": "DecisionReference"
+    },
+    "stage_four_continuous_candidates": [
+      "C0966",
+      "C1010",
+      "C0909"
+    ],
+    "stage_four_continuous_deferred_candidates": [
+      "C0962",
+      "C0956",
+      "C1045",
+      "C0967",
+      "C0963",
+      "C1027",
+      "C1031",
+      "C0924",
+      "C1032",
+      "C1021",
+      "C1028",
+      "C0987",
+      "C1023",
+      "C0988",
+      "C0977",
+      "C0983",
+      "C0984",
+      "C0958",
+      "C0955",
+      "C0953",
+      "C1068",
+      "C0829",
+      "C0952",
+      "C0954",
+      "C1069",
+      "C1052",
+      "C1064",
+      "C0959",
+      "C1072",
+      "C1065",
+      "C0976",
+      "C0979",
+      "C0974",
+      "C0826",
+      "C0720",
+      "C0798",
+      "C0973",
+      "C0968",
+      "C0980",
+      "C0854",
+      "C0975",
+      "C0964",
+      "C0800",
+      "C1051",
+      "C1011",
+      "C0957",
+      "C1054",
+      "C1049",
+      "C0969",
+      "C1058",
+      "C0804",
+      "C0925",
+      "C1059",
+      "C0805",
+      "C1060",
+      "C1048",
+      "C1061",
+      "C1055",
+      "C1063",
+      "C0806",
+      "C1062",
+      "C1050",
+      "C0965",
+      "C1008",
+      "C0803",
+      "C1009",
+      "C0842",
+      "C0796",
+      "C0997",
+      "C0989",
+      "C1000",
+      "C0995",
+      "C1004",
+      "C0801",
+      "C1005",
+      "C0994",
+      "C0990",
+      "C1001",
+      "C0921",
+      "C0996",
+      "C0792",
+      "C0978",
+      "C0985",
+      "C0899",
+      "C1070",
+      "C0986",
+      "C0872",
+      "C1071",
+      "C1053",
+      "C1066",
+      "C1019",
+      "C1067",
+      "C0881",
+      "C1006",
+      "C0849",
+      "C0802",
+      "C1007",
+      "C1016",
+      "C1017",
+      "C0940",
+      "C0999",
+      "C1012",
+      "C0891",
+      "C1013",
+      "C0882",
+      "C0880",
+      "C0894",
+      "C0837",
+      "C0892"
+    ],
+    "stage_four_continuous_pause": {
+      "checkpoint": "research/S019/experiments/EX050_20261111/others/pause_checkpoint.json",
+      "completed_neighbors": 183,
+      "remaining_neighbors": 1515,
+      "resume_requires_user_instruction": true
+    },
+    "stage_four_continuous_status": "PAUSED",
+    "stage_four_deferred_candidates": [
+      "C0375",
+      "C0368",
+      "C0373",
+      "C0362",
+      "C0359",
+      "C0365",
+      "C0379",
+      "C0360",
+      "C0351",
+      "C0300",
+      "C0298",
+      "C0299",
+      "C0341",
+      "C0282",
+      "C0280",
+      "C0281",
+      "C0262",
+      "C0263"
+    ],
+    "stage_four_delivery": {
+      "batch": {
+        "strategy_id": "S019",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "7897d3ce0e2f064299a85d742835e6a1d4e1e86e1c8617d0d64bcafd86a1a87c",
+      "revision": 2,
+      "stage": "ASSESSMENT",
+      "type": "DeliveryReference"
+    },
+    "stage_four_qualified_candidates": [],
+    "stage_four_research_acceptance": "FAILED_WITHIN_APPROVED_SCOPE",
+    "stage_four_status": "COMPLETE",
+    "stage_one_status": "COMPLETE",
+    "stage_three_approval": "APPROVED",
+    "stage_three_budget": {
+      "authorization_decision": "S019-STAGE3-20261110",
+      "authorized_rounds": 10,
+      "benchmark_accounts": 10,
+      "candidate_accounts": 32,
+      "eligible_candidates": 0,
+      "remaining_rounds": 0,
+      "rounds": [
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX016_20261110",
+          "protocol_sha256": "9c90e76dea0cc5c7ae7632a59175ece4850c44a9f74077a659ce969785deb662",
+          "round": 1
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX017_20261110",
+          "protocol_sha256": "fbc042af1ddd807f16aed3adaf061e60aeb4d30b1d7c1221cc6a56229b8f4d52",
+          "round": 2
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX018_20261110",
+          "protocol_sha256": "0a139166ccd49cd7c850b214c34f9388cf79a3446c012d406e8de8e3ab7cd093",
+          "round": 3
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 4,
+          "eligible_ids": [],
+          "experiment": "EX019_20261110",
+          "protocol_sha256": "edf4b3c4def10886627a7fa9c42dc4c0469108714510a3f0dd5eccc4202d27a2",
+          "round": 4
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX020_20261110",
+          "protocol_sha256": "a0c57ded95ba677814cc2aa552a871895780aba0141cd2afd581765171b62cf6",
+          "round": 5
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX021_20261110",
+          "protocol_sha256": "0f445e824d9cd16116fea50c78aa76a059f9d6d600250346d918a84c545900e0",
+          "round": 6
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 4,
+          "eligible_ids": [],
+          "experiment": "EX022_20261110",
+          "protocol_sha256": "dfe26a5cc7d20337996919c53565169adc925d42fcaf78fc3a4fa918adc111c0",
+          "round": 7
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX023_20261110",
+          "protocol_sha256": "99b6ba38438433e17aa8e6d7476d2eb768d18d522eb91851f4b4806ab0e6cd89",
+          "round": 8
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX024_20261110",
+          "protocol_sha256": "311e0217c7fe09b7635d75243a1d785c33a9439e1a77a0b309cd98283f3f5a57",
+          "round": 9
+        },
+        {
+          "benchmark_accounts": 1,
+          "candidate_accounts": 3,
+          "eligible_ids": [],
+          "experiment": "EX025_20261110",
+          "protocol_sha256": "940d8ef8a8957844e6fccb886b8cc1649835d8da614dbfadae39fd1197001f56",
+          "round": 10
+        }
+      ],
+      "used_rounds": 10
+    },
+    "stage_three_decision": {
+      "decision_id": "S019-STAGE3-20261110",
+      "evidence": {
+        "owner": {
+          "experiment_id": null,
+          "strategy_id": "S019",
+          "type": "ResearchEvidenceOwner"
+        },
+        "path": "decisions/S019-STAGE3-20261110.json",
+        "sha256": "9d2e2385906a26050c1d5c2629b1dc1897ebadad7701000f99e889d77c063b46",
+        "type": "ResearchEvidenceRef"
+      },
+      "type": "DecisionReference"
+    },
+    "stage_three_delivery": {
+      "batch": {
+        "strategy_id": "S019",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "2cf3962a685d5475c141dd2d46f259a1ab5e06d954cd9881fb21a9ef97dbbd3e",
+      "revision": 1,
+      "stage": "CANDIDATES",
+      "type": "DeliveryReference"
+    },
+    "stage_three_status": "COMPLETE",
+    "stage_two_delivery": {
+      "batch": {
+        "strategy_id": "S019",
+        "type": "ResearchBatchRef"
+      },
+      "content_sha256": "96ada5b59c64af07197adf3894f986abeda7739aae86b08ee493b5ecb7c1ffa2",
+      "revision": 1,
+      "stage": "PROTOTYPES",
+      "type": "DeliveryReference"
+    },
+    "stage_two_status": "COMPLETE",
+    "technical_failed_experiments": [
+      "EX042_20261110"
+    ]
+  },
+  "research_state": "RESEARCHING",
+  "schema_version": 2,
+  "scope": [
+    "US.MU"
+  ],
+  "strategy_id": "S019",
+  "updated_at": "2026-11-11T14:25:55+08:00"
+}
