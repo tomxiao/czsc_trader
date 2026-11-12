@@ -2,6 +2,7 @@
 from datetime import date, datetime
 from decimal import Decimal
 
+from ..execution_intervals import ExecutionInterval
 from ..daily_execution import PreviousDailyExecution, daily_execution_outcome
 from ..execution_effects import DecisionExecutionEffect, OrderExecutionEffect, decision_execution_effect
 from .broker import TERMINAL_INTENT_STATUSES, TERMINAL_ORDER_STATUSES, UNRESOLVED_INTENT_STATUSES
@@ -13,21 +14,34 @@ class ExecutionEffectStore:
         """Use the last evaluated target and permit retries only from the prior trading session."""
         if type(previous_session) is not date:
             raise TypeError('daily execution history requires a prior market session date')
-        self._check_owned('account', account_id)
         session = previous_session.isoformat()
+        return self._previous_execution(account_id, "a.valid_session <= ?", session,
+                                        lambda prior: prior['valid_session'] == session)
+
+    def previous_execution(self, account_id: str, *, interval: ExecutionInterval) -> PreviousDailyExecution | None:
+        if type(interval) is not ExecutionInterval:
+            raise TypeError('execution history requires a calendar-resolved interval')
+        previous = interval.previous_window
+        return self._previous_execution(account_id, "a.window_end != '' AND a.window_end <= ?",
+            interval.window.start.isoformat(timespec='microseconds'),
+            lambda row: previous is not None and row['window_end'] == previous.end.isoformat(timespec='microseconds')
+            and row['window_start'] == previous.start.isoformat(timespec='microseconds'))
+
+    def _previous_execution(self, account_id, boundary_sql, boundary, adjacent):
+        self._check_owned('account', account_id)
         with self._lock:
-            prior = self._connection.execute('''
-                SELECT a.decision_id, a.valid_session,
+            prior = self._connection.execute(f"""
+                SELECT a.decision_id, a.valid_session, a.window_start, a.window_end,
                     json_extract(d.payload, '$.strategy_output.execution_plan.target') AS target,
                     json_extract(d.payload, '$.strategy_output.execution_plan.entry_cash') AS entry_cash
                 FROM decision_adoptions a JOIN decisions d
                     ON d.account_id = a.account_id AND d.decision_id = a.decision_id
-                WHERE a.account_id = ? AND a.valid_session <= ?
+                WHERE a.account_id = ? AND {boundary_sql}
                     AND target IS NOT NULL
                     AND COALESCE(json_extract(d.payload, '$.strategy_output.execution_plan.signal_status'),
                                  'EVALUATED') = 'EVALUATED'
-                ORDER BY a.valid_session DESC LIMIT 1
-            ''', (account_id, session)).fetchone()
+                ORDER BY a.valid_session DESC, a.window_end DESC LIMIT 1
+            """, (account_id, boundary)).fetchone()
             if prior is None:
                 return None
             decision_id = prior['decision_id']
@@ -57,7 +71,7 @@ class ExecutionEffectStore:
                 if position is not None:
                     buy_cost = Decimal(str(position.buy_cost))
             return PreviousDailyExecution(prior['target'], daily_execution_outcome(ordered, filled, terminal=terminal),
-                prior['valid_session'] == session, None if entry_cash is None else Decimal(entry_cash), buy_cost)
+                adjacent(prior), None if entry_cash is None else Decimal(entry_cash), buy_cost)
 
     def decision_execution_effect(self, account_id: str, decision_id: str, *,
                                   valuation_price: Decimal | float, at: datetime) -> DecisionExecutionEffect:

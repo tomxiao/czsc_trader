@@ -338,6 +338,9 @@ class EquityInputBinding:
             for _, parameters in result['request_bindings']:
                 parameters['query']['start'] = parameters['query']['start'].isoformat()
                 parameters['query']['end'] = parameters['query']['end'].isoformat()
+                cutoff = parameters['query'].pop('completed_through')
+                if cutoff is not None:
+                    parameters['query']['completed_through'] = cutoff.isoformat()
         return result
 
     def for_observations(self):
@@ -445,6 +448,9 @@ class EquityInputBinding:
                 query[field_name] = enum(query[field_name])
             for field_name in ('start', 'end'):
                 query[field_name] = date.fromisoformat(query[field_name])
+            if 'completed_through' in query:
+                from datetime import datetime
+                query['completed_through'] = datetime.fromisoformat(query['completed_through'])
             bindings.append((key, EquityParameters(InstrumentId(**instrument),
                 SourceRef(**parameters['source']), EquityQuery(**query))))
         value['request_bindings'] = tuple(bindings)
@@ -569,7 +575,7 @@ class EquityStrategyDefinition:
         if self.contract_version == 4:
             from .equity_features import FeatureGraph
             from .equity_replay import StrategyStateSchema
-            if ('execution_trigger' in self.execution_policy.settings
+            if (self.execution_policy.settings.get('execution_trigger') == 'daily_target_change_or_zero_fill'
                     and self.execution_spec.decision_clock.value != 'daily'):
                 raise ValueError('daily target execution requires a daily decision clock')
             if type(self.feature_graph) is not FeatureGraph or type(self.state_schema) is not StrategyStateSchema:

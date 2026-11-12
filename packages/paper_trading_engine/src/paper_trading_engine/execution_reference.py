@@ -35,6 +35,9 @@ class ExecutionReferenceBinding:
         value = asdict(self)
         for key in ('start', 'end'):
             value['parameters']['query'][key] = value['parameters']['query'][key].isoformat()
+        cutoff = value['parameters']['query'].pop('completed_through')
+        if cutoff is not None:
+            value['parameters']['query']['completed_through'] = cutoff.isoformat()
         for key in ('space_id', 'preparation_id'):
             value['prepared'][key] = str(value['prepared'][key])
         return value
@@ -52,6 +55,8 @@ class ExecutionReferenceBinding:
             query[key] = enum(query[key])
         for key in ('start', 'end'):
             query[key] = date.fromisoformat(query[key])
+        if 'completed_through' in query:
+            query['completed_through'] = datetime.fromisoformat(query['completed_through'])
         prepared = dict(value['prepared'])
         for key in ('space_id', 'preparation_id'):
             prepared[key] = UUID(prepared[key])

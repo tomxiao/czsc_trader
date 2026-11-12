@@ -101,6 +101,10 @@ def futu_equity_bindings(*, source: SourceRef, quote_context, maximum_pages: int
         for out, original in (("Open", "open"), ("High", "high"), ("Low", "low"),
                               ("Close", "close"), ("Volume", "volume"), ("Amount", "turnover")):
             result[out] = frame[original].to_numpy()
+        if p.query.completed_through is not None:
+            if research_policy is not None:
+                raise DataContractError('partial-session quotes require the ordinary observation source')
+            result = result.loc[result.Date <= p.query.completed_through]
         metadata["download_receipts"] = receipts
         metadata["daily_volume_scope"] = "VENDOR_DAILY" if p.query.frequency is BarFrequency.DAILY else "REGULAR_SESSION"
         if research_policy is not None:

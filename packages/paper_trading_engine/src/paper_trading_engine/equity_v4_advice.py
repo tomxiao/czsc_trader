@@ -7,7 +7,7 @@ import json
 from strategy_runtime import AccountDecisionEngine, AccountStrategyState, EquityPortfolio
 from strategy_runtime.account_strategy import PositionFeedback
 from .contracts import AdviceDecision, OrderSpec, PlanLegSpec
-from execution_channels.daily_execution import DAILY_TARGET_TRIGGER
+from execution_channels.daily_execution import DAILY_TARGET_TRIGGER, INTERVAL_TARGET_TRIGGER, TARGET_TRIGGERS
 from execution_channels.futu.equity_account_state import (load_document, validate_document, position_from_dict,
     budget_from_dict, recognized_events)
 from .ec_boundary import (initial_account_record, strategy_position, strategy_events, execution_plan, execution_admission, strategy_account_snapshot)
@@ -52,26 +52,34 @@ def account_decision(store, prepared, account, actual_quantity, available_cash, 
     portfolio = EquityPortfolio(available_cash, actual_quantity, float(account["receivable"]), state.revision,
         cycle_entry=None if active is None else active.entry_interval.start,
         cycle_cost=0. if active is None else active.buy_cost, feedback_source="CONFIRMED_EXECUTION")
-    snapshot = strategy_account_snapshot(account, document, rules, prepared.interval.start,
+    trigger = definition.execution_policy.settings.get('execution_trigger')
+    point = prepared.as_of if trigger == INTERVAL_TARGET_TRIGGER else prepared.interval.start
+    snapshot = strategy_account_snapshot(account, document, rules, point,
         Decimal(str(available_cash)), candidate.instrument)
     if snapshot.quantity != actual_quantity:
         raise ValueError("strategy request quantity differs from confirmed channel account")
     engine = AccountDecisionEngine(candidate, prepared.v4_replay)
     events, cursor = recognized_events(store, account["account_id"], state.event_cursor,
-                                       prepared.interval.start, through_cursor=through_cursor)
+                                       point, through_cursor=through_cursor)
     owner = account["account_id"] + ":" + account["release_hash"]
     result = engine.propose(prepared.interval, portfolio, snapshot, state, feedback, owner=owner,
-        fee_rate=prepared.fee_rate, events=strategy_events(events),
-        next_event_cursor=cursor)
+        fee_rate=prepared.fee_rate, events=strategy_events(events), next_event_cursor=cursor,
+        decision_at=prepared.as_of if trigger == INTERVAL_TARGET_TRIGGER else None)
     proposal = result.proposal
-    daily_trigger = definition.execution_policy.settings.get('execution_trigger') == DAILY_TARGET_TRIGGER
-    previous_execution = (store.previous_daily_execution(account['account_id'], previous_session=prepared.available_through)
-                          if daily_trigger else None)
+    previous_execution = None
+    if trigger in TARGET_TRIGGERS:
+        if prepared.execution_interval is not None:
+            previous_execution = store.previous_execution(account['account_id'], interval=prepared.execution_interval)
+        elif trigger == DAILY_TARGET_TRIGGER:
+            previous_execution = store.previous_daily_execution(account['account_id'], previous_session=prepared.available_through)
+        else:
+            raise ValueError('interval execution requires the calendar-resolved current and previous windows')
     plan = execution_plan(result, snapshot, definition.execution_spec, owner=owner,
         reference=float(prepared.execution_reference.price), execution_policy=definition.execution_policy,
         cycle_budget=budget_from_dict(document["budget"]), locked_quantity=document["locked_quantity"],
         implementation=candidate.implementation_hash, fee_rate=prepared.fee_rate,
-        sell_remainder_policy=prepared.v4_constraint["SellRemainderPolicy"], previous_daily_execution=previous_execution)
+        sell_remainder_policy=prepared.v4_constraint["SellRemainderPolicy"], previous_daily_execution=previous_execution,
+        execution_interval=prepared.execution_interval)
     effects = execution_admission(plan, snapshot, document, proposal,
         state_binding=engine.state_binding(owner, prepared.fee_rate),
         next_event_cursor=result.next_event_cursor, prepared=prepared, rules=rules)
@@ -80,9 +88,12 @@ def account_decision(store, prepared, account, actual_quantity, available_cash, 
                  for leg in effects.legs)
     reference, estimate, action, after = effects.reference, effects.estimated_order_cost, effects.action, effects.after
     execution_output = {"target": float(proposal.decision.target), "planning_result": plan.planning_result.to_dict()}
-    if daily_trigger:
+    if trigger in TARGET_TRIGGERS:
         execution_output["signal_status"] = plan.evidence.get("signal_status", "EVALUATED")
         execution_output["execution_trigger"] = plan.evidence.get("execution_trigger")
+    if trigger == INTERVAL_TARGET_TRIGGER:
+        execution_output["execution_interval"] = dict(plan.evidence["execution_interval"])
+        execution_output["decision_at"] = result.point.decision_at.isoformat()
     if "entry_cash" in plan.evidence:
         execution_output["entry_cash"] = plan.evidence["entry_cash"]
     return AdviceDecision("advice.equity.v4", plan.plan_identity, candidate.instrument.symbol,

@@ -209,3 +209,23 @@ def test_entry_cash_allocation_uses_original_cash_and_confirmed_buy_cost():
     prior = PreviousDailyExecution(.375, DailyExecutionOutcome.ZERO_FILL, True, prior.entry_cash, prior.buy_cost)
     held = plan(MarketId.US, cash=8198.20, held=18, target=.1875, reference=40., policy=policy, previous=prior)
     assert held.orders == ()
+
+
+
+def test_calendar_adjacency_preserves_weekend_and_does_not_skip_a_missed_window():
+    from datetime import datetime, timezone
+    from execution_channels.execution_intervals import execution_intervals
+    from execution_channels.instruments import TimeInterval
+
+    def window(day, hour, minute=0):
+        from datetime import timedelta
+        start = datetime(2026, 11, day, hour, minute, tzinfo=timezone.utc)
+        return TimeInterval(start, start + timedelta(minutes=30))
+
+    friday, monday_open, monday_next = window(13, 20, 30), window(16, 14, 30), window(16, 15)
+    _, opening, next_ = execution_intervals((friday, monday_open, monday_next))
+    assert opening.start == friday.end and opening.previous_window == friday
+    assert next_.start == monday_open.end and next_.previous_window == monday_open
+    for cycle, reason in ((opening, 'PREVIOUS_ZERO_FILL'), (next_, 'UNCHANGED_TARGET')):
+        previous = PreviousDailyExecution(.5, DailyExecutionOutcome.ZERO_FILL, cycle.previous_window == friday)
+        assert previous.trigger(.5).value == reason

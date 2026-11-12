@@ -8,7 +8,7 @@ from datetime import date, datetime, timedelta
 from enum import StrEnum
 from collections.abc import Mapping
 
-from dataflows import EquityDataRequest, EquityProduct
+from dataflows import BarFrequency, EquityDataRequest, EquityProduct
 from dataflows.equity_data import sessions_from_metadata
 
 from .observation_preparation import (
@@ -143,22 +143,40 @@ def forward_requests(dataflows, binding, interval, definition, source_root, cale
     items = []
     for role, parameters in binding.request_bindings:
         day = interval.start.astimezone(ZoneInfo(parameters.instrument.timezone)).date()
+        completed_through = None
         if parameters.query.product is EquityProduct.BARS:
             key = role.rsplit(':', 1)[0] + ':sessions' if ':' in role else 'sessions'
             calendar = calendars[key]
             availability = {str(row.SessionDate): row.AvailableDate for row in calendar.dataframe.itertuples()}
-            completed = [session.session_date for session in sessions_from_metadata(calendar.identity.metadata)
-                if session.segments[-1].end <= cutoff and availability[session.session_date.isoformat()] <= cutoff]
-            if not completed:
-                raise ValueError('forward inputs have no completed historical session')
-            day = max(completed)
+            sessions = sessions_from_metadata(calendar.identity.metadata)
+            if (definition.execution_spec.decision_clock is BarFrequency.M30
+                    and parameters.query.frequency is BarFrequency.M30):
+                ready = cutoff - timedelta(seconds=definition.execution_spec.data_latency_seconds)
+                for session in reversed(sessions):
+                    if availability[session.session_date.isoformat()] > cutoff:
+                        continue
+                    bar = next((bar for bar in reversed(session.bars(BarFrequency.M30)) if bar.end <= ready), None)
+                    if bar is not None:
+                        day = session.session_date
+                        if bar.end != session.segments[-1].end:
+                            completed_through = bar.end
+                        break
+                else:
+                    raise ValueError('forward inputs have no completed 30-minute bar')
+            else:
+                completed = [session.session_date for session in sessions
+                    if session.segments[-1].end <= cutoff and availability[session.session_date.isoformat()] <= cutoff]
+                if not completed:
+                    raise ValueError('forward inputs have no completed historical session')
+                day = max(completed)
         elif parameters.query.product is EquityProduct.SESSIONS:
             # Calendar dates, not future market observations, are needed to
             # schedule the next legal sellability/settlement boundary.
             day += timedelta(days=14)
         else:
             raise ValueError('strategy-only recipe contains an execution product')
-        items.append((role, replace(parameters, query=replace(parameters.query, end=day))))
+        items.append((role, replace(parameters, query=replace(parameters.query, end=day,
+                                                               completed_through=completed_through))))
     requests = tuple(EquityDataRequest(p.instrument, p.source, p.query)
                      for p in dict.fromkeys(p for _, p in items))
     observation_items, observation_ends = [], {}

@@ -7,8 +7,9 @@ from zoneinfo import ZoneInfo
 from ..contracts import (AccountSnapshot, AccountExecutionPlan, ReplayPoint,
                          ReplayOrder, ReplayLeg, SellRemainderPolicy, CycleBudget)
 from ..entry_cycle import EntryCyclePhase
-from ..daily_execution import DAILY_TARGET_TRIGGER, ENTRY_CASH_FRACTION, DailyExecutionTrigger, PreviousDailyExecution
+from ..daily_execution import DAILY_TARGET_TRIGGER, INTERVAL_TARGET_TRIGGER, TARGET_TRIGGERS, ENTRY_CASH_FRACTION, DailyExecutionTrigger, PreviousDailyExecution
 from ..instruments import BarFrequency
+from ..execution_intervals import ExecutionInterval
 from ..session_contracts import OrderSide, OrderType
 from ..policy import ResearchExecutionSpec, ExecutionPolicy
 from ..identity import equity_hash, _thaw_json
@@ -32,7 +33,7 @@ def _buy_limit(reference, spec):
 def plan_account_decision(decision, point, account, reference, spec, *, owner,
                           implementation, fee_rate, sell_remainder_policy,
                           execution_policy, cycle_budget=None, locked_quantity=None,
-                          suppressed=False, previous_daily_execution=None):
+                          suppressed=False, previous_daily_execution=None, execution_interval=None):
     """Translate position intent to channel-owned funding, quotes and orders.
 
     The reference is explicitly prepared in the channel's execution price basis.
@@ -62,19 +63,26 @@ def plan_account_decision(decision, point, account, reference, spec, *, owner,
     settings = _thaw_json(execution_policy.settings)
     kind = execution_policy.policy_type
     trigger = None
-    if settings.get('execution_trigger') == DAILY_TARGET_TRIGGER:
+    policy_trigger = settings.get('execution_trigger')
+    if policy_trigger == INTERVAL_TARGET_TRIGGER:
+        if (type(execution_interval) is not ExecutionInterval
+                or (execution_interval.window.start, execution_interval.end)
+                    != (point.execution_start, point.execution_end)
+                or point.decision_at < execution_interval.start):
+            raise ValueError('plan requires the declared execution interval and causal decision time')
+    if policy_trigger in TARGET_TRIGGERS:
         zone = ZoneInfo(account.instrument.timezone)
         session = point.execution_start.astimezone(zone).date()
-        if (spec.decision_clock is not BarFrequency.DAILY or point.session_id != session.isoformat()
-                or point.execution_end.astimezone(zone).date() != session):
-            raise ValueError('daily target execution requires one market trading session')
+        if (point.session_id != session.isoformat() or point.execution_end.astimezone(zone).date() != session
+                or (policy_trigger == DAILY_TARGET_TRIGGER and spec.decision_clock is not BarFrequency.DAILY)):
+            raise ValueError('target execution window differs from the declared market session or clock')
         if previous_daily_execution is not None and type(previous_daily_execution) is not PreviousDailyExecution:
             raise TypeError('daily target execution requires typed previous execution facts')
         if not suppressed:
             trigger = (DailyExecutionTrigger.INITIAL_TARGET if previous_daily_execution is None
                        else previous_daily_execution.trigger(decision.target))
     elif previous_daily_execution is not None:
-        raise ValueError('previous daily execution requires the declared daily target trigger')
+        raise ValueError('previous execution requires a declared target trigger')
     orders, legs = (), ()
     before = after = cycle_budget
     mode, desired = 'target_equity_fraction', account.quantity
@@ -249,6 +257,11 @@ def plan_account_decision(decision, point, account, reference, spec, *, owner,
         evidence['signal_status'] = 'SUPPRESSED_UNOBSERVED_BAR'
     if trigger is not None:
         evidence['execution_trigger'] = trigger.value
+    if policy_trigger == INTERVAL_TARGET_TRIGGER:
+        evidence['execution_interval'] = {
+            'start': execution_interval.start.isoformat(), 'end': execution_interval.end.isoformat(),
+            'submit_after': execution_interval.window.start.isoformat(),
+        }
     if entry_cash is not None:
         evidence['entry_cash'] = str(entry_cash)
     identity = equity_hash({'owner':owner,'point':repr(point),'revision':account.revision,

@@ -5,6 +5,8 @@ from zoneinfo import ZoneInfo
 
 import pandas as pd
 
+from . import tushare_etf, tushare_stock
+from .bar_utils import adjustment_factor_sha256, apply_hfq_adjustment, with_scheduled_hfq_availability
 from .contract import EquityDataRequest, ProviderBinding
 from .equity_contracts import (AssetClass, BarFrequency, EquityProduct, MarketId,
                                PriceAdjustment, ProviderKey, SourceRef, TimeInterval, TradingSession)
@@ -79,20 +81,21 @@ def _bindings(*, source, env_file, raw):
                                  "SessionDate": [s.session_date.isoformat() for s in sessions]}), metadata
 
         stock = p.instrument.asset_class is AssetClass.STOCK
-        if p.query.adjustment is PriceAdjustment.NONE:
-            if p.query.frequency is BarFrequency.DAILY:
-                fetch_bars = fetch_stock_unadjusted_daily if stock else fetch_etf_unadjusted_daily
-                frame, source_metadata = fetch_bars(p.instrument.symbol, start, end, env_file=env_file)
-            else:
+        if p.query.frequency is BarFrequency.M30:
+            if p.query.adjustment is PriceAdjustment.NONE:
                 fetch_bars = fetch_stock_unadjusted_intraday if stock else fetch_etf_unadjusted_intraday
-                frame, source_metadata = fetch_bars(p.instrument.symbol, start, end,
-                    period=p.query.frequency.value, env_file=env_file)
-        elif stock and p.query.frequency is BarFrequency.DAILY:
-            frame, source_metadata = _stock_daily_hfq(p.instrument.symbol, start, end, env_file)
+            else:
+                fetch_bars = fetch_stock_ohlcv if stock else fetch_etf_ohlcv
+            if p.query.completed_through is None:
+                frame, source_metadata = fetch_bars(p.instrument.symbol, start, end, period='30m', env_file=env_file)
+            else:
+                frame, source_metadata = _partial_intraday(p, fetch_bars, env_file)
         else:
-            fetch_bars = fetch_stock_ohlcv if stock else fetch_etf_ohlcv
-            frame, source_metadata = fetch_bars(p.instrument.symbol, start, end,
-                period=p.query.frequency.value, env_file=env_file)
+            if p.query.adjustment is PriceAdjustment.NONE:
+                fetch_bars = fetch_stock_unadjusted_daily if stock else fetch_etf_unadjusted_daily
+            else:
+                fetch_bars = _stock_daily_hfq if stock else fetch_etf_ohlcv
+            frame, source_metadata = fetch_bars(p.instrument.symbol, start, end, env_file=env_file)
         if source_metadata.get("adjustment") != p.query.adjustment.value:
             raise DataContractError("Tushare observation source returned a different adjustment")
         sessions = _sessions(source_metadata["daily_session_coverage"])
@@ -121,12 +124,64 @@ def _bindings(*, source, env_file, raw):
         result["BarStart"] = [b.start for b in selected]
         result["AvailableDate"] = ([b.end for b in selected] if raw_daily else
             pd.to_datetime(frame.AvailableDate).dt.tz_localize(p.instrument.timezone).dt.tz_convert("UTC"))
+        if p.query.completed_through is not None:
+            result = result.loc[result.Date <= p.query.completed_through]
         result = result.sort_values("Date").reset_index(drop=True)
         validate_equity_frame(result, request, metadata)
         return result, metadata
 
     return {ProviderKey(product, MarketId.CN, source): ProviderBinding(source.provider, source.revision, fetch)
             for product in (EquityProduct.BARS, EquityProduct.SESSIONS)}
+
+
+def _partial_intraday(parameters, fetch_complete, env_file):
+    """Use intraday source facts for the unfinished day and normal audited history before it."""
+    instrument, query = parameters.instrument, parameters.query
+    stock = instrument.asset_class is AssetClass.STOCK
+    start, end = query.start.isoformat(), query.end.isoformat()
+    pro = get_tushare_pro(env_file)
+    coverage = source_session_calendar(pro, instrument.symbol, start=start, end=end,
+                                       asset_type='stock' if stock else 'etf')
+    sessions = _sessions(coverage)
+    if sessions[-1].session_date != query.end:
+        raise IncompleteDataError('partial-session cutoff has no independent trading session')
+    cutoff = query.completed_through.astimezone(ZoneInfo(instrument.timezone)).replace(tzinfo=None)
+    if stock:
+        frame, _, code = tushare_stock._fetch_tushare_ohlcv(instrument.symbol, end, cutoff.isoformat(sep=' '),
+            period='30m', asset_type='stock', env_file=env_file)
+    else:
+        code = instrument.symbol
+        source = tushare_etf._fetch_intraday_vendor(pro, code, end, end, '30m')
+        if source.empty:
+            raise IncompleteDataError('Tushare returned no partial-session bars')
+        frame = tushare_etf._merge_opening_auction_into_first_bar(
+            tushare_etf._standardize_etf_ohlcv(source, intraday=True), '30m')
+        frame = tushare_etf._drop_zero_activity_days(frame)
+    if frame.empty:
+        raise IncompleteDataError('Tushare returned no partial-session bars')
+    frame = frame.loc[pd.to_datetime(frame.Date) <= cutoff].copy()
+    if frame.empty:
+        raise IncompleteDataError('Tushare returned no completed partial-session bars')
+    frame['AvailableDate'] = frame.Date
+    metadata = {'adjustment': query.adjustment.value, 'daily_session_coverage': coverage,
+                'available_at': 'completed intraday bar; source publication time unverified',
+                'publication_time_verified': False}
+    if query.adjustment is PriceAdjustment.BACKWARD:
+        provider = tushare_stock if stock else tushare_etf
+        factors = provider._fetch_hfq_factors(code, end, end, env_file=env_file)
+        factor_source = 'adj_factor' if stock else 'fund_adj'
+        metadata.update(raw_input_sha256=frame_content_sha256(frame),
+                        acquisition_method='DFLS_ADJUSTED', adjustment_factor_source=factor_source,
+                        adjustment_factor_sha256=adjustment_factor_sha256(factors),
+                        adjustment_factor_publication_timestamp_verified=False)
+        frame = with_scheduled_hfq_availability(apply_hfq_adjustment(frame, factors),
+                                                factor_source=factor_source, period='30m')
+    if len(sessions) > 1:
+        prior, prior_metadata = fetch_complete(instrument.symbol, start, sessions[-2].session_date.isoformat(),
+                                               period='30m', env_file=env_file)
+        metadata['complete_history_evidence'] = prior_metadata
+        frame = pd.concat((prior, frame), ignore_index=True)
+    return frame, metadata
 
 
 def _stock_daily_hfq(symbol, start, end, env_file):

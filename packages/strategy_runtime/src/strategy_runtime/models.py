@@ -266,7 +266,8 @@ class ExecutionPolicy:
         canonical_sha256(self.settings)
         if "execution_trigger" in self.settings and (
                 self.policy_type not in {"TARGET_POSITION", "FROZEN_RULE"}
-                or self.settings["execution_trigger"] != "daily_target_change_or_zero_fill"):
+                or self.settings["execution_trigger"] not in (
+                    "daily_target_change_or_zero_fill", "interval_target_change_or_zero_fill")):
             raise RuntimeContractError("unsupported position execution trigger")
         if self.policy_type == "TARGET_POSITION":
             if set(self.settings) - {"capital_mode", "execution_trigger"}:
@@ -275,8 +276,9 @@ class ExecutionPolicy:
                     "target_equity_fraction", "full_available_cash", "entry_cash_fraction"}:
                 raise RuntimeContractError("target-position policy requires a supported capital mode")
             if (self.settings.get("capital_mode") == "entry_cash_fraction"
-                    and self.settings.get("execution_trigger") != "daily_target_change_or_zero_fill"):
-                raise RuntimeContractError("entry cash allocation requires daily target execution")
+                    and self.settings.get("execution_trigger") not in (
+                        "daily_target_change_or_zero_fill", "interval_target_change_or_zero_fill")):
+                raise RuntimeContractError("entry cash allocation requires target execution")
         if self.policy_type == "FROZEN_RULE":
             capital = self.settings.get("capital", {})
             if capital.get("mode") == "signal_cash_fraction":

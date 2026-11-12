@@ -180,52 +180,56 @@ class AccountDecisionEngine:
         if type(fee_rate) not in (float, int) or not math.isfinite(fee_rate) or not 0 <= fee_rate < 1:
             raise ValueError('account fee must be finite in [0,1)')
 
-    def observation(self, interval):
+    def observation(self, interval, *, decision_at=None):
         if type(interval) is not TimeInterval:
             raise TypeError('account observation requires TimeInterval')
         key = interval.start, interval.end
         if key not in self._intervals:
             raise ValueError('execution interval absent from declared calendar or input grid')
-        if self._observed_at is not None and interval.start < self._observed_at:
+        when = interval.start if decision_at is None else decision_at
+        if type(when) is not datetime or when.utcoffset() is None or when > interval.start:
+            raise ValueError('decision cutoff must be aware and no later than submission start')
+        cache_key = key, when
+        if self._observed_at is not None and when < self._observed_at:
             raise ValueError('account observations must be requested in causal time order')
-        if self._observation_cache is not None and self._observation_cache[0] == key:
+        if self._observation_cache is not None and self._observation_cache[0] == cache_key:
             observation = self._observation_cache[1]
             return (*observation[:3], dict(observation[3]), *observation[4:])
-        self._observed_at = interval.start
+        self._observed_at = when
         definition, data, visibility = self.candidate.definition, self.prepared._data, self._visibility
-        visibility.advance(interval.start)
+        visibility.advance(when)
         if visibility.count < definition.warmup_bars:
             raise ValueError('WARMUP_INSUFFICIENT: visible observed history')
-        point = DecisionPoint(data.ends[visibility.row(0)], interval.start, interval)
+        point = DecisionPoint(data.ends[visibility.row(0)], when, interval)
         views = {}
         for declaration in definition.auxiliary_inputs:
             if declaration.name not in self._auxiliary:
                 raise ValueError('AUXILIARY_INPUT_UNAVAILABLE: ' + declaration.name)
             indexer, item = self._auxiliary[declaration.name]
-            indexer.advance(interval.start)
+            indexer.advance(when)
             if indexer.count < declaration.warmup_bars:
                 raise ValueError('AUXILIARY_WARMUP_INSUFFICIENT: ' + declaration.name)
             latest = indexer.row(0)
             if not item.observed[indexer.latest_completed] or float(item.rows[latest]['Volume']) <= 0:
                 raise ValueError('AUXILIARY_INPUT_UNAVAILABLE: ' + declaration.name)
-            if (interval.start - item.ends[latest]).total_seconds() > declaration.max_age_seconds:
+            if (when - item.ends[latest]).total_seconds() > declaration.max_age_seconds:
                 raise ValueError('AUXILIARY_INPUT_STALE: ' + declaration.name)
-            views[declaration.name] = indexer.history_view(interval.start)
+            views[declaration.name] = indexer.history_view(when)
         session, available = self.prepared._sessions[self._intervals[key]]
         if session.timezone != self.candidate.instrument.timezone:
             raise ValueError('prepared session timezone differs from instrument')
-        if available > interval.start:
+        if available > when:
             raise ValueError('session calendar is not yet available')
-        features = (self._features.at(interval.start) if self._performance is None else
-                    self._performance.graph(self._features.at, interval.start))
-        observation = (point, features, visibility.history_view(interval.start),
+        features = (self._features.at(when) if self._performance is None else
+                    self._performance.graph(self._features.at, when))
+        observation = (point, features, visibility.history_view(when),
                        views, session, available, not data.observed[visibility.latest_completed])
-        self._observation_cache = key, observation
+        self._observation_cache = cache_key, observation
         return (*observation[:3], dict(views), *observation[4:])
 
     def propose(self, interval, portfolio, account, state, position, *, owner, fee_rate,
-             budget=None, events=(), next_event_cursor=None, binding=None):
-        observation = self.observation(interval)
+             budget=None, events=(), next_event_cursor=None, binding=None, decision_at=None):
+        observation = self.observation(interval, decision_at=decision_at)
         return self._propose_observation(observation, portfolio, account, state, position,
             owner=owner, fee_rate=fee_rate, budget=budget, events=events,
             next_event_cursor=next_event_cursor, binding=binding)

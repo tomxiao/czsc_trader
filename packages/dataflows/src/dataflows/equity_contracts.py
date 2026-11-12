@@ -2,7 +2,7 @@
 
 These value types have no provider, storage or execution dependencies.
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta
 from enum import StrEnum
 import re
@@ -172,6 +172,7 @@ class EquityQuery:
     frequency: BarFrequency = BarFrequency.M30
     adjustment: PriceAdjustment = PriceAdjustment.NONE
     session: EquitySession = EquitySession.REGULAR
+    completed_through: datetime | None = field(default=None, metadata={'omit_none': True})
 
     def __post_init__(self):
         if type(self.start) is not date or type(self.end) is not date or self.start > self.end:
@@ -182,6 +183,10 @@ class EquityQuery:
                 raise TypeError(f"equity query {name} requires {cls.__name__}")
         if self.product is EquityProduct.SESSIONS and self.adjustment is not PriceAdjustment.NONE:
             raise ValueError("sessions have no price adjustment")
+        if self.completed_through is not None:
+            if self.product is not EquityProduct.BARS or self.frequency is not BarFrequency.M30:
+                raise ValueError('partial-session selection requires 30-minute bars')
+            object.__setattr__(self, 'completed_through', utc(self.completed_through))
 
 
 @dataclass(frozen=True, slots=True)
@@ -193,6 +198,11 @@ class EquityParameters:
     def __post_init__(self):
         if type(self.instrument) is not InstrumentId or type(self.source) is not SourceRef or type(self.query) is not EquityQuery:
             raise TypeError("equity parameters require typed instrument, source and query")
+
+    def __post_init__(self):
+        cutoff = self.query.completed_through
+        if cutoff is not None and cutoff.astimezone(ZoneInfo(self.instrument.timezone)).date() != self.query.end:
+            raise ValueError('completed-bar cutoff must belong to the last requested session date')
 
     @property
     def provider_key(self) -> ProviderKey:

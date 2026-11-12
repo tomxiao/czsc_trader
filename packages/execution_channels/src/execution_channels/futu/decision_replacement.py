@@ -8,6 +8,8 @@ from .adoption import AccountAdoption, DecisionAdoption
 from .broker import TERMINAL_INTENT_STATUSES, TERMINAL_ORDER_STATUSES
 from .equity_account_state import encode, save_document, validate_document
 from .lifecycle import DecisionState
+from .execution_adoptions import adoption_window
+from ..instruments import TimeInterval
 from .store import _utc_now
 
 
@@ -35,10 +37,13 @@ def capture_replacement(store, account_id: str, decision_id: str, initial: dict 
     decision = store.account_decision(account_id, decision_id)
     payload = decision["payload"]
     valid_session = decision["valid_session"]
-    current = store.adopted_decision(account_id, valid_session)
+    start, end = adoption_window(payload)
+    current = (store.adopted_execution_decision(account_id,
+        TimeInterval(datetime.fromisoformat(start), datetime.fromisoformat(end))) if start else None)
     later = store._connection.execute(
-        "SELECT 1 FROM decision_adoptions WHERE account_id=? AND valid_session>? LIMIT 1",
-        (account_id, valid_session),
+        "SELECT 1 FROM decision_adoptions WHERE account_id=? AND "
+        "(valid_session>? OR (valid_session=? AND window_start>?)) LIMIT 1",
+        (account_id, valid_session, valid_session, start),
     ).fetchone()
     if (account["run_state"] != "RUNNING" or account["health"] != "OK" or later is not None
             or current is None or current["decision_id"] != decision_id

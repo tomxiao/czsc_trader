@@ -5,6 +5,8 @@ from enum import StrEnum
 
 
 DAILY_TARGET_TRIGGER = 'daily_target_change_or_zero_fill'
+INTERVAL_TARGET_TRIGGER = 'interval_target_change_or_zero_fill'
+TARGET_TRIGGERS = (DAILY_TARGET_TRIGGER, INTERVAL_TARGET_TRIGGER)
 ENTRY_CASH_FRACTION = 'entry_cash_fraction'
 
 
@@ -56,7 +58,7 @@ class PreviousDailyExecution:
 
     def trigger(self, target: float) -> DailyExecutionTrigger:
         if self.outcome is DailyExecutionOutcome.UNRESOLVED:
-            raise ValueError('previous daily execution requires confirmed order reconciliation')
+            raise ValueError('previous execution requires confirmed order reconciliation')
         if self.target != target:
             return DailyExecutionTrigger.TARGET_CHANGED
         if self.previous_session and self.outcome is DailyExecutionOutcome.ZERO_FILL:

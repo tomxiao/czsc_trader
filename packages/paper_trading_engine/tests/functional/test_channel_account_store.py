@@ -223,7 +223,7 @@ def test_schema7_migration_preserves_legacy_balances_and_events(tmp_path):
         assert scope.virtual_account("legacy") == original
         assert [row["event_id"] for row in scope.query_audit_events()] == event_ids
         assert scope.latest_snapshot() == {"cash": "1000.0000"}
-        assert migrated.get_setting("runtime_database_schema_version") == "9"
+        assert migrated.get_setting("runtime_database_schema_version") == "10"
         assert "'RETIRING'" in migrated._connection.execute(
             "SELECT sql FROM sqlite_master WHERE name='virtual_accounts'").fetchone()[0]
         assert migrated._connection.execute('SELECT * FROM account_retirement_requests').fetchall() == []

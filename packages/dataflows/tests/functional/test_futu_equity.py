@@ -183,3 +183,21 @@ def test_gap_declarations_are_validated_at_the_responsible_boundary(tmp_path, em
     else:
         with pytest.raises(IncompleteDataError if defect == 'incomplete_download' else DataContractError):
             validate_equity_frame(frame, req, metadata)
+
+
+
+def test_partial_session_publishes_completed_grid_without_filling_missing_bars(tmp_path):
+    from dataclasses import replace
+
+    full = request(EquityProduct.BARS)
+    p = full.parameters
+    cutoff = datetime(2026, 11, 27, 15, 30, tzinfo=timezone.utc)
+    partial = EquityDataRequest(p.instrument, p.source, replace(p.query, completed_through=cutoff))
+    flows = gap_flows(tmp_path, Quotes(), None)
+    result = flows.prepare((partial, full), policy=PreparePolicy.REUSE)
+    assert result.ready
+    partial_frame = flows.fetch(partial, prepared=result.reference).dataframe
+    assert len(partial_frame) == 2 and partial_frame.Date.iloc[-1] == cutoff
+    assert len(flows.fetch(full, prepared=result.reference).dataframe) == 7
+    incomplete = gap_flows(tmp_path / 'missing', GappedQuotes(), None)
+    assert not incomplete.prepare((partial,), policy=PreparePolicy.REUSE).ready

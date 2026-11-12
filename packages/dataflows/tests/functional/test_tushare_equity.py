@@ -169,3 +169,29 @@ def test_provider_adjusted_failure_never_switches_to_computed_method(monkeypatch
     req = requests[0]
     with pytest.raises((RuntimeError, DataContractError)):
         bindings[req.parameters.provider_key].fetch(req)
+
+
+
+@pytest.mark.parametrize('asset_class', [AssetClass.STOCK, AssetClass.ETF])
+@pytest.mark.parametrize('adjustment', [PriceAdjustment.NONE, PriceAdjustment.BACKWARD])
+def test_partial_cn_bars_do_not_require_the_unfinished_daily_bar(monkeypatch, tmp_path, asset_class, adjustment):
+    from dataclasses import replace
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    client, requests, _, _ = setup(monkeypatch, tmp_path, asset_class, BarFrequency.M30)
+    def unfinished(**kwargs):
+        raise AssertionError('current daily bar is not yet available')
+    monkeypatch.setattr(client, 'daily', unfinished)
+    monkeypatch.setattr(client, 'fund_daily', unfinished)
+    p = requests[0].parameters
+    cutoff = datetime(2026, 9, 28, 11, 30, tzinfo=ZoneInfo('Asia/Shanghai'))
+    req = EquityDataRequest(p.instrument, p.source,
+        replace(p.query, completed_through=cutoff, adjustment=adjustment))
+    bindings = tushare_equity.tushare_equity_bindings(source=p.source)
+    frame, metadata = bindings[p.provider_key].fetch(req)
+    assert len(frame) == 4 and frame.Date.iloc[-1] == cutoff
+    assert metadata['completed_through'] == cutoff.astimezone(ZoneInfo('UTC')).isoformat()
+    assert frame.Close.eq(4. if adjustment is PriceAdjustment.NONE else 8.).all()
+    if asset_class is AssetClass.ETF and adjustment is PriceAdjustment.BACKWARD:
+        assert (frame.AvailableDate > cutoff).all()

@@ -54,8 +54,8 @@ from .channel import (
 
 
 DEFAULT_FUTU_CAPITAL_POOL = "1000000.0000"
-RUNTIME_DATABASE_SCHEMA_VERSION = 9
-RUNTIME_DATABASE_COMPATIBLE_VERSIONS = (1, 2, 3, 4, 5, 6, 7, 8, 9)
+RUNTIME_DATABASE_SCHEMA_VERSION = 10
+RUNTIME_DATABASE_COMPATIBLE_VERSIONS = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
 
 
 def _utc_now() -> str:
@@ -254,7 +254,7 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
         stored_schema = self._connection.execute(
             "SELECT value FROM settings WHERE key='runtime_database_schema_version'"
         ).fetchone()
-        if stored_schema is not None and int(stored_schema[0]) in {3, 4, 5, 6, 7, 8, 9}:
+        if stored_schema is not None and int(stored_schema[0]) in {3, 4, 5, 6, 7, 8, 9, 10}:
             self._initialize_lifecycle()
             return
         self._initialize_schema_script(
@@ -609,12 +609,13 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
             raise
 
     def _initialize_lifecycle(self):
-        from .lifecycle_migration import migrate_lifecycle
+        from .lifecycle_migration import migrate_lifecycle, migrate_execution_interval_adoptions
         from .account_health_migration import migrate_account_health
         try:
             self._connection.execute("BEGIN IMMEDIATE")
             now = _utc_now()
             migrate_lifecycle(self._connection, now)
+            migrate_execution_interval_adoptions(self._connection)
             from .retirement_store import migrate_retirement
             migrate_retirement(self._connection)
             migrate_account_health(self._connection, now)
@@ -2493,13 +2494,15 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
         decision = self.account_decision(account_id, decision_id)
         if decision["status"] not in {DecisionState.PENDING, DecisionState.EXECUTING}:
             raise ValueError("terminal decision cannot create or submit order intents")
+        from .execution_adoptions import adoption_window
+        payload = decision["payload"]
         adopted = self._connection.execute(
-            "SELECT decision_id FROM decision_adoptions WHERE account_id=? AND valid_session=?",
-            (account_id, valid_session),
+            "SELECT decision_id FROM decision_adoptions WHERE account_id=? AND valid_session=? "
+            "AND window_start=? AND window_end=?",
+            (account_id, valid_session, *adoption_window(payload)),
         ).fetchone()
         if adopted is None or adopted[0] != decision_id:
-            raise ValueError("decision is not the adopted plan for its effective session")
-        payload = decision["payload"]
+            raise ValueError("decision is not the adopted plan for its effective execution window")
         identity = payload["strategy"]
         bound = (identity.get("version"), identity.get("release_hash")) == (
             account["strategy_version"], account["release_hash"],
@@ -2699,6 +2702,8 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
                 validity = TimeInterval(*(datetime.fromisoformat(cycle["validity"][key]) for key in ("start", "end")))
                 if not validity.start <= interval.start < interval.end <= validity.end:
                     raise ValueError("order submission interval must belong to the decision cycle")
+        from .execution_adoptions import adoption_window
+        window_start, window_end = adoption_window(payload)
         encoded = json.dumps(payload, ensure_ascii=False, default=str)
         cycle_target = int(payload.get("cycle_target_quantity") or 0) or None
         if payload.get("plan_mode") == "CORE_SETUP":
@@ -2744,8 +2749,10 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
                     adopt_v4_decision(self, account, json.loads(encoded))
                 prior_decision = None
                 adopted = self._connection.execute(
-                    "SELECT decision_id FROM decision_adoptions WHERE account_id=? AND valid_session=?",
-                    (account_id, valid_session),
+                    "SELECT decision_id FROM decision_adoptions WHERE account_id=? AND valid_session=? "
+                    "AND ((window_start=? AND window_end=?) OR window_start='') "
+                    "ORDER BY window_start DESC LIMIT 1",
+                    (account_id, valid_session, window_start, window_end),
                 ).fetchone()
                 if adopted is not None:
                     previous = self.account_decision(account_id, adopted[0])
@@ -2765,9 +2772,9 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
                     evidence={"relation": "RECOMPUTED_FROM", "prior_state": prior_decision["status"]} if prior_decision else None,
                 )
             self._connection.execute(
-                "INSERT INTO decision_adoptions(account_id,valid_session,decision_id) VALUES(?,?,?) "
-                "ON CONFLICT(account_id,valid_session) DO UPDATE SET decision_id=excluded.decision_id",
-                (account_id, valid_session, decision_id),
+                "INSERT INTO decision_adoptions(account_id,valid_session,decision_id,window_start,window_end) VALUES(?,?,?,?,?) "
+                "ON CONFLICT(account_id,valid_session,window_start,window_end) DO UPDATE SET decision_id=excluded.decision_id",
+                (account_id, valid_session, decision_id, window_start, window_end),
             )
             if existing is None:
                 self._connection.execute(
@@ -2850,7 +2857,21 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
             query += " AND valid_session=?"
             args = (account_id, valid_session)
         with self._lock:
-            row = self._connection.execute(query + " ORDER BY valid_session DESC LIMIT 1", args).fetchone()
+            row = self._connection.execute(query + " ORDER BY valid_session DESC,window_start DESC,window_end DESC LIMIT 1", args).fetchone()
+            return None if row is None else self.account_decision(account_id, row[0])
+
+    def adopted_execution_decision(self, account_id: str, interval) -> dict[str, Any] | None:
+        """Find the effective adoption for an exact typed order window."""
+        from ..instruments import TimeInterval
+        if type(interval) is not TimeInterval:
+            raise TypeError("execution adoption requires a typed window")
+        self._check_owned("account", account_id)
+        with self._lock:
+            row = self._connection.execute(
+                "SELECT decision_id FROM decision_adoptions WHERE account_id=? AND window_end=? AND window_start=?",
+                (account_id, interval.end.isoformat(timespec='microseconds'),
+                 interval.start.isoformat(timespec='microseconds')),
+            ).fetchone()
             return None if row is None else self.account_decision(account_id, row[0])
 
     def first_account_signal_date(self, account_id: str) -> str | None:

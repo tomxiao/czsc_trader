@@ -9,6 +9,9 @@ from typing import TYPE_CHECKING
 
 from dataflows import TimeInterval, EquityProduct, TradingSession
 from dataflows.equity_data import sessions_from_metadata
+from execution_channels.daily_execution import INTERVAL_TARGET_TRIGGER
+from execution_channels.execution_intervals import ExecutionInterval, execution_intervals
+from execution_channels.instruments import TimeInterval as ChannelInterval
 from strategy_runtime import TradableWindow
 from strategy_runtime.equity_definition import EquityStrategyCandidate, EquityInputBinding
 from .execution_reference import PreparedExecutionReference
@@ -18,7 +21,7 @@ if TYPE_CHECKING:
 
 
 def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *, fee_rate, live=False,
-                            execution_reference, execution_context=None, as_of=None):
+                            execution_reference, execution_context=None, as_of=None, execution_interval=None):
     """Read pinned products and authenticate their identities before a normal PTE decision."""
     import pandas as pd
     from strategy_runtime.data_preparation import (
@@ -42,6 +45,15 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
         calendar_coverage=(CalendarCoverage.OVERLAPPING_SESSIONS if live else CalendarCoverage.EXACT))
     products, metadata = fetched.products, fetched.metadata
     bars = products["bars"]
+    if (execution_interval is None
+            and candidate.definition.execution_policy.settings.get('execution_trigger') == INTERVAL_TARGET_TRIGGER):
+        sessions = sessions_from_metadata(metadata['sessions'])
+        frequency = candidate.definition.execution_spec.decision_clock
+        execution_interval = next((cycle for cycle in execution_intervals(
+            ChannelInterval(window.start, window.end) for session in sessions for window in session.bars(frequency))
+            if (cycle.window.start, cycle.window.end) == (interval.start, interval.end)), None)
+        if execution_interval is None:
+            raise ValueError('decision has no execution interval in the prepared calendar')
     if live and candidate.definition.contract_version != 4:
         raise ValueError('live interval preparation requires native V4')
     if not live and len(bars.loc[(bars.BarStart == interval.start) & (bars.Date == interval.end)]) != 1:
@@ -115,7 +127,7 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
             raise ValueError('V4 prepared constraint lacks a valid BuySellableAt')
     return PreparedEquityDecision(candidate, binding, history, interval, fee_rate, execution_reference,
                                   auxiliary, sessions, trading_sessions, v4_replay=replay, buy_sellable_at=unlock,
-                                  v4_constraint=v4_constraint, live_interval=live, as_of=cutoff)
+                                  v4_constraint=v4_constraint, live_interval=live, as_of=cutoff, execution_interval=execution_interval)
 
 
 @dataclass(frozen=True)
@@ -134,6 +146,7 @@ class PreparedEquityDecision:
     buy_sellable_at: datetime | None = None
     live_interval: bool = False
     as_of: datetime | None = None
+    execution_interval: ExecutionInterval | None = None
     history_sha256: str = field(init=False)
     decision_inputs_sha256: str = field(init=False)
 
@@ -142,6 +155,12 @@ class PreparedEquityDecision:
             object.__setattr__(self, 'as_of', self.interval.start)
         if type(self.as_of) is not datetime or self.as_of.utcoffset() is None or self.as_of > self.interval.start:
             raise ValueError('equity observation cutoff must be aware and no later than execution start')
+        if self.execution_interval is not None and (
+            type(self.execution_interval) is not ExecutionInterval
+            or (self.execution_interval.window.start, self.execution_interval.window.end)
+                != (self.interval.start, self.interval.end)
+        ):
+            raise ValueError('prepared decision differs from the execution interval')
         if type(self.live_interval) is not bool:
             raise TypeError('prepared live interval mode must be boolean')
         if type(self.execution_reference) is not PreparedExecutionReference:

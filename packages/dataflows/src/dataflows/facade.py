@@ -1013,7 +1013,8 @@ def _json_contract(value: Any) -> Any:
     if isinstance(value, (date, datetime)):
         return value.isoformat()
     if is_dataclass(value):
-        return {item.name: _json_contract(getattr(value, item.name)) for item in fields(value)}
+        return {item.name: _json_contract(getattr(value, item.name)) for item in fields(value)
+                if not item.metadata.get('omit_none') or getattr(value, item.name) is not None}
     if isinstance(value, Mapping):
         return {str(key): _json_contract(item) for key, item in value.items()}
     if isinstance(value, (tuple, list)):

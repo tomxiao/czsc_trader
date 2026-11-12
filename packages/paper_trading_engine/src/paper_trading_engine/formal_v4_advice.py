@@ -17,6 +17,9 @@ from zoneinfo import ZoneInfo
 
 from dataflows import BarFrequency, Dataflows, DataRequest, EquityDataRequest, TimeInterval, EquityProduct, PreparePolicy, PrepareResult
 from dataflows.equity_data import sessions_from_metadata
+from execution_channels.daily_execution import DailyExecutionOutcome, INTERVAL_TARGET_TRIGGER
+from execution_channels.execution_intervals import execution_intervals
+from execution_channels.instruments import TimeInterval as ChannelInterval
 from strategy_manager import Qualification, StrategyRegistry
 from strategy_runtime import StrategyRelease, canonical_sha256
 from strategy_runtime.deployment import load_strategy_deployment
@@ -114,6 +117,7 @@ class FormalV4AdviceClient:
         self._lock = RLock()
         self._calendars = {}
         self._decision_cycles = {}
+        self._interval_policies = {}
 
     def decision_cycle_lock(self, account_id: str):
         with self._lock:
@@ -172,8 +176,6 @@ class FormalV4AdviceClient:
         _, release, candidate = self._account_release(account_id)
         inputs.validate_candidate(release.release_hash, candidate)
         inputs = replace(inputs, binding=inputs.binding.for_observations())
-        if forward and candidate.definition.execution_spec.decision_clock is not BarFrequency.DAILY:
-            raise ValueError('automatic live M30 requires a DFLS partial-session product; only DAILY is supported')
         path = self._path(account_id)
         value = inputs.to_dict()
         payload = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(',', ':'))
@@ -213,7 +215,7 @@ class FormalV4AdviceClient:
         return FormalV4Inputs.from_dict(json.loads(self._path(account_id).read_text(encoding='utf-8')))
 
     def register_recipe(self, account_id: str, inputs: FormalV4Inputs) -> str:
-        """Declare automatic DAILY preparation using explicit source/role/range inputs."""
+        """Declare automatic observation preparation with explicit source and role bindings."""
         if type(inputs) is not FormalV4Inputs:
             raise TypeError('forward preparation requires FormalV4Inputs')
         return self._register(account_id, inputs, forward=True)
@@ -288,7 +290,8 @@ class FormalV4AdviceClient:
                                 candidate.source_root, calendars, cutoff=cutoff)
         primary = next(parameters for role, parameters in items if role == 'bars')
         raw = recipe.execution_reference.parameters
-        raw = replace(raw, query=replace(raw.query, end=primary.query.end))
+        raw = replace(raw, query=replace(raw.query, end=primary.query.end,
+                                         completed_through=primary.query.completed_through))
         raw_request = EquityDataRequest(raw.instrument, raw.source, raw.query)
         return requests + (raw_request,), items, observations, ends
 
@@ -380,7 +383,7 @@ class FormalV4AdviceClient:
             raise ValueError('live execution calendar is unavailable')
         context = resolve_live_context(candidate, interval, calendar.dataframe, calendar.identity.metadata)
         prepared = prepare_equity_decision(self.dataflows, candidate, inputs.binding, inputs.strategy_requests,
-                                       interval, fee_rate=inputs.fee_rate, live=True,
+                                       interval, fee_rate=inputs.fee_rate, live=True, execution_interval=task.execution_interval,
                                        execution_reference=inputs.execution_reference.fetch(self.dataflows, interval,
                                            latency_seconds=candidate.definition.execution_spec.data_latency_seconds,
                                            as_of=cutoff),
@@ -388,6 +391,10 @@ class FormalV4AdviceClient:
         if (candidate.definition.execution_spec.decision_clock.value == BarFrequency.DAILY.value
                 and prepared.history.Date.iloc[-1] != task.decision_at - DAILY_CLOSE_DELAY):
             raise ValueError('daily decision requires complete preceding trading-session data')
+        previous = task.execution_interval.previous_window
+        if (candidate.definition.execution_spec.decision_clock is BarFrequency.M30
+                and previous is not None and prepared.history.Date.iloc[-1] != previous.end):
+            raise ValueError('30-minute decision requires the immediately preceding completed bar')
         if prior_decision is not None and prepared.data_identity != prior_decision.get('prepared_data_identity'):
             raise RuntimeError('rerun inputs differ from the current adopted decision')
         if recipe is not None or prior_decision is not None:
@@ -424,23 +431,35 @@ class FormalV4AdviceClient:
         # Permit-bound technical inspections exercise explicitly pinned scenarios.
         selection_cutoff = (date.fromisoformat(account['selection_data_cutoff'])
                             if self.inspection_permit is None else None)
-        for index, session in enumerate(sessions):
-            if daily and index == 0:
-                continue  # A preceding trading session is required, not a guessed calendar day.
-            periods = ((TimeInterval(session.segments[0].start, session.segments[-1].end),)
-                       if daily else session.bars(BarFrequency(rules.execution.decision_clock.value)))
-            for interval in periods:
-                # The independently fetched calendar describes future sessions.
-                # Its row availability is a research observation convention, not
-                # the publication time of the advance exchange calendar.
-                if (availability[session.session_date.isoformat()] > interval.start
-                        or (selection_cutoff is not None and session.session_date <= selection_cutoff)):
-                    continue
-                decision_at = sessions[index - 1].segments[-1].end + DAILY_CLOSE_DELAY if daily else interval.start
-                task_id = canonical_sha256({'account_id': account['account_id'],
-                                            'start': interval.start.isoformat(), 'end': interval.end.isoformat()})
-                next_decision_at = interval.end + DAILY_CLOSE_DELAY if daily else None
-                yield ScheduledDecision(task_id, interval, decision_at, next_decision_at)
+        release_hash = account['release_hash']
+        if release_hash not in self._interval_policies:
+            _, _, candidate = self._account_release(account['account_id'])
+            self._interval_policies[release_hash] = (
+                candidate.definition.execution_policy.settings.get('execution_trigger') == INTERVAL_TARGET_TRIGGER)
+        use_interval = self._interval_policies[release_hash]
+        frequency = BarFrequency(rules.execution.decision_clock.value)
+        cycles = execution_intervals(ChannelInterval(window.start, window.end)
+            for session in sessions for window in session.bars(frequency))
+        for cycle in cycles:
+            if daily and cycle.previous_window is None:
+                continue
+            window = TimeInterval(cycle.window.start, cycle.window.end)
+            session_date = window.start.astimezone(rules.timezone).date()
+            available = availability[session_date.isoformat()]
+            if available > window.start or (selection_cutoff is not None and session_date <= selection_cutoff):
+                continue
+            if daily:
+                decision_at = cycle.start + DAILY_CLOSE_DELAY
+            elif use_interval:
+                decision_at = max(cycle.start, available)
+            else:
+                decision_at = window.start
+            if decision_at > window.start:
+                continue
+            task_id = canonical_sha256({'account_id': account['account_id'],
+                                        'start': window.start.isoformat(), 'end': window.end.isoformat()})
+            next_decision_at = window.end + DAILY_CLOSE_DELAY if daily and not use_interval else None
+            yield ScheduledDecision(task_id, window, decision_at, next_decision_at, cycle, use_interval)
 
     def _validate_decision_time(self, account_id, interval, observed_at, *, allow_expired=False):
         account = self.store.virtual_account(account_id)
@@ -489,9 +508,12 @@ class FormalV4ScheduleProvider:
     def _adopted(self, account_id, task):
         rules = self.client.store.equity_account_rules(account_id)
         session = task.interval.start.astimezone(rules.timezone).date().isoformat()
-        row = self.client.store.adopted_decision(account_id, session)
+        row = self.client.store.adopted_execution_decision(account_id,
+            ChannelInterval(task.interval.start, task.interval.end))
         if row is None:
-            return None
+            row = self.client.store.adopted_decision(account_id, session)
+            if row is None or row['payload'].get('equity_execution_interval') is not None:
+                return None
         payload = row["payload"]
         if (payload.get("equity_execution_interval") is None
                 and row["state_reason"] in {"V4_BINDING_CUTOVER", "NO_ORDER"}
@@ -552,20 +574,23 @@ class FormalV4ScheduleProvider:
                 except ValueError as exc:
                     raise RuntimeError(str(exc)) from exc
             reused = outcome == 'DECISION_REUSED'
+            cycle = task.cycle_record()
             result = {
                 'status': outcome,
                 'account_id': account_id,
                 'channel_account_id': account['channel_account_id'],
                 'release_hash': account['release_hash'],
-                'execution_interval': interval,
+                'execution_interval': cycle['validity'] if task.use_execution_interval else interval,
                 'prepared_data_identity': decision['prepared_data_identity'],
                 'reused_decision': reused,
-                **task.cycle_record(),
+                **cycle,
                 **{key: decision[key] for key in (
                     'decision_id', 'signal_date', 'valid_session', 'action',
                     'target_quantity', 'execution_reference_price',
                 )},
             }
+            if task.use_execution_interval:
+                result['submission_window'] = interval
             if previous is not None and not reused:
                 result.update(superseded_decision_id=previous['decision_id'], superseded_intent_ids=list(superseded))
             if decision.get('execution_disposition'):
@@ -579,6 +604,10 @@ class FormalV4ScheduleProvider:
             return result
 
     def _adopt(self, account_id, task, observed_at, *, source, actor, clock=None):
+        if task.use_execution_interval:
+            previous = self.client.store.previous_execution(account_id, interval=task.execution_interval)
+            if previous is not None and previous.outcome is DailyExecutionOutcome.UNRESOLVED:
+                raise RuntimeError('scheduled decision was not adopted; previous execution requires reconciliation')
         prepared = self.client.prepare_interval(account_id, task.interval, observed_at=observed_at)
         self.client._require_running(account_id)
         self.client.store.settle_equity_receivables(account_id, at=observed_at)

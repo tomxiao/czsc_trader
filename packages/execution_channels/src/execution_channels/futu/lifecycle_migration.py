@@ -273,3 +273,24 @@ def migrate_lifecycle(connection: sqlite3.Connection, now: str) -> None:
     connection.execute("""CREATE TRIGGER retired_instance_irreversible BEFORE UPDATE OF run_state ON virtual_accounts
         WHEN OLD.run_state='RETIRED' AND NEW.run_state IS NOT 'RETIRED'
         BEGIN SELECT RAISE(ABORT,'retired strategy instance cannot reactivate'); END""")
+
+
+def migrate_execution_interval_adoptions(connection: sqlite3.Connection) -> None:
+    """Expand adoption identity without changing decision, intent or fill evidence."""
+    if 'window_start' in _columns(connection, 'decision_adoptions'):
+        return
+    from .execution_adoptions import adoption_window
+    rows = _rows(connection, """SELECT a.account_id, a.valid_session, a.decision_id, d.payload
+        FROM decision_adoptions a LEFT JOIN decisions d
+        ON d.account_id=a.account_id AND d.decision_id=a.decision_id""")
+    records = [(row['account_id'], row['valid_session'], row['decision_id'],
+                *adoption_window(json.loads(row['payload']))) for row in rows]
+    connection.execute("ALTER TABLE decision_adoptions RENAME TO previous_decision_adoptions")
+    connection.execute("""CREATE TABLE decision_adoptions (
+        account_id TEXT NOT NULL, valid_session TEXT NOT NULL, decision_id TEXT NOT NULL,
+        window_start TEXT NOT NULL DEFAULT '', window_end TEXT NOT NULL DEFAULT '',
+        PRIMARY KEY(account_id,valid_session,window_start,window_end))""")
+    connection.executemany("INSERT INTO decision_adoptions VALUES(?,?,?,?,?)", records)
+    connection.execute("DROP TABLE previous_decision_adoptions")
+    connection.execute("""CREATE INDEX idx_adoption_window
+        ON decision_adoptions(account_id,window_end,window_start)""")

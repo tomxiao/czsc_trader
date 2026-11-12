@@ -34,7 +34,9 @@ def session_record(session: TradingSession):
 def equity_metadata(request, sessions, *, availability_basis: str):
     """Build explicit source declarations; validation still checks their contents."""
     p = request.parameters
+    cutoff = p.query.completed_through
     return {
+        **({"completed_through": cutoff.isoformat()} if cutoff is not None else {}),
         "vendor": p.source.provider, "source_revision": p.source.revision,
         "instrument": asdict(p.instrument), "adjustment": p.query.adjustment.value,
         "price_basis_id": ":".join((p.source.provider, p.source.revision,
@@ -96,7 +98,13 @@ def validate_equity_frame(frame, request, metadata):
             if (method is AcquisitionMethod.PROVIDER_RAW) != (p.query.adjustment.value == "none"):
                 raise DataContractError("price acquisition method differs from adjustment")
         starts = _timestamps(frame, "BarStart")
-        expected = tuple(bar for s in sessions for bar in s.bars(p.query.frequency))
+        cutoff = p.query.completed_through
+        if metadata.get('completed_through') != (None if cutoff is None else cutoff.isoformat()):
+            raise DataContractError('published bar cutoff differs from the request')
+        expected = tuple(bar for s in sessions for bar in s.bars(p.query.frequency)
+                         if cutoff is None or bar.end <= cutoff)
+        if cutoff is not None and (not expected or expected[-1].end != cutoff):
+            raise DataContractError('partial-session cutoff must match a completed calendar bar')
         if tuple(dates) != tuple(pd.Timestamp(b.end) for b in expected) or tuple(starts) != tuple(pd.Timestamp(b.start) for b in expected):
             raise IncompleteDataError("equity bars differ from the independent session grid")
         if (available < dates).any():

@@ -197,9 +197,15 @@ class HistoricalReplayChannel:
             receivable=self.executor.receivable, valuation_price=valuation_price, orders=tuple(effects))
 
     def previous_daily_execution(self, account_id: str, *, at: datetime) -> PreviousDailyExecution | None:
+        index = bisect_right(self._ends, at)
+        return self.previous_execution(account_id, at=at,
+            previous_end=self._ends[index - 1] if index else None)
+
+    def previous_execution(self, account_id: str, *, at: datetime,
+                           previous_end: datetime | None) -> PreviousDailyExecution | None:
         self._account(account_id)
         if self._clock != at or self._pending is not None or self._failed:
-            raise ValueError('daily execution history requires the current confirmed channel clock')
+            raise ValueError('execution history requires the current confirmed channel clock')
         prior = next((row for row in reversed(self.executor.rows['decisions'])
                       if row['signal_status'] == 'EVALUATED'), None)
         if prior is None:
@@ -211,12 +217,11 @@ class HistoricalReplayChannel:
                     break
                 if order['status'] == 'FILLED':
                     filled += order['quantity']
-        index = bisect_right(self._ends, at)
         entry_cash = prior['plan']['evidence'].get('entry_cash')
         active = self.executor.position_feedback.active if entry_cash is not None else None
         return PreviousDailyExecution(prior['target'],
             daily_execution_outcome(prior['quantity'], filled, terminal=True),
-            index > 0 and prior['execution_end'] == self._ends[index - 1],
+            prior['execution_end'] == previous_end,
             None if entry_cash is None else Decimal(entry_cash),
             Decimal(0) if active is None else Decimal(str(active.buy_cost)))
 

@@ -24,10 +24,11 @@ from paper_store_support import new_paper_store
 _NATIVE_ACCOUNT_SEEDS = {}
 
 
-def native_account(tmp_path, market, computation=StrategyComputation.STATEFUL_STEP, *, etf=False, intraday=False):
+def native_account(tmp_path, market, computation=StrategyComputation.STATEFUL_STEP, *, etf=False, intraday=False,
+                   unfilled_morning=False):
     context, request, products, _ = native_fixture(tmp_path, market, computation, etf=etf)
     if intraday:
-        context, request, products = intraday_inputs(context, request, products)
+        context, request, products = intraday_inputs(context, request, products, unfilled_morning=unfilled_morning)
     workspace = tmp_path / '.tmp/strategy-inspection/native-pte'
     isolated = workspace / 'repository'
     isolated.mkdir(parents=True)
@@ -153,6 +154,18 @@ def test_daily_target_next_pte_plan_uses_confirmed_fill_result(tmp_path, partial
 
         path = store.path
         store.close()
+        if not partially_filled:
+            import sqlite3
+            with sqlite3.connect(path) as connection:
+                connection.executescript("""
+                    ALTER TABLE decision_adoptions RENAME TO current_adoptions;
+                    CREATE TABLE decision_adoptions (
+                        account_id TEXT NOT NULL, valid_session TEXT NOT NULL, decision_id TEXT NOT NULL,
+                        PRIMARY KEY(account_id,valid_session));
+                    INSERT INTO decision_adoptions SELECT account_id,valid_session,decision_id FROM current_adoptions;
+                    DROP TABLE current_adoptions;
+                    UPDATE settings SET value='9' WHERE key='runtime_database_schema_version';
+                """)
         store = PaperStore(path, inspection_permit=execution_permit(permit))
         following = prepared_at(context, request, products, 1)
         previous = store.previous_daily_execution('native', previous_session=following.available_through)
@@ -242,7 +255,7 @@ def budget_request(request):
         definition=replace(request.candidate.definition, execution_policy=policy)))
 
 
-def intraday_inputs(context, request, products):
+def intraday_inputs(context, request, products, *, unfilled_morning=False):
     from dataclasses import replace
     from zoneinfo import ZoneInfo
     from dataflows import BarFrequency, ProviderBinding, ProviderConfig, ProviderKey, TradingSession
@@ -260,8 +273,13 @@ def intraday_inputs(context, request, products):
     grid = [bar for session in sessions for bar in session.bars(BarFrequency.M30)]
     bars = products[EquityProduct.BARS].iloc[[0]*len(grid)].copy().reset_index(drop=True)
     bars['BarStart'], bars['Date'], bars['AvailableDate'] = [b.start for b in grid], [b.end for b in grid], [b.end for b in grid]
+    if unfilled_morning:
+        morning_end = sessions[0].segments[0].end
+        bars.loc[bars.Date.eq(morning_end), ['Open', 'High', 'Low', 'Close']] = 10.2
     constraints = products[EquityProduct.TRADING_FACTS].iloc[[0]*len(grid)].copy().reset_index(drop=True)
-    constraints['Date'], constraints['AvailableDate'] = [b.start for b in grid], [b.start for b in grid]
+    constraints['Date'] = [b.start for b in grid]
+    constraints['AvailableDate'] = [session.segments[0].start
+        for session in sessions for _ in session.bars(BarFrequency.M30)]
     products = {**products, EquityProduct.BARS:bars, EquityProduct.TRADING_FACTS:constraints}
     def fetch(query):
         metadata = equity_metadata(query, tuple(sessions), availability_basis='FIXTURE_BAR_CLOSE')
@@ -273,7 +291,16 @@ def intraday_inputs(context, request, products):
         if query.parameters.query.product is EquityProduct.BARS:
             metadata['acquisition_method'] = ('PROVIDER_ADJUSTED'
                 if query.parameters.query.adjustment.value == 'hfq' else 'PROVIDER_RAW')
-        return products[query.parameters.query.product].copy(deep=True), metadata
+        frame = products[query.parameters.query.product]
+        p = query.parameters
+        if p.query.completed_through is not None:
+            frame = frame.loc[frame.Date <= p.query.completed_through]
+        if p.query.end != sessions[-1].session_date:
+            days = frame.Date.dt.tz_convert(p.instrument.timezone).dt.date
+            frame = frame.loc[(days >= p.query.start) & (days <= p.query.end)]
+        metadata['sessions'] = [session_record(session) for session in sessions
+                                if p.query.start <= session.session_date <= p.query.end]
+        return frame.copy(deep=True), metadata
     source = request.sources.bars
     providers = ProviderConfig(bindings={}, equity_bindings={ProviderKey(product,request.candidate.instrument.market,source):
         ProviderBinding(source.provider,source.revision,fetch) for product in EquityProduct})
@@ -288,3 +315,106 @@ def intraday_inputs(context, request, products):
     with ResearchExecutionSession(context,experiment=request.experiment) as execution:
         request = context.evaluation.prepare(request,execution=execution).request
     return context,request,products
+
+
+
+@pytest.mark.parametrize("filled", [False, True])
+def test_m30_lunch_decision_uses_same_interval_and_confirmed_outcome(tmp_path, monkeypatch, filled):
+    from dataclasses import replace
+    from datetime import datetime
+    from types import SimpleNamespace
+    from zoneinfo import ZoneInfo
+
+    from czsc_trader.application import EquityInspectionReplay
+    from czsc_trader.application.equity_inspection import replay_account
+    from execution_channels.daily_execution import INTERVAL_TARGET_TRIGGER
+    from execution_channels.instruments import TimeInterval as ChannelInterval
+    from paper_trading_engine.formal_v4_advice import FormalV4AdviceClient, FormalV4Inputs, FormalV4ScheduleProvider
+    from strategy_manager.freeze_contracts import InspectionCoordinate
+    from strategy_runtime import ExecutionPolicy
+
+    context, request, products, store, permit, channel = native_account(
+        tmp_path, MarketId.CN, intraday=True, unfilled_morning=not filled)
+    request = replace_strategy(request, """from strategy_runtime import AccountDecision, AccountStepResult, StateRecord
+def step(ctx, state):
+    return AccountStepResult(AccountDecision.from_facts(.5, 'target', facts={'weight': .5},
+        next_watch='next bar'), cycle_values=StateRecord())
+""")
+    request = replace(request, candidate=replace(request.candidate,
+        definition=replace(request.candidate.definition, execution_policy=ExecutionPolicy(
+            'TARGET_POSITION', {'execution_trigger': INTERVAL_TARGET_TRIGGER}))))
+    zone = ZoneInfo('Asia/Shanghai')
+    morning = next(TimeInterval(row.BarStart.to_pydatetime(), row.Date.to_pydatetime())
+        for row in products[EquityProduct.BARS].itertuples()
+        if row.BarStart >= request.window.start and row.Date.tz_convert(zone).hour == 11
+        and row.Date.tz_convert(zone).minute == 30)
+    afternoon = TimeInterval(morning.end + timedelta(minutes=90), morning.end + timedelta(minutes=120))
+    raw = raw_binding(context.data, request.input_binding)
+    candidate = request.candidate
+    release = SimpleNamespace(release_hash='a'*64)
+
+    def provider_for(current_store):
+        client = FormalV4AdviceClient(repo_root=permit.isolated_repository, store=current_store, dataflows=context.data,
+                                      data_dir=permit.workspace / 'runtime-data', inspection_permit=permit)
+        monkeypatch.setattr(client, '_account_release',
+                            lambda account_id: (current_store.virtual_account(account_id), release, candidate))
+        return client, FormalV4ScheduleProvider(client, AccountEngine(current_store, client))
+
+    try:
+        client, provider = provider_for(store)
+        client.register_recipe('native', FormalV4Inputs(release.release_hash, request.input_binding, request.fee_rate, raw))
+        morning_task = provider.due_decision(store.virtual_account('native'), morning.start)
+        assert morning_task.interval == morning
+        provider.run_scheduled('native', morning_task, morning.start)
+        first = store.adopted_execution_decision('native', ChannelInterval(morning.start, morning.end))
+        assert first['payload']['strategy_output']['execution_plan']['execution_trigger'] == 'INITIAL_TARGET'
+        execution = EquityExecution(store, channel, now=lambda: morning.start)
+        execution.reconcile(cash=Decimal(str(request.initial_cash)), quantity=0, account_id='native')
+        order, = execution.submit_pending('native')
+
+        during_lunch = morning.end + timedelta(minutes=5)
+        task = provider.due_decision(store.virtual_account('native'), during_lunch)
+        assert task.interval == afternoon and task.execution_interval.start == morning.end
+        assert task.execution_interval.previous_window == ChannelInterval(morning.start, morning.end)
+        assert task.cycle_record()['validity']['start'] == morning.end.isoformat()
+        with pytest.raises(RuntimeError, match='not adopted|pending|等待对账'):
+            provider.run_scheduled('native', task, during_lunch)
+
+        quantity = store.account_order(order)['quantity']
+        execution.apply_report(EquityOrderReport(order, quantity if filled else 0,
+            Decimal('10') if filled else Decimal(0),
+            morning.end - timedelta(minutes=1) if filled else morning.end,
+            'FILLED_ALL' if filled else 'CANCELLED_ALL'))
+        path = store.path
+        store.close()
+        store = PaperStore(path, inspection_permit=execution_permit(permit))
+        client, provider = provider_for(store)
+        provider.run_scheduled('native', task, during_lunch)
+        second = store.adopted_execution_decision('native', ChannelInterval(afternoon.start, afternoon.end))
+        assert second['valid_session'] == first['valid_session'] and second['decision_id'] != first['decision_id']
+        plan = second['payload']['strategy_output']['execution_plan']
+        assert plan['execution_trigger'] == ('UNCHANGED_TARGET' if filled else 'PREVIOUS_ZERO_FILL')
+        assert datetime.fromisoformat(plan['decision_at']) == during_lunch
+        assert bool(second['payload']['orders']) is (not filled)
+        assert second['payload']['decision_cycle'] == task.cycle_record()
+        assert len(store.account_orders('native')) == 1
+        provider.run_scheduled('native', task, during_lunch)
+        assert len(store.account_decisions('native')) == 2
+        assert client._forward_requests(client.recipe('native'), afternoon, candidate, cutoff=during_lunch)[0][0].parameters.query.completed_through == morning.end
+
+        replay = EquityInspectionReplay(InspectionCoordinate('main', 'standard'), request.input_binding,
+            request.requests(context.execution_spec), TimeInterval(morning.start, afternoon.end),
+            request.initial_cash, request.fee_rate, execution_reference=raw)
+        facts = replay_account(candidate, context.data, replay)['facts']
+        decisions = facts['decisions']
+        assert len(decisions) == 2
+        assert datetime.fromisoformat(decisions[1]['decision_at']) == morning.end
+        assert decisions[1]['plan']['evidence']['execution_interval'] == plan['execution_interval']
+        assert decisions[1]['plan']['evidence']['execution_trigger'] == plan['execution_trigger']
+        assert decisions[1]['target'] == plan['target'] == .5
+        planned = [quantity, *(order['quantity'] for order in second['payload']['orders'])]
+        assert [order['quantity'] for order in facts['orders']] == planned
+        if filled:
+            assert store.virtual_account('native')['quantity'] == facts['account_points'][-1]['quantity']
+    finally:
+        store.close()

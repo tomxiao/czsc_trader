@@ -152,6 +152,8 @@ def versioned_equity_bindings(*, instrument: InstrumentId, source: SourceRef,
             original = bars if query.product is EquityProduct.BARS else trading_facts
             indexed_days = row_days[key][0 if query.product is EquityProduct.BARS else 1]
             selected = select(original, indexed_days, query.start, query.end)
+        if query.completed_through is not None:
+            selected = selected.loc[selected.Date <= query.completed_through]
         selected = pd.DataFrame(selected, copy=True).reset_index(drop=True)
         # The complete source was validated at admission and the indexed local-
         # date slice preserves the exact grid. Managed publication independently

@@ -165,7 +165,7 @@ class RetirementStore:
                 'settlement_at': None if session.settlement_at is None else session.settlement_at.isoformat(),
                 'orders': [{'side': 'SELL', 'quantity': quantity, 'order_type': 'MARKET', 'limit_price': 0.}]}
             payload['strategy']['version'] = account['strategy_version']
-            prior = self._connection.execute('SELECT decision_id FROM decision_adoptions WHERE account_id=? AND valid_session=?',
+            prior = self._connection.execute('SELECT decision_id FROM decision_adoptions WHERE account_id=? AND valid_session=? ORDER BY window_start DESC LIMIT 1',
                                               (account_id, day)).fetchone()
             if prior is not None:
                 current = self.account_decision(account_id, prior[0])
@@ -177,8 +177,11 @@ class RetirementStore:
                 "VALUES(?,?,?,?,?,?,'NOT_APPLICABLE')", (account_id, decision_id, json.dumps(payload), day, day,
                                                         datetime.now(timezone.utc).isoformat()))
             self._append_decision_state(account_id, decision_id, DecisionState.PENDING, 'OPERATOR_RETIREMENT')
-            self._connection.execute('INSERT INTO decision_adoptions(account_id,valid_session,decision_id) VALUES(?,?,?) '
-                'ON CONFLICT(account_id,valid_session) DO UPDATE SET decision_id=excluded.decision_id', (account_id, day, decision_id))
+            from .execution_adoptions import adoption_window
+            self._connection.execute(
+                'INSERT INTO decision_adoptions(account_id,valid_session,decision_id,window_start,window_end) VALUES(?,?,?,?,?) '
+                'ON CONFLICT(account_id,valid_session,window_start,window_end) DO UPDATE SET decision_id=excluded.decision_id',
+                (account_id, day, decision_id, *adoption_window(payload)))
             intent = self.create_account_intent(account_id=account_id, decision_id=decision_id, order_sequence=0,
                 symbol=account['symbol'], side='SELL', quantity=quantity, limit_price=0, valid_session=day,
                 fee_rate=session.fee_rate, order_type='MARKET')

@@ -12,7 +12,9 @@ from strategy_runtime.replay_contracts import StrategyComputation
 from strategy_runtime.strategy_performance import (StrategyPerformanceBudget, StrategyPerformanceExceeded,
                                                     _StrategyPerformanceProbe)
 from execution_channels.historical import HistoricalReplayChannel, HistoricalDecision, AdoptionStatus
-from execution_channels.daily_execution import DAILY_TARGET_TRIGGER
+from execution_channels.daily_execution import INTERVAL_TARGET_TRIGGER, TARGET_TRIGGERS
+from execution_channels.execution_intervals import execution_intervals
+from execution_channels.instruments import TimeInterval as ChannelInterval
 from execution_channels.historical.input_facts import normalize_constraint_times
 from execution_channels.state import AccountStrategyState as ChannelStrategyState, StateRecord as ChannelStateRecord
 from .ec_boundary import (execution_instrument, execution_plan, strategy_budget, strategy_events,
@@ -61,7 +63,15 @@ def run_replay(prepared, candidate, executor, *, constraints, start, end, fee_ra
     # The stateful strategy validates its returned records inside account_step.
     # Batch proposals synthesize their state and need the schema check here.
     batch = definition.computation is StrategyComputation.BATCH_HISTORY
-    daily_trigger = definition.execution_policy.settings.get('execution_trigger') == DAILY_TARGET_TRIGGER
+    trigger = definition.execution_policy.settings.get('execution_trigger')
+    target_trigger = trigger in TARGET_TRIGGERS
+    cycles = {(cycle.window.start, cycle.window.end): cycle for cycle in execution_intervals(
+        ChannelInterval(a, b) for (a, b), _ in prepared._calendar_intervals)} if target_trigger else {}
+    interval_policy = trigger == INTERVAL_TARGET_TRIGGER
+    if interval_policy:
+        calendar_availability = {(a, b): prepared._sessions[index][1]
+                                 for (a, b), index in prepared._calendar_intervals}
+        bar_ready = dict(zip(data.ends, data.ready_at, strict=True))
     projected_channel_state = None
     decisions = 0
     started = perf_counter()
@@ -73,9 +83,16 @@ def run_replay(prepared, candidate, executor, *, constraints, start, end, fee_ra
                 if constraint is None or constraint['AvailableDate'] > a:
                     raise ValueError('trading constraint unavailable at decision')
                 interval = TimeInterval(a, b)
-                observation = engine.observation(interval)
-                channel.advance(a)
-                snapshot = channel.snapshot(owner, at=a, observed_through=observation[0].observed_through)
+                cycle = cycles.get((a, b))
+                decision_at = a
+                if interval_policy and cycle.previous_window is not None:
+                    decision_at = max(cycle.start, constraint['AvailableDate'], calendar_availability[a, b],
+                                      bar_ready[cycle.previous_window.end])
+                    if decision_at > a:
+                        raise ValueError('completed decision input unavailable at submission start')
+                observation = engine.observation(interval, decision_at=decision_at)
+                channel.advance(decision_at)
+                snapshot = channel.snapshot(owner, at=decision_at, observed_through=observation[0].observed_through)
                 # A completed interval already supplied the confirmed strategy
                 # state for the next decision. Moving the clock and taking a
                 # snapshot can settle cash but leave that strategy state intact.
@@ -85,18 +102,23 @@ def run_replay(prepared, candidate, executor, *, constraints, start, end, fee_ra
                 result = engine.propose(interval, strategy_portfolio(snapshot.portfolio), account, state,
                     strategy_feedback(snapshot.position), owner=owner, fee_rate=fee_rate,
                     budget=strategy_budget(snapshot.budget), events=strategy_events(snapshot.events),
-                    next_event_cursor=snapshot.next_event_cursor, binding=binding)
+                    next_event_cursor=snapshot.next_event_cursor, binding=binding, decision_at=decision_at)
                 if batch and not result.suppressed:
                     definition.state_schema.validate_record(result.proposal.account, scope='account')
                     if result.proposal.cycle_values is not None:
                         definition.state_schema.validate_record(result.proposal.cycle_values, scope='cycle')
+                previous_execution = None
+                if target_trigger:
+                    previous_window = cycle.previous_window
+                    previous_execution = channel.previous_execution(owner, at=decision_at,
+                        previous_end=None if previous_window is None else previous_window.end)
                 plan = execution_plan(result, account, definition.execution_spec, owner=owner,
                     implementation=implementation, fee_rate=fee_rate,
                     sell_remainder_policy=constraint['SellRemainderPolicy'],
                     reference_price=float(observation[2].last()['Close']),
                     execution_policy=definition.execution_policy, cycle_budget=snapshot.budget,
                     locked_quantity=snapshot.locked_quantity,
-                    previous_daily_execution=channel.previous_daily_execution(owner, at=a) if daily_trigger else None)
+                    previous_daily_execution=previous_execution, execution_interval=cycle)
                 proposal = HistoricalDecision(plan, snapshot.strategy.revision,
                     ChannelStateRecord.from_dict(result.proposal.account.to_dict()),
                     None if result.proposal.cycle_values is None else ChannelStateRecord.from_dict(result.proposal.cycle_values.to_dict()),
