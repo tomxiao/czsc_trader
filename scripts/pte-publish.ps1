@@ -2,7 +2,8 @@
 param(
     [Parameter(Mandatory = $true, Position = 0)]
     [ValidatePattern('^v[0-9]+(?:\.[0-9]+){2}(?:[-+][A-Za-z0-9.-]+)?$')]
-    [string]$Tag
+    [string]$Tag,
+    [switch]$OfflineUpgrade
 )
 
 Set-StrictMode -Version Latest
@@ -35,6 +36,17 @@ if ($LASTEXITCODE -ne 0 -or $BuildManifest.release_id -ne $Tag) {
 }
 if ($BuildManifest.git_commit -ne $TagCommit) {
     throw "PTE build commit differs from tag $Tag"
+}
+
+function Test-PteReleaseHealthy {
+    try {
+        $Health = Invoke-RestMethod -Uri 'http://127.0.0.1:8080/api/health' -TimeoutSec 2
+        return ($Health.runtime -eq 'RUNNING' -and $Health.watchdog_healthy -eq $true -and
+            $Health.release.release_id -eq $Tag -and $Health.release.git_commit -eq $TagCommit)
+    }
+    catch {
+        return $false
+    }
 }
 
 Push-Location $RepoRoot
@@ -76,11 +88,45 @@ try {
     if (-not (Test-Path -LiteralPath $ReleaseCli -PathType Leaf)) {
         throw "Published PTE release CLI is missing: $ReleaseCli"
     }
+    $AlreadyRunning = $false
+    if ($OfflineUpgrade) {
+        $AlreadyRunning = Test-PteReleaseHealthy
+        if (-not $AlreadyRunning) {
+            $ServiceName = 'CZSC-PTE-Watchdog'
+            Stop-Service -Name $ServiceName -NoWait
+            (Get-Service -Name $ServiceName).WaitForStatus('Stopped', [TimeSpan]::FromSeconds(60))
+            & $ReleaseCli migrate-database --runtime-root $ProductionRoot --release $Tag
+            if ($LASTEXITCODE -ne 0) {
+                throw "PTE offline database migration failed for $Tag"
+            }
+        }
+    }
     & $ReleaseCli verify `
         --runtime-root $ProductionRoot `
         --release $Tag
     if ($LASTEXITCODE -ne 0) {
         throw "PTE publication preflight failed for $Tag with exit code $LASTEXITCODE"
+    }
+
+    if ($OfflineUpgrade) {
+        if (-not $AlreadyRunning) {
+            & $ReleaseCli activate --runtime-root $ProductionRoot --release $Tag
+            if ($LASTEXITCODE -ne 0) {
+                throw "PTE activation failed for $Tag"
+            }
+            Start-Service -Name $ServiceName
+            $Deadline = [DateTime]::UtcNow.AddSeconds(60)
+            do {
+                if (Test-PteReleaseHealthy) {
+                    Write-Host "PTE release is active and healthy: $Tag"
+                    return
+                }
+                Start-Sleep -Seconds 1
+            } while ([DateTime]::UtcNow -lt $Deadline)
+            throw "PTE release did not become healthy after offline upgrade: $Tag"
+        }
+        Write-Host "PTE release is already active and healthy: $Tag"
+        return
     }
 
     $ActivePath = Join-Path $ProductionRoot 'shared\config\active-release.json'

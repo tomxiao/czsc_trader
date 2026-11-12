@@ -13,6 +13,7 @@ from paper_trading_engine.release_cli import (
     PTE_SOURCE_DISTRIBUTIONS,
     build_release,
     load_built_release,
+    migrate_runtime_database,
     publish_release,
     verify_release_configuration,
 )
@@ -274,6 +275,43 @@ def release_verification_runtime(pte_frozen, new_store, tmp_path):
     store = new_store(shared / "state/runtime.db")
     yield runtime, version, store
     store.close()
+
+
+def test_offline_release_migrates_before_readonly_preflight(release_verification_runtime):
+    from execution_channels.futu.store import RUNTIME_DATABASE_SCHEMA_VERSION
+    from paper_trading_engine.release_cli import _database_schema_version, _verify_runtime_configuration
+    from paper_trading_engine.runtime_lock import RuntimeAlreadyOwnedError, RuntimeDatabaseLock
+
+    runtime, _, store = release_verification_runtime
+    store.close()
+    shared = runtime / "shared"
+    database = shared / "state/runtime.db"
+    previous = 9
+    with sqlite3.connect(database) as connection:
+        connection.execute("DROP TABLE decision_adoptions")
+        connection.execute("""CREATE TABLE decision_adoptions (
+            account_id TEXT NOT NULL, valid_session TEXT NOT NULL, decision_id TEXT NOT NULL,
+            PRIMARY KEY(account_id, valid_session))""")
+        connection.execute("UPDATE settings SET value=? WHERE key='runtime_database_schema_version'", (str(previous),))
+    with RuntimeDatabaseLock(database):
+        with pytest.raises(RuntimeAlreadyOwnedError):
+            migrate_runtime_database(runtime, "v0.6.0")
+    assert _database_schema_version(database) == previous
+    assert migrate_runtime_database(runtime, "v0.6.0") == {
+        "previous_schema": previous, "current_schema": RUNTIME_DATABASE_SCHEMA_VERSION,
+    }
+    backup, = (database.parent / "backups").glob("runtime-prestart-*.db")
+    assert _database_schema_version(backup) == previous
+    assert _verify_runtime_configuration(
+        runtime / "releases/v0.6.0", shared / "data", database, shared / "config",
+    ) == {"accounts": 0, "releases": []}
+    with sqlite3.connect(database) as connection:
+        columns = {row[1] for row in connection.execute("PRAGMA table_info(decision_adoptions)")}
+    assert {"window_start", "window_end"} <= columns
+    assert migrate_runtime_database(runtime, "v0.6.0") == {
+        "previous_schema": RUNTIME_DATABASE_SCHEMA_VERSION, "current_schema": RUNTIME_DATABASE_SCHEMA_VERSION,
+    }
+    assert list(backup.parent.glob("runtime-prestart-*.db")) == [backup]
 
 
 # Independent risk: PTE22; responsibility-level assertions.

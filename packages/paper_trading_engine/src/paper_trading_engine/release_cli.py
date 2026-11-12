@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 from .ec_boundary import initial_account_record
 
+from contextlib import closing
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import json
@@ -40,9 +41,12 @@ from .runtime_release import (
     service_host_runtime_dependencies,
     tree_sha256,
 )
+from .runtime_lock import RuntimeDatabaseLock
 from execution_channels.futu.store import (
+    PaperStore,
     RUNTIME_DATABASE_COMPATIBLE_VERSIONS,
     RUNTIME_DATABASE_SCHEMA_VERSION,
+    backup_runtime_database,
 )
 from .watchdog import health_payload_is_healthy
 
@@ -970,6 +974,29 @@ def _require_database_compatibility(release, database: Path) -> int:
     return database_schema
 
 
+def migrate_runtime_database(runtime_root: Path, release_id: str) -> dict[str, object]:
+    """Upgrade an offline runtime database using the target release's EC migration."""
+    release = load_release(runtime_root, release_id)
+    target = release.manifest["database_schema"]["current"]
+    if target != RUNTIME_DATABASE_SCHEMA_VERSION:
+        raise RuntimeError("PTE database migration must run using the target release CLI")
+    database = release.runtime_root / "shared" / "state" / "runtime.db"
+    if not database.is_file():
+        raise RuntimeError("PTE database migration requires an existing runtime database")
+    with RuntimeDatabaseLock(database):
+        previous = _require_database_compatibility(release, database)
+        if previous > target:
+            raise RuntimeError("PTE database migration only supports schema upgrades")
+        if previous < target:
+            backup_runtime_database(database)
+            with closing(PaperStore(database)):
+                pass
+        current = _database_schema_version(database)
+        if current != target:
+            raise RuntimeError(f"PTE database migration produced schema {current}, expected {target}")
+    return {"previous_schema": previous, "current_schema": current}
+
+
 def _verify_native_account(client, account_id: str) -> str:
     """Check a persisted V4 binding without fetching or preparing inputs."""
     from execution_channels.futu.equity_account_state import load_document, validate_document, position_from_dict
@@ -1294,10 +1321,10 @@ def build_parser() -> argparse.ArgumentParser:
     publish_host.add_argument("--host-version", required=True)
     publish_host.add_argument("--python", type=Path, default=Path(sys.executable))
     publish_host.add_argument("--uv", type=Path)
-    for action in ("activate", "verify", "deploy", "rollback", "status"):
+    for action in ("activate", "verify", "migrate-database", "deploy", "rollback", "status"):
         leaf = actions.add_parser(action)
         leaf.add_argument("--runtime-root", required=True, type=Path)
-        if action in {"activate", "verify", "deploy"}:
+        if action in {"activate", "verify", "migrate-database", "deploy"}:
             leaf.add_argument("--release", required=True)
         if action in {"deploy", "rollback"}:
             leaf.add_argument("--wait", type=float, default=60.0)
@@ -1342,6 +1369,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             result = activate_release(args.runtime_root, args.release)
         elif args.action == "verify":
             result = verify_release_configuration(args.runtime_root, args.release)
+        elif args.action == "migrate-database":
+            result = migrate_runtime_database(args.runtime_root, args.release)
         elif args.action == "deploy":
             result = deploy_release(
                 args.runtime_root,
