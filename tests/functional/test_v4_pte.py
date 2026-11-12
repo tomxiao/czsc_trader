@@ -402,6 +402,11 @@ def step(ctx, state):
         assert len(store.account_decisions('native')) == 2
         assert client._forward_requests(client.recipe('native'), afternoon, candidate, cutoff=during_lunch)[0][0].parameters.query.completed_through == morning.end
 
+        next_open = next(row.BarStart.to_pydatetime() for row in products[EquityProduct.BARS].itertuples()
+                         if row.BarStart.tz_convert(zone).date() > morning.start.astimezone(zone).date())
+        next_task = provider.due_decision(store.virtual_account('native'), next_open)
+        assert type(next_task.decision_at) is datetime and next_task.decision_at == next_open
+
         replay = EquityInspectionReplay(InspectionCoordinate('main', 'standard'), request.input_binding,
             request.requests(context.execution_spec), TimeInterval(morning.start, afternoon.end),
             request.initial_cash, request.fee_rate, execution_reference=raw)

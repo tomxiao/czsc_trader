@@ -424,7 +424,7 @@ class FormalV4AdviceClient:
             fetched = self._calendar_products(recipe, observed_at)['sessions']
         if not fetched.ready or (recipe is None and fetched.identity.content_sha256 != inputs.binding.expected_identities['sessions']):
             raise ValueError('V4 schedule calendar is unavailable or changed')
-        availability = {str(row.SessionDate): row.AvailableDate for row in fetched.dataframe.itertuples()}
+        availability = {str(row.SessionDate): row.AvailableDate.to_pydatetime() for row in fetched.dataframe.itertuples()}
         sessions = sessions_from_metadata(fetched.identity.metadata)
         daily = rules.execution.decision_clock.value == BarFrequency.DAILY.value
         # The forward observation boundary applies to deployed accounts.
