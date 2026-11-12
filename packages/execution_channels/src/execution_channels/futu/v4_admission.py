@@ -69,6 +69,8 @@ def prepare_v4_adoption(plan: AccountExecutionPlan, snapshot: AccountSnapshot, d
         raise TypeError("V4 admission requires execution-owned plan, account, proposal and context")
     state = validate_document(document)
     actual_quantity, available_cash = snapshot.quantity, float(snapshot.available_cash)
+    if (plan.point.execution_start, plan.point.execution_end) != (prepared.interval.start, prepared.interval.end):
+        raise ValueError('V4 plan differs from the prepared execution interval')
     interval = {key: getattr(prepared.interval, key).isoformat() for key in ("start", "end")}
     if plan.legs:
         if tuple(leg.sequence for leg in plan.legs) != tuple(range(len(plan.legs))):

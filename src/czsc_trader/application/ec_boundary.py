@@ -127,7 +127,7 @@ def strategy_events(values):
         value.cash_delta, value.receivable_delta, value.reason) for value in values)
 
 
-def execution_plan(result, snapshot, specification, *, owner, implementation, fee_rate, sell_remainder_policy, reference_price, execution_policy, cycle_budget=None, locked_quantity=None):
+def execution_plan(result, snapshot, specification, *, owner, implementation, fee_rate, sell_remainder_policy, reference_price, execution_policy, cycle_budget=None, locked_quantity=None, previous_daily_execution=None):
     if type(result) is not AccountDecisionProposal or type(snapshot) is not AccountSnapshot:
         raise TypeError('execution projection requires a typed strategy proposal and account snapshot')
     if cycle_budget is not None and type(cycle_budget) not in (ec.CycleBudget, CycleBudget):
@@ -149,4 +149,5 @@ def execution_plan(result, snapshot, specification, *, owner, implementation, fe
         fee_rate=fee_rate, sell_remainder_policy=ec.SellRemainderPolicy(sell_remainder_policy),
         execution_policy=_execution_policy(_IdentityKey(execution_policy)),
         cycle_budget=cycle_budget,
-        locked_quantity=locked_quantity, suppressed=result.suppressed)
+        locked_quantity=locked_quantity, suppressed=result.suppressed,
+        previous_daily_execution=previous_daily_execution)

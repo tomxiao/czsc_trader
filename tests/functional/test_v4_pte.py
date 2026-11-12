@@ -126,6 +126,99 @@ def replace_strategy(request, code):
     return replace(request, candidate=candidate)
 
 
+@pytest.mark.parametrize('partially_filled', [False, True])
+def test_daily_target_next_pte_plan_uses_confirmed_fill_result(tmp_path, partially_filled):
+    from dataclasses import replace
+    from execution_channels.daily_execution import DAILY_TARGET_TRIGGER, DailyExecutionOutcome
+    from strategy_runtime import ExecutionPolicy
+
+    context, request, products, store, permit, channel = native_account(tmp_path, MarketId.US)
+    policy = ExecutionPolicy('TARGET_POSITION', {'execution_trigger': DAILY_TARGET_TRIGGER})
+    request = replace(request, candidate=replace(request.candidate,
+        definition=replace(request.candidate.definition, execution_policy=policy)))
+    try:
+        prepared = prepared_at(context, request, products)
+        start, end = prepared.interval.start, prepared.interval.end
+        AccountEngine(store, EquityAdviceClient(store), now=lambda: start).refresh_account('native', prepared=prepared)
+        first = store.adopted_decision('native')['payload']['strategy_output']['execution_plan']
+        assert first['execution_trigger'] == 'INITIAL_TARGET'
+        execution = EquityExecution(store, channel, now=lambda: start)
+        execution.reconcile(cash=Decimal(str(request.initial_cash)), quantity=0, account_id='native')
+        order, = execution.submit_pending('native')
+        filled = context.execution_spec.quantity_step if partially_filled else 0
+        if partially_filled:
+            execution.apply_report(EquityOrderReport(order, filled, Decimal('10'), start + timedelta(minutes=1), 'FILLED_PART'))
+        execution.apply_report(EquityOrderReport(order, filled, Decimal('10') if filled else Decimal(0), end,
+            'CANCELLED_PART' if partially_filled else 'CANCELLED_ALL'))
+
+        path = store.path
+        store.close()
+        store = PaperStore(path, inspection_permit=execution_permit(permit))
+        following = prepared_at(context, request, products, 1)
+        previous = store.previous_daily_execution('native', previous_session=following.available_through)
+        assert previous.outcome is (DailyExecutionOutcome.PARTIAL_FILL if filled else DailyExecutionOutcome.ZERO_FILL)
+        AccountEngine(store, EquityAdviceClient(store), now=lambda: following.interval.start).refresh_account(
+            'native', prepared=following)
+        payload = store.adopted_decision('native')['payload']
+        assert payload['strategy_output']['execution_plan']['execution_trigger'] == (
+            'UNCHANGED_TARGET' if filled else 'PREVIOUS_ZERO_FILL')
+        assert bool(payload['orders']) == (not partially_filled)
+        assert store.virtual_account('native')['quantity'] == filled
+    finally:
+        store.close()
+
+
+def test_daily_staged_entry_budget_survives_in_research_and_pte(tmp_path):
+    from dataclasses import replace
+    from czsc_trader.application import EquityInspectionReplay
+    from czsc_trader.application.equity_inspection import replay_account
+    from execution_channels.daily_execution import DAILY_TARGET_TRIGGER
+    from strategy_manager.freeze_contracts import InspectionCoordinate
+    from strategy_runtime import ExecutionPolicy
+
+    context, request, products, store, _, channel = native_account(tmp_path, MarketId.US)
+    request = replace_strategy(request, """from strategy_runtime import AccountDecision, AccountStepResult, StateRecord
+def step(ctx, state):
+    target = .375 if ctx.account.quantity else .1875
+    return AccountStepResult(AccountDecision.from_facts(target, 'stage', facts={'stage_target': target},
+                                                       next_watch='next session'),
+                             cycle_values=StateRecord())
+""")
+    policy = ExecutionPolicy('TARGET_POSITION', {'execution_trigger': DAILY_TARGET_TRIGGER,
+                                                  'capital_mode': 'entry_cash_fraction'})
+    request = replace(request, candidate=replace(request.candidate,
+        definition=replace(request.candidate.definition, execution_policy=policy)))
+    try:
+        replay = EquityInspectionReplay(InspectionCoordinate('main', 'standard'), request.input_binding,
+            request.requests(context.execution_spec), request.window, request.initial_cash, request.fee_rate,
+            execution_reference=raw_binding(context.data, request.input_binding))
+        result = replay_account(request.candidate, context.data, replay)['facts']
+        assert [row['plan']['evidence']['execution_trigger'] for row in result['decisions']] == [
+            'INITIAL_TARGET', 'TARGET_CHANGED', 'UNCHANGED_TARGET']
+        assert [row['quantity'] for row in result['orders']] == [92, 94]
+        assert {Decimal(row['plan']['evidence']['entry_cash']) for row in result['decisions']} == {Decimal('10000')}
+
+        prepared = prepared_at(context, request, products)
+        start = prepared.interval.start
+        AccountEngine(store, EquityAdviceClient(store), now=lambda: start).refresh_account('native', prepared=prepared)
+        execution = EquityExecution(store, channel, now=lambda: start)
+        execution.reconcile(cash=Decimal(str(request.initial_cash)), quantity=0, account_id='native')
+        order, = execution.submit_pending('native')
+        assert store.account_order(order)['quantity'] == 185
+        execution.apply_report(EquityOrderReport(order, 185, Decimal('10'), start + timedelta(minutes=1), 'FILLED_ALL'))
+
+        following = prepared_at(context, request, products, 1)
+        AccountEngine(store, EquityAdviceClient(store), now=lambda: following.interval.start).refresh_account(
+            'native', prepared=following)
+        payload = store.adopted_decision('native')['payload']
+        evidence = payload['strategy_output']['execution_plan']
+        assert evidence['execution_trigger'] == 'TARGET_CHANGED'
+        assert Decimal(evidence['entry_cash']) == Decimal('10000')
+        assert payload['orders'][0]['quantity'] == 187
+    finally:
+        store.close()
+
+
 BUDGET_STRATEGY = """from strategy_runtime import AccountDecision, AccountStepResult, StateRecord
 def step(ctx,state):
     target=.2 if ctx.portfolio.revision<2 else 0

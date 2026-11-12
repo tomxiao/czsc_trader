@@ -4,6 +4,7 @@ from enum import StrEnum
 from functools import lru_cache
 from typing import Any, Mapping
 import math
+from .daily_execution import DAILY_TARGET_TRIGGER, ENTRY_CASH_FRACTION
 from .instruments import BarFrequency, MarketId, InstrumentId, AssetClass
 from .identity import equity_hash, canonical_sha256, _text, _json_mapping
 from .errors import RuntimeContractError
@@ -133,12 +134,19 @@ class ExecutionPolicy:
         object.__setattr__(self, "policy_type", _text(self.policy_type, "execution policy_type"))
         object.__setattr__(self, "settings", _json_mapping(self.settings, "execution settings"))
         canonical_sha256(self.settings)
+        if "execution_trigger" in self.settings and (
+                self.policy_type not in {"TARGET_POSITION", "FROZEN_RULE"}
+                or self.settings["execution_trigger"] != DAILY_TARGET_TRIGGER):
+            raise RuntimeContractError("unsupported position execution trigger")
         if self.policy_type == "TARGET_POSITION":
-            if set(self.settings) - {"capital_mode"}:
+            if set(self.settings) - {"capital_mode", "execution_trigger"}:
                 raise RuntimeContractError("target-position policy contains unsupported fields")
             if self.settings.get("capital_mode", "target_equity_fraction") not in {
-                    "target_equity_fraction", "full_available_cash"}:
+                    "target_equity_fraction", "full_available_cash", ENTRY_CASH_FRACTION}:
                 raise RuntimeContractError("target-position policy requires a supported capital mode")
+            if (self.settings.get("capital_mode") == ENTRY_CASH_FRACTION
+                    and self.settings.get("execution_trigger") != DAILY_TARGET_TRIGGER):
+                raise RuntimeContractError("entry cash allocation requires daily target execution")
         if self.policy_type == "FROZEN_RULE":
             capital = self.settings.get("capital", {})
             if capital.get("mode") == "signal_cash_fraction":

@@ -53,7 +53,7 @@ def strategy_events(values):
     return tuple(result)
 
 
-def execution_plan(result, snapshot, specification, *, reference, execution_policy, cycle_budget, locked_quantity, owner, implementation, fee_rate, sell_remainder_policy):
+def execution_plan(result, snapshot, specification, *, reference, execution_policy, cycle_budget, locked_quantity, owner, implementation, fee_rate, sell_remainder_policy, previous_daily_execution=None):
     record = to_record(result.proposal.decision)
     record['explanation'] = {'facts': result.proposal.decision.explanation.to_dict()}
     return plan_account_decision(from_record(TradeIntent, record),
@@ -63,7 +63,8 @@ def execution_plan(result, snapshot, specification, *, reference, execution_poli
         implementation=implementation, fee_rate=fee_rate,
         sell_remainder_policy=SellRemainderPolicy(sell_remainder_policy),
         execution_policy=from_record(ExecutionPolicy, to_record(execution_policy)),
-        cycle_budget=cycle_budget, locked_quantity=locked_quantity, suppressed=result.suppressed)
+        cycle_budget=cycle_budget, locked_quantity=locked_quantity, suppressed=result.suppressed,
+        previous_daily_execution=previous_daily_execution)
 
 
 def session_execution_plan(proposal, portfolio, state):

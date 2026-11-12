@@ -7,6 +7,7 @@ import json
 from strategy_runtime import AccountDecisionEngine, AccountStrategyState, EquityPortfolio
 from strategy_runtime.account_strategy import PositionFeedback
 from .contracts import AdviceDecision, OrderSpec, PlanLegSpec
+from execution_channels.daily_execution import DAILY_TARGET_TRIGGER
 from execution_channels.futu.equity_account_state import (load_document, validate_document, position_from_dict,
     budget_from_dict, recognized_events)
 from .ec_boundary import (initial_account_record, strategy_position, strategy_events, execution_plan, execution_admission, strategy_account_snapshot)
@@ -63,11 +64,14 @@ def account_decision(store, prepared, account, actual_quantity, available_cash, 
         fee_rate=prepared.fee_rate, events=strategy_events(events),
         next_event_cursor=cursor)
     proposal = result.proposal
+    daily_trigger = definition.execution_policy.settings.get('execution_trigger') == DAILY_TARGET_TRIGGER
+    previous_execution = (store.previous_daily_execution(account['account_id'], previous_session=prepared.available_through)
+                          if daily_trigger else None)
     plan = execution_plan(result, snapshot, definition.execution_spec, owner=owner,
         reference=float(prepared.execution_reference.price), execution_policy=definition.execution_policy,
         cycle_budget=budget_from_dict(document["budget"]), locked_quantity=document["locked_quantity"],
         implementation=candidate.implementation_hash, fee_rate=prepared.fee_rate,
-        sell_remainder_policy=prepared.v4_constraint["SellRemainderPolicy"])
+        sell_remainder_policy=prepared.v4_constraint["SellRemainderPolicy"], previous_daily_execution=previous_execution)
     effects = execution_admission(plan, snapshot, document, proposal,
         state_binding=engine.state_binding(owner, prepared.fee_rate),
         next_event_cursor=result.next_event_cursor, prepared=prepared, rules=rules)
@@ -75,6 +79,12 @@ def account_decision(store, prepared, account, actual_quantity, available_cash, 
     legs = tuple(PlanLegSpec(**{**asdict(leg), "order": OrderSpec(**asdict(leg.order))})
                  for leg in effects.legs)
     reference, estimate, action, after = effects.reference, effects.estimated_order_cost, effects.action, effects.after
+    execution_output = {"target": float(proposal.decision.target), "planning_result": plan.planning_result.to_dict()}
+    if daily_trigger:
+        execution_output["signal_status"] = plan.evidence.get("signal_status", "EVALUATED")
+        execution_output["execution_trigger"] = plan.evidence.get("execution_trigger")
+    if "entry_cash" in plan.evidence:
+        execution_output["entry_cash"] = plan.evidence["entry_cash"]
     return AdviceDecision("advice.equity.v4", plan.plan_identity, candidate.instrument.symbol,
         prepared.available_through, trading_date, actual_quantity, plan.target_quantity, plan.target_quantity,
         plan.target_quantity-actual_quantity, action,
@@ -85,8 +95,7 @@ def account_decision(store, prepared, account, actual_quantity, available_cash, 
         estimated_order_cost=estimate, unallocated_cash=effects.unallocated_cash,
         capital_mode=plan.capital_mode, runtime_sha256=candidate.implementation_hash, plan_mode="V4" if legs else "NONE", plan_legs=legs,
         strategy_output={"explanation": proposal.decision.explanation.to_dict(),
-            "execution_plan": {"target": float(proposal.decision.target),
-                "planning_result": plan.planning_result.to_dict()},
+            "execution_plan": execution_output,
                          "market_rule": {"version": prepared.v4_constraint["MarketRuleVersion"],
                                          "sha256": prepared.v4_constraint["MarketRuleHash"]}},
         equity_execution_interval=interval, equity_observed_through=plan.point.observed_through.isoformat(),

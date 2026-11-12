@@ -12,6 +12,7 @@ from strategy_runtime.replay_contracts import StrategyComputation
 from strategy_runtime.strategy_performance import (StrategyPerformanceBudget, StrategyPerformanceExceeded,
                                                     _StrategyPerformanceProbe)
 from execution_channels.historical import HistoricalReplayChannel, HistoricalDecision, AdoptionStatus
+from execution_channels.daily_execution import DAILY_TARGET_TRIGGER
 from execution_channels.historical.input_facts import normalize_constraint_times
 from execution_channels.state import AccountStrategyState as ChannelStrategyState, StateRecord as ChannelStateRecord
 from .ec_boundary import (execution_instrument, execution_plan, strategy_budget, strategy_events,
@@ -60,6 +61,7 @@ def run_replay(prepared, candidate, executor, *, constraints, start, end, fee_ra
     # The stateful strategy validates its returned records inside account_step.
     # Batch proposals synthesize their state and need the schema check here.
     batch = definition.computation is StrategyComputation.BATCH_HISTORY
+    daily_trigger = definition.execution_policy.settings.get('execution_trigger') == DAILY_TARGET_TRIGGER
     projected_channel_state = None
     decisions = 0
     started = perf_counter()
@@ -93,7 +95,8 @@ def run_replay(prepared, candidate, executor, *, constraints, start, end, fee_ra
                     sell_remainder_policy=constraint['SellRemainderPolicy'],
                     reference_price=float(observation[2].last()['Close']),
                     execution_policy=definition.execution_policy, cycle_budget=snapshot.budget,
-                    locked_quantity=snapshot.locked_quantity)
+                    locked_quantity=snapshot.locked_quantity,
+                    previous_daily_execution=channel.previous_daily_execution(owner, at=a) if daily_trigger else None)
                 proposal = HistoricalDecision(plan, snapshot.strategy.revision,
                     ChannelStateRecord.from_dict(result.proposal.account.to_dict()),
                     None if result.proposal.cycle_values is None else ChannelStateRecord.from_dict(result.proposal.cycle_values.to_dict()),

@@ -4,6 +4,7 @@ from decimal import Decimal
 import pytest
 
 from execution_channels.contracts import AccountSnapshot, SellRemainderPolicy
+from execution_channels.daily_execution import DAILY_TARGET_TRIGGER, DailyExecutionOutcome, PreviousDailyExecution
 from execution_channels.instruments import MarketId
 from execution_channels.planning import plan_account_decision
 from execution_channels.planning.intent import DecisionExplanation, TradeIntent
@@ -15,7 +16,7 @@ from ec_facts import frozen
 
 def plan(market, *, cash=10000., available=None, receivable=0., held=0,
          sellable=None, target=1., reference=100., policy=None, lock=None,
-         suppressed=False):
+         suppressed=False, previous=None):
     instrument,spec,point,_,_=fixture(market)
     account=AccountSnapshot(instrument,instrument.currency,point.decision_at,0,
         cash,cash if available is None else available,receivable,held,held if sellable is None else sellable)
@@ -23,7 +24,7 @@ def plan(market, *, cash=10000., available=None, receivable=0., held=0,
         point,account,reference,spec,owner='best-effort',implementation='a'*64,fee_rate=.001,
         sell_remainder_policy=SellRemainderPolicy.FULL_LIQUIDATION,
         execution_policy=policy or ExecutionPolicy('TARGET_POSITION',{}),
-        locked_quantity=lock,suppressed=suppressed)
+        locked_quantity=lock,suppressed=suppressed,previous_daily_execution=previous)
 
 
 # Independent risk: EC04; responsibility-level assertions.
@@ -162,3 +163,49 @@ def test_EC04_C02_affordable_portion_is_not_actual_execution():
     assert result.planning_result==PlanningResult(PlanningStatus.CONSTRAINED,
         (PlanningConstraint.INSUFFICIENT_CASH,),10,2)
     assert result.orders[0].quantity==2 and result.orders[0].limit_price==101.
+
+
+@pytest.mark.parametrize(('outcome', 'adjacent', 'allowed'), [
+    (DailyExecutionOutcome.ZERO_FILL, True, True),
+    (DailyExecutionOutcome.ZERO_FILL, False, False),
+    (DailyExecutionOutcome.PARTIAL_FILL, True, False),
+    (DailyExecutionOutcome.FULL_FILL, True, False),
+    (DailyExecutionOutcome.NO_PLAN, True, False),
+])
+def test_daily_target_retries_only_adjacent_zero_fill(outcome, adjacent, allowed):
+    policy = ExecutionPolicy('TARGET_POSITION', {'execution_trigger': DAILY_TARGET_TRIGGER})
+    prior = PreviousDailyExecution(1., outcome, adjacent)
+    same = plan(MarketId.US, cash=1000., held=4, policy=policy, previous=prior)
+    assert bool(same.orders) is allowed
+    changed = plan(MarketId.US, cash=1000., held=4, target=0., policy=policy, previous=prior)
+    assert changed.orders[0].side.value == 'SELL'
+    assert changed.orders[0].quantity == 4
+
+
+def test_daily_target_waits_for_unresolved_execution_even_when_target_changes():
+    policy = ExecutionPolicy('TARGET_POSITION', {'execution_trigger': DAILY_TARGET_TRIGGER})
+    prior = PreviousDailyExecution(1., DailyExecutionOutcome.UNRESOLVED, True)
+    with pytest.raises(ValueError, match='confirmed order reconciliation'):
+        plan(MarketId.US, held=4, target=0., policy=policy, previous=prior)
+
+
+def test_daily_target_partial_exit_does_not_repeat_a_zero_target():
+    policy = ExecutionPolicy('TARGET_POSITION', {'execution_trigger': DAILY_TARGET_TRIGGER})
+    prior = PreviousDailyExecution(0., DailyExecutionOutcome.PARTIAL_FILL, True)
+    held = plan(MarketId.US, held=4, target=0., policy=policy, previous=prior)
+    assert held.orders == () and held.target_quantity == 4
+
+
+def test_entry_cash_allocation_uses_original_cash_and_confirmed_buy_cost():
+    policy = ExecutionPolicy('TARGET_POSITION', {'execution_trigger': DAILY_TARGET_TRIGGER,
+                                                  'capital_mode': 'entry_cash_fraction'})
+    entry = plan(MarketId.US, cash=10000., target=.1875, policy=policy)
+    assert entry.orders[0].quantity == 18
+    prior = PreviousDailyExecution(.1875, DailyExecutionOutcome.FULL_FILL, True,
+                                  Decimal(entry.evidence['entry_cash']), Decimal('1801.80'))
+    add = plan(MarketId.US, cash=8198.20, held=18, target=.375, reference=120., policy=policy, previous=prior)
+    assert add.orders[0].quantity == 16
+    assert add.evidence['entry_cash'] == entry.evidence['entry_cash']
+    prior = PreviousDailyExecution(.375, DailyExecutionOutcome.ZERO_FILL, True, prior.entry_cash, prior.buy_cost)
+    held = plan(MarketId.US, cash=8198.20, held=18, target=.1875, reference=40., policy=policy, previous=prior)
+    assert held.orders == ()

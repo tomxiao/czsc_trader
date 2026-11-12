@@ -91,6 +91,8 @@ def plan_session_decision(proposal: SessionProposal, portfolio: PortfolioSnapsho
     if (type(proposal) is not SessionProposal or type(portfolio) is not PortfolioSnapshot
             or type(state) is not ExecutionState):
         raise TypeError('session planning requires channel-owned proposal and snapshots')
+    if 'execution_trigger' in proposal.execution_policy.settings:
+        raise RuntimeContractError('daily target execution requires native account planning')
     if portfolio.pricing != proposal.references.pricing:
         raise RuntimeContractError('portfolio price and quantity units differ from strategy')
     if portfolio.symbol != proposal.strategy.symbol:

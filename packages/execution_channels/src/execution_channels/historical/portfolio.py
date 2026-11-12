@@ -389,7 +389,7 @@ class PortfolioHistoricalExecutor(_EquityAccount):
             raise ValueError('stale revision or unordered execution interval')
         quote, limits, unlock, status, blocked = self._constraints(plan, bar, constraint)
         self._pay(plan.point.execution_start, inclusive=True)
-        if plan.capital_mode not in {'target_equity_fraction', 'full_available_cash', 'signal_cash_fraction'}:
+        if plan.capital_mode not in {'target_equity_fraction', 'full_available_cash', 'signal_cash_fraction', 'entry_cash_fraction'}:
             raise ValueError('unsupported account capital mode')
         if plan.capital_mode == 'signal_cash_fraction':
             if plan.cycle_before != self._cycle_budget:

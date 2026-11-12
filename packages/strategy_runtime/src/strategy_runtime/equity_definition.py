@@ -569,6 +569,9 @@ class EquityStrategyDefinition:
         if self.contract_version == 4:
             from .equity_features import FeatureGraph
             from .equity_replay import StrategyStateSchema
+            if ('execution_trigger' in self.execution_policy.settings
+                    and self.execution_spec.decision_clock.value != 'daily'):
+                raise ValueError('daily target execution requires a daily decision clock')
             if type(self.feature_graph) is not FeatureGraph or type(self.state_schema) is not StrategyStateSchema:
                 raise TypeError('account replay requires a typed feature graph and state schema')
             if self.feedback_mode != 'CONFIRMED_EXECUTION':

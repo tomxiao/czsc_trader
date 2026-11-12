@@ -14,6 +14,7 @@ import pandas as pd
 from ..contracts import (AccountExecutionPlan, AccountSnapshot, EquityPortfolio,
                          PositionFeedback, RecognizedAccountEvent, CycleBudget)
 from ..instruments import InstrumentId
+from ..daily_execution import PreviousDailyExecution, daily_execution_outcome
 from ..execution_effects import DecisionExecutionEffect, OrderExecutionEffect, decision_execution_effect
 from ..state import AccountStrategyState, CycleState, StateRecord
 from .portfolio import PortfolioHistoricalExecutor
@@ -194,6 +195,30 @@ class HistoricalReplayChannel:
             target_weight=evidence['target'], planning_result=evidence['planning_result'],
             actual_quantity=self.executor.quantity, cash=self.executor.cash, available_cash=self.executor.cash,
             receivable=self.executor.receivable, valuation_price=valuation_price, orders=tuple(effects))
+
+    def previous_daily_execution(self, account_id: str, *, at: datetime) -> PreviousDailyExecution | None:
+        self._account(account_id)
+        if self._clock != at or self._pending is not None or self._failed:
+            raise ValueError('daily execution history requires the current confirmed channel clock')
+        prior = next((row for row in reversed(self.executor.rows['decisions'])
+                      if row['signal_status'] == 'EVALUATED'), None)
+        if prior is None:
+            return None
+        filled = 0
+        if prior['quantity']:
+            for order in reversed(self.executor.rows['orders']):
+                if order['decision_id'] != prior['decision_id']:
+                    break
+                if order['status'] == 'FILLED':
+                    filled += order['quantity']
+        index = bisect_right(self._ends, at)
+        entry_cash = prior['plan']['evidence'].get('entry_cash')
+        active = self.executor.position_feedback.active if entry_cash is not None else None
+        return PreviousDailyExecution(prior['target'],
+            daily_execution_outcome(prior['quantity'], filled, terminal=True),
+            index > 0 and prior['execution_end'] == self._ends[index - 1],
+            None if entry_cash is None else Decimal(entry_cash),
+            Decimal(0) if active is None else Decimal(str(active.buy_cost)))
 
     def snapshot(self, account_id: str, *, at: datetime,
                  observed_through: datetime | None = None) -> HistoricalSnapshot:

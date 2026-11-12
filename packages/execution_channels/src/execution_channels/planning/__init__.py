@@ -7,6 +7,8 @@ from zoneinfo import ZoneInfo
 from ..contracts import (AccountSnapshot, AccountExecutionPlan, ReplayPoint,
                          ReplayOrder, ReplayLeg, SellRemainderPolicy, CycleBudget)
 from ..entry_cycle import EntryCyclePhase
+from ..daily_execution import DAILY_TARGET_TRIGGER, ENTRY_CASH_FRACTION, DailyExecutionTrigger, PreviousDailyExecution
+from ..instruments import BarFrequency
 from ..session_contracts import OrderSide, OrderType
 from ..policy import ResearchExecutionSpec, ExecutionPolicy
 from ..identity import equity_hash, _thaw_json
@@ -21,10 +23,16 @@ def _order(record):
     return ReplayOrder(side, quantity, kind, float(record['limit_price']) if kind is OrderType.LIMIT else None)
 
 
+def _buy_limit(reference, spec):
+    tick = Decimal(str(spec.price_tick))
+    premium = Decimal(str(spec.buy_premium))
+    return (Decimal(str(reference)) * (1 + premium) / tick).to_integral_value(rounding=ROUND_FLOOR) * tick
+
+
 def plan_account_decision(decision, point, account, reference, spec, *, owner,
                           implementation, fee_rate, sell_remainder_policy,
                           execution_policy, cycle_budget=None, locked_quantity=None,
-                          suppressed=False):
+                          suppressed=False, previous_daily_execution=None):
     """Translate position intent to channel-owned funding, quotes and orders.
 
     The reference is explicitly prepared in the channel's execution price basis.
@@ -53,35 +61,74 @@ def plan_account_decision(decision, point, account, reference, spec, *, owner,
         raise TypeError('suppressed observation must be explicit bool')
     settings = _thaw_json(execution_policy.settings)
     kind = execution_policy.policy_type
+    trigger = None
+    if settings.get('execution_trigger') == DAILY_TARGET_TRIGGER:
+        zone = ZoneInfo(account.instrument.timezone)
+        session = point.execution_start.astimezone(zone).date()
+        if (spec.decision_clock is not BarFrequency.DAILY or point.session_id != session.isoformat()
+                or point.execution_end.astimezone(zone).date() != session):
+            raise ValueError('daily target execution requires one market trading session')
+        if previous_daily_execution is not None and type(previous_daily_execution) is not PreviousDailyExecution:
+            raise TypeError('daily target execution requires typed previous execution facts')
+        if not suppressed:
+            trigger = (DailyExecutionTrigger.INITIAL_TARGET if previous_daily_execution is None
+                       else previous_daily_execution.trigger(decision.target))
+    elif previous_daily_execution is not None:
+        raise ValueError('previous daily execution requires the declared daily target trigger')
     orders, legs = (), ()
     before = after = cycle_budget
     mode, desired = 'target_equity_fraction', account.quantity
     lock = locked_quantity
     planning_mode = 'TARGET_FRACTION'
     reasons = []
-    if suppressed:
-        mode = 'signal_cash_fraction' if cycle_budget is not None else mode
+    entry_cash = None
+    if settings.get('capital_mode') == ENTRY_CASH_FRACTION:
+        if cycle_budget is not None:
+            raise ValueError('entry cash allocation cannot inherit a fixed-quantity cycle budget')
+        if account.quantity:
+            entry_cash = None if previous_daily_execution is None else previous_daily_execution.entry_cash
+        elif decision.target and not suppressed:
+            entry_cash = Decimal(str(account.available_cash))
+    if suppressed or trigger is DailyExecutionTrigger.UNCHANGED_TARGET:
+        if cycle_budget is not None:
+            mode = 'signal_cash_fraction'
+        elif settings.get('capital_mode') == ENTRY_CASH_FRACTION:
+            mode = ENTRY_CASH_FRACTION
         planning_mode = 'EXPLICIT_ORDERS'
     elif kind == 'TARGET_POSITION':
         mode = settings.get('capital_mode', 'target_equity_fraction')
-        if mode not in {'target_equity_fraction', 'full_available_cash'} or cycle_budget is not None:
+        if cycle_budget is not None:
             raise ValueError('TARGET_POSITION requires an explicit supported capital mode without cycle budget')
         if mode == 'full_available_cash' and decision.target not in (0,1):
             raise ValueError('full_available_cash supports flat/long only')
         step = spec.quantity_step
+        price = None
         if decision.target == 0:
             desired = 0
+        elif mode == ENTRY_CASH_FRACTION:
+            # Positive targets are cumulative spending limits for staged entry.
+            prior_target = 0 if previous_daily_execution is None else previous_daily_execution.target
+            if not account.quantity or decision.target >= prior_target:
+                if entry_cash is None:
+                    raise ValueError('held position requires its original entry cash baseline')
+                spent = previous_daily_execution.buy_cost if account.quantity else Decimal(0)
+                remaining = max(Decimal(0), entry_cash * Decimal(str(decision.target)) - spent)
+                price = _buy_limit(reference, spec)
+                if price > 0:
+                    desired += int(remaining / (price * (1 + Decimal(str(fee_rate)))) / step) * step
+                else:
+                    reasons.append(PlanningConstraint.BELOW_PRICE_TICK)
         else:
             quote = Decimal(str(reference))
             equity = Decimal(str(account.cash)) + Decimal(str(account.receivable)) + account.quantity * quote
             desired = int(equity * Decimal(str(decision.target)) / quote / step) * step
         if mode == 'full_available_cash' and account.quantity and decision.target:
             desired = account.quantity
-        if decision.target > 0 and not account.quantity and desired == 0:
+        if decision.target > 0 and not account.quantity and desired == 0 and not reasons:
             reasons.append(PlanningConstraint.BELOW_MINIMUM_UNIT)
         if desired > account.quantity:
-            tick = Decimal(str(spec.price_tick))
-            price = (Decimal(str(reference)) * (1+Decimal(str(spec.buy_premium))) / tick).to_integral_value(rounding=ROUND_FLOOR) * tick
+            if price is None:
+                price = _buy_limit(reference, spec)
             if price <= 0:
                 reasons.append(PlanningConstraint.BELOW_PRICE_TICK)
             affordable = (max(0, int(Decimal(str(account.available_cash)) / (price * (1+Decimal(str(fee_rate)))) / step) * step)
@@ -200,6 +247,10 @@ def plan_account_decision(decision, point, account, reference, spec, *, owner,
         'execution_policy':{'policy_type':kind,'settings':_thaw_json(execution_policy.settings)}}
     if suppressed:
         evidence['signal_status'] = 'SUPPRESSED_UNOBSERVED_BAR'
+    if trigger is not None:
+        evidence['execution_trigger'] = trigger.value
+    if entry_cash is not None:
+        evidence['entry_cash'] = str(entry_cash)
     identity = equity_hash({'owner':owner,'point':repr(point),'revision':account.revision,
         'orders':repr(orders),'legs':repr(legs),'cycle_before':repr(before),'cycle_after':repr(after),'evidence':evidence})
     return AccountExecutionPlan(identity, owner, point, account.revision, target_quantity,
