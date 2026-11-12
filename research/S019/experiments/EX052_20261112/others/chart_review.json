@@ -1,0 +1,752 @@
+{
+  "inspection_reference": {
+    "type": "ResearchEvidenceRef",
+    "owner": {
+      "type": "ResearchEvidenceOwner",
+      "strategy_id": "S019",
+      "experiment_id": "EX052_20261112"
+    },
+    "path": "inspection/4c7749cd945b285b3e30bba9c8310e9766e7a75402a9e8616c7cff09143dd8c8",
+    "sha256": "4c7749cd945b285b3e30bba9c8310e9766e7a75402a9e8616c7cff09143dd8c8"
+  },
+  "rendered": [
+    {
+      "case": "entry-hold-exit-restart",
+      "date": "2022-01-11",
+      "artifact_sha256": "e693018c54c13cb51b6331e0ead26a25485f259c75aaaa61824b64da0e59bdfd",
+      "default": {
+        "date": "2022-01-11",
+        "judgment": "继续持有，观察回升延续",
+        "basis": [
+          "2",
+          "186.8",
+          "fixed",
+          "False",
+          "linear",
+          "0.2744236516713197",
+          "189.3",
+          "0",
+          "False",
+          "186.8",
+          "6.90488571428572",
+          "6.90488571428572",
+          "170.03536512158803",
+          "False",
+          "False",
+          "ramp",
+          "1.0",
+          "0",
+          "0.5659885343840432"
+        ],
+        "next": "检查成交和已声明的持有退出条件。",
+        "event": "2022-01-11 23:01:00 · 成交：买入 1 股，价格 92.690 美元（不复权），金额 92.69 美元，费用 0.09 美元\n2022-01-11 23:02:00 · 成交：买入 609 股，价格 92.690 美元（不复权），金额 56,448.21 美元，费用 56.45 美元\n2026-11-12 18:36:00 · 决策：入场；目标 610 股；已完成；生效 2022-01-11；信号 2022-01-11\n状态原因：计划全部成交；记录 2026-11-12 18:36:00\n决策判断：下跌后入场条件成立，参与后续上涨\n1\n185.78\nfixed\nFalse\nlinear\n0.2744236516713197\n189.3\n0.7979851935001921\n3\n0.9090392927252114\n0.43033643213664174\n0.5659885343840432\nmaximum\n0.5659885343840432\n0.9920961481748924\n6.90488571428572\n2.4279380676391424\n0.5659885343840432\n0.15223189173640828\nTrue\ndaily\nrelative\ntilt\n0.00018516785669753233\n0.0025362905401760116\nTrue\nTrue\n0.0003277864016789815\nTrue\n1\n0.5659885343840432\n下跌后入场条件成立，参与后续上涨\n接下来关注：检查成交和已声明的持有退出条件。\n2026-11-12 18:36:01 · 决策：持有；目标 610 股；已完成；生效 2022-01-11；信号 2022-01-11\n状态原因：计划无需下单；记录 2026-11-12 18:36:01\n决策判断：继续持有，观察回升延续\n2\n186.8\nfixed\nFalse\nlinear\n0.2744236516713197\n189.3\n0\nFalse\n186.8\n6.90488571428572\n6.90488571428572\n170.03536512158803\nFalse\nFalse\nramp\n1.0\n0\n0.5659885343840432\n继续持有，观察回升延续\n接下来关注：检查成交和已声明的持有退出条件。"
+      },
+      "detail": "继续持有，观察回升延续",
+      "selected_decision": "DEC-20220111-2330-D5B7437685C0",
+      "saved": [
+        {
+          "account_id": "equity",
+          "action": "HOLD",
+          "decision_id": "DEC-20220111-2330-D5B7437685C0",
+          "explanation": {
+            "basis": [
+              {
+                "key": "slot",
+                "text": "2"
+              },
+              {
+                "key": "price",
+                "text": "186.8"
+              },
+              {
+                "key": "exit_mode",
+                "text": "fixed"
+              },
+              {
+                "key": "require_sector",
+                "text": "False"
+              },
+              {
+                "key": "participation_policy",
+                "text": "linear"
+              },
+              {
+                "key": "participation_width",
+                "text": "0.2744236516713197"
+              },
+              {
+                "key": "anchor",
+                "text": "189.3"
+              },
+              {
+                "key": "held",
+                "text": "0"
+              },
+              {
+                "key": "recovered",
+                "text": "False"
+              },
+              {
+                "key": "high_water",
+                "text": "186.8"
+              },
+              {
+                "key": "entry_atr",
+                "text": "6.90488571428572"
+              },
+              {
+                "key": "risk_atr",
+                "text": "6.90488571428572"
+              },
+              {
+                "key": "trail_price",
+                "text": "170.03536512158803"
+              },
+              {
+                "key": "stopped",
+                "text": "False"
+              },
+              {
+                "key": "touched",
+                "text": "False"
+              },
+              {
+                "key": "exit_policy",
+                "text": "ramp"
+              },
+              {
+                "key": "risk_fraction",
+                "text": "1.0"
+              },
+              {
+                "key": "breach_count",
+                "text": "0"
+              },
+              {
+                "key": "target_weight",
+                "text": "0.5659885343840432"
+              }
+            ],
+            "case_key": "long",
+            "explanation": "继续持有，观察回升延续",
+            "judgment": "继续持有，观察回升延续",
+            "next_watch": "检查成交和已声明的持有退出条件。",
+            "state_key": "target"
+          },
+          "generated_at": "2026-11-12T10:36:01.744918+00:00",
+          "signal_date": "2022-01-11",
+          "state_changed_at": "2026-11-12T10:36:01.744918+00:00",
+          "state_events": [
+            {
+              "occurred_at": "2026-11-12T10:36:01.744918+00:00",
+              "reason": "NO_ORDER",
+              "related_decision_id": null,
+              "sequence": 1,
+              "state": "COMPLETED"
+            }
+          ],
+          "state_reason": "NO_ORDER",
+          "status": "COMPLETED",
+          "target_quantity": 610,
+          "valid_session": "2022-01-11"
+        },
+        {
+          "account_id": "equity",
+          "action": "BUY",
+          "decision_id": "DEC-20220111-2300-0DAD90CCFCC7",
+          "explanation": {
+            "basis": [
+              {
+                "key": "slot",
+                "text": "1"
+              },
+              {
+                "key": "price",
+                "text": "185.78"
+              },
+              {
+                "key": "exit_mode",
+                "text": "fixed"
+              },
+              {
+                "key": "require_sector",
+                "text": "False"
+              },
+              {
+                "key": "participation_policy",
+                "text": "linear"
+              },
+              {
+                "key": "participation_width",
+                "text": "0.2744236516713197"
+              },
+              {
+                "key": "anchor",
+                "text": "189.3"
+              },
+              {
+                "key": "participation",
+                "text": "0.7979851935001921"
+              },
+              {
+                "key": "participation_days",
+                "text": "3"
+              },
+              {
+                "key": "prior_participation",
+                "text": "0.9090392927252114"
+              },
+              {
+                "key": "opening_factor",
+                "text": "0.43033643213664174"
+              },
+              {
+                "key": "prior_factor",
+                "text": "0.5659885343840432"
+              },
+              {
+                "key": "joint_rule",
+                "text": "maximum"
+              },
+              {
+                "key": "participation_factor",
+                "text": "0.5659885343840432"
+              },
+              {
+                "key": "participation_threshold",
+                "text": "0.9920961481748924"
+              },
+              {
+                "key": "entry_atr",
+                "text": "6.90488571428572"
+              },
+              {
+                "key": "trail_atr",
+                "text": "2.4279380676391424"
+              },
+              {
+                "key": "allocation",
+                "text": "0.5659885343840432"
+              },
+              {
+                "key": "relative63",
+                "text": "0.15223189173640828"
+              },
+              {
+                "key": "long_strong",
+                "text": "True"
+              },
+              {
+                "key": "risk_basis",
+                "text": "daily"
+              },
+              {
+                "key": "information",
+                "text": "relative"
+              },
+              {
+                "key": "treatment",
+                "text": "tilt"
+              },
+              {
+                "key": "industry_return",
+                "text": "0.00018516785669753233"
+              },
+              {
+                "key": "mu_return",
+                "text": "0.0025362905401760116"
+              },
+              {
+                "key": "strong",
+                "text": "True"
+              },
+              {
+                "key": "down2",
+                "text": "True"
+              },
+              {
+                "key": "common",
+                "text": "0.0003277864016789815"
+              },
+              {
+                "key": "opening_recovery",
+                "text": "True"
+              },
+              {
+                "key": "down_days",
+                "text": "1"
+              },
+              {
+                "key": "target_weight",
+                "text": "0.5659885343840432"
+              }
+            ],
+            "case_key": "long",
+            "explanation": "下跌后入场条件成立，参与后续上涨",
+            "judgment": "下跌后入场条件成立，参与后续上涨",
+            "next_watch": "检查成交和已声明的持有退出条件。",
+            "state_key": "target"
+          },
+          "generated_at": "2026-11-12T10:36:00.339107+00:00",
+          "signal_date": "2022-01-11",
+          "state_changed_at": "2026-11-12T10:36:00.676947+00:00",
+          "state_events": [
+            {
+              "occurred_at": "2026-11-12T10:36:00.339107+00:00",
+              "reason": "PLAN_GENERATED",
+              "related_decision_id": null,
+              "sequence": 1,
+              "state": "PENDING"
+            },
+            {
+              "occurred_at": "2026-11-12T10:36:00.435844+00:00",
+              "reason": "CHANNEL_RESULT_UNCERTAIN",
+              "related_decision_id": null,
+              "sequence": 2,
+              "state": "EXECUTING"
+            },
+            {
+              "occurred_at": "2026-11-12T10:36:00.676947+00:00",
+              "reason": "PLAN_FILLED",
+              "related_decision_id": null,
+              "sequence": 3,
+              "state": "COMPLETED"
+            }
+          ],
+          "state_reason": "PLAN_FILLED",
+          "status": "COMPLETED",
+          "target_quantity": 610,
+          "valid_session": "2022-01-11"
+        }
+      ]
+    },
+    {
+      "case": "entry-hold-exit-restart",
+      "date": "2022-01-18",
+      "artifact_sha256": "e693018c54c13cb51b6331e0ead26a25485f259c75aaaa61824b64da0e59bdfd",
+      "default": {
+        "date": "2022-01-18",
+        "judgment": "达到固定持有期限，退出",
+        "basis": [
+          "0",
+          "186.14",
+          "fixed",
+          "False",
+          "linear",
+          "0.2744236516713197",
+          "189.3",
+          "5",
+          "False",
+          "186.8",
+          "6.90488571428572",
+          "6.90488571428572",
+          "170.03536512158803",
+          "False",
+          "False",
+          "ramp",
+          "1.0",
+          "0",
+          "0.0"
+        ],
+        "next": "检查成交和已声明的持有退出条件。",
+        "event": "2026-11-12 18:36:02 · 决策：退出；目标 0 股；已完成；生效 2022-01-19；信号 2022-01-18\n状态原因：计划全部成交；记录 2026-11-12 18:36:03\n决策判断：达到固定持有期限，退出\n0\n186.14\nfixed\nFalse\nlinear\n0.2744236516713197\n189.3\n5\nFalse\n186.8\n6.90488571428572\n6.90488571428572\n170.03536512158803\nFalse\nFalse\nramp\n1.0\n0\n0.0\n达到固定持有期限，退出\n接下来关注：检查成交和已声明的持有退出条件。"
+      },
+      "detail": "达到固定持有期限，退出",
+      "selected_decision": "DEC-20220119-2230-5B4293FE92D0",
+      "saved": [
+        {
+          "account_id": "equity",
+          "action": "SELL",
+          "decision_id": "DEC-20220119-2230-5B4293FE92D0",
+          "explanation": {
+            "basis": [
+              {
+                "key": "slot",
+                "text": "0"
+              },
+              {
+                "key": "price",
+                "text": "186.14"
+              },
+              {
+                "key": "exit_mode",
+                "text": "fixed"
+              },
+              {
+                "key": "require_sector",
+                "text": "False"
+              },
+              {
+                "key": "participation_policy",
+                "text": "linear"
+              },
+              {
+                "key": "participation_width",
+                "text": "0.2744236516713197"
+              },
+              {
+                "key": "anchor",
+                "text": "189.3"
+              },
+              {
+                "key": "held",
+                "text": "5"
+              },
+              {
+                "key": "recovered",
+                "text": "False"
+              },
+              {
+                "key": "high_water",
+                "text": "186.8"
+              },
+              {
+                "key": "entry_atr",
+                "text": "6.90488571428572"
+              },
+              {
+                "key": "risk_atr",
+                "text": "6.90488571428572"
+              },
+              {
+                "key": "trail_price",
+                "text": "170.03536512158803"
+              },
+              {
+                "key": "stopped",
+                "text": "False"
+              },
+              {
+                "key": "touched",
+                "text": "False"
+              },
+              {
+                "key": "exit_policy",
+                "text": "ramp"
+              },
+              {
+                "key": "risk_fraction",
+                "text": "1.0"
+              },
+              {
+                "key": "breach_count",
+                "text": "0"
+              },
+              {
+                "key": "target_weight",
+                "text": "0.0"
+              }
+            ],
+            "case_key": "flat",
+            "explanation": "达到固定持有期限，退出",
+            "judgment": "达到固定持有期限，退出",
+            "next_watch": "检查成交和已声明的持有退出条件。",
+            "state_key": "target"
+          },
+          "generated_at": "2026-11-12T10:36:02.841861+00:00",
+          "signal_date": "2022-01-18",
+          "state_changed_at": "2026-11-12T10:36:03.100873+00:00",
+          "state_events": [
+            {
+              "occurred_at": "2026-11-12T10:36:02.842897+00:00",
+              "reason": "PLAN_GENERATED",
+              "related_decision_id": null,
+              "sequence": 1,
+              "state": "PENDING"
+            },
+            {
+              "occurred_at": "2026-11-12T10:36:02.943170+00:00",
+              "reason": "CHANNEL_RESULT_UNCERTAIN",
+              "related_decision_id": null,
+              "sequence": 2,
+              "state": "EXECUTING"
+            },
+            {
+              "occurred_at": "2026-11-12T10:36:03.100873+00:00",
+              "reason": "PLAN_FILLED",
+              "related_decision_id": null,
+              "sequence": 3,
+              "state": "COMPLETED"
+            }
+          ],
+          "state_reason": "PLAN_FILLED",
+          "status": "COMPLETED",
+          "target_quantity": 0,
+          "valid_session": "2022-01-19"
+        }
+      ]
+    },
+    {
+      "case": "rejected-then-flat-after-opening",
+      "date": "2022-01-11",
+      "artifact_sha256": "1d20b5c066f46038d53a955e2148fb272fa62244d9556a4cf9470a2990f88a74",
+      "default": {
+        "date": "2022-01-11",
+        "judgment": "等待首30分钟完成，空仓",
+        "basis": [
+          "2",
+          "186.8",
+          "fixed",
+          "False",
+          "linear",
+          "0.2744236516713197",
+          "0.0"
+        ],
+        "next": "检查成交和已声明的持有退出条件。",
+        "event": "2026-11-12 18:36:05 · 决策：入场；目标 610 股；未完成；生效 2022-01-11；信号 2022-01-11\n状态原因：ORDER_REJECTED；记录 2026-11-12 18:36:05\n决策判断：下跌后入场条件成立，参与后续上涨\n1\n185.78\nfixed\nFalse\nlinear\n0.2744236516713197\n189.3\n0.7979851935001921\n3\n0.9090392927252114\n0.43033643213664174\n0.5659885343840432\nmaximum\n0.5659885343840432\n0.9920961481748924\n6.90488571428572\n2.4279380676391424\n0.5659885343840432\n0.15223189173640828\nTrue\ndaily\nrelative\ntilt\n0.00018516785669753233\n0.0025362905401760116\nTrue\nTrue\n0.0003277864016789815\nTrue\n1\n0.5659885343840432\n下跌后入场条件成立，参与后续上涨\n接下来关注：检查成交和已声明的持有退出条件。\n2026-11-12 18:36:06 · 决策：等待；目标 0 股；已完成；生效 2022-01-11；信号 2022-01-11\n状态原因：计划无需下单；记录 2026-11-12 18:36:06\n决策判断：等待首30分钟完成，空仓\n2\n186.8\nfixed\nFalse\nlinear\n0.2744236516713197\n0.0\n等待首30分钟完成，空仓\n接下来关注：检查成交和已声明的持有退出条件。"
+      },
+      "detail": "等待首30分钟完成，空仓",
+      "selected_decision": "DEC-20220111-2330-0D707A137DAA",
+      "saved": [
+        {
+          "account_id": "equity",
+          "action": "WAIT",
+          "decision_id": "DEC-20220111-2330-0D707A137DAA",
+          "explanation": {
+            "basis": [
+              {
+                "key": "slot",
+                "text": "2"
+              },
+              {
+                "key": "price",
+                "text": "186.8"
+              },
+              {
+                "key": "exit_mode",
+                "text": "fixed"
+              },
+              {
+                "key": "require_sector",
+                "text": "False"
+              },
+              {
+                "key": "participation_policy",
+                "text": "linear"
+              },
+              {
+                "key": "participation_width",
+                "text": "0.2744236516713197"
+              },
+              {
+                "key": "target_weight",
+                "text": "0.0"
+              }
+            ],
+            "case_key": "flat",
+            "explanation": "等待首30分钟完成，空仓",
+            "judgment": "等待首30分钟完成，空仓",
+            "next_watch": "检查成交和已声明的持有退出条件。",
+            "state_key": "target"
+          },
+          "generated_at": "2026-11-12T10:36:06.881264+00:00",
+          "signal_date": "2022-01-11",
+          "state_changed_at": "2026-11-12T10:36:06.881264+00:00",
+          "state_events": [
+            {
+              "occurred_at": "2026-11-12T10:36:06.881264+00:00",
+              "reason": "NO_ORDER",
+              "related_decision_id": null,
+              "sequence": 1,
+              "state": "COMPLETED"
+            }
+          ],
+          "state_reason": "NO_ORDER",
+          "status": "COMPLETED",
+          "target_quantity": 0,
+          "valid_session": "2022-01-11"
+        },
+        {
+          "account_id": "equity",
+          "action": "BUY",
+          "decision_id": "DEC-20220111-2300-14364725A895",
+          "explanation": {
+            "basis": [
+              {
+                "key": "slot",
+                "text": "1"
+              },
+              {
+                "key": "price",
+                "text": "185.78"
+              },
+              {
+                "key": "exit_mode",
+                "text": "fixed"
+              },
+              {
+                "key": "require_sector",
+                "text": "False"
+              },
+              {
+                "key": "participation_policy",
+                "text": "linear"
+              },
+              {
+                "key": "participation_width",
+                "text": "0.2744236516713197"
+              },
+              {
+                "key": "anchor",
+                "text": "189.3"
+              },
+              {
+                "key": "participation",
+                "text": "0.7979851935001921"
+              },
+              {
+                "key": "participation_days",
+                "text": "3"
+              },
+              {
+                "key": "prior_participation",
+                "text": "0.9090392927252114"
+              },
+              {
+                "key": "opening_factor",
+                "text": "0.43033643213664174"
+              },
+              {
+                "key": "prior_factor",
+                "text": "0.5659885343840432"
+              },
+              {
+                "key": "joint_rule",
+                "text": "maximum"
+              },
+              {
+                "key": "participation_factor",
+                "text": "0.5659885343840432"
+              },
+              {
+                "key": "participation_threshold",
+                "text": "0.9920961481748924"
+              },
+              {
+                "key": "entry_atr",
+                "text": "6.90488571428572"
+              },
+              {
+                "key": "trail_atr",
+                "text": "2.4279380676391424"
+              },
+              {
+                "key": "allocation",
+                "text": "0.5659885343840432"
+              },
+              {
+                "key": "relative63",
+                "text": "0.15223189173640828"
+              },
+              {
+                "key": "long_strong",
+                "text": "True"
+              },
+              {
+                "key": "risk_basis",
+                "text": "daily"
+              },
+              {
+                "key": "information",
+                "text": "relative"
+              },
+              {
+                "key": "treatment",
+                "text": "tilt"
+              },
+              {
+                "key": "industry_return",
+                "text": "0.00018516785669753233"
+              },
+              {
+                "key": "mu_return",
+                "text": "0.0025362905401760116"
+              },
+              {
+                "key": "strong",
+                "text": "True"
+              },
+              {
+                "key": "down2",
+                "text": "True"
+              },
+              {
+                "key": "common",
+                "text": "0.0003277864016789815"
+              },
+              {
+                "key": "opening_recovery",
+                "text": "True"
+              },
+              {
+                "key": "down_days",
+                "text": "1"
+              },
+              {
+                "key": "target_weight",
+                "text": "0.5659885343840432"
+              }
+            ],
+            "case_key": "long",
+            "explanation": "下跌后入场条件成立，参与后续上涨",
+            "judgment": "下跌后入场条件成立，参与后续上涨",
+            "next_watch": "检查成交和已声明的持有退出条件。",
+            "state_key": "target"
+          },
+          "generated_at": "2026-11-12T10:36:05.686449+00:00",
+          "signal_date": "2022-01-11",
+          "state_changed_at": "2026-11-12T10:36:05.798081+00:00",
+          "state_events": [
+            {
+              "occurred_at": "2026-11-12T10:36:05.686449+00:00",
+              "reason": "PLAN_GENERATED",
+              "related_decision_id": null,
+              "sequence": 1,
+              "state": "PENDING"
+            },
+            {
+              "occurred_at": "2026-11-12T10:36:05.767466+00:00",
+              "reason": "CHANNEL_RESULT_UNCERTAIN",
+              "related_decision_id": null,
+              "sequence": 2,
+              "state": "EXECUTING"
+            },
+            {
+              "occurred_at": "2026-11-12T10:36:05.798081+00:00",
+              "reason": "ORDER_REJECTED",
+              "related_decision_id": null,
+              "sequence": 3,
+              "state": "INCOMPLETE"
+            }
+          ],
+          "state_reason": "ORDER_REJECTED",
+          "status": "INCOMPLETE",
+          "target_quantity": 610,
+          "valid_session": "2022-01-11"
+        }
+      ]
+    }
+  ],
+  "missing": [],
+  "semantic_review": {
+    "status": "FAIL",
+    "decision_id": "DEC-20220111-2330-0D707A137DAA",
+    "local_market_time": "2022-01-11T10:30:00-05:00",
+    "observation": "开盘首30分钟已结束。后续区间正确维持零目标仓位，但解释误写成仍在等待首30分钟。",
+    "proposed_judgment": "首30分钟入场窗口已结束，继续空仓",
+    "screenshot": {
+      "type": "EvidenceRef",
+      "experiment": {
+        "type": "ExperimentRef",
+        "strategy_id": "S019",
+        "experiment_id": "EX052_20261112"
+      },
+      "evidence_id": "0740255a3173d3c7f5d46f906fefd2fa38efaac51c46cdf1dedf0c7dc8667bc1.png",
+      "sha256": "0740255a3173d3c7f5d46f906fefd2fa38efaac51c46cdf1dedf0c7dc8667bc1",
+      "media_type": "image/png",
+      "name": "post-opening-chart",
+      "schema": null,
+      "schema_version": null
+    }
+  }
+}
