@@ -6,6 +6,7 @@ Synthetic feature boundaries exercise each unchanged decision kernel. They do
 not stand in for market-data, transaction-ledger or production acceptance.
 """
 
+from contextlib import contextmanager
 from datetime import datetime, time
 from decimal import Decimal
 from hashlib import sha256
@@ -53,15 +54,16 @@ BASELINE_IDENTITIES = {
 }
 
 
-@pytest.fixture(scope="module")
-def preparations(frozen_seed_root):
+@contextmanager
+def isolated_migration_preparations(frozen_seed_root, *, releases, conversions):
     live = RepositoryContext.discover(ROOT)
     workspace = frozen_seed_root / "runtime-migration"
     baseline = workspace / ("baseline_" + uuid4().hex)
     context = RepositoryContext(baseline, baseline / "research", baseline / "research/registrations", baseline / "strategies")
-    for ref, identity in BASELINE_IDENTITIES.items():
+    for ref in releases:
         family, version = ref.split("-")
-        old, manifest, _, source = _migration_original(live, FrozenVersionReference(family, version, *identity))
+        old, manifest, _, source = _migration_original(
+            live, FrozenVersionReference(family, version, *BASELINE_IDENTITIES[ref]))
         package = source
         for _ in Path(manifest["runtime_root"]).parts:
             package = package.parent
@@ -79,12 +81,18 @@ def preparations(frozen_seed_root):
     original = {str(path): sha256(path.read_bytes()).hexdigest()
                 for path in context.strategy_root.rglob("*") if path.is_file()}
     results = {ref: prepare_frozen_runtime_migration(context, FrozenRuntimeMigrationRequest(
-        ref, f"C{9800 + index:04d}", baseline / ".tmp" / ref.replace("-", "_"),
-    )) for index, ref in enumerate(REFERENCES)}
+        ref, f"C{9800 + REFERENCES.index(ref):04d}", baseline / ".tmp" / ref.replace("-", "_"),
+    )) for ref in conversions}
     yield context, results
     actual = {str(path): sha256(path.read_bytes()).hexdigest()
               for path in context.strategy_root.rglob("*") if path.is_file()}
     assert actual == original, "preparation must never modify or create frozen strategy files"
+
+
+@pytest.fixture(scope="module")
+def preparations(frozen_seed_root):
+    with isolated_migration_preparations(frozen_seed_root, releases=REFERENCES, conversions=REFERENCES) as prepared:
+        yield prepared
 
 
 def assert_frozen_preparation_identity(preparations, reference, monkeypatch):
