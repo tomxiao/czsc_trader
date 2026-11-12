@@ -1,0 +1,273 @@
+{
+  "mandate": "MANDATE/2",
+  "candidate": "640bbc1f68803d12b859b1631a36c66c84eca31ca4a3c7ae9871863184dbd90e",
+  "window": [
+    "2022-01-03",
+    "2026-10-30"
+  ],
+  "confirmed_targets": [
+    {
+      "type": "ResearchTarget",
+      "target_id": "center-nar",
+      "metric": "NET_ANNUAL_RETURN",
+      "lower": {
+        "type": "ConstantBound",
+        "value": 0.55,
+        "inclusive": true
+      },
+      "upper": null,
+      "when": null,
+      "scope": "STANDARD",
+      "one_way_cost": null
+    },
+    {
+      "type": "ResearchTarget",
+      "target_id": "center-calmar",
+      "metric": "NET_CALMAR",
+      "lower": {
+        "type": "ConstantBound",
+        "value": 5.0,
+        "inclusive": true
+      },
+      "upper": null,
+      "when": null,
+      "scope": "STANDARD",
+      "one_way_cost": null
+    },
+    {
+      "type": "ResearchTarget",
+      "target_id": "center-risk",
+      "metric": "DRAWDOWN_MAGNITUDE",
+      "lower": null,
+      "upper": {
+        "type": "ConstantBound",
+        "value": 0.25,
+        "inclusive": true
+      },
+      "when": null,
+      "scope": "STANDARD",
+      "one_way_cost": null
+    },
+    {
+      "type": "ResearchTarget",
+      "target_id": "center-relative-risk",
+      "metric": "DRAWDOWN_MAGNITUDE",
+      "lower": null,
+      "upper": {
+        "type": "BenchmarkBound",
+        "multiplier": 0.8,
+        "inclusive": true
+      },
+      "when": null,
+      "scope": "STANDARD",
+      "one_way_cost": null
+    },
+    {
+      "type": "ResearchTarget",
+      "target_id": "center-frequency",
+      "metric": "FREQUENCY_MEDIAN",
+      "lower": {
+        "type": "ConstantBound",
+        "value": 6.0,
+        "inclusive": true
+      },
+      "upper": null,
+      "when": null,
+      "scope": "STANDARD",
+      "one_way_cost": null
+    },
+    {
+      "type": "FrequencyCoverageTarget",
+      "target_id": "center-coverage",
+      "window_days": 60,
+      "minimum_closed_cycles": 3,
+      "minimum_numerator": 9,
+      "minimum_denominator": 10
+    },
+    {
+      "type": "ParameterNeighborhoodTarget",
+      "target_id": "parameters",
+      "minimum_numerator": 4,
+      "minimum_denominator": 5,
+      "joint_targets": [
+        {
+          "type": "ResearchTarget",
+          "target_id": "neighbor-nar",
+          "metric": "NET_ANNUAL_RETURN",
+          "lower": {
+            "type": "ConstantBound",
+            "value": 0.5,
+            "inclusive": true
+          },
+          "upper": null,
+          "when": null,
+          "scope": "STANDARD",
+          "one_way_cost": null
+        },
+        {
+          "type": "ResearchTarget",
+          "target_id": "neighbor-calmar",
+          "metric": "NET_CALMAR",
+          "lower": {
+            "type": "ConstantBound",
+            "value": 4.5,
+            "inclusive": true
+          },
+          "upper": null,
+          "when": null,
+          "scope": "STANDARD",
+          "one_way_cost": null
+        },
+        {
+          "type": "ResearchTarget",
+          "target_id": "neighbor-relative-risk",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "lower": null,
+          "upper": {
+            "type": "BenchmarkBound",
+            "multiplier": 0.9,
+            "inclusive": true
+          },
+          "when": null,
+          "scope": "STANDARD",
+          "one_way_cost": null
+        }
+      ],
+      "all_point_targets": [
+        {
+          "type": "ResearchTarget",
+          "target_id": "neighbor-risk",
+          "metric": "DRAWDOWN_MAGNITUDE",
+          "lower": null,
+          "upper": {
+            "type": "ConstantBound",
+            "value": 0.25,
+            "inclusive": true
+          },
+          "when": null,
+          "scope": "STANDARD",
+          "one_way_cost": null
+        }
+      ]
+    },
+    {
+      "type": "ResearchTarget",
+      "target_id": "stress-nar",
+      "metric": "NET_ANNUAL_RETURN",
+      "lower": {
+        "type": "ConstantBound",
+        "value": 0.5,
+        "inclusive": true
+      },
+      "upper": null,
+      "when": null,
+      "scope": "STRESS",
+      "one_way_cost": 0.002
+    },
+    {
+      "type": "ResearchTarget",
+      "target_id": "stress-calmar",
+      "metric": "NET_CALMAR",
+      "lower": {
+        "type": "ConstantBound",
+        "value": 4.5,
+        "inclusive": true
+      },
+      "upper": null,
+      "when": null,
+      "scope": "STRESS",
+      "one_way_cost": 0.002
+    },
+    {
+      "type": "ResearchTarget",
+      "target_id": "stress-risk",
+      "metric": "DRAWDOWN_MAGNITUDE",
+      "lower": null,
+      "upper": {
+        "type": "ConstantBound",
+        "value": 0.25,
+        "inclusive": true
+      },
+      "when": null,
+      "scope": "STRESS",
+      "one_way_cost": 0.002
+    },
+    {
+      "type": "ResearchTarget",
+      "target_id": "stress-relative-risk",
+      "metric": "DRAWDOWN_MAGNITUDE",
+      "lower": null,
+      "upper": {
+        "type": "BenchmarkBound",
+        "multiplier": 1.0,
+        "inclusive": false
+      },
+      "when": {
+        "type": "BenchmarkCondition",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "operator": "GT",
+        "value": 0.0
+      },
+      "scope": "STRESS",
+      "one_way_cost": 0.002
+    },
+    {
+      "type": "ResearchTarget",
+      "target_id": "stress-zero-risk",
+      "metric": "DRAWDOWN_MAGNITUDE",
+      "lower": null,
+      "upper": {
+        "type": "ConstantBound",
+        "value": 0.0,
+        "inclusive": true
+      },
+      "when": {
+        "type": "BenchmarkCondition",
+        "metric": "DRAWDOWN_MAGNITUDE",
+        "operator": "LE",
+        "value": 0.0
+      },
+      "scope": "STRESS",
+      "one_way_cost": 0.002
+    }
+  ],
+  "protocol": {
+    "type": "NeighborhoodSelfCheckProtocol",
+    "version": "s019-goal-based-api-acceptance",
+    "baseline_window": "FULL",
+    "standard_scenario": "STANDARD",
+    "stress_scenario": "STRESS",
+    "rolling_window_days": 252,
+    "rolling_step_days": 21,
+    "quantile_method": "LINEAR",
+    "minimum_rolling_windows": 1,
+    "bootstrap_repetitions": 10000,
+    "bootstrap_block_length": 21,
+    "seed": 20261110,
+    "reconciliation_tolerance": 1e-08,
+    "parameter_protocol": {
+      "type": "ParameterNeighborhoodProtocol",
+      "purpose": "LOCAL_SENSITIVITY",
+      "max_combinations": 10000,
+      "quantile_method": "LINEAR",
+      "version": "parameter-cartesian-neighborhood-v2"
+    },
+    "pbo_blocks": 10,
+    "frequency_min_closed_cycles": 3
+  },
+  "incumbent": {
+    "type": "EvidenceRef",
+    "experiment": {
+      "type": "ExperimentRef",
+      "strategy_id": "S019",
+      "experiment_id": "EX003_20261110"
+    },
+    "evidence_id": "1c0be34f82c8fd04cfd8cc218cc965d30fc28c83a151fa975f92cdc5afab0597.json",
+    "sha256": "1c0be34f82c8fd04cfd8cc218cc965d30fc28c83a151fa975f92cdc5afab0597",
+    "media_type": "application/json",
+    "name": "fixed-s018-v1-reference",
+    "schema": "equity_research",
+    "schema_version": 4
+  },
+  "new_parameter_replays": 0
+}
