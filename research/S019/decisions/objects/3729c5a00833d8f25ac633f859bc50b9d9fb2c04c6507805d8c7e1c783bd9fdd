@@ -1,0 +1,29 @@
+{
+  "recorded_on": "2026-11-12",
+  "user_reply": "同意修正提示文案",
+  "scope": "首30分钟入场窗口结束后的空仓提示修正及其阶段五复验",
+  "candidate": {
+    "strategy_id": "S019",
+    "candidate_id": "C4477"
+  },
+  "content_sha256": "640bbc1f68803d12b859b1631a36c66c84eca31ca4a3c7ae9871863184dbd90e",
+  "parent": {
+    "strategy_id": "S019",
+    "candidate_id": "C4476"
+  },
+  "parent_inspection": {
+    "type": "ResearchEvidenceRef",
+    "owner": {
+      "type": "ResearchEvidenceOwner",
+      "strategy_id": "S019",
+      "experiment_id": "EX052_20261112"
+    },
+    "path": "inspection/4c7749cd945b285b3e30bba9c8310e9766e7a75402a9e8616c7cff09143dd8c8",
+    "sha256": "4c7749cd945b285b3e30bba9c8310e9766e7a75402a9e8616c7cff09143dd8c8"
+  },
+  "change": {
+    "before": "等待首30分钟完成，空仓",
+    "after": "首30分钟入场窗口已结束，继续空仓",
+    "condition": "flat and slot > 1"
+  }
+}
