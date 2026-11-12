@@ -234,6 +234,8 @@ class EquityEvaluationResult:
             raise TypeError("equity result artifacts require an immutable typed tuple")
         if len({item.sha256 for item in self.artifacts}) != len(self.artifacts):
             raise ValueError("duplicate equity artifact")
+        if payload.get("schema") not in EQUITY_EVIDENCE_SCHEMAS:
+            raise ValueError("equity results require a supported schema")
         from .equity_replay import validate_result_structure
         validate_result_structure(payload, self.artifacts)
 

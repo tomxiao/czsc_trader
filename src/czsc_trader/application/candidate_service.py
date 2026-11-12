@@ -134,6 +134,8 @@ def register_candidate(context: RepositoryContext, request: CandidateRegistratio
         if ref.schema != 'equity_research' or ref.schema_version not in EQUITY_EVIDENCE_VERSIONS:
             raise ValueError('equity registration requires supported equity_research evidence')
         value = json.loads(data)
+        if value.get('schema_version') != ref.schema_version:
+            raise ValueError('equity support schema differs from its reference')
         from ..research_tools.equity_replay import validate_result_structure
         validate_result_structure(value)
         declaration = value['request']

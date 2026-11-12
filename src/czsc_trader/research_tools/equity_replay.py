@@ -656,9 +656,11 @@ def validate_result_structure(payload, artifacts=()):
     if request.get("price_basis") != "HFQ" or request.get("quantity_basis") != "SIMULATED_INTEGER_UNITS":
         raise ValueError("historical evidence requires HFQ simulated units; old RAW evidence must remain separate")
     version = payload.get("schema_version")
+    # V4 declarations and materialized views historically accepted the schema on the request alone.
+    schema = payload.get("schema", request.get("schema") if version == 4 else None)
     if (type(version) is not int or version not in EQUITY_EVIDENCE_VERSIONS
-            or payload.get("schema") not in EQUITY_EVIDENCE_SCHEMAS
-            or payload["schema"] != f"equity-research/v{version}" or request.get("schema") != payload["schema"]):
+            or schema not in EQUITY_EVIDENCE_SCHEMAS
+            or schema != f"equity-research/v{version}" or request.get("schema") != schema):
         raise ValueError("equity result schema differs")
     if request.get("candidate_definition", {}).get("contract_version") != 4:
         raise ValueError("account evidence requires the V4 strategy contract")

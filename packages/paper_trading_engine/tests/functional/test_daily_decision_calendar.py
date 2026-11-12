@@ -49,15 +49,13 @@ def _calendar_provider(zone, signal_day, execution_day, signal_close, execution_
         "run_state": "RUNNING",
         "selection_data_cutoff": signal_day,
     }
-    client = object.__new__(FormalV4AdviceClient)
-    client.inspection_permit = None
+    store = SimpleNamespace(equity_account_rules=lambda _: SimpleNamespace(
+        execution=SimpleNamespace(decision_clock=BarFrequency.DAILY), timezone=tz))
+    client = FormalV4AdviceClient(repo_root=".", store=store, dataflows=None, data_dir=".")
     client.recipe = lambda _: SimpleNamespace(release_hash=account["release_hash"])
     client._calendar_products = lambda *_: {"sessions": fetched}
-    client.store = SimpleNamespace(
-        equity_account_rules=lambda _: SimpleNamespace(
-            execution=SimpleNamespace(decision_clock=BarFrequency.DAILY)
-        )
-    )
+    definition = SimpleNamespace(execution_policy=SimpleNamespace(settings={}))
+    client._account_release = lambda _: (None, None, SimpleNamespace(definition=definition))
     return FormalV4ScheduleProvider(client, None), account, tz
 
 

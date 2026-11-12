@@ -90,7 +90,7 @@ def test_SRT_09_C06_observation_preparation_has_no_execution_constraints():
 def test_forward_selection_only_requests_completed_hfq_observations(market_name, tmp_path):
     from datetime import date, timedelta
     from zoneinfo import ZoneInfo
-    from dataflows import MarketId, EquityProduct, TradingSession, TimeInterval
+    from dataflows import BarFrequency, MarketId, EquityProduct, TradingSession, TimeInterval
     from dataflows.equity_data import session_record
     from strategy_runtime.data_preparation import forward_requests
     from packages.strategy_runtime.tests.binding_fixture_support import binding_fixture
@@ -127,7 +127,8 @@ def test_forward_selection_only_requests_completed_hfq_observations(market_name,
         if p.query.product is EquityProduct.SESSIONS
     }
     interval = sessions[2].segments[0]
-    definition = SimpleNamespace(instrument=binding.instrument, observation_inputs=())
+    definition = SimpleNamespace(instrument=binding.instrument, observation_inputs=(),
+                                 execution_spec=SimpleNamespace(decision_clock=BarFrequency.DAILY))
     requests, items, observation_items, _ = forward_requests(
         None, binding, interval, definition, tmp_path, calendars, cutoff=interval.start
     )

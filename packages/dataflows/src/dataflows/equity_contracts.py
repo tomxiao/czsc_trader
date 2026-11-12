@@ -198,8 +198,6 @@ class EquityParameters:
     def __post_init__(self):
         if type(self.instrument) is not InstrumentId or type(self.source) is not SourceRef or type(self.query) is not EquityQuery:
             raise TypeError("equity parameters require typed instrument, source and query")
-
-    def __post_init__(self):
         cutoff = self.query.completed_through
         if cutoff is not None and cutoff.astimezone(ZoneInfo(self.instrument.timezone)).date() != self.query.end:
             raise ValueError('completed-bar cutoff must belong to the last requested session date')
