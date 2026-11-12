@@ -22,7 +22,7 @@ from czsc_trader.application import (
 )
 from czsc_trader.research_tools import (
     EvaluationEvidenceWrite, MaterialEvidenceWrite, ResearchExecutionSession,
-    build_assessment_evidence,
+    build_assessment_evidence, build_assessment_reference,
     SelectionProjectionBudget, SelectionProjectionStatus, SelectionStabilityEvidence,
     SelectionWindowFactsRequest, SelectionWindowFactsResult, SelectionWindowSource,
 )
@@ -32,10 +32,11 @@ from assessment_delivery_support import assessment_request, comparison_request
 from test_research_delivery import content, published
 
 
-def _accounts(root, market, frequency, *, drawdown_basis="BAR_CLOSE"):
-    """Two actual accounts share inputs/benchmark but retain independent identities."""
+def _accounts(root, market, frequency, *, drawdown_basis="BAR_CLOSE", with_benchmark=True):
+    """Two actual accounts share inputs but retain independent identities."""
     context, request = setup_account(root, market, frequency)
-    request = replace(request, drawdown_basis=drawdown_basis)
+    request = replace(request, drawdown_basis=drawdown_basis,
+                      benchmark=request.benchmark if with_benchmark else None)
     source = request.candidate.source_root
     (source / "strategy.py").write_text(
         "from strategy_runtime import AccountDecision, AccountStepResult\n"
@@ -93,7 +94,11 @@ def _schema15(context, prepared, reference, fact):
         m.ResearchMetric.ROLLING_EXCESS_Q10: m.ResearchMetric.ROLLING_EXCESS_CALMAR_Q10,
         m.ResearchMetric.STRESS_ANNUAL_LOSS: m.ResearchMetric.STRESS_CALMAR_LOSS,
     }
+    benchmark = prepared.request.benchmark
+    if benchmark is None:
+        replacements[m.ResearchMetric.ROLLING_EXCESS_Q10] = m.ResearchMetric.ROLLING_CALMAR_Q10
     policy = replace(seed_comparison.policy, formula_version="research-ranking-v6",
+        rolling_metric=m.ResearchMetric.ROLLING_CALMAR_Q10 if benchmark is None else None,
         bins=tuple(replace(x, metric=replacements.get(x.metric, x.metric))
                    for x in seed_comparison.policy.bins))
     comparison = m.CalmarComparisonRequest(seed_comparison.candidates,
@@ -102,11 +107,13 @@ def _schema15(context, prepared, reference, fact):
     confirmation = publish_evidence(context, MaterialEvidenceWrite(prepared.experiment,
         "selection-fixture-confirmation", b'{"engineering_fixture":true}', "application/json", "json"))
     confirmed = d.ConfirmationRecord(d.ConfirmationStatus.CONFIRMED, confirmation)
+    benchmark_items = () if benchmark is None else (
+        d.MandateItem("benchmark", d.MandateItemKind.BENCHMARK, "Buy hold", confirmed,
+            d.BenchmarkRequirement(benchmark)),)
     mandate = d.ResearchMandate((
         d.MandateItem("targets", d.MandateItemKind.OBJECTIVE, "Synthetic bounds", confirmed,
             d.PerformanceRequirement(seed_comparison.targets.requirements)),
-        d.MandateItem("benchmark", d.MandateItemKind.BENCHMARK, "Buy hold", confirmed,
-            d.BenchmarkRequirement(prepared.request.benchmark)),
+        *benchmark_items,
         d.MandateItem("frequency", d.MandateItemKind.EXECUTION, "Original report frequency", confirmed,
             d.NumericRequirement("frequency_window_days", "sessions", lower=60., upper=60.)),
     ))
@@ -122,7 +129,8 @@ def _schema15(context, prepared, reference, fact):
         assessment, panel, comparison, compare_candidates(comparison),
         tuple(d.TargetMandateBinding(x.target_id, "targets")
               for x in seed_comparison.targets.requirements),
-        "frequency", "benchmark", "Synthetic independent attachment acceptance", (reference,), ())
+        "frequency", "benchmark" if benchmark is not None else None,
+        "Synthetic independent attachment acceptance", (reference,), ())
     definition = d.DeliveryDefinition(context.batch, d.DeliveryStage.ASSESSMENT, 1,
         predecessors=(candidates.reference, mandate_receipt.reference), schema_version=15)
     return definition, payload
@@ -146,10 +154,82 @@ def _forbid_research_recomputation(patch):
     return forbidden
 
 
+def test_mixed_goals_use_their_declared_account_and_buy_hold(tmp_path):
+    from strategy_evaluator.research_acceptance import check_target
+    from czsc_trader.research_tools.equity_replay import materialize_equity
+
+    context, prepared, references, _ = _accounts(tmp_path, MarketId.US, BarFrequency.M30)
+    request = prepared[0].request
+    with ResearchExecutionSession(context, experiment=request.experiment) as execution:
+        mixed, absolute = tuple(context.evaluation.prepare(item, execution=execution)
+            for item in (request, replace(request, benchmark=None)))
+        outcomes = context.evaluation.evaluate_many((mixed, absolute), execution=execution)
+        assert all(x.result is not None for x in outcomes), [x.error for x in outcomes]
+        mixed_result, absolute_result = (x.result for x in outcomes)
+        assert execution.equity_statistics.benchmark_runs == 1
+        assert len(mixed_result.artifacts) == 3 and len(absolute_result.artifacts) == 2
+        assert mixed_result.payload["candidate_ref"] == absolute_result.payload["candidate_ref"]
+        evidence, = build_assessment_evidence(mixed, mixed_result, execution=execution)
+        comparator = build_assessment_reference(mixed, mixed_result, references[1], execution=execution)
+        with pytest.raises(ValueError, match="reference account or observation sessions differ"):
+            build_assessment_reference(mixed, mixed_result, references[0], execution=execution)
+        baseline, = build_assessment_evidence(absolute, absolute_result, execution=execution)
+
+    def panel(facts, reference=None):
+        seed = assessment_request((facts,))
+        protocol = replace(seed.protocol, baseline_window=facts.window_id,
+                           standard_scenario=facts.scenario_id)
+        return assess_candidates(replace(seed, protocol=protocol, incomplete=(),
+            include_absolute_time_stability=True, references=() if reference is None else (reference,))).rows[0]
+
+    mixed_row, absolute_row = panel(evidence, comparator), panel(baseline)
+    runs = materialize_equity(mixed_result).payload["runs"]
+    own, buy_hold = (runs[key]["metrics"] for key in ("candidate", "buy_hold"))
+    targets = (
+        m.ResearchTarget("nar", m.ResearchMetric.NET_ANNUAL_RETURN, lower=m.ConstantBound(-1., True)),
+        m.ResearchTarget("calmar", m.ResearchMetric.NET_CALMAR, lower=m.ConstantBound(-1e9, True)),
+        m.ResearchTarget("relative-dd", m.ResearchMetric.DRAWDOWN_MAGNITUDE, upper=m.BenchmarkBound(.9, True)),
+        m.ResearchTarget("incumbent-nar", m.ResearchMetric.NET_ANNUAL_RETURN,
+                         lower=m.BenchmarkBound(1., True),
+                         reference_evaluation_id=comparator.performance.evaluation_id),
+    )
+    nar, calmar, drawdown, incumbent = (check_target(target, mixed_row, 60) for target in targets)
+    assert nar.observed == pytest.approx(own["annualized_return"])
+    assert calmar.observed == pytest.approx(own["annualized_return"] / own["bar_max_drawdown"])
+    assert drawdown.resolved_upper == pytest.approx(.9 * buy_hold["bar_max_drawdown"])
+    assert incumbent.resolved_lower == pytest.approx(comparator.performance.annual_return)
+    assert nar.distance_to_bound == pytest.approx(own["annualized_return"] + 1.)
+    assert drawdown.distance_to_bound == pytest.approx(drawdown.resolved_upper - own["bar_max_drawdown"])
+    assert incumbent.evaluation_ids == (evidence.evaluation_id, comparator.performance.evaluation_id)
+    assert mixed_row.absolute_time_stability.nar_interval == absolute_row.absolute_time_stability.nar_interval
+    for target in targets[2:]:
+        missing = check_target(target, absolute_row, 60)
+        assert missing.status is m.TargetCheckStatus.INDETERMINATE
+        assert missing.reason == "MISSING_BOUND_BENCHMARK"
+        assert missing.distance_to_bound is None
+
+
 @pytest.mark.parametrize('market,frequency', [(MarketId.US, BarFrequency.M30)])
-def test_TDR_18_C09_saved_accounts_selection_attach_to_schema15_without_recomputation(tmp_path, monkeypatch, market, frequency):
-    context, prepared, references, account_facts = _accounts(tmp_path, market, frequency)
+@pytest.mark.parametrize("with_benchmark", [True, False], ids=["buy-hold", "absolute"])
+def test_TDR_18_C09_saved_accounts_selection_attach_to_schema15_without_recomputation(
+        tmp_path, monkeypatch, market, frequency, with_benchmark):
+    if not with_benchmark:
+        from czsc_trader.research_tools import equity_replay
+
+        def forbidden_benchmark(*args, **kwargs):
+            raise AssertionError("strategy-only evaluation must skip benchmark construction")
+
+        monkeypatch.setattr(equity_replay, "_benchmark_candidate", forbidden_benchmark)
+    context, prepared, references, account_facts = _accounts(tmp_path, market, frequency, with_benchmark=with_benchmark)
+    assert {ref.schema_version for ref in references} == {4 if with_benchmark else 5}
     definition, old_payload = _schema15(context, prepared[0], references[0], account_facts[0])
+    row, = old_payload.assessment.rows
+    if not with_benchmark:
+        assert row.uncertainty.status is m.DiagnosticStatus.NOT_APPLICABLE
+        assert row.absolute_time_stability.rolling_nar_q10.status is m.DiagnosticStatus.AVAILABLE
+        assert row.absolute_time_stability.nar_interval.status is m.DiagnosticStatus.AVAILABLE
+        assert "MISSING_BENCHMARK" not in row.coverage_gaps
+        assert old_payload.comparison.rows[0].target_checks[0].status is m.TargetCheckStatus.PASSED
     calendar = tuple(f"2026-10-{day}" for day in range(27, 31))
     selection = SelectionWindow("selection", calendar[0], calendar[1])
     observation = SelectionWindow("observation", calendar[2], calendar[3])
@@ -176,17 +256,20 @@ def test_TDR_18_C09_saved_accounts_selection_attach_to_schema15_without_recomput
         assert projection.status is SelectionProjectionStatus.COMPLETE, projection.failures
         assert len(projection.sources) == 2
         assert len({x.benchmark_source_id for x in projection.sources}) == 1
-        assert projection.stats.projected_accounts == 3  # Two candidates, one shared benchmark.
-        assert projection.stats.projected_windows == 6  # Two unique windows, not four pair legs.
+        assert projection.stats.projected_accounts == 2 + with_benchmark
+        assert projection.stats.projected_windows == 2 * projection.stats.projected_accounts
         assert projection.stats.read_count == len(reads)
         assert set(reads.values()) == {1}
-        assert projection.stats.decode_count == 6  # Headers 2, candidates 2, input 1, benchmark 1.
-        assert len(projection.facts) == 6
+        assert projection.stats.decode_count == 5 + with_benchmark
+        assert len(projection.facts) == projection.stats.projected_windows
         assert all(x.status is WindowCoverageStatus.COMPLETE for x in projection.facts)
         assert SelectionWindowFactsResult.from_dict(json.loads(json.dumps(projection.to_dict()))) == projection
         analysis = projection.analysis_request(rule)
         result = assess_selection_stability(analysis)
         assert result.selected_windows == 2
+        if not with_benchmark:
+            assert all(x.benchmark_primary_value is None for x in result.observations)
+            assert result.observation_incomplete_windows == 0
         assert all(len(x.eligible) == 2 for x in result.decisions)
         future_changed = replace(analysis, facts=tuple(replace(x, diagnostics=tuple(
             replace(value, value=value.value + 1.)

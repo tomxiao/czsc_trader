@@ -157,10 +157,11 @@ def _validate_request(context: ResearchContext, request: EvidenceWriteRequest, *
 def _publish_serialized(context: ResearchContext, request: EvidenceWriteRequest, data: bytes, *,
                         artifacts_seen=None, checkpoint=None) -> EvidenceRef:
     if isinstance(request, EvaluationEvidenceWrite):
-        version = 4
+        from ..research_tools.equity_evaluation import EQUITY_EVIDENCE_VERSIONS
         media_type, suffix, schema = "application/json", "json", "equity_research"
         document = json.loads(data)
-        if document.get("schema_version") != version or document.get("schema") != "equity-research/v4":
+        version = document.get("schema_version")
+        if version not in EQUITY_EVIDENCE_VERSIONS or document.get("schema") != f"equity-research/v{version}":
             raise ValueError("equity publication requires its own versioned schema")
         # Install each immutable dependency once before exposing the result.
         seen = {} if artifacts_seen is None else artifacts_seen

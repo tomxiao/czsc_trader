@@ -188,16 +188,18 @@ class ClosedCycle(ResearchRecord):
 class EvaluationScenarioContext(ResearchRecord):
     one_way_cost: float
     measurement_tier: str
-    benchmark_id: str
-    benchmark_kind: str
-    benchmark_contract_sha256: str
+    benchmark_id: str | None
+    benchmark_kind: str | None
+    benchmark_contract_sha256: str | None
 
     def validate(self):
         require(0 <= self.one_way_cost < 1, "cost must be in [0, 1)")
-        require(
-            bool(re.fullmatch(r"[0-9a-f]{64}", self.benchmark_contract_sha256)),
-            "benchmark contract requires SHA-256",
-        )
+        if self.benchmark_contract_sha256 is None:
+            require(self.benchmark_id is None and self.benchmark_kind is None, "incomplete benchmark identity")
+        else:
+            require(bool(self.benchmark_id and self.benchmark_kind)
+                    and bool(re.fullmatch(r"[0-9a-f]{64}", self.benchmark_contract_sha256)),
+                    "benchmark identity requires an ID, kind and SHA-256")
 
 
 @dataclass(frozen=True)
@@ -209,7 +211,7 @@ class EquityAssessmentFacts(ResearchRecord):
     drawdown_basis: str
     concentration_basis: str
     candidate_ledger: str
-    benchmark_ledger: str
+    benchmark_ledger: str | None
 
     def validate(self):
         from .equity_assessment import validate_equity_facts
@@ -317,6 +319,8 @@ class ResearchMetric(StrEnum):
     ROLLING_EXCESS_Q10 = "ROLLING_EXCESS_Q10"
     STRESS_ANNUAL_LOSS = "STRESS_ANNUAL_LOSS"
     ROLLING_EXCESS_CALMAR_Q10 = "ROLLING_EXCESS_CALMAR_Q10"
+    ROLLING_NAR_Q10 = "ROLLING_NAR_Q10"
+    ROLLING_CALMAR_Q10 = "ROLLING_CALMAR_Q10"
     STRESS_CALMAR_LOSS = "STRESS_CALMAR_LOSS"
     PROFIT_CONCENTRATION = "PROFIT_CONCENTRATION"
 
@@ -325,6 +329,7 @@ class ResearchMetric(StrEnum):
 DERIVED_RANKING_METRICS = (
     ResearchMetric.NET_CALMAR, ResearchMetric.PARAMETER_CALMAR_Q10,
     ResearchMetric.ROLLING_EXCESS_CALMAR_Q10, ResearchMetric.STRESS_CALMAR_LOSS,
+    ResearchMetric.ROLLING_NAR_Q10, ResearchMetric.ROLLING_CALMAR_Q10,
 )
 ASSESSMENT_METRICS = tuple(x for x in ResearchMetric if x not in DERIVED_RANKING_METRICS)
 
@@ -835,6 +840,21 @@ class AssessmentBootstrapEvidence(ResearchRecord):
 
 
 @dataclass(frozen=True)
+class AssessmentReference(ResearchRecord):
+    """Performance of one explicitly supplied, aligned retained account."""
+    base_evaluation_id: str
+    reference_evidence_sha256: str
+    performance: PerformanceFacts
+
+    def validate(self):
+        require(self.performance.evaluation_id != self.base_evaluation_id
+                and self.performance.point_index is None
+                and self.performance.benchmark_return is None
+                and bool(re.fullmatch(r"[0-9a-f]{64}", self.reference_evidence_sha256)),
+                "invalid assessment reference")
+
+
+@dataclass(frozen=True)
 class CandidateAssessmentRequest(ResearchRecord):
     centers: tuple[AssessmentCandidate, ...]
     protocol: SelfCheckProtocol | NeighborhoodSelfCheckProtocol | CalmarSelfCheckProtocol
@@ -844,17 +864,31 @@ class CandidateAssessmentRequest(ResearchRecord):
     family_returns: FamilyReturnEvidence | None = None
     parameter_designs: tuple[ParameterPerturbationDesign | ParameterNeighborhoodDesign | DeclaredParameterPointSet, ...] = ()
     bootstrap_evidence: tuple[AssessmentBootstrapEvidence, ...] = ()
+    include_absolute_time_stability: bool = False
+    references: tuple[AssessmentReference, ...] = ()
 
     def _serialized_fields(self):
-        return tuple(f.name for f in fields(self)
-                     if f.name != "bootstrap_evidence" or self.bootstrap_evidence)
+        return tuple(f.name for f in fields(self) if f.name not in (
+            "bootstrap_evidence", "include_absolute_time_stability", "references") or getattr(self, f.name))
 
     @staticmethod
     def _decode_defaults(value):
-        return {"bootstrap_evidence": ()} if type(value) is dict and "bootstrap_evidence" not in value else {}
+        return {name: default for name, default in
+                (("bootstrap_evidence", ()), ("include_absolute_time_stability", False), ("references", ()))
+                if type(value) is dict and name not in value}
 
     def validate(self):
         require(bool(self.centers), "explicit center set must be nonempty")
+        bases = {x.evaluation_id: x for x in self.evidence if x.candidate in self.centers
+                 and x.window_id == self.protocol.baseline_window and x.scenario_id == self.protocol.standard_scenario}
+        unique(((x.base_evaluation_id, x.performance.evaluation_id) for x in self.references), "assessment reference")
+        for reference in self.references:
+            base = bases.get(reference.base_evaluation_id)
+            scene = reference.performance.scenario
+            require(base is not None and reference.performance.candidate != base.candidate
+                    and (scene.one_way_cost, scene.measurement_tier)
+                    == (base.scenario_context.one_way_cost, base.scenario_context.measurement_tier),
+                    "assessment reference does not match its standard center")
         unique((x.candidate for x in self.bootstrap_evidence), "bootstrap center")
         require(all(x.candidate in self.centers and any(
             e.candidate == x.candidate and e.evaluation_id == x.evaluation_id
@@ -1094,6 +1128,19 @@ class AssessmentCalculationDetails(ResearchRecord):
 
 
 @dataclass(frozen=True)
+class AbsoluteTimeStability(ResearchRecord):
+    rolling_nar_q10: DiagnosticValue
+    rolling_calmar_q10: DiagnosticValue
+    nar_interval: UncertaintyInterval
+    calmar_interval: UncertaintyInterval
+
+    def validate(self):
+        require(self.rolling_nar_q10.metric is ResearchMetric.ROLLING_NAR_Q10
+                and self.rolling_calmar_q10.metric is ResearchMetric.ROLLING_CALMAR_Q10,
+                "absolute rolling diagnostic metrics differ")
+
+
+@dataclass(frozen=True)
 class CandidateAssessment(ResearchRecord):
     candidate: AssessmentCandidate
     context_sha256: str | None
@@ -1112,17 +1159,27 @@ class CandidateAssessment(ResearchRecord):
     stress_performance: PerformanceFacts | None = None
     rolling_calmar_excess_q10: DiagnosticValue | None = None
     calculation_details: AssessmentCalculationDetails | None = None
+    absolute_time_stability: AbsoluteTimeStability | None = None
+    references: tuple[AssessmentReference, ...] = ()
 
     def _serialized_fields(self):
-        return tuple(f.name for f in fields(self) if f.name not in (
-            "rolling_calmar_excess_q10", "calculation_details") or getattr(self, f.name) is not None)
+        return tuple(f.name for f in fields(self) if (f.name != "references" or self.references) and (f.name not in (
+            "rolling_calmar_excess_q10", "calculation_details", "absolute_time_stability")
+            or getattr(self, f.name) is not None))
 
     @classmethod
     def _decode_defaults(cls, value):
-        return {name: None for name in ("rolling_calmar_excess_q10", "calculation_details")
-                if type(value) is dict and name not in value}
+        return {name: default for name, default in (
+            ("rolling_calmar_excess_q10", None), ("calculation_details", None),
+            ("absolute_time_stability", None), ("references", ()))
+            if type(value) is dict and name not in value}
 
     def validate(self):
+        unique((x.performance.evaluation_id for x in self.references), "assessment reference")
+        if self.references:
+            baseline = next((x for x in self.diagnostics if x.metric is ResearchMetric.NET_ANNUAL_RETURN), None)
+            require(baseline is not None and all(x.base_evaluation_id in baseline.evaluation_ids
+                    for x in self.references), "assessment reference baseline differs")
         if self.rolling_calmar_excess_q10 is not None:
             require(self.rolling_calmar_excess_q10.metric is ResearchMetric.ROLLING_EXCESS_CALMAR_Q10,
                     "rolling Calmar diagnostic metric differs")
@@ -1293,8 +1350,22 @@ class ResearchTarget(ResearchRecord):
     when: BenchmarkCondition | None = None
     scope: TargetScope = TargetScope.STANDARD
     one_way_cost: float | None = None
+    reference_evaluation_id: str | None = None
+
+    def _serialized_fields(self):
+        return tuple(f.name for f in fields(self) if f.name != "reference_evaluation_id"
+                     or self.reference_evaluation_id is not None)
+
+    @staticmethod
+    def _decode_defaults(value):
+        return {"reference_evaluation_id": None} if type(value) is dict and "reference_evaluation_id" not in value else {}
 
     def validate(self):
+        require(self.reference_evaluation_id is None or (
+            bool(self.reference_evaluation_id) and self.scope is TargetScope.STANDARD
+            and self.metric in PERFORMANCE_METRICS
+            and (self.when is not None or any(isinstance(x, BenchmarkBound) for x in (self.lower, self.upper)))),
+            "explicit reference requires a relative standard performance target")
         require(self.one_way_cost is None or 0 <= self.one_way_cost < 1, "invalid target cost")
         require(self.scope is TargetScope.STANDARD or (self.metric in PERFORMANCE_METRICS
                 and (self.when is None or self.when.metric in PERFORMANCE_METRICS)),
@@ -1354,6 +1425,7 @@ class ParameterGroupTarget(ResearchRecord):
         require(bool(self.joint_targets) and bool(self.all_point_targets), "empty parameter conditions")
         unique((x.target_id for x in (*self.joint_targets, *self.all_point_targets)), "point target")
         require(all(x.scope is TargetScope.STANDARD and x.metric in PERFORMANCE_METRICS
+                    and x.reference_evaluation_id is None
                     and (x.when is None or x.when.metric in PERFORMANCE_METRICS)
                     for x in (*self.joint_targets, *self.all_point_targets)),
                 "parameter conditions require standard performance metrics")
@@ -1373,6 +1445,7 @@ class ParameterNeighborhoodTarget(ResearchRecord):
         require(bool(self.joint_targets) and bool(self.all_point_targets), "empty parameter conditions")
         unique((x.target_id for x in (*self.joint_targets, *self.all_point_targets)), "point target")
         require(all(x.scope is TargetScope.STANDARD and x.metric in PERFORMANCE_METRICS
+                    and x.reference_evaluation_id is None
                     and (x.when is None or x.when.metric in PERFORMANCE_METRICS)
                     for x in (*self.joint_targets, *self.all_point_targets)),
                 "parameter conditions require standard performance metrics")
@@ -1454,6 +1527,14 @@ class ComparisonVariant(ResearchRecord):
     def validate(self):
         unique((x.metric for x in self.bins), "variant bin")
         metrics = {x.metric for x in self.bins}
+        # Both relative and absolute rolling metrics are explicit choices of the policy.
+        for absolute, relative in (
+            (ResearchMetric.ROLLING_NAR_Q10, ResearchMetric.ROLLING_EXCESS_Q10),
+            (ResearchMetric.ROLLING_CALMAR_Q10, ResearchMetric.ROLLING_EXCESS_CALMAR_Q10),
+        ):
+            if absolute in metrics:
+                require(relative not in metrics, "one rolling metric required")
+                metrics = (metrics - {absolute}) | {relative}
         require(
             metrics - set(FREQUENCY_METRICS) in (
                 set((*BENCHMARK_METRICS, *WITHIN_LAYER_METRICS)),
@@ -1487,10 +1568,21 @@ class ComparisonPolicy(ResearchRecord):
     missing_evidence_policy: MissingEvidencePolicy
     sensitivities: tuple[ComparisonVariant, ...] = ()
     formula_version: str = "research-ranking-v4"
+    rolling_metric: ResearchMetric | None = None
+
+    def _serialized_fields(self):
+        return tuple(f.name for f in fields(self) if f.name != "rolling_metric" or self.rolling_metric is not None)
+
+    @staticmethod
+    def _decode_defaults(value):
+        return {"rolling_metric": None} if type(value) is dict and "rolling_metric" not in value else {}
 
     def validate(self):
         require(self.formula_version in ("research-ranking-v3", "research-ranking-v4", "research-ranking-v5", "research-ranking-v6"),
                 "unsupported ranking formula version")
+        allowed = (ResearchMetric.ROLLING_CALMAR_Q10 if self.formula_version == "research-ranking-v6"
+                   else ResearchMetric.ROLLING_NAR_Q10)
+        require(self.rolling_metric in (None, allowed), "absolute rolling metric differs from ranking objective")
         ComparisonVariant("baseline", self.bins)
         expected = set((*self.pareto_metrics, *self.ranking_metrics))
         require(all({x.metric for x in bins if x.metric not in FREQUENCY_METRICS}
@@ -1516,6 +1608,8 @@ class ComparisonPolicy(ResearchRecord):
         within = (CALMAR_V2_WITHIN_LAYER_METRICS if self.formula_version == "research-ranking-v6"
                   else CALMAR_WITHIN_LAYER_METRICS if self.formula_version == "research-ranking-v5"
                   else WITHIN_LAYER_METRICS)
+        if self.rolling_metric is not None:
+            within = (*within[:2], self.rolling_metric, *within[3:])
         return (*within, self.frequency_metric)
 
     @property
@@ -1684,6 +1778,19 @@ class TargetCheck(ResearchRecord):
     resolved_upper: float | None
     condition_observed: float | None
     evaluation_ids: tuple[str, ...]
+
+    @property
+    def distance_to_bound(self) -> float | None:
+        """Signed distance to the nearest resolved bound in the metric's units."""
+        if self.observed is None:
+            return None
+        distances = []
+        if self.resolved_lower is not None:
+            distances.append(self.observed - self.resolved_lower)
+        if self.resolved_upper is not None:
+            distances.append(self.resolved_upper - self.observed)
+        distance = min(distances, default=None)
+        return distance if distance is not None and math.isfinite(distance) else None
 
     def validate(self):
         require(

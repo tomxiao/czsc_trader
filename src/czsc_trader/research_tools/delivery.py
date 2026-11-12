@@ -28,6 +28,7 @@ from ._records import _Record, _text, _hash, _path, _unique
 from ._records import _canonical as _canonical, _digest as _digest, _encode as _encode
 from .context import ResearchBatchRef
 from .evidence import EvidenceRef
+from .equity_evaluation import EQUITY_EVIDENCE_VERSIONS
 
 Scalar = str | int | float | bool
 
@@ -314,7 +315,7 @@ class EvaluationEvidenceRef(_Record):
 
     def _validate(self):
         if not ((self.evidence.schema == "account_evaluation" and self.evidence.schema_version in (7, 8))
-                or (self.evidence.schema == "equity_research" and self.evidence.schema_version == 4)):
+                or (self.evidence.schema == "equity_research" and self.evidence.schema_version in EQUITY_EVIDENCE_VERSIONS)):
             raise ValueError("evaluation evidence requires published account schema 7 or 8")
         _unique(self.evaluation_ids, "evaluation ID")
         for value in self.evaluation_ids:
@@ -537,7 +538,7 @@ class CandidateAssessmentDelivery(_Record):
     comparison: CandidateComparison
     target_bindings: tuple[TargetMandateBinding, ...]
     frequency_window_item_id: str | None
-    benchmark_mandate_item_id: str
+    benchmark_mandate_item_id: str | None
     recommendation: str
     contrary_evidence: tuple[EvidenceRef, ...]
     pending_decisions: tuple[str, ...]
@@ -553,6 +554,8 @@ class CandidateAssessmentDelivery(_Record):
         if self.comparison_request.panel != self.assessment:
             raise ValueError("comparison must use the supplied assessment panel")
         _unique((x.target_id for x in self.target_bindings), "target binding")
+        if self.benchmark_mandate_item_id is not None:
+            _text(self.benchmark_mandate_item_id, "benchmark mandate item")
         _text(self.recommendation, "recommendation")
         for item in self.pending_decisions:
             _text(item, "pending decision")

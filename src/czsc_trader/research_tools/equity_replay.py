@@ -23,7 +23,8 @@ from strategy_runtime.equity_definition import EquityAuxiliaryBinding, EquityInp
 from strategy_runtime.strategy_performance import StrategyPerformanceBudget, StrategyPerformanceExceeded
 from strategy_evaluator.equity_metrics import summarize_equity_ledger
 
-from .equity_evaluation import (EquityArtifact, EquityEvaluationRequest, EquityEvaluationResult,
+from .equity_evaluation import (EQUITY_EVIDENCE_SCHEMAS, EQUITY_EVIDENCE_VERSIONS,
+    EquityArtifact, EquityEvaluationRequest, EquityEvaluationResult,
     _audit_inputs, _data_quality, _fetch_products, _json_value, _records, _records_json)
 from .execution import ExecutionPhase, ResearchExecutionSession
 from .account_preparation import PreparedAccountEvaluation, BenchmarkRunIdentity
@@ -243,18 +244,20 @@ def prepare_equity(access, request, *, execution):
         if request.audit_inputs_sha256 is not None and request.audit_inputs_sha256 != facts_hash:
             raise ValueError("equity audit input fingerprint differs")
         request = replace(request, input_binding=binding, audit_inputs_sha256=facts_hash)
-        baseline = _benchmark_candidate(request)
         if state.engine_sources is None:
             contract = request.identity(spec)
             state.engine_sources = contract["engine_sources"]
         else:
             contract = request._identity_with_sources(spec, state.engine_sources)
-        benchmark = BenchmarkRunIdentity(_bytes({"kind": "BUY_HOLD", "input_snapshot_sha256": _primary_input_sha256(snapshot),
-            "instrument": asdict(request.candidate.instrument), "definition": baseline.definition.to_dict(),
-            "window": asdict(request.window), "history_start": request.history_start.isoformat(),
-            "initial_cash": request.initial_cash, "fee_rate": request.fee_rate,
-            "engine_sources": contract["engine_sources"], "python_version": contract["python_version"],
-            "pandas_version": contract["pandas_version"], "income_policy": contract["income_policy"]}))
+        benchmark = None
+        if request.benchmark is not None:
+            baseline = _benchmark_candidate(request)
+            benchmark = BenchmarkRunIdentity(_bytes({"kind": "BUY_HOLD", "input_snapshot_sha256": _primary_input_sha256(snapshot),
+                "instrument": asdict(request.candidate.instrument), "definition": baseline.definition.to_dict(),
+                "window": asdict(request.window), "history_start": request.history_start.isoformat(),
+                "initial_cash": request.initial_cash, "fee_rate": request.fee_rate,
+                "engine_sources": contract["engine_sources"], "python_version": contract["python_version"],
+                "pandas_version": contract["pandas_version"], "income_policy": contract["income_policy"]}))
         value = PreparedAccountEvaluation(request, snapshot, benchmark, state.token, _bytes(contract))
         state.prepared[id(value)] = value
         from .parameter_evaluation import validate_parameter_request
@@ -453,15 +456,18 @@ def _result(prepared, candidate, benchmark):
     request_hash = equity_hash(contract)
     identity = EvaluationIdentity(request.candidate.key, request.candidate.content_identity.content_sha256,
         request.prepared.manifest_sha256, request_hash, canonical_sha256(contract["engine_sources"]))
-    version = request.candidate.definition.contract_version
-    payload = {"schema": f"equity-research/v{version}", "schema_version": version, "request": contract,
+    version = 5 if benchmark is None else 4
+    payload = {"schema": contract["schema"], "schema_version": version, "request": contract,
         "request_hash": request_hash, "evaluation_identity": identity.to_dict(), "evaluation_id": identity.evaluation_id,
         "data": _read(prepared.snapshot.data_content), "input_ref": prepared.snapshot.artifact.reference(),
-        "candidate_ref": candidate.reference(), "benchmark_ref": benchmark.reference(),
-        "benchmark_identity": prepared.benchmark_identity.to_dict(),
+        "candidate_ref": candidate.reference(), "benchmark_ref": None if benchmark is None else benchmark.reference(),
+        "benchmark_identity": None if prepared.benchmark_identity is None else prepared.benchmark_identity.to_dict(),
         "limitations": ["BAR_RANGE model; no exact intrabar fill time", "bar observations are not independent samples",
             "research evidence; not frozen release or PTE admission"]}
-    return EquityEvaluationResult(request_hash, _bytes(payload), (prepared.snapshot.artifact, candidate, benchmark))
+    artifacts = (prepared.snapshot.artifact, candidate)
+    if benchmark is not None:
+        artifacts += (benchmark,)
+    return EquityEvaluationResult(request_hash, _bytes(payload), artifacts)
 
 
 def evaluate_many_equity(access, requests, *, execution):
@@ -492,7 +498,7 @@ def evaluate_many_equity(access, requests, *, execution):
     for i, prepared in enumerate(requests):
         if i in restored:
             continue
-        for benchmark in (False, True):
+        for benchmark in ((False, True) if prepared.benchmark_identity is not None else (False,)):
             key = ("benchmark", prepared.benchmark_identity.sha256) if benchmark else ("candidate", request_hashes[i])
             if key in task_meta or (benchmark and key[1] in state.benchmarks):
                 continue
@@ -556,7 +562,10 @@ def evaluate_many_equity(access, requests, *, execution):
         if i in restored:
             outcomes.append(EvaluationOutcome(EvaluationStatus.SUCCEEDED, request_hash, restored[i]))
             continue
-        errors = [failures[key] for key in (("candidate", request_hash), ("benchmark", prepared.benchmark_identity.sha256)) if key in failures]
+        benchmark_identity = prepared.benchmark_identity
+        candidate_key = ("candidate", request_hash)
+        keys = (candidate_key,) if benchmark_identity is None else (candidate_key, ("benchmark", benchmark_identity.sha256))
+        errors = [failures[key] for key in keys if key in failures]
         if errors:
             error = errors[0]
             status = (EvaluationStatus.UNKNOWN if isinstance(error, BrokenProcessPool) else
@@ -567,7 +576,8 @@ def evaluate_many_equity(access, requests, *, execution):
             continue
         try:
             _require_prepared(state, prepared)
-            result = _result(prepared, accounts[("candidate", request_hash)], state.benchmarks[prepared.benchmark_identity.sha256])
+            benchmark = None if benchmark_identity is None else state.benchmarks[benchmark_identity.sha256]
+            result = _result(prepared, accounts[candidate_key], benchmark)
             _remember_result(state, prepared, result)
             if execution.checkpoint is not None:
                 with execution.executor.measure(ExecutionPhase.CHECKPOINT):
@@ -611,11 +621,13 @@ def _qualify_performance(tasks, task_meta, compute, accounts, failures, qualifie
 def _authenticate_restore(state, prepared, result):
     expected = _read(prepared.contract_content)
     payload = result.payload
+    identity = prepared.benchmark_identity
     if (payload["request"] != expected or payload["input_ref"] != prepared.snapshot.artifact.reference()
-            or payload["benchmark_identity"] != prepared.benchmark_identity.to_dict()):
+            or payload["benchmark_identity"] != (None if identity is None else identity.to_dict())):
         raise ValueError("restored equity result differs from authenticated prepared inputs")
-    state.benchmarks[prepared.benchmark_identity.sha256] = next(item for item in result.artifacts
-        if item.sha256 == payload["benchmark_ref"]["sha256"])
+    if identity is not None:
+        state.benchmarks[identity.sha256] = next(item for item in result.artifacts
+            if item.sha256 == payload["benchmark_ref"]["sha256"])
     _remember_result(state, prepared, result)
 
 
@@ -634,16 +646,27 @@ def validate_certified_result(access, prepared, result, *, execution):
         raise ValueError("certified result request or engine identity changed")
 
 
+def equity_artifact_fields(payload):
+    fields = (("input_ref", "equity_input"), ("candidate_ref", "equity_account"))
+    return fields + (("benchmark_ref", "equity_account"),) if payload["schema_version"] == 4 else fields
+
+
 def validate_result_structure(payload, artifacts=()):
-    if (payload["request"].get("price_basis") != "HFQ" or
-            payload["request"].get("quantity_basis") != "SIMULATED_INTEGER_UNITS"):
+    request = payload["request"]
+    if request.get("price_basis") != "HFQ" or request.get("quantity_basis") != "SIMULATED_INTEGER_UNITS":
         raise ValueError("historical evidence requires HFQ simulated units; old RAW evidence must remain separate")
-    if payload.get("schema_version") != 4 or payload["request"].get("schema") != f"equity-research/v{payload["schema_version"]}":
+    version = payload.get("schema_version")
+    if (type(version) is not int or version not in EQUITY_EVIDENCE_VERSIONS
+            or payload.get("schema") not in EQUITY_EVIDENCE_SCHEMAS
+            or payload["schema"] != f"equity-research/v{version}" or request.get("schema") != payload["schema"]):
         raise ValueError("equity result schema differs")
-    if payload["request"].get("candidate_definition", {}).get("contract_version") != payload["schema_version"]:
-        raise ValueError("account evidence version differs from strategy contract")
+    if request.get("candidate_definition", {}).get("contract_version") != 4:
+        raise ValueError("account evidence requires the V4 strategy contract")
+    if version == 5 and any(value is not None for value in
+            (request["benchmark"], request["benchmark_sha256"], payload["benchmark_ref"], payload["benchmark_identity"])):
+        raise ValueError("strategy-only equity evidence requires null benchmark fields")
     expected = []
-    for name, kind in (("input_ref", "equity_input"), ("candidate_ref", "equity_account"), ("benchmark_ref", "equity_account")):
+    for name, kind in equity_artifact_fields(payload):
         ref = payload[name]
         if type(ref) is not dict or set(ref) != {"kind", "sha256"} or ref["kind"] != kind:
             raise ValueError("equity artifact reference schema differs")
@@ -651,14 +674,14 @@ def validate_result_structure(payload, artifacts=()):
         if type(ref["sha256"]) is not str or re.fullmatch("[a-f0-9]{64}", ref["sha256"]) is None:
             raise ValueError("invalid equity artifact digest")
         expected.append((ref["kind"], ref["sha256"]))
-    if len(set(expected)) != 3:
-        raise ValueError("equity input, candidate and benchmark must be distinct artifacts")
+    if len(set(expected)) != len(expected):
+        raise ValueError("equity dependencies must be distinct artifacts")
     if artifacts and set(expected) != {(item.kind, item.sha256) for item in artifacts}:
         raise ValueError("equity result artifact closure differs from references")
 
 
 def decoded_equity_runs(payload, inputs, candidate, benchmark, *, primary_sha256):
-    """Validate V4 dependency identities without re-decoding or account replay."""
+    """Validate dependency identities without re-decoding or account replay."""
     if inputs.get("schema") != "equity-input/v2" or inputs["data"] != payload["data"]:
         raise ValueError("equity input identity differs")
     return _account_runs(payload, candidate, benchmark, primary_sha256=primary_sha256)
@@ -667,8 +690,10 @@ def decoded_equity_runs(payload, inputs, candidate, benchmark, *, primary_sha256
 def _account_runs(payload, candidate, benchmark, *, primary_sha256=None):
     """Check the identities consumed by account-fact projection."""
     runs = {}
-    for name, key in (("candidate", "candidate_ref"), ("buy_hold", "benchmark_ref")):
-        account = candidate if name == "candidate" else benchmark
+    accounts = (("candidate", candidate),)
+    if payload["benchmark_ref"] is not None:
+        accounts += (("buy_hold", benchmark),)
+    for name, account in accounts:
         expected_input = (payload["input_ref"]["sha256"] if name == "candidate" else
                           payload["benchmark_identity"]["input_snapshot_sha256"])
         if account.get("schema") != "equity-account/v1" or account["input_sha256"] != expected_input:
@@ -704,8 +729,9 @@ class MaterializedEquity:
         if (type(self.source_content) is not bytes or type(self.artifacts) is not tuple
                 or any(type(item) is not EquityArtifact for item in self.artifacts)):
             raise TypeError("materialized evidence requires immutable source bytes and typed artifacts")
-        validate_result_structure(_read(self.source_content), self.artifacts)
-        if len(self.artifacts) != 3:
+        payload = _read(self.source_content)
+        validate_result_structure(payload, self.artifacts)
+        if len(self.artifacts) != len(equity_artifact_fields(payload)):
             raise ValueError("materialization requires the complete equity closure")
 
     @property
@@ -723,8 +749,9 @@ class MaterializedEquity:
         payload = _read(self.source_content)
         documents = {item.sha256: _read(item.content) for item in self.artifacts}
         inputs = documents[payload["input_ref"]["sha256"]]
-        runs = decoded_equity_runs(payload, inputs,
-            documents[payload["candidate_ref"]["sha256"]], documents[payload["benchmark_ref"]["sha256"]],
+        benchmark_ref = payload["benchmark_ref"]
+        runs = decoded_equity_runs(payload, inputs, documents[payload["candidate_ref"]["sha256"]],
+            None if benchmark_ref is None else documents[benchmark_ref["sha256"]],
             primary_sha256=primary_input_digest(inputs))
         return payload, inputs, runs
 
@@ -732,8 +759,9 @@ class MaterializedEquity:
         """Read recorded accounts; input bars are only needed by full payload consumers."""
         payload = _read(self.source_content)
         artifacts = {item.sha256: item for item in self.artifacts}
-        candidate, benchmark = (_read(artifacts[payload[name]["sha256"]].content)
-                                for name in ("candidate_ref", "benchmark_ref"))
+        candidate = _read(artifacts[payload["candidate_ref"]["sha256"]].content)
+        benchmark_ref = payload["benchmark_ref"]
+        benchmark = None if benchmark_ref is None else _read(artifacts[benchmark_ref["sha256"]].content)
         return payload, _account_runs(payload, candidate, benchmark)
 
     @staticmethod
@@ -781,7 +809,7 @@ def _resolve_equity(value, resolver):
         if not callable(resolver):
             raise TypeError("detached equity evidence requires an explicit artifact resolver")
         values = []
-        for name in ("input_ref", "candidate_ref", "benchmark_ref"):
+        for name, _ in equity_artifact_fields(payload):
             ref = payload[name]
             item = EquityArtifact(ref["kind"], resolver(dict(ref)))
             if item.sha256 != ref["sha256"]:

@@ -78,11 +78,13 @@ def _binding(source, declared, request):
         "frequency_window_days": request.frequency_window_days,
         "minimum_closed_cycles": request.minimum_closed_cycles,
     })
-    benchmark_id = source.header["benchmark_ref"]["sha256"]
+    benchmark_ref = source.header["benchmark_ref"]
+    benchmark_id = None if benchmark_ref is None else benchmark_ref["sha256"]
+    benchmark = saved["benchmark"]
     return SelectionCandidateSource(declared.candidate, declared.evaluation.sha256,
         benchmark_id, context, EvaluationScenarioContext(float(saved["fee_rate"]),
-        saved["measurement_tier"], saved["benchmark"]["benchmark_id"],
-        saved["benchmark"]["kind"], saved["benchmark_sha256"]))
+        saved["measurement_tier"], None if benchmark is None else benchmark["benchmark_id"],
+        None if benchmark is None else benchmark["kind"], saved["benchmark_sha256"]))
 
 
 def project_selection_window_facts(repository: RepositoryContext,
@@ -122,7 +124,7 @@ def project_selection_window_facts(repository: RepositoryContext,
                 elapsed = perf_counter()
                 for source_id, run in ((binding.source_id, source.candidate_run),
                                        (binding.benchmark_source_id, source.benchmark_run)):
-                    if source_id in projected:
+                    if source_id is None or source_id in projected:
                         continue
                     projection = _projection(source, run, source_id, request, expected)
                     account_facts = project_equity_windows(projection)

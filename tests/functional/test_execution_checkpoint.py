@@ -37,7 +37,9 @@ def test_TDR_08_C06_publication_resume_rechecks_actual_evidence_and_preserves_co
             store.load_publication("b" * 64)
 
 
-def test_TDR_08_C01_equity_checkpoint_shares_artifacts_and_restores_without_replay(tmp_path, monkeypatch):
+@pytest.mark.parametrize("with_benchmark", [True, False], ids=["buy-hold", "absolute"])
+def test_TDR_08_C01_equity_checkpoint_shares_artifacts_and_restores_without_replay(
+        tmp_path, monkeypatch, with_benchmark):
     from equity_test_support import setup_account_research
     from strategy_runtime import ExecutionResources
     from czsc_trader.research_tools import (
@@ -45,6 +47,8 @@ def test_TDR_08_C01_equity_checkpoint_shares_artifacts_and_restores_without_repl
     from czsc_trader.research_tools import equity_replay
 
     context, request, _, _ = setup_account_research(tmp_path)
+    if not with_benchmark:
+        request = replace(request, benchmark=None)
     context.evaluation.resources = ExecutionResources(1, 1, 17)
     other = replace(request, candidate=replace(request.candidate, candidate_id="C0002"))
     with ResearchExecutionSession(context, experiment=request.experiment,
@@ -53,10 +57,11 @@ def test_TDR_08_C01_equity_checkpoint_shares_artifacts_and_restores_without_repl
         outcomes = context.evaluation.evaluate_many(prepared, execution=execution)
         assert all(item.result is not None for item in outcomes), [item.error for item in outcomes]
         originals = tuple(item.result for item in outcomes)
+        assert execution.equity_statistics.benchmark_runs == int(with_benchmark)
         cache = execution.checkpoint.root
         paths = tuple((cache / "blobs").glob("*.json"))
-        # One input, one shared benchmark, two candidate ledgers and two headers.
-        assert len(paths) == 6
+        # One input, two candidate ledgers, two headers and any shared benchmark.
+        assert len(paths) == 5 + with_benchmark
         before = {path.name: path.stat().st_mtime_ns for path in paths}
         reads = []
         original_read = execution.checkpoint._read
@@ -66,7 +71,7 @@ def test_TDR_08_C01_equity_checkpoint_shares_artifacts_and_restores_without_repl
         monkeypatch.setattr(execution.checkpoint, '_read', counted_read)
         for result in originals:
             document = json.loads((cache / "results" / f"{result.request_hash}.json").read_bytes())["payload"]
-            assert document["schema_version"] == 3 and len(document["artifact_refs"]) == 3
+            assert document["schema_version"] == 3 and len(document["artifact_refs"]) == 2 + with_benchmark
             assert "artifacts" not in document and 'content' not in document
             assert all(set(ref) == {"kind", "sha256"} for ref in document["artifact_refs"])
             assert (cache/'blobs'/f'{result.result_hash}.json').read_bytes() == result.content
@@ -96,7 +101,7 @@ def test_TDR_08_C01_equity_checkpoint_shares_artifacts_and_restores_without_repl
             assert outcome.result.artifacts == original.artifacts
         assert execution.stats.reused_results == 2 and execution.stats.submitted == 0
         assert execution.equity_statistics.candidate_runs == execution.equity_statistics.benchmark_runs == 0
-        assert len(restored_reads) == 6
+        assert len(restored_reads) == 5 + with_benchmark
 
 
 @pytest.mark.parametrize('corruption', [pytest.param('missing', id='TDR-08-C02'),

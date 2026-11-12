@@ -14,6 +14,7 @@ from strategy_manager import (
 from .context import RepositoryContext
 from ..research_tools.context import ExperimentRef
 from ..research_tools.evidence import EvidenceRef
+from ..research_tools.equity_evaluation import EQUITY_EVIDENCE_VERSIONS
 from ._frozen_materials import candidate_install_files
 
 
@@ -130,8 +131,8 @@ def register_candidate(context: RepositoryContext, request: CandidateRegistratio
             raise ValueError('equity candidate root contains a link')
     for ref in request.evidence:
         _, data = ref._read_verified(context.root)
-        if ref.schema != 'equity_research' or ref.schema_version != 4:
-            raise ValueError('equity registration requires equity_research contract 4')
+        if ref.schema != 'equity_research' or ref.schema_version not in EQUITY_EVIDENCE_VERSIONS:
+            raise ValueError('equity registration requires supported equity_research evidence')
         value = json.loads(data)
         from ..research_tools.equity_replay import validate_result_structure
         validate_result_structure(value)

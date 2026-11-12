@@ -299,6 +299,15 @@ def check_target(target, row, frequency_window_days):
         return _performance_check(target, row.stress_performance)
     metrics = {x.metric: x for x in row.diagnostics}
     benchmark = {x.metric: x for x in row.benchmark.diagnostics}
+    if target.reference_evaluation_id is not None:
+        reference = next((x.performance for x in row.references
+                          if x.performance.evaluation_id == target.reference_evaluation_id), None)
+        benchmark = {} if reference is None else {
+            metric: m.DiagnosticValue(metric, m.MetricUnit.RATIO, m.DiagnosticStatus.AVAILABLE,
+                                      value, None, (reference.evaluation_id,))
+            for metric, value in zip(m.BENCHMARK_METRICS, (reference.annual_return, reference.drawdown))
+            if value is not None
+        }
     if (target.metric is m.ResearchMetric.NET_CALMAR
             or (target.when is not None and target.when.metric is m.ResearchMetric.NET_CALMAR)):
         metrics[m.ResearchMetric.NET_CALMAR] = _calmar(metrics)

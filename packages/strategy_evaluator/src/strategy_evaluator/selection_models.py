@@ -193,7 +193,7 @@ class AccountWindowFacts(m.ResearchRecord):
 class SelectionCandidateSource(m.ResearchRecord):
     candidate: m.AssessmentCandidate
     source_id: str
-    benchmark_source_id: str
+    benchmark_source_id: str | None
     context_sha256: str
     scenario_context: m.EvaluationScenarioContext
 
@@ -225,7 +225,7 @@ def validate_selection_targets(targets, frequency_window_days, minimum_closed_cy
             m.require(target.minimum_closed_cycles == minimum_closed_cycles,
                       "selection minimum closed cycles differs")
         elif type(target) is not m.ResearchTarget or target.scope is not m.TargetScope.STANDARD \
-                or target.metric not in SELECTION_METRICS:
+                or target.metric not in SELECTION_METRICS or target.reference_evaluation_id is not None:
             raise UnsupportedSelectionRule("selection requires supported standard performance/frequency targets")
 
 
@@ -266,7 +266,8 @@ class SelectionStabilityRequest(m.ResearchRecord):
                   "selection requires standard formal accounts")
         m.unique(((x.source_id, x.window.window_id) for x in self.facts), "source window facts")
         windows = {x.window_id: x for x in self.plan.windows}
-        source_ids = {identity for x in self.sources for identity in (x.source_id, x.benchmark_source_id)}
+        source_ids = {identity for x in self.sources for identity in (x.source_id, x.benchmark_source_id)
+                      if identity is not None}
         for fact in self.facts:
             m.require(fact.source_id in source_ids and windows.get(fact.window.window_id) == fact.window,
                       "window fact outside declared sources or plan")

@@ -1,4 +1,4 @@
-"""Call-scoped, streaming V4 source reads for selection stability.
+"""Call-scoped, streaming equity source reads for selection stability.
 
 Shared byte budgets count serialized input/benchmark bytes, not Python memory.
 Candidates are returned to the caller and never retained by this reader.
@@ -11,8 +11,9 @@ from pathlib import Path, PurePosixPath
 from time import perf_counter
 
 from ..research_tools.evidence import EvidenceRef, managed_path
+from ..research_tools.equity_evaluation import EQUITY_EVIDENCE_VERSIONS
 from ..research_tools.equity_replay import (
-    _bytes, _read, decoded_equity_runs, primary_input_digest, validate_result_structure,
+    _read, decoded_equity_runs, equity_artifact_fields, primary_input_digest, validate_result_structure,
 )
 
 
@@ -38,9 +39,8 @@ class ResolvedSelectionSource:
     header: dict
     inputs: dict
     candidate_run: dict
-    benchmark_run: dict
+    benchmark_run: dict | None
     primary_input_sha256: str
-    benchmark_identity_sha256: str
 
 
 class SelectionSourceReader:
@@ -92,10 +92,12 @@ class SelectionSourceReader:
 
     def _header_shape(self, header):
         # Necessary access shapes only: no historical audit or numerical certification.
-        for name in ("request", "evaluation_identity", "benchmark_identity", "data"):
+        for name in ("request", "evaluation_identity", "data"):
             self._require_mapping(header[name], name)
         self._require_mapping(header["request"]["candidate_definition"], "candidate_definition")
-        self._require_mapping(header["benchmark_identity"]["definition"], "benchmark definition")
+        if header["benchmark_identity"] is not None:
+            self._require_mapping(header["benchmark_identity"], "benchmark_identity")
+            self._require_mapping(header["benchmark_identity"]["definition"], "benchmark definition")
 
     def _read_file(self, relative, digest):
         path = managed_path(self.root, relative)
@@ -143,16 +145,18 @@ class SelectionSourceReader:
         # Metadata-only planning includes every readable dependency before ledgers load.
         for key, source in unique.items():
             try:
-                if (source.schema != "equity_research" or source.schema_version != 4
+                if (source.schema != "equity_research" or source.schema_version not in EQUITY_EVIDENCE_VERSIONS
                         or source.media_type != "application/json"):
-                    raise ValueError("selection source requires application/json equity_research V4 evidence")
+                    raise ValueError("selection source requires supported JSON equity evidence")
                 path = managed_path(self.root, key)
                 sizes[str(path)] = path.stat().st_size
                 header = self._decode(self._read_file(key, source.sha256))
                 self._header_shape(header)
                 validate_result_structure(header)
+                if header["schema_version"] != source.schema_version:
+                    raise ValueError("selection account evidence version differs")
                 self._headers[key] = header
-                for name in ("input_ref", "candidate_ref", "benchmark_ref"):
+                for name, _ in equity_artifact_fields(header):
                     digest = header[name]["sha256"]
                     relative = (PurePosixPath(key).parent / (digest + ".json")).as_posix()
                     dependency = managed_path(self.root, relative)
@@ -193,7 +197,7 @@ class SelectionSourceReader:
         if not self._prepared or self._closed:
             raise RuntimeError("selection source reader must be prepared and open")
         known = {header["benchmark_ref"]["sha256"] for key, header in self._headers.items()
-            if key not in self._failures}
+            if key not in self._failures and header["benchmark_ref"] is not None}
         return len(known) + len(self._failures)
 
     def read(self, source: EvidenceRef) -> ResolvedSelectionSource:
@@ -209,11 +213,14 @@ class SelectionSourceReader:
             raise ValueError("selection source was not prepared")
         header = self._headers[key]
         inputs = self._dependency(source, header["input_ref"], shared=True)
-        benchmark = self._dependency(source, header["benchmark_ref"], shared=True)
+        benchmark_ref = header["benchmark_ref"]
+        benchmark = None if benchmark_ref is None else self._dependency(source, benchmark_ref, shared=True)
         candidate = self._dependency(source, header["candidate_ref"], shared=False)
         for name in ("products", "data"):
             self._require_mapping(inputs[name], f"input {name}")
         for name, account in (("candidate", candidate), ("benchmark", benchmark)):
+            if account is None:
+                continue
             self._require_mapping(account["owner"], f"{name} owner")
             self._require_mapping(account["run"], f"{name} run")
         digest = header["input_ref"]["sha256"]
@@ -221,8 +228,7 @@ class SelectionSourceReader:
             self._primary[digest] = primary_input_digest(inputs)
         primary = self._primary[digest]
         runs = decoded_equity_runs(header, inputs, candidate, benchmark, primary_sha256=primary)
-        return ResolvedSelectionSource(source, header, inputs, runs["candidate"], runs["buy_hold"],
-            primary, sha256(_bytes(header["benchmark_identity"])).hexdigest())
+        return ResolvedSelectionSource(source, header, inputs, runs["candidate"], runs.get("buy_hold"), primary)
 
     def close(self):
         self._headers.clear()

@@ -237,7 +237,8 @@ TDR 先对同源码、同特征和状态声明、同输入及执行窗口的组�
 
 ### 显式基准与费用
 
-V4使用`EquityBuyHold`及对应`ResearchBenchmark`，基准身份包含市场执行规格、窗口、输入、资金及费用。
+权益研究请求必须显式传入`benchmark`。`benchmark=None`只回放候选账户，适用于固定阈值或使用已发布策略证据的研究。
+`benchmark=EvaluationBenchmark(EquityBuyHold(spec))`运行买持对照，身份绑定市场执行规格、窗口、输入、资金及费用。
 不同市场的交易日历、数量单位、公司行动和可交易规则由显式事实及执行规格决定，不能因共享API而混用。
 费用、场景及计量层级由RSCH声明；平台不从场景名称推算费用，不自动增加成本压力场景。
 
@@ -344,8 +345,8 @@ verified_path = note.resolve(repository.root)
 
 `EvidenceRef`保存实验、业务名、哈希、格式及schema；`path`相对交付包，`repository_path`相对仓库。
 `resolve(repository.root)`是显式校验内容后返回路径的操作，会读取和计算哈希；只保存引用关系时不调用它。
-V4结果头和依赖对象保存在`research/<批次>/assets/evidence/<实验>/`，按内容身份不可变保存。
-`EvaluationEvidenceRef`只声明选定评价ID；阶段三交付要求与V4头部ID、候选及实验身份一致。
+权益结果头和依赖对象保存在`research/<批次>/assets/evidence/<实验>/`，按内容身份不可变保存。
+`EvaluationEvidenceRef`声明选定评价ID，阶段三交付核对结果头的版本、评价ID、候选及实验身份。
 
 ### 实验报告独立发布与修订
 
@@ -388,7 +389,7 @@ loaded = load_candidate(repository, candidate.key)
 ```
 
 登记保存载荷和源码快照，核对直接结果头的候选、批次及实现身份；不展开行情、策略账户或买持账户，
-不独立审计账本或重算指标。`evidence`可为空；V4登记所带账户引用须为V4格式。
+登记消费已发布的账户证据，`evidence`可为空或引用`equity_research`第4、5版。
 同键同内容幂等，冲突拒绝。登记只表示声明与实现已保存，不表示策略达标或获得交付资格。
 
 `load_candidate`明确返回可执行V4候选，进行一次源码、环境依赖和导入契约检查；不认证历史研究账户。
@@ -1093,7 +1094,7 @@ EC 市场规则的数量步长和价位必须与执行合同一致。制度切�
 已知中断数量、涉及交易日和区间；同时报告陈旧估值数量、抑制信号数量和受影响订单的身份、区间、原因。
 这些诊断在证据发布时依据声明行情和账户事实重新计算；不参与新增研究硬门槛。
 
-基准为同标的、同初始资金、同起止点、同预热、同买入规则、同费用及公司行动处理的买入并持有账户。
+显式选择买持时，基准账户使用同标的、同初始资金、同起止点、同预热、同买入规则、同费用及公司行动处理。
 V4基准使用同一显式状态回放运行时，开盘权益事件先应用再计算整数股预算，避免拆股前取整改变买入数量。
 首个买单未成交时，后续区间继续尝试；不强制按理论起始价持仓，也不在窗口末尾虚构平仓。
 
@@ -1114,11 +1115,11 @@ definition = EquityStrategyDefinition(
 candidate = EquityStrategyCandidate(batch.strategy_id, "C0001", definition, source_root)
 request = EquityEvaluationRequest(
     experiment, candidate, window, history_start, sources, 100000., .001,
-    benchmark=EvaluationBenchmark(EquityBuyHold(spec)),
+    benchmark=None,  # 如需买持，传 EvaluationBenchmark(EquityBuyHold(spec))
     drawdown_basis="BAR_CLOSE", concentration_basis="MAX_SINGLE",
 )
 with ResearchExecutionSession(context, experiment=experiment,
-        checkpoint=ExecutionCheckpointRequest("equity-v4")) as execution:
+        checkpoint=ExecutionCheckpointRequest("equity-study")) as execution:
     prepared = context.evaluation.prepare(request, execution=execution)
     outcome, = context.evaluation.evaluate_many((prepared,), execution=execution)
     if outcome.result is None:
@@ -1128,11 +1129,19 @@ with ResearchExecutionSession(context, experiment=experiment,
         experiment, "account", prepared, outcome.result), execution=execution)
 ```
 
-逐项检查批量计算和发布状态。主结果通过 `input_ref/candidate_ref/benchmark_ref`绑定三个内容寻址依赖；
-发布、检查点与交付必须保存完整闭包。冷读由 `materialize_equity`解析，再以
+逐项检查批量计算和发布状态。显式买持使用`equity-research/v4`，由`input_ref`、`candidate_ref`及`benchmark_ref`绑定三份依赖。
+仅回放候选账户时使用`equity-research/v5`，包含输入和候选账户两份依赖，基准声明、摘要及引用均为`null`。
+发布、检查点和交付保存对应版本的完整依赖。冷读由 `materialize_equity`解析，再以
 `build_equity_assessment`按所选投影消费必要事实。`materialize_equity`只解析不可变字节闭包及其引用结构；
-账户归属与输入关联在消费阶段检查。评估投影只解码候选和基准材料；显式`.payload`才解码输入正文并构造完整材料视图。
+账户归属与输入关联在消费阶段检查。评估投影解码已有账户材料，显式`.payload`解码输入正文并构造完整材料视图。
 缺少依赖或本次消费所需身份不同即失败，不隐式重算或独立审计。每次`.payload`返回独立可变快照。
+
+固定阈值目标使用候选自身绩效，`BenchmarkBound`或`BenchmarkCondition`使用显式参照。
+如需以已发布的策略账户作参照，调用`build_assessment_reference(prepared, result, reference, execution=execution)`，
+将返回值放入`CandidateAssessmentRequest.references`，并在目标上填写`ResearchTarget.reference_evaluation_id`。
+该接口读取已发布的`EvidenceRef`，核对标的、窗口、费用及计量口径。同为日收盘回撤时允许日频和盘中策略共用交易日历比较，
+盘中回撤要求相同观测频率。阶段四交付将引用的账户证据附在`DeliveryContent.evidence`，
+无买持要求的交付将`benchmark_mandate_item_id`设为`None`。
 
 平台源码指纹参与账户请求及检查点身份。平台升级后，旧证据仍按原身份读取和引用；
 旧检查点要求原实现身份，升级续跑需建立明确的新执行版本，禁止改写旧身份以命中缓存。

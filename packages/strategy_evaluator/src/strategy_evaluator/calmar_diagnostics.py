@@ -18,15 +18,21 @@ def _value(metric, value, reason, sources):
     )
 
 
-def _session_curves(evidence):
+def _session_curves(evidence, *, include_benchmark=True):
     sessions = tuple(x.session for x in evidence.account)
     if evidence.equity is None or evidence.equity.drawdown_basis == "SESSION_CLOSE":
-        return ({x.session: (x.equity,) for x in evidence.account},
-                {day: (value,) for day, value in zip(sessions, evidence.benchmark_equity, strict=True)})
+        strategy = {x.session: (x.equity,) for x in evidence.account}
+        if not include_benchmark:
+            return (strategy,)
+        benchmark = {day: (value,) for day, value in zip(sessions, evidence.benchmark_equity, strict=True)}
+        return strategy, benchmark
     from .equity_assessment import read_ledger
 
     curves = []
-    for encoded in (evidence.equity.candidate_ledger, evidence.equity.benchmark_ledger):
+    ledgers = (evidence.equity.candidate_ledger,)
+    if include_benchmark:
+        ledgers += (evidence.equity.benchmark_ledger,)
+    for encoded in ledgers:
         grouped = defaultdict(list)
         for point in read_ledger(encoded)["account_points"]:
             grouped[point["session"]].append(point["equity"])
@@ -51,12 +57,46 @@ def _window_calmar(curve, starting_equity, days):
     return _calmar_value(annual, drawdown)
 
 
+def absolute_rolling(evidence, protocol, quantile):
+    sources = (evidence.evaluation_id,)
+    sessions = tuple(x.session for x in evidence.account)
+    size = protocol.rolling_window_days
+    starts = range(0, len(sessions) - size + 1, protocol.rolling_step_days)
+    nar, calmar = [], []
+    if len(starts) >= protocol.minimum_rolling_windows:
+        strategy, = _session_curves(evidence, include_benchmark=False)
+        for start in starts:
+            opening = evidence.initial_cash if start == 0 else evidence.account[start - 1].equity
+            ending = evidence.account[start + size - 1].equity
+            try:
+                annual = (ending / opening) ** (252 / size) - 1
+            except OverflowError:
+                annual = None
+            nar.append(annual)
+            window = sessions[start:start + size]
+            calmar.append(_window_calmar((v for day in window for v in strategy[day]), opening, size))
+
+    def diagnostic(metric, values):
+        if not values:
+            return _value(metric, None, "INSUFFICIENT_ROLLING_WINDOWS", sources)
+        value = quantile(values) if all(x is not None and math.isfinite(x) for x in values) else None
+        if value is not None and not math.isfinite(value):
+            value = None
+        return _value(metric, value, "UNAVAILABLE_ABSOLUTE_ROLLING_WINDOW", sources)
+
+    return (diagnostic(m.ResearchMetric.ROLLING_NAR_Q10, nar),
+            diagnostic(m.ResearchMetric.ROLLING_CALMAR_Q10, calmar))
+
+
 def rolling_calmar_excess(evidence, protocol):
     metric = m.ResearchMetric.ROLLING_EXCESS_CALMAR_Q10
     if evidence is None:
         return _value(metric, None, "MISSING_BASELINE", ())
     sources = (evidence.evaluation_id,)
     if not evidence.benchmark_equity:
+        if evidence.scenario_context.benchmark_id is None:
+            return m.DiagnosticValue(metric, m.MetricUnit.RATIO, m.DiagnosticStatus.NOT_APPLICABLE,
+                                     None, "BENCHMARK_NOT_REQUESTED", sources)
         return _value(metric, None, "MISSING_BENCHMARK", sources)
     sessions = tuple(x.session for x in evidence.account)
     size = protocol.rolling_window_days

@@ -91,7 +91,7 @@ from .evaluation_access import (
     EvaluationOutcome,
 )
 
-from .assessment import build_assessment_evidence
+from .assessment import build_assessment_evidence, build_assessment_reference
 from .equity_assessment import AssessmentProjection
 from .execution import (
     CheckpointMode, ExecutionCheckpointRequest, ExecutionPhase, ExecutionProgress,
@@ -226,6 +226,7 @@ __all__ = [
     'EvaluationError',
     'EvaluationOutcome',
     'build_assessment_evidence',
+    'build_assessment_reference',
     'AssessmentProjection',
     'ParameterEvaluationCandidate',
     'ParameterEvaluationPlan',

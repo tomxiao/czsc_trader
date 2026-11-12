@@ -57,7 +57,7 @@ class BenchmarkRunIdentity:
 class PreparedAccountEvaluation:
     request: EquityEvaluationRequest
     snapshot: EquityInputSnapshot
-    benchmark_identity: BenchmarkRunIdentity
+    benchmark_identity: BenchmarkRunIdentity | None
     scope_token: str
     contract_content: bytes
 
@@ -70,8 +70,9 @@ class PreparedAccountEvaluation:
                 or self.request.prepared is None or self.request.input_binding is None
                 or type(self.snapshot) is not EquityInputSnapshot):
             raise TypeError('prepared equity evaluation requires a bound V4 request')
-        if type(self.benchmark_identity) is not BenchmarkRunIdentity:
-            raise TypeError('prepared evaluation requires typed benchmark identity')
+        expected_type = type(None) if self.request.benchmark is None else BenchmarkRunIdentity
+        if type(self.benchmark_identity) is not expected_type:
+            raise TypeError('prepared benchmark identity differs from the request')
         if type(self.scope_token) is not str or not self.scope_token:
             raise TypeError('prepared evaluation requires an owner token')
         if type(self.contract_content) is not bytes or _bytes(_read(self.contract_content)) != self.contract_content:

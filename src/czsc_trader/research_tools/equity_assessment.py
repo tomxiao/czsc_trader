@@ -1,4 +1,4 @@
-"""Project recorded V4 account observations into the shared SE contracts."""
+"""Project recorded equity account observations into the shared SE contracts."""
 
 from enum import StrEnum
 
@@ -25,7 +25,7 @@ def build_equity_assessment_payload(payload, *, projection: AssessmentProjection
     """Adapt saved observations once; do not certify their source or recompute metrics."""
     from .equity_replay import MaterializedEquity
     if type(payload) is not MaterializedEquity:
-        raise TypeError("equity assessment requires the resolved immutable V4 closure")
+        raise TypeError("equity assessment requires resolved immutable account evidence")
     if type(projection) is not AssessmentProjection:
         raise TypeError("assessment projection requires AssessmentProjection")
     source_sha256 = payload.source_sha256
@@ -54,6 +54,10 @@ def build_equity_assessment_payload(payload, *, projection: AssessmentProjection
             point = ParameterEvaluationBinding.from_dict(lineage["parameter_binding"]).point
     version = f"equity-assessment-v4:{request['drawdown_basis']}:{request['concentration_basis']}"
     benchmark = request["benchmark"]
+    benchmark_run = runs.get("buy_hold")
+    benchmark_ledger = None if benchmark_run is None else observations(benchmark_run)
+    benchmark_equity = () if benchmark_run is None else tuple(
+        float(row["equity"]) for row in benchmark_run["account_daily"])
     comparison = {
         "instrument": instrument, "specification": request["specification"],
         "data": header["data"], "sessions": [row["session"] for row in run["account_daily"]],
@@ -66,7 +70,8 @@ def build_equity_assessment_payload(payload, *, projection: AssessmentProjection
     context = canonical_sha256(comparison)
     candidate = AssessmentCandidate(f"{key.strategy_id}-{key.candidate_id}", content)
     scenario = EvaluationScenarioContext(float(request["fee_rate"]), request["measurement_tier"],
-        benchmark["benchmark_id"], benchmark["kind"], request["benchmark_sha256"])
+        None if benchmark is None else benchmark["benchmark_id"],
+        None if benchmark is None else benchmark["kind"], request["benchmark_sha256"])
     if projection is AssessmentProjection.PARAMETER_PERFORMANCE:
         if (parent is None or derivation_kind is not AssessmentDerivationKind.PARAMETERS or point is None):
             raise ValueError("parameter performance projection requires a bound parameter derivation")
@@ -75,17 +80,19 @@ def build_equity_assessment_payload(payload, *, projection: AssessmentProjection
         if basis not in {"SESSION_CLOSE", "BAR_CLOSE"}:
             raise ValueError("parameter performance requires an explicit drawdown basis")
         field = "daily_max_drawdown" if basis == "SESSION_CLOSE" else "bar_max_drawdown"
-        own, reference = run["metrics"], runs["buy_hold"]["metrics"]
+        own = run["metrics"]
+        reference = None if benchmark_run is None else benchmark_run["metrics"]
         performance = PerformanceFacts(candidate, header["evaluation_id"], scenario,
             float(own["annualized_return"]), float(own[field]),
-            float(reference["annualized_return"]), float(reference[field]), point.point_index)
-        fingerprint = equity_benchmark_fingerprint(
+            None if reference is None else float(reference["annualized_return"]),
+            None if reference is None else float(reference[field]), point.point_index)
+        fingerprint = None if benchmark_ledger is None else equity_benchmark_fingerprint(
             initial_cash=float(request["initial_cash"]),
             sessions=tuple(row["session"] for row in run["account_daily"]),
-            benchmark_equity=tuple(float(row["equity"]) for row in runs["buy_hold"]["account_daily"]),
+            benchmark_equity=benchmark_equity,
             market=instrument["market"], timezone=instrument_id.timezone,
             currency=instrument_id.currency, drawdown_basis=basis,
-            benchmark_ledger=observations(runs["buy_hold"]))
+            benchmark_ledger=benchmark_ledger)
         return (ParameterPerformanceEvidence(performance, request["experiment"]["experiment_id"],
             source_sha256[:32], header["request_hash"], source_sha256, context,
             request["window_id"], request["scenario_id"], version,
@@ -93,7 +100,7 @@ def build_equity_assessment_payload(payload, *, projection: AssessmentProjection
             parent, derivation_hash, derivation_kind, point),)
     facts = EquityAssessmentFacts(instrument["market"], instrument_id.timezone, instrument_id.currency,
         request["drawdown_basis"], request["concentration_basis"],
-        observations(run), observations(runs["buy_hold"]))
+        observations(run), benchmark_ledger)
     account = tuple(AccountPoint(r["session"], float(r["cash"]), int(r["quantity"]), float(r["close"]), float(r["equity"]))
                     for r in run["account_daily"])
     fills = tuple(AssessmentFill(r["cycle_id"], session(r["interval_end"], facts.timezone), FillSide(r["side"]),
@@ -107,5 +114,5 @@ def build_equity_assessment_payload(payload, *, projection: AssessmentProjection
         scenario,
         float(request["initial_cash"]), float(request["initial_cash"]), 0,
         request["frequency_window_days"], account, fills, closed,
-        tuple(float(r["equity"]) for r in runs["buy_hold"]["account_daily"]),
+        benchmark_equity,
         parent, derivation_hash, behavior, derivation_kind, point, facts),)

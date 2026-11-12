@@ -10,8 +10,8 @@ import numpy as np
 
 from . import research_models as m
 from .research_acceptance import acceptance_status, check_target as _check_target, _calmar
-from .bootstrap import _paired_stationary_bootstrap_cagr, _return_fingerprint
-from .calmar_diagnostics import rolling_calmar_excess, stress_calmar_loss
+from .bootstrap import _paired_stationary_bootstrap_cagr, _return_fingerprint, stationary_bootstrap_performance
+from .calmar_diagnostics import absolute_rolling, rolling_calmar_excess, stress_calmar_loss
 from .performance_assessment import (
     CandidatePerformanceAssessmentRequest, ParameterPerformanceEvidence,
     assessment_benchmark_fingerprint,
@@ -29,6 +29,27 @@ def _quantile(values, q, method, weights=None):
     order = np.argsort(values, kind="stable")
     cumulative = np.cumsum(weights[order] / weights.sum())
     return float(values[order[min(int(np.searchsorted(cumulative, q)), len(values) - 1)]])
+
+
+def _benchmark_not_requested(evidence):
+    return evidence.scenario_context.benchmark_id is None
+
+
+def _absolute_time_stability(evidence, protocol):
+    nar, calmar = absolute_rolling(evidence, protocol, lambda values: _quantile(values, .1, protocol.quantile_method))
+    missing = m.UncertaintyInterval(m.DiagnosticStatus.INSUFFICIENT_DATA, None, None, "TOO_FEW_RETURNS")
+    if len(evidence.account) < 2:
+        return m.AbsoluteTimeStability(nar, calmar, missing, missing)
+    bootstrap = stationary_bootstrap_performance(_returns(evidence),
+        candidate_id=evidence.candidate.candidate_id, repetitions=protocol.bootstrap_repetitions,
+        mean_block_length=protocol.bootstrap_block_length, seed=protocol.seed)
+
+    def interval(value):
+        if not all(math.isfinite(v) for v in (value.lower_95, value.upper_95)):
+            return m.UncertaintyInterval(m.DiagnosticStatus.INSUFFICIENT_DATA, None, None, "UNAVAILABLE_BOOTSTRAP_INTERVAL")
+        return m.UncertaintyInterval(m.DiagnosticStatus.AVAILABLE, value.lower_95, value.upper_95, None)
+
+    return m.AbsoluteTimeStability(nar, calmar, interval(bootstrap.cagr), interval(bootstrap.calmar))
 
 
 def _performance(evidence):
@@ -236,6 +257,9 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
     if parameter_evidence is not None:
         evidence.update({(x.candidate, x.window_id, x.scenario_id): x for x in parameter_evidence})
     performances, benchmarks, facts = {}, {}, {}
+    references = defaultdict(list)
+    for item in request.references:
+        references[item.base_evaluation_id].append(item)
 
     def performance(item):
         if id(item) not in performances:
@@ -303,7 +327,11 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
         interval = m.UncertaintyInterval(
             m.DiagnosticStatus.INSUFFICIENT_DATA, None, None, "MISSING_BASELINE"
         )
+        absolute_time = None
+        no_benchmark = base is not None and _benchmark_not_requested(base)
         if base is not None:
+            if no_benchmark or request.include_absolute_time_stability:
+                absolute_time = _absolute_time_stability(base, p)
             annual, drawdown = performance(base)
             put(m.ResearchMetric.NET_ANNUAL_RETURN, annual, sources=(base,))
             put(m.ResearchMetric.DRAWDOWN_MAGNITUDE, drawdown, sources=(base,))
@@ -528,13 +556,16 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
                     )
             else:
                 m.require(center not in supplied_bootstrap, "precomputed bootstrap has no comparable benchmark")
+                status = m.DiagnosticStatus.NOT_APPLICABLE if no_benchmark else m.DiagnosticStatus.INSUFFICIENT_DATA
+                reason = "BENCHMARK_NOT_REQUESTED" if no_benchmark else "MISSING_BENCHMARK"
                 put(
-                    m.ResearchMetric.ROLLING_EXCESS_Q10, reason="MISSING_BENCHMARK", sources=(base,)
+                    m.ResearchMetric.ROLLING_EXCESS_Q10, status=status, reason=reason, sources=(base,)
                 )
-                interval = m.UncertaintyInterval(
-                    m.DiagnosticStatus.INSUFFICIENT_DATA, None, None, "MISSING_BENCHMARK"
-                )
-                gaps.append("MISSING_BENCHMARK")
+                if no_benchmark:
+                    put(m.ResearchMetric.BENCHMARK_POSITIVE_YEAR_FREQUENCY, status=status, reason=reason, sources=(base,))
+                else:
+                    gaps.append(reason)
+                interval = m.UncertaintyInterval(status, None, None, reason)
         else:
             gaps.append("MISSING_BASELINE")
         benchmark_values = (
@@ -549,9 +580,9 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
                     m.MetricUnit.RATIO,
                     m.DiagnosticStatus.AVAILABLE
                     if value is not None
-                    else m.DiagnosticStatus.INSUFFICIENT_DATA,
+                    else m.DiagnosticStatus.NOT_APPLICABLE if no_benchmark else m.DiagnosticStatus.INSUFFICIENT_DATA,
                     value,
-                    None if value is not None else "MISSING_BENCHMARK",
+                    None if value is not None else "BENCHMARK_NOT_REQUESTED" if no_benchmark else "MISSING_BENCHMARK",
                     (base.evaluation_id,) if base is not None else (),
                 )
                 for metric, value in zip(m.BENCHMARK_METRICS, benchmark_values)
@@ -578,6 +609,8 @@ def _assess_candidates(request: m.CandidateAssessmentRequest, *, parameter_evide
                 rolling_calmar_excess(base, p) if isinstance(p, m.CalmarSelfCheckProtocol) else None,
                 m.AssessmentCalculationDetails(rolling_details,
                     concentration_details[0] if concentration_details else None) if current else None,
+                absolute_time,
+                () if base is None else tuple(references[base.evaluation_id]),
             )
         )
     family, limitations = _family(request)
@@ -605,15 +638,16 @@ def _parameter_comparable(neighbor, base, protocol, projection_context=None, *, 
         neighbor.context_sha256, neighbor.metric_version, neighbor.scenario_context
     ) != (base.context_sha256, base.metric_version, base.scenario_context):
         return False
+    no_benchmark = _benchmark_not_requested(base)
     if type(neighbor) is ParameterPerformanceEvidence:
-        return (projection_context is not None and bool(base.benchmark_equity)
+        return (projection_context is not None and (bool(base.benchmark_equity) or no_benchmark)
                 and neighbor.benchmark_equity_sha256 == projection_context[0]
                 and (neighbor.performance.benchmark_return, neighbor.performance.benchmark_drawdown)
                     == projection_context[1]
                 and neighbor.initial_cash == base.initial_cash
                 and neighbor.frequency_window_days == base.frequency_window_days)
     return (not isinstance(protocol, m.NeighborhoodSelfCheckProtocol) and not require_benchmark
-            or ((bool(base.benchmark_equity) or not isinstance(protocol, m.NeighborhoodSelfCheckProtocol))
+            or ((bool(base.benchmark_equity) or no_benchmark or not isinstance(protocol, m.NeighborhoodSelfCheckProtocol))
                 and neighbor.benchmark_equity == base.benchmark_equity))
 
 
@@ -715,6 +749,8 @@ def _compare_pair(a, b, layer, order, parameter_methods):
                 m.ResearchMetric.PARAMETER_CALMAR_Q10,
                 m.ResearchMetric.ROLLING_EXCESS_Q10,
                 m.ResearchMetric.ROLLING_EXCESS_CALMAR_Q10,
+                m.ResearchMetric.ROLLING_NAR_Q10,
+                m.ResearchMetric.ROLLING_CALMAR_Q10,
             )
             relation = (
                 m.PairwiseRelation.A_BEFORE_B
@@ -786,6 +822,12 @@ def _order_layer(members, layer, order, parameter_methods):
 
 def _ranking_diagnostics(row, policy):
     metrics = {x.metric: x for x in row.diagnostics}
+    if policy.rolling_metric is not None:
+        time = row.absolute_time_stability
+        metric = policy.rolling_metric
+        metrics[metric] = (m.DiagnosticValue(metric, m.MetricUnit.RATIO, m.DiagnosticStatus.INSUFFICIENT_DATA,
+                            None, "MISSING_ABSOLUTE_TIME_STABILITY", ()) if time is None else
+                           time.rolling_nar_q10 if metric is m.ResearchMetric.ROLLING_NAR_Q10 else time.rolling_calmar_q10)
     if policy.formula_version not in ("research-ranking-v5", "research-ranking-v6"):
         return metrics
     metrics[m.ResearchMetric.NET_CALMAR] = _calmar(metrics)

@@ -4,6 +4,7 @@ from strategy_evaluator.account_diagnosis import AccountDiagnosisStatus, Decisio
 from strategy_evaluator.equity_assessment import session
 from strategy_evaluator.equity_diagnosis import diagnose_equity_accounts, PROTOCOL
 from ..research_tools.account_diagnosis import AccountDiagnosisResult, DiagnosisReconciliation
+from ..research_tools.equity_evaluation import EQUITY_EVIDENCE_VERSIONS
 
 
 def diagnose_equity_evidence(repository, request, *, execution=None):
@@ -12,7 +13,7 @@ def diagnose_equity_evidence(repository, request, *, execution=None):
     sources = tuple(x.evidence for x in refs) + tuple(x.evidence for x in request.populations)
     def fail(status, message):
         return AccountDiagnosisResult(status, PROTOCOL, (message,), sources)
-    if any(r.evidence.schema != 'equity_research' or r.evidence.schema_version != 4 for r in refs):
+    if any(r.evidence.schema != 'equity_research' or r.evidence.schema_version not in EQUITY_EVIDENCE_VERSIONS for r in refs):
         return fail(AccountDiagnosisStatus.INCOMPARABLE, "diagnosis requires the same explicit equity evidence contract")
     try:
         loaded = []

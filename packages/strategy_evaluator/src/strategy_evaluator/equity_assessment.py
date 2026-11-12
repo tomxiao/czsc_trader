@@ -156,7 +156,8 @@ def read_ledger(value):
 
 
 def _assessment_ledgers(facts):
-    candidate, benchmark = (read_ledger(value) for value in (facts.candidate_ledger, facts.benchmark_ledger))
+    candidate = read_ledger(facts.candidate_ledger)
+    benchmark = None if facts.benchmark_ledger is None else read_ledger(facts.benchmark_ledger)
     return candidate, benchmark
 
 
@@ -182,11 +183,13 @@ def validate_equity_facts(facts):
     if facts.concentration_basis not in {"TOP_DECILE", "MAX_SINGLE"}:
         raise ValidationError("equity assessment requires explicit concentration basis")
     candidate, benchmark = _assessment_ledgers(facts)
-    for ledger in (candidate, benchmark):
+    for ledger in ((candidate,) if benchmark is None else (candidate, benchmark)):
         if ledger["specification"]["market"] != {"rule_version": facts.market + "_EQUITY_V1"}:
             raise ValidationError("equity ledger market differs")
         if ledger["specification"]["account"]["currency"] != facts.currency:
             raise ValidationError("equity ledger currency differs")
+    if benchmark is None:
+        return
     for key in ("initial_cash", "specification"):
         if candidate[key] != benchmark[key]:
             raise ValidationError("equity benchmark execution facts differ")
@@ -196,6 +199,9 @@ def validate_equity_facts(facts):
 
 def validate_equity_assessment(evidence):
     facts = evidence.equity
+    present = facts.benchmark_ledger is not None
+    if present != bool(evidence.benchmark_equity) or present != (evidence.scenario_context.benchmark_id is not None):
+        raise ValidationError("equity assessment benchmark presence differs")
     if evidence.opening_cash != evidence.initial_cash or evidence.opening_quantity:
         raise ValidationError("equity assessment opening identity differs")
     expected_version = f"equity-assessment-v4:{facts.drawdown_basis}:{facts.concentration_basis}"

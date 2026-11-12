@@ -24,6 +24,10 @@ from .context import ExperimentRef
 from ..backtesting.benchmark_contracts import EvaluationBenchmark, EquityBuyHold
 
 
+EQUITY_EVIDENCE_VERSIONS = (4, 5)
+EQUITY_EVIDENCE_SCHEMAS = tuple(f"equity-research/v{version}" for version in EQUITY_EVIDENCE_VERSIONS)
+
+
 @dataclass(frozen=True, slots=True)
 class EquitySources:
     bars: SourceRef
@@ -45,7 +49,7 @@ class EquityEvaluationRequest:
     initial_cash: float
     fee_rate: float
     prepared: PreparedDataRef | None = None
-    benchmark: EvaluationBenchmark | None = field(default=None, kw_only=True)
+    benchmark: EvaluationBenchmark | None = field(kw_only=True)
     window_id: str = field(default="FULL", kw_only=True)
     scenario_id: str = field(default="STANDARD", kw_only=True)
     measurement_tier: str = field(default="FORMAL", kw_only=True)
@@ -73,10 +77,11 @@ class EquityEvaluationRequest:
             raise ValueError("equity frequency currently requires 60 trading sessions")
         if self.lineage is not None and type(self.lineage) is not EvaluationLineage:
             raise TypeError("equity lineage requires EvaluationLineage")
-        if type(self.benchmark) is not EvaluationBenchmark or type(self.benchmark.execution) is not EquityBuyHold:
-            raise TypeError("formal equity evaluation requires an explicit EquityBuyHold benchmark")
-        if self.benchmark.execution.execution_spec.fingerprint != self.candidate.execution_spec_hash:
-            raise ValueError("equity benchmark and candidate execution contracts differ")
+        if self.benchmark is not None:
+            if type(self.benchmark) is not EvaluationBenchmark or type(self.benchmark.execution) is not EquityBuyHold:
+                raise TypeError("equity benchmark must be an EquityBuyHold benchmark or None")
+            if self.benchmark.execution.execution_spec.fingerprint != self.candidate.execution_spec_hash:
+                raise ValueError("equity benchmark and candidate execution contracts differ")
         if self.drawdown_basis not in {"SESSION_CLOSE", "BAR_CLOSE"} or self.concentration_basis not in {"TOP_DECILE", "MAX_SINGLE"}:
             raise ValueError("formal equity evaluation requires explicit drawdown and concentration bases")
         if self.experiment.strategy_id != self.candidate.strategy_id:
@@ -159,7 +164,8 @@ class EquityEvaluationRequest:
     def _identity_with_sources(self, specification, engine_sources):
         """Build request metadata using implementation bytes pinned by its session."""
         candidate = self.candidate
-        version = 4
+        benchmark = self.benchmark
+        version = 5 if benchmark is None else 4
         contract = {"schema": f"equity-research/v{version}", "experiment": asdict(self.experiment),
                 "candidate_id": candidate.candidate_id, "instrument": asdict(candidate.instrument),
                 "implementation_hash": candidate.implementation_hash, "warmup_bars": candidate.warmup_bars,
@@ -174,7 +180,8 @@ class EquityEvaluationRequest:
         identity = self.candidate.content_identity
         contract.update(candidate_identity=asdict(identity), content_sha256=identity.content_sha256,
                         candidate_definition=self.candidate.definition.to_dict(),
-                        benchmark=self.benchmark.to_dict(), benchmark_sha256=self.benchmark.fingerprint,
+                        benchmark=None if benchmark is None else benchmark.to_dict(),
+                        benchmark_sha256=None if benchmark is None else benchmark.fingerprint,
                         window_id=self.window_id, scenario_id=self.scenario_id,
                         measurement_tier=self.measurement_tier, drawdown_basis=self.drawdown_basis,
                         concentration_basis=self.concentration_basis, frequency_window_days=self.frequency_window_days,
@@ -188,7 +195,7 @@ class EquityEvaluationRequest:
 
 @dataclass(frozen=True, slots=True)
 class EquityArtifact:
-    """An immutable, content addressed member of a V4 evidence closure."""
+    """An immutable, content-addressed equity evidence dependency."""
     kind: str
     content: bytes
     _content_sha256: str = field(init=False, repr=False, compare=False)
@@ -227,11 +234,8 @@ class EquityEvaluationResult:
             raise TypeError("equity result artifacts require an immutable typed tuple")
         if len({item.sha256 for item in self.artifacts}) != len(self.artifacts):
             raise ValueError("duplicate equity artifact")
-        if payload.get("schema") == "equity-research/v4":
-            from .equity_replay import validate_result_structure
-            validate_result_structure(payload, self.artifacts)
-        else:
-            raise ValueError("equity results require the V4 artifact closure")
+        from .equity_replay import validate_result_structure
+        validate_result_structure(payload, self.artifacts)
 
     @property
     def payload(self):

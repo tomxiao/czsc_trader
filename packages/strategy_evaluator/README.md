@@ -72,8 +72,8 @@ SE检查来源关联、两列收益指纹、样本数、种子、重复数、分
 已构造的不可变强类型请求直接参与计算；反序列化在存储入口执行一次，不通过全请求字典往返反复构造。
 
 `AssessmentEvidence.scenario_context`必须使用`EvaluationScenarioContext`，字段为
-`one_way_cost: float`、`measurement_tier: str`、`benchmark_id: str`、`benchmark_kind: str`
-及`benchmark_contract_sha256: str`。后者绑定基准执行策略、参数和执行语义版本，须为合法SHA-256。
+`one_way_cost: float`、`measurement_tier: str`、`benchmark_id: str | None`、`benchmark_kind: str | None`
+及`benchmark_contract_sha256: str | None`。基准字段同时填写或同时设为`None`。提供基准时，摘要绑定其执行策略、参数和执行语义版本。
 费率须有限且满足`0 <= one_way_cost < 1`，名称字段须非空；由TDR从实际评价请求提取，
 相同场景名称不能代替实际口径一致性。
 
@@ -102,10 +102,15 @@ TDR允许研究员自由定义成本评价场景，包括单场景及零成本�
 | 自检项 | 主要问题 | 主指标定义 |
 | --- | --- | --- |
 | 参数敏感性 | 参数变化后，绩效退化多少 | 联合扰动年化退化=`max(0, 中心净年化 - 联合扰动净年化Q10)`；联合扰动回撤恶化=`max(0, 联合扰动回撤幅度Q90 - 中心回撤幅度)` |
-| 时间稳定性 | 相对优势是否随时段变化 | 滚动超额收益Q10：同窗口策略与同口径基准累计收益差的Q10 |
+| 时间稳定性 | 不同时段的目标表现 | 绝对目标可观察滚动净年化或Calmar的Q10；相对目标可观察同窗收益或Calmar差的Q10 |
 | 收益集中性 | 收益是否依赖少数交易 | 最大盈利交易贡献比例：盈利闭合交易中前`ceil(0.1 × 盈利交易数)`笔净损益／全部正净损益；无盈利时不适用 |
 | 执行敏感性 | 成本与执行条件变化造成多少损失 | 指定压力场景年化损失=`标准净年化 - 压力净年化`，保留负值 |
-| 统计不确定性 | 样本和反复搜索如何影响结论可信度 | 配置超额收益区间及研究族选择偏差，按方法适用条件解释 |
+| 统计不确定性 | 样本和反复搜索如何影响结论可信度 | 绝对或配对收益区间及研究族选择偏差，按方法适用条件解释 |
+
+仅回放候选账户时，`CandidateAssessment.absolute_time_stability`提供滚动净年化和Calmar的Q10，
+以及基于日收益的平稳分块Bootstrap 95%区间。滚动Calmar按声明的日收盘或K线收盘回撤计量；
+Bootstrap Calmar使用重抽样后的日收益路径。无买持请求时，相对诊断报告`NOT_APPLICABLE`。
+混合目标可传`CandidateAssessmentRequest(include_absolute_time_stability=True, ...)`同时计算绝对诊断及已有的配对诊断。
 
 五项默认按独立因素评估：参数项仅使用基准窗口、标准费用的中心和联合扰动点；费用压力项仅使用中心。
 时间滚动、收益集中性和收益区间复用中心标准账本，滚动及重抽样不触发账户重算。
@@ -235,6 +240,11 @@ NAR公式版本为`research-assessment-v7`。`assess_candidates`只接收当前v
 本入口核验`ResearchTargets`显式声明的中心、窗口覆盖率、参数组及压力目标，输入与结果见下节。
 年度表现、集中度、区间和PBO/DSR仍是诊断，不自动生成数值门槛。
 
+固定阈值使用`ConstantBound`并读取候选自身绩效。`BenchmarkBound`及`BenchmarkCondition`默认使用请求声明的基准；
+指定`ResearchTarget.reference_evaluation_id`时，标准场景相对目标使用`CandidateAssessmentRequest.references`中对应的账户事实。
+缺少相对目标要求的参照时，该目标返回`INDETERMINATE`。检查结果保留实测值、解析后的阈值及所用评价ID，
+`TargetCheck.distance_to_bound`给出距最近阈值的有符号距离。
+
 `ComparisonPolicy(version, bins, pareto_basis, missing_evidence_policy, sensitivities=(),
 formula_version="research-ranking-v4")`
 必须显式声明分层基础及缺失证据政策：
@@ -244,6 +254,7 @@ formula_version="research-ranking-v4")`
 | `pareto_basis` | `ParetoBasis.RAW`使用原始净年化与回撤；`BINNED`使用协议分箱后的两项指标分层 |
 | `missing_evidence_policy` | `MissingEvidencePolicy.REQUIRE_COMPLETE`要求全部适用证据齐备；参数项确认不适用时两项敏感度采用最低得分。`PREFIX_PARTIAL`允许按已知指标前缀判断部分先后关系，遇到影响判断的缺失值保留成对不可比 |
 | `formula_version` | 当前`research-ranking-v4`，连同研究协议`version`进入请求身份；v3仅用于历史读取，不自动升级交付 |
+| `rolling_metric` | 可显式选用`ROLLING_NAR_Q10`，Calmar v6排序可选`ROLLING_CALMAR_Q10`。分箱必须使用所选指标 |
 
 `bins`恰含净年化、回撤、上述五项稳健性及一个`FREQUENCY_METRICS`指标。
 层级优先；层内固定按六项指标比较：扰动净年化Q10（高）、扰动回撤Q90（低）、滚动超额Q10（高）、

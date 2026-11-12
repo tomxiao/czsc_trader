@@ -145,7 +145,8 @@ def assess_selection_stability(request: SelectionStabilityRequest) -> SelectionS
     insufficient = sum(d.status is SelectionStatus.INSUFFICIENT_SELECTION_EVIDENCE for d in decisions)
     selected = sum(d.status is SelectionStatus.SELECTED for d in decisions)
     incomplete = len({o.pair_id for o in observations if o.acceptance_status is m.TargetCheckStatus.INDETERMINATE
-                      or o.primary_value is None or o.benchmark_primary_value is None})
+                      or o.primary_value is None
+                      or (bindings[o.candidate].benchmark_source_id is not None and o.benchmark_primary_value is None)})
     rank_incomplete = len({o.pair_id for o in observations if o.rank_reason == "INCOMPLETE_OBSERVATION_REFERENCE"})
     values = [o.primary_value for o in observations if o.primary_value is not None]
     worst = (min(values) if request.rule.order[0].direction is SelectionDirection.MAXIMIZE else max(values)) if values else None

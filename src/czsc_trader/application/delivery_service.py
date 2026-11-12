@@ -6,7 +6,6 @@ from contextlib import contextmanager
 from concurrent.futures.process import BrokenProcessPool
 from hashlib import sha256
 import json
-import re
 from pathlib import Path
 import shutil
 from time import perf_counter
@@ -24,6 +23,8 @@ from strategy_manager.errors import RegistryError, StrategyManagerError
 from .context import RepositoryContext
 from ..research_tools import delivery as d
 from ..research_tools.evidence import EvidenceRef
+from ..research_tools.equity_evaluation import EQUITY_EVIDENCE_VERSIONS
+from ..research_tools.equity_replay import equity_artifact_fields, validate_result_structure
 from ..temp_workspace import create_temporary_directory
 
 
@@ -190,7 +191,7 @@ def _references(content):
 
 def _is_account_reference(ref):
     return ((ref.schema == "account_evaluation" and ref.schema_version in (7, 8))
-            or (ref.schema == "equity_research" and ref.schema_version == 4))
+            or (ref.schema == "equity_research" and ref.schema_version in EQUITY_EVIDENCE_VERSIONS))
 
 
 def _account_evidence(root, ref, account_cache=None):
@@ -314,8 +315,8 @@ def _validate_content(definition, content, root, context, *, account_cache=None)
             _fail("EVIDENCE_OWNER", reference.path, "evidence belongs to another batch")
         if reference.schema == "account_evaluation" and reference.schema_version not in (7, 8):
             _fail("EVALUATION_REFERENCE", reference.path, "published account evaluation schema 7 or 8 required")
-        if reference.schema == "equity_research" and reference.schema_version != 4:
-            _fail("EVALUATION_REFERENCE", reference.path, "equity evidence requires schema 4")
+        if reference.schema == "equity_research" and reference.schema_version not in EQUITY_EVIDENCE_VERSIONS:
+            _fail("EVALUATION_REFERENCE", reference.path, "equity evidence requires a supported schema")
     for value in _walk(content):
         if isinstance(value, EvidenceRef):
             if _is_account_reference(value):
@@ -652,14 +653,11 @@ def assemble_delivery(context: RepositoryContext, definition: d.DeliveryDefiniti
 
 
 def _equity_dependencies(context, reference, header):
-    for name, kind in (("input_ref", "equity_input"), ("candidate_ref", "equity_account"),
-                       ("benchmark_ref", "equity_account")):
-        artifact = header[name]
-        if (type(artifact) is not dict or set(artifact) != {"kind", "sha256"}
-            or artifact["kind"] != kind or type(artifact["sha256"]) is not str
-            or re.fullmatch(r"[0-9a-f]{64}", artifact["sha256"]) is None):
-            _fail("EVIDENCE_REFERENCE", reference.path, "invalid account dependency reference")
-        digest = artifact["sha256"]
+    validate_result_structure(header)
+    if header["schema_version"] != reference.schema_version:
+        _fail("EVIDENCE_REFERENCE", reference.path, "account evidence version differs")
+    for name, _ in equity_artifact_fields(header):
+        digest = header[name]["sha256"]
         source = _resolve(context.root, f"{Path(reference.repository_path).parent.as_posix()}/{digest}.json")
         yield source, f"evidence/{digest}.json", digest
 
@@ -675,14 +673,14 @@ def _validate_candidate_declarations(definition, payload, root):
             _fail("CANDIDATE_EVIDENCE", key.candidate_id, "candidate requires a published account result")
         for evaluation in candidate.evaluations:
             reference = evaluation.evidence
-            if reference.schema != "equity_research" or reference.schema_version != 4:
-                _fail("RETIRED_ACCOUNT_CONTRACT", reference.path, "new candidate deliveries require V4 account results")
+            if reference.schema != "equity_research" or reference.schema_version not in EQUITY_EVIDENCE_VERSIONS:
+                _fail("RETIRED_ACCOUNT_CONTRACT", reference.path, "new candidate deliveries require supported equity results")
             if reference.path not in headers:
                 headers[reference.path] = _read_json(_resolve(root, reference.path))
             header = headers[reference.path]
             request = header["request"]
             owner = request["experiment"]
-            if (header["schema_version"] != 4
+            if (header["schema_version"] != reference.schema_version
                 or request["candidate_id"] != key.candidate_id
                 or request["content_sha256"] != candidate.identity.content_sha256
                 or (owner["strategy_id"], owner["experiment_id"]) != (
@@ -739,8 +737,19 @@ def _assemble_declared_delivery(context, definition, content):
             target.write_bytes(data)
             copied[relative] = expected
 
+        assessment_references = {}
+        if isinstance(content.payload, d.CandidateAssessmentDelivery):
+            for item in _assessment_base(content.payload).references:
+                digest, evaluation_id = item.reference_evidence_sha256, item.performance.evaluation_id
+                if assessment_references.setdefault(digest, evaluation_id) != evaluation_id:
+                    _fail("EVIDENCE_REFERENCE", "content.evidence", "conflicting assessment reference identities")
+        explicit = {ref.sha256: ref for ref in content.evidence if ref.schema == "equity_research"
+                    and ref.sha256 in assessment_references}
+        if set(explicit) != set(assessment_references):
+            _fail("EVIDENCE_REFERENCE", "content.evidence", "attach every declared assessment reference")
+
         def copy_reference(reference):
-            if reference.experiment.strategy_id != definition.strategy_id:
+            if reference.experiment.strategy_id != definition.strategy_id and explicit.get(reference.sha256) != reference:
                 _fail("EVIDENCE_OWNER", reference.path, "evidence belongs to another batch")
             copy_source(_resolve(context.root, reference.repository_path), reference.path, reference.sha256)
 
@@ -748,14 +757,20 @@ def _assemble_declared_delivery(context, definition, content):
         for reference in references:
             if definition.stage is d.DeliveryStage.CANDIDATES and (
                 reference.schema == "account_evaluation"
-                or (reference.schema == "equity_research" and reference.schema_version != 4)
+                or (reference.schema == "equity_research" and reference.schema_version not in EQUITY_EVIDENCE_VERSIONS)
             ):
-                _fail("RETIRED_ACCOUNT_CONTRACT", reference.path, "new candidate deliveries require V4 account results")
+                _fail("RETIRED_ACCOUNT_CONTRACT", reference.path, "new candidate deliveries require supported equity results")
             copy_reference(reference)
             if reference.schema == "equity_research":
+                header = _read_json(_resolve(staging, reference.path))
+                owner = header["request"]["experiment"]
+                if explicit.get(reference.sha256) == reference and (
+                        header["evaluation_id"] != assessment_references[reference.sha256]
+                        or (owner["strategy_id"], owner["experiment_id"]) !=
+                            (reference.experiment.strategy_id, reference.experiment.experiment_id)):
+                    _fail("EVIDENCE_REFERENCE", reference.path, "assessment reference identity differs")
                 # Copy immutable dependencies once by their declared identity.
-                for source, relative, digest in _equity_dependencies(context, reference,
-                        _read_json(_resolve(staging, reference.path))):
+                for source, relative, digest in _equity_dependencies(context, reference, header):
                     copy_source(source, relative, digest)
 
         if definition.stage is d.DeliveryStage.CANDIDATES:

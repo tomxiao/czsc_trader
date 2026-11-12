@@ -277,8 +277,9 @@ def equity_planned_identity(payload):
 
 def equity_parameter_contract(request):
     """Project authenticated equity request facts onto parameter-plan identity."""
-    if request.get("schema") != "equity-research/v4":
-        raise ValueError("equity parameter contract requires account V4 request")
+    from .equity_evaluation import EQUITY_EVIDENCE_SCHEMAS
+    if request.get("schema") not in EQUITY_EVIDENCE_SCHEMAS:
+        raise ValueError("equity parameter contract requires a supported account request")
     definition = json.loads(_payload_json(request["candidate_definition"]))
     definition.pop("parameters_json")
     nonparameter = {key: value for key, value in request.items() if key not in {
