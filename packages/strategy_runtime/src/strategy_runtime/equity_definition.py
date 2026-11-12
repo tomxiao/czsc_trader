@@ -519,7 +519,12 @@ class EquityInputBinding:
                         next(x.input for x in self.auxiliary_inputs if key.startswith(f'auxiliary:{x.input.name}:')))
                     expected = {r.parameters for r in declaration.requests(query.start, query.end)
                         if declaration.data_key(r.parameters.query.product) == key}
-                    if parameters not in expected:
+                    declared_selection = parameters
+                    if (self.scope is InputBindingScope.OBSERVATION and type(declaration) is EquityAuxiliaryInput
+                            and query.completed_through is not None):
+                        # The validated cutoff narrows the fetch; the saved request still carries it.
+                        declared_selection = replace(parameters, query=replace(query, completed_through=None))
+                    if declared_selection not in expected:
                         raise ValueError('request binding differs from declared observation or execution input')
             by_request = {}
             for key, parameters in self.request_bindings:
