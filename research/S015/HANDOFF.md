@@ -358,7 +358,7 @@ EX003及CANDIDATES/1原件保持不可变。用户随后明确批准阶段三补
 - `c98c06c4`：保持公共契约和API，减少行情质量元数据的重复深拷贝，复用同次基准估值表，优化逐日目标和时间索引读取；未增加全局或磁盘缓存，输入认证及必要的可变数据隔离保留。
 - 平台可并行入口默认取本机70%逻辑核。S015当前MANDATE/3仍明确最多8个进程、每进程原生线程1，不嵌套并发；恢复研究时显式传入该上限，默认值变化不自动扩大本批次资源约定。
 - 与`33e1fad8`比较，真实415日独立回测含报告与写盘的中位耗时：C0031为2.507→2.035秒（下降18.8%），S011-v1为3.091→2.470秒（下降20.1%）；每策略21份报告文件逐字节一致。真实C0031的8账户批量计算与发布为8.175→6.754秒（下降17.4%），48份账户的五类账本及指标一致。批量计时排除初始输入准备，不能与独立回测完整交付混用。
-- 性能结果仅代表所测工作量，C0031完整交付未达到拟议20%降幅，峰值内存基本持平；不能据此保证后续研究总耗时同比下降。详见[自检效率验证](../../docs/validation/stage4-selfcheck-efficiency.md)及[全链路优化验证](../../docs/validation/backtest-pipeline-optimization.md)。
+- 性能结果仅代表所测工作量，C0031完整交付未达到拟议20%降幅，峰值内存基本持平；不能据此保证后续研究总耗时同比下降。详见[自检效率验证](https://github.com/tomxiao/czsc_trader/blob/33e1fad8f49fb6a882a15ae995dc9c6a429c4bbc/docs/validation/stage4-selfcheck-efficiency.md)及[全链路优化验证](https://github.com/tomxiao/czsc_trader/blob/c98c06c42cd2cb65fdf8ebf71a5ba6ec3f3c02e2/docs/validation/backtest-pipeline-optimization.md)。
 
 ### 全量回归与修复记录
 
