@@ -210,6 +210,67 @@ V4 回放由会话自动安排并发，RSCH 直接调用 `prepare` 和 `evaluate
 Optuna负责参数提议和搜索轨迹，tsfresh负责适用的特征提取，expr_codegen负责表达式生成；
 pandas、NumPy等负责批量数据处理。研究员选择方法并控制计算规模，TDR执行明确请求。
 
+<a id="optuna-tdr-search"></a>
+
+### Optuna 与 TDR 联合搜索
+
+本机单协调进程持有 Optuna Study，默认使用 `InMemoryStorage` 和 `ask()` / `tell()`。
+同一 `ResearchExecutionSession` 负责全部账户回放，自动按调用进程可用的物理核安排工作进程，每进程一个原生计算线程。
+资源预算更低时用 `ExecutionResources` 限制上限。直接批量调用 `evaluate_many()` 即可，Optuna 无需设置 `n_jobs` 或再开账户进程池。
+首次回放后，从 `execution.stats` 读取 `worker_limit`、`native_threads_per_worker` 和 `worker_bindings`。
+确需多个进程共同读写一个 Study 时，再按部署范围评估 `JournalStorage` 或 `RDBStorage`。
+
+每批提议数由 RSCH 按实际资源上限、内存、剩余预算和反馈频率设定。可用八核且预算允许时，一批八个独立账户可并发回放。
+同一批的提议在本批结果回填前生成。减小批宽可以更早让采样器使用新结果。按固定 trial 顺序回填，并保持恢复时的批次边界。
+
+下例复用[第10节](#us-equity-api)的 V4 请求构造。`build_request` 用 trial 参数构造同口径账户请求，
+`score` 从成功结果提取已确认的搜索目标。示例用单目标最大化，RSCH 按研究问题选择采样器，按研究契约设定目标方向和约束，并逐项核对候选是否达标。
+`save_proposals` 和 `save_feedback` 由实验脚本实现，按批持久保存记录；已有记录时先核对内容，再继续执行。
+
+```python
+import optuna
+from czsc_trader.research_tools import (
+    CheckpointMode, ExecutionCheckpointRequest, ResearchExecutionSession,
+)
+
+
+def run_search(research, experiment, run_id, *, sampler, distributions,
+               trial_budget, batch_size, build_request, score,
+               save_proposals, save_feedback, mode=CheckpointMode.CREATE):
+    study = optuna.create_study(
+        direction="maximize", sampler=sampler,
+        storage=optuna.storages.InMemoryStorage(),
+    )
+    with ResearchExecutionSession(
+        research, experiment=experiment,
+        checkpoint=ExecutionCheckpointRequest(run_id, mode),
+    ) as execution:
+        for start in range(0, trial_budget, batch_size):
+            count = min(batch_size, trial_budget - start)
+            trials = tuple(study.ask(fixed_distributions=distributions) for _ in range(count))
+            save_proposals([(trial.number, trial.params) for trial in trials])
+            prepared = tuple(
+                research.evaluation.prepare(build_request(trial.params), execution=execution)
+                for trial in trials
+            )
+            outcomes = research.evaluation.evaluate_many(prepared, execution=execution)
+            failures = [(item.request_hash, item.status.value, item.error)
+                        for item in outcomes if item.result is None]
+            if failures:
+                raise RuntimeError(failures)
+            feedback = [(trial.number, item.request_hash, item.result.result_hash, score(item.result))
+                        for trial, item in zip(trials, outcomes, strict=True)]
+            save_feedback(feedback)
+            for number, _, _, value in feedback:
+                study.tell(number, value)
+    return study
+```
+
+搜索记录保存 Optuna 版本、采样器配置与种子、参数域、预算、批次边界、提议、评价身份、目标值及适用的约束反馈。
+中断后以同一 `run_id` 和 `CheckpointMode.RESUME` 恢复 TDR 账户检查点，以同版本、新建且同配置的采样器按原顺序重放 `ask()` / `tell()`，
+逐批核对已保存的提议和反馈。匹配的账户结果由 TDR 复用，失败或缺失按实际状态处理，技术失败不作为目标值反馈。
+提议或结果身份不一致时停止并核查差异。正式引用的账户证据通过 `publish_evidence` 显式发布，正式报告引用对应的 `EvidenceRef`。
+
 ### 策略性能验收
 
 V4 `prepare` 校验策略声明和源码，逐步决策与批量观察统一使用有界输入。
