@@ -640,12 +640,12 @@ class AccountEngine:
             and (start is None or fill_session(row) >= start)
             and fill_session(row) <= effective_end
         ]
-        calculated = calculate_metrics(
-            baseline, snapshots, closed_trade_pnl(fills),
-        )
+        pnl = closed_trade_pnl(fills)
+        calculated = calculate_metrics(baseline, snapshots, pnl)
         return {
             "observation_start": snapshots[0]["session"] if snapshots else None,
             "observation_end": snapshots[-1]["session"] if snapshots else None,
             "baseline_assets": baseline,
+            "win_rate": sum(value > 0 for value in pnl) / len(pnl) if pnl else None,
             **calculated,
         }

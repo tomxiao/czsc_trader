@@ -79,6 +79,10 @@ export function formatBeijingTime(value){
 const esc = value => String(value??'—').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money = value => value==null?'—':Number(value).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
 const pct = value => value==null?'—':`${(Number(value)*100).toFixed(2)}%`;
+function closedWinLossRatio(metrics){
+  if(metrics.win_loss_ratio!=null)return Number(metrics.win_loss_ratio).toFixed(3);
+  return ({NO_CLOSED_TRADES:'无闭合交易',NO_WINS:'无盈利交易',NO_LOSSES:'无亏损交易'})[metrics.win_loss_ratio_status]||'不可用';
+}
 const shortHash = value => value?String(value).slice(0,10):'—';
 export const actionLabel = value => ({BUY:'买入',SELL:'卖出',ROTATE:'日内轮换',WAIT:'等待',HOLD:'持有'}[value]||value||'等待');
 export const statusLabel = value => ({READY:'就绪',PAUSED:'已暂停',RETIRED:'已退出',EXECUTING:'执行中',COMPLETED:'已完成',CANCELLED:'已取消',INCOMPLETE:'未完成',RUNNING:'运行中',OK:'正常',CONNECTED:'已连接',DEGRADED:'降级',PAPER_READY:'获准模拟交易',LIVE_READY:'获准实盘交易',BLOCKED:'阻塞',UNAVAILABLE:'不可用',ACCOUNT_CHART_UNAVAILABLE:'前瞻观察图不可用',CHANNEL_UNAVAILABLE:'Futu不可用',CHANNEL_CASH_MISMATCH:'PTE账务现金与Futu现金不一致',CHANNEL_RECONCILIATION_BLOCKED:'渠道对账阻塞',FUTU_CASH_RECONCILIATION_UNATTRIBUTED:'Futu现金差异来源不明',FUTU_CASH_RECONCILIATION_OUT_OF_RANGE:'Futu费用差异超出允许范围',FUTU_CASH_RECONCILIATION_AMBIGUOUS:'Futu现金差异无法安全归属',VIRTUAL_ACCOUNT_BLOCKED:'虚拟账户阻塞',ORDER_SUBMISSION_UNRESOLVED:'存在下单结果待确认',DATA_PUBLICATION_FAILED:'发布数据失败',DATA_PUBLICATION_OVERDUE:'数据发布超期',PUBLICATION_CALENDAR_UNAVAILABLE:'发布所需交易日历不可用',DECISION_GENERATION_OVERDUE:'决策生成超期',SCHEDULER_STALLED:'调度器停滞',SCHEDULER_OPERATION_FAILED:'调度任务失败',SKIPPED_DEPENDENCY:'依赖条件未触发',WAITING_DEPENDENCY:'等待前序成交及计划时点',PENDING_SUBMIT:'待提交',SUBMITTING:'提交中',SUBMISSION_UNCERTAIN:'提交结果待确认',SUBMISSION_FAILED:'提交失败',SUPERSEDED:'已被新决策替代',REJECTED:'已拒绝',EXPIRED:'已过期',TIMEOUT:'结果未知',SUBMITTED:'已提交',FILLED_PART:'部分成交',FILLED_ALL:'全部成交',CANCELLING_ALL:'撤单中',SUBMIT_FAILED:'提交失败',CANCELLED_PART:'部分成交后撤单',CANCELLED_ALL:'已撤销',FAILED:'失败',DISABLED:'已失效',DELETED:'已删除',FILL_CANCELLED:'成交已撤销',PENDING:'待执行'}[value]||value||'—');
@@ -322,7 +326,13 @@ export function accountMarkup(snapshot,accountList=state.accounts,view={}){
       ${accountRecords('intents','订单意图',[['决策ID',r=>r.decision_id],['计划环节',r=>planRoleLabel(r.payload?.role)],['计划时点',r=>r.payload?.checkpoint||'—'],['方向',r=>sideLabel(r.side)],['数量',r=>formatQuantity(r.quantity)],['委托价',r=>orderPriceLabel(r)==='市价'?'市价':formatPrice(orderPriceLabel(r))],['有效交易日',r=>r.valid_session],['状态',r=>statusLabel(r.status)],['Futu订单',r=>r.channel_order_id||'—']],intents,view)}
       ${accountRecords('orders','订单',[['账户',r=>r.account_id],['Futu订单',r=>r.channel_order_id],['下单时间',r=>formatBeijingTime(r.created_at)],['方向',r=>sideLabel(r.side)],['数量',r=>formatQuantity(r.quantity)],['委托价',r=>orderPriceLabel(r)==='市价'?'市价':formatPrice(orderPriceLabel(r))],['状态',r=>statusLabel(r.status)]],orders,view)}
       ${accountRecords('fills','成交',[['账户',r=>r.account_id],['成交ID',r=>displayFillId(r.fill_id),r=>r.fill_id],['时间',r=>formatBeijingTime(r.occurred_at)],['方向',r=>sideLabel(r.side)],['数量',r=>formatQuantity(r.quantity)],['成交价（不复权）',r=>formatPrice(r.price)]],fills,view)}</div>
-      <section id="account-panel-performance" role="tabpanel" aria-labelledby="account-tab-performance" data-account-panel="performance" ${tab==='performance'?'':'hidden'} class="panel section" data-account-section="performance"><div class="section-head"><h2>日终绩效</h2><span class="subtle">截至 ${esc(m.observation_end||'暂无日终快照')}</span></div><div class="grid account-metrics">${metric('日终累计收益',pct(m.total_return))}${metric('最大回撤',pct(m.maximum_drawdown))}${metric('卡玛比率',m.calmar_ratio==null?'不可用':Number(m.calmar_ratio).toFixed(3))}${metric('盈亏比',m.win_loss_ratio==null?'不可用':Number(m.win_loss_ratio).toFixed(3))}${metric('已闭合交易',esc(m.closed_trades||0))}</div></section>
+      <section id="account-panel-performance" role="tabpanel" aria-labelledby="account-tab-performance" data-account-panel="performance" ${tab==='performance'?'':'hidden'} class="panel section" data-account-section="performance">
+        <div class="section-head"><h2>日终绩效</h2><span class="subtle">截至 ${esc(m.observation_end||'暂无日终快照')}</span></div>
+        <div class="grid account-metrics performance-metrics">
+          ${metric('日终累计收益',pct(m.total_return))}${metric('最大回撤',pct(m.maximum_drawdown))}${metric('卡玛比率',m.calmar_ratio==null?'不可用':Number(m.calmar_ratio).toFixed(3))}
+          ${metric('已闭合交易',esc(m.closed_trades||0))}${metric('已闭合胜率',pct(m.win_rate))}${metric('已闭合盈亏比',closedWinLossRatio(m))}
+        </div>
+      </section>
     </div></div>`;
 }
 function replaceAccountSections(markup,accountId){

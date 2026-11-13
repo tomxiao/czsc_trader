@@ -7,11 +7,44 @@ from types import SimpleNamespace
 import pytest
 
 from execution_channels.futu.audit import AuditContractError, AuditEvent, AuditRecorder
+from paper_trading_engine.account_engine import AccountEngine
 from paper_trading_engine.performance_export import (
     _canonical_sha256, calculate_metrics, export_performance,
 )
 from pte_support import adopt_test_decision, claim_test_intent
 from strategy_manager import PerformanceEvidence
+
+
+def test_account_metrics_use_the_same_realized_orders_for_win_rate_and_ratio():
+    snapshots = [{"session": "2026-09-04", "total_assets": "1050"}]
+    fills = [
+        {"side": side, "order_id": order_id, "realized_pnl": pnl, "occurred_at": occurred_at}
+        for side, order_id, pnl, occurred_at in (
+            ("BUY", "still-open", "0", "2026-09-03T07:00:00Z"),
+            ("SELL", "profitable", "90", "2026-09-04T06:00:00Z"),
+            ("SELL", "profitable", "-30", "2026-09-04T06:05:00Z"),
+            ("SELL", "losing", "-20", "2026-09-04T06:10:00Z"),
+            ("SELL", "flat", "0", "2026-09-04T06:15:00Z"),
+            ("SELL", "after-cutoff", "-200", "2026-09-07T06:00:00Z"),
+        )
+    ]
+    store = SimpleNamespace(
+        virtual_account=lambda _: {"initial_cash": "1000", "quantity": 100},
+        account_snapshots=lambda _: snapshots,
+        account_fills=lambda _: fills,
+        equity_account_rules=lambda _: None,
+    )
+    account = AccountEngine(store, None)
+    metrics = account.metrics("sample")
+    assert metrics["closed_trades"] == 3
+    assert metrics["win_rate"] == pytest.approx(1 / 3)
+    assert metrics["win_loss_ratio"] == pytest.approx(3)
+
+    fills[:] = [fills[0]]
+    metrics = account.metrics("sample")
+    assert metrics["closed_trades"] == 0
+    assert metrics["win_rate"] is None
+    assert metrics["win_loss_ratio_status"] == "NO_CLOSED_TRADES"
 
 
 # Independent risk: PTE26; responsibility-level assertions.

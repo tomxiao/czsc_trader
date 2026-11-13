@@ -341,6 +341,25 @@ test('channel summary leads with broker total assets in the market currency', ()
   assert.match(channelMarkup({...snapshot,account:null}),/<label>券商总资产<\/label><strong>—<\/strong>/);
 });
 
+test('account performance shows closed-trade win rate and explains unavailable ratios', () => {
+  const account = {account_id:'demo',quantity:100};
+  const scope = {account_id:'demo'};
+  const markup = metrics => accountMarkup({account,scope,metrics},[],{tab:'performance'});
+  const realized = markup({closed_trades:3,win_rate:1/3,win_loss_ratio:3});
+  assert.match(realized,/<label>已闭合交易<\/label><strong>3<\/strong>/);
+  assert.match(realized,/<label>已闭合胜率<\/label><strong>33\.33%<\/strong>/);
+  assert.match(realized,/<label>已闭合盈亏比<\/label><strong>3\.000<\/strong>/);
+  for(const [status, rate, displayedRate, reason] of [
+    ['NO_CLOSED_TRADES',null,'—','无闭合交易'],
+    ['NO_WINS',0,'0.00%','无盈利交易'],
+    ['NO_LOSSES',1,'100.00%','无亏损交易'],
+  ]){
+    const html = markup({win_rate:rate,win_loss_ratio_status:status});
+    assert.ok(html.includes(`<label>已闭合胜率</label><strong>${displayedRate}</strong>`));
+    assert.ok(html.includes(`<label>已闭合盈亏比</label><strong>${reason}</strong>`));
+  }
+});
+
 
 test('account record pagination bounds pages without losing or duplicating rows', () => {
   const rows=Array.from({length:25},(_,id)=>({id}));
