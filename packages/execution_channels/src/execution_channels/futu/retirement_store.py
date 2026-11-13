@@ -38,9 +38,10 @@ def migrate_retirement(connection):
 
 class RetirementStore:
     def retirement_request(self, account_id):
-        self._check_owned('account', account_id)
-        row = self._connection.execute('SELECT * FROM account_retirement_requests WHERE account_id=?',
-                                       (account_id,)).fetchone()
+        with self._lock:
+            self._check_owned('account', account_id)
+            row = self._connection.execute('SELECT * FROM account_retirement_requests WHERE account_id=?',
+                                           (account_id,)).fetchone()
         return None if row is None else dict(row)
 
     def retirement_status(self, account_id: str) -> AccountRetirementResult | None:
@@ -115,16 +116,16 @@ class RetirementStore:
             self._connection.execute('UPDATE account_retirement_requests SET session=NULL WHERE account_id=?', (account_id,))
 
     def is_retirement_decision(self, account_id, decision_id):
-        self._check_owned('account', account_id)
-        row = self.retirement_request(account_id)
-        if row is None:
-            return False
-        decision = self._connection.execute('SELECT payload FROM decisions WHERE account_id=? AND decision_id=?',
-                                            (account_id, decision_id)).fetchone()
-        if decision is None:
-            return False
+        with self._lock:
+            row = self.retirement_request(account_id)
+            if row is None:
+                return False
+            decision = self._connection.execute('SELECT payload FROM decisions WHERE account_id=? AND decision_id=?',
+                                                (account_id, decision_id)).fetchone()
+            if decision is None:
+                return False
+            account = self.virtual_account(account_id)
         payload = json.loads(decision[0])
-        account = self.virtual_account(account_id)
         return (payload.get('contract_version') == RETIREMENT_CONTRACT
                 and payload.get('retirement_request_id') == row['request_id']
                 and payload['strategy']['release_hash'] == account['release_hash']

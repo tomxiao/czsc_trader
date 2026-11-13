@@ -592,9 +592,10 @@ class ChannelExecution(RetirementExecution):
         if self.profile.market == 'US':
             checkpoint_time = checkpoint.get('reconciled_at')
             for account in accounts:
-                events = self.store._connection.execute(
-                    "SELECT payload FROM equity_account_events WHERE account_id=?", (account['account_id'],)
-                ).fetchall()
+                with self.store._lock:
+                    events = self.store._connection.execute(
+                        "SELECT payload FROM equity_account_events WHERE account_id=?", (account['account_id'],)
+                    ).fetchall()
                 if events and checkpoint_time is None:
                     self.store.set_setting("futu_cash_reconciliation_status", "UNATTRIBUTED")
                     return

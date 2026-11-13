@@ -33,30 +33,31 @@ class ReplacementSnapshot:
 
 
 def capture_replacement(store, account_id: str, decision_id: str, initial: dict | None = None) -> ReplacementSnapshot:
-    account = store.virtual_account(account_id)
-    decision = store.account_decision(account_id, decision_id)
-    payload = decision["payload"]
-    valid_session = decision["valid_session"]
-    start, end = adoption_window(payload)
-    current = (store.adopted_execution_decision(account_id,
-        TimeInterval(datetime.fromisoformat(start), datetime.fromisoformat(end))) if start else None)
-    later = store._connection.execute(
-        "SELECT 1 FROM decision_adoptions WHERE account_id=? AND "
-        "(valid_session>? OR (valid_session=? AND window_start>?)) LIMIT 1",
-        (account_id, valid_session, valid_session, start),
-    ).fetchone()
+    with store._lock:
+        account = store.virtual_account(account_id)
+        decision = store.account_decision(account_id, decision_id)
+        payload = decision["payload"]
+        valid_session = decision["valid_session"]
+        start, end = adoption_window(payload)
+        current = (store.adopted_execution_decision(account_id,
+            TimeInterval(datetime.fromisoformat(start), datetime.fromisoformat(end))) if start else None)
+        later = store._connection.execute(
+            "SELECT 1 FROM decision_adoptions WHERE account_id=? AND "
+            "(valid_session>? OR (valid_session=? AND window_start>?)) LIMIT 1",
+            (account_id, valid_session, valid_session, start),
+        ).fetchone()
+        all_intents = store.account_intents(account_id)
+        orders = {row["channel_order_id"]: dict(row) for row in store._connection.execute(
+            "SELECT * FROM orders WHERE account_id=? AND decision_id=?", (account_id, decision_id),
+        )}
+        fills = store.account_fills(account_id)
     if (account["run_state"] != "RUNNING" or account["health"] != "OK" or later is not None
             or current is None or current["decision_id"] != decision_id
             or account["last_decision_id"] not in (None, decision_id)
             or payload.get("contract_version") != "advice.equity.v4"):
         raise DecisionReplacementConflict("current V4 decision or account state changed")
 
-    all_intents = store.account_intents(account_id)
     intents = [row for row in all_intents if row["decision_id"] == decision_id]
-    orders = {row["channel_order_id"]: dict(row) for row in store._connection.execute(
-        "SELECT * FROM orders WHERE account_id=? AND decision_id=?", (account_id, decision_id),
-    )}
-    fills = store.account_fills(account_id)
     if any(row["decision_id"] == decision_id for row in fills):
         raise DecisionReplacementConflict("the current decision has confirmed fills")
     if any(row["decision_id"] != decision_id and row["status"] not in TERMINAL_INTENT_STATUSES

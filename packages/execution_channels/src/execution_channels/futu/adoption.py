@@ -106,7 +106,7 @@ class AccountAdoption:
     def adopt(self, request: DecisionAdoption, *, in_transaction: bool = False) -> AdoptionResult:
         if type(request) is not DecisionAdoption:
             raise TypeError("account adoption requires DecisionAdoption")
-        with self.store._write_context(in_transaction):
+        with self.store._lock, self.store._write_context(in_transaction):
             return self._adopt(request)
 
     def _adopt(self, request: DecisionAdoption) -> AdoptionResult:

@@ -1,5 +1,6 @@
 """Small scheduler collaborators; no storage or strategy preparation."""
 import json
+from types import SimpleNamespace
 
 
 class Engine:
@@ -56,6 +57,10 @@ class Store:
         value = event.to_dict()
         self.audit_events.append(value)
         return value
+
+    def scope(self, channel_account_id):
+        return SimpleNamespace(execution_channel_id=channel_account_id,
+                               append_audit_event=self.append_audit_event)
 
     def strategy_virtual_accounts(self):
         return [a for a in self.accounts if a.get("account_type", "STRATEGY") == "STRATEGY"]

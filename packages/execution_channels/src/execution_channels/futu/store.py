@@ -192,7 +192,7 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
         store._atomic_decision_depth = 0
         store._readonly = True
         store._connection = sqlite3.connect(
-            store.path.resolve().as_uri() + "?mode=ro", uri=True, check_same_thread=False,
+            store.path.resolve().as_uri() + "?mode=ro", uri=True, check_same_thread=False, cached_statements=0,
         )
         store._connection.row_factory = sqlite3.Row
         try:
@@ -222,7 +222,9 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
         self._lock = RLock()
         self._atomic_decision_depth = 0
         self._readonly = False
-        self._connection = sqlite3.connect(self.path, check_same_thread=False)
+        # Root and channel views share this connection across Web and scheduler threads.
+        # CPython 3.12 can return incorrect rows when those threads reuse cached statements.
+        self._connection = sqlite3.connect(self.path, check_same_thread=False, cached_statements=0)
         self._connection.row_factory = sqlite3.Row
         try:
             marked = self._connection.execute(
@@ -1491,17 +1493,17 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
         return self.virtual_account(account_id)
 
     def virtual_account(self, account_id: str):
-        self._check_owned("account", account_id)
         with self._lock:
+            self._check_owned("account", account_id)
             row = self._connection.execute(
                 "SELECT * FROM virtual_accounts WHERE account_id=?", (account_id,)
             ).fetchone()
-        if row is None:
-            raise KeyError(account_id)
-        result = dict(row)
-        if getattr(self, "_inspection_permit", None) is not None or result["equity_rules_json"] is not None:
-            state = self._connection.execute("SELECT payload FROM equity_strategy_state WHERE account_id=?", (account_id,)).fetchone()
-            result["account_v4_json"] = None if state is None else state[0]
+            if row is None:
+                raise KeyError(account_id)
+            result = dict(row)
+            if getattr(self, "_inspection_permit", None) is not None or result["equity_rules_json"] is not None:
+                state = self._connection.execute("SELECT payload FROM equity_strategy_state WHERE account_id=?", (account_id,)).fetchone()
+                result["account_v4_json"] = None if state is None else state[0]
         result["health"] = AccountHealth(result["health"])
         result.pop("legacy_status", None)
         result.pop("legacy_paused", None)
@@ -1512,7 +1514,7 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
             rows = self._connection.execute(
                 "SELECT * FROM virtual_accounts ORDER BY created_at, account_id"
             ).fetchall()
-        return [self.virtual_account(row["account_id"]) for row in self._scoped_rows(rows)]
+            return [self.virtual_account(row["account_id"]) for row in self._scoped_rows(rows)]
 
     def strategy_virtual_accounts(self):
         return [
@@ -1522,9 +1524,9 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
 
     def capital_pool_balance(self) -> CapitalPoolBalance:
         from decimal import Decimal
-        if self.channel_account_id is None and self._connection.execute("SELECT COUNT(*) FROM channel_accounts").fetchone()[0] > 1:
-            raise ValueError("capital accounting requires an explicit channel account scope")
         with self._lock:
+            if self.channel_account_id is None and self._connection.execute("SELECT COUNT(*) FROM channel_accounts").fetchone()[0] > 1:
+                raise ValueError("capital accounting requires an explicit channel account scope")
             registered = Decimal(self._setting("futu_capital_pool"))
             clause, values = self._scope_clause()
             allocated = sum((Decimal(r[0]) for r in self._connection.execute(

@@ -216,11 +216,16 @@ def record_v4_position_reconciliation(store, account_id, *, quantity_before, qua
 
 
 def recognized_events(store, account_id, cursor, through, *, through_cursor=None):
+    with store._lock:
+        metadata_rows = store._connection.execute(
+            "SELECT payload FROM equity_account_events WHERE account_id=?", (account_id,)
+        ).fetchall()
+        rows = store._connection.execute(
+            "SELECT rowid,* FROM account_ledger WHERE account_id=? AND rowid>? ORDER BY rowid", (account_id, cursor)
+        ).fetchall()
     output, next_cursor = [], cursor
-    metadata = {value.get("ledger_entry_id"): value for row in store._connection.execute(
-        "SELECT payload FROM equity_account_events WHERE account_id=?", (account_id,))
+    metadata = {value.get("ledger_entry_id"): value for row in metadata_rows
         for value in (json.loads(row[0]),) if value.get("ledger_entry_id")}
-    rows = store._connection.execute("SELECT rowid,* FROM account_ledger WHERE account_id=? AND rowid>? ORDER BY rowid", (account_id, cursor))
     for row in rows:
         if through_cursor is not None and row["rowid"] > through_cursor:
             break

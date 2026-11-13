@@ -138,7 +138,27 @@ class RuntimeScheduler:
                 ) from exc
         return restored
 
-    def _guard(self, name: str, now: datetime, operation) -> bool:
+    def _record_operation_event(
+        self, event_type: str, outcome: str, details: dict[str, object],
+        channel_account_id: str | None, account_id: str | None,
+    ) -> None:
+        if self.audit is None:
+            self.store.add_event(event_type, details)
+            return
+        if channel_account_id is None:
+            self.audit.record(event_type, source="scheduler", outcome=outcome,
+                              actor_type="SCHEDULER", account_id=account_id, details=details)
+            return
+        scoped = self.store.scope(channel_account_id)
+        event = self.audit.build(event_type, source="scheduler", outcome=outcome,
+                                 actor_type="SCHEDULER", account_id=account_id,
+                                 channel=scoped.execution_channel_id, details=details)
+        scoped.append_audit_event(event)
+
+    def _guard(
+        self, name: str, now: datetime, operation, *,
+        channel_account_id: str | None = None, account_id: str | None = None,
+    ) -> bool:
         with self._failure_lock:
             state = self._failures.get(name)
             if state is not None and now < state["next_retry"]:
@@ -178,13 +198,8 @@ class RuntimeScheduler:
                         "operation": name, "error": str(exc), "failure_count": count,
                         "first_at": now.isoformat(), "retry_after_seconds": delay,
                     }
-                    if self.audit is not None:
-                        self.audit.record(
-                            "SCHEDULER_OPERATION_FAILED", source="scheduler",
-                            outcome="FAILURE", actor_type="SCHEDULER", details=details,
-                        )
-                    else:
-                        self.store.add_event("SCHEDULER_OPERATION_FAILED", details)
+                    self._record_operation_event("SCHEDULER_OPERATION_FAILED", "FAILURE", details,
+                                                 channel_account_id, account_id)
             return False
         else:
             with self._failure_lock:
@@ -198,13 +213,8 @@ class RuntimeScheduler:
                         "first_at": previous["first_at"].isoformat(),
                         "last_at": previous["last_at"].isoformat(),
                     }
-                    if self.audit is not None:
-                        self.audit.record(
-                            "SCHEDULER_OPERATION_RECOVERED", source="scheduler",
-                            actor_type="SCHEDULER", details=details,
-                        )
-                    else:
-                        self.store.add_event("SCHEDULER_OPERATION_RECOVERED", details)
+                    self._record_operation_event("SCHEDULER_OPERATION_RECOVERED", "SUCCESS", details,
+                                                 channel_account_id, account_id)
                 clear = getattr(self.store, "clear_operation_failure", None)
                 if clear is not None:
                     clear(name)
@@ -229,29 +239,32 @@ class RuntimeScheduler:
         if self._due(self._last_account, now, self.account_interval):
             if self.channel_operations:
                 for channel_id, operations in self.channel_operations.items():
-                    self._guard(f"account:{channel_id}", now, operations.refresh_account)
+                    self._guard(f"account:{channel_id}", now, operations.refresh_account,
+                                channel_account_id=channel_id)
             else:
                 self._guard("account", now, self.engine.refresh_account)
             self._last_account = now
         if self._due(self._last_order, now, self.order_interval):
             if self.channel_operations:
                 for channel_id, operations in self.channel_operations.items():
-                    self._guard(f"orders:{channel_id}", now, operations.refresh_orders)
+                    self._guard(f"orders:{channel_id}", now, operations.refresh_orders,
+                                channel_account_id=channel_id)
             else:
                 self._guard("orders", now, self.engine.refresh_orders)
             self._last_order = now
 
     def _account_cycle(
-        self, account_id: str, signal_date, now: datetime
+        self, account: dict[str, object], signal_date, now: datetime
     ) -> None:
-        if self.store.virtual_account(account_id)["run_state"] != "RUNNING":
-            return
+        account_id = str(account["account_id"])
+
+        def perform():
+            if self.store.virtual_account(account_id)["run_state"] == "RUNNING":
+                self.strategy_cycle.run(account_id, signal_date=signal_date, observed_at=now)
+
         self._guard(
-            f"account_strategy_cycle:{account_id}",
-            now,
-            lambda: self.strategy_cycle.run(
-                account_id, signal_date=signal_date, observed_at=now
-            ),
+            f"account_strategy_cycle:{account_id}", now, perform,
+            channel_account_id=account.get("channel_account_id"), account_id=account_id,
         )
 
     def _scheduled_account_cycle(self, account: dict[str, object], now: datetime) -> None:
@@ -282,7 +295,8 @@ class RuntimeScheduler:
             self.store.set_setting(key, task.task_id)
             self.store.set_setting(f"last_account_schedule_at:{account_id}", _utc(task.decision_at).isoformat())
 
-        self._guard(f"account_strategy_cycle:{account_id}", now, perform)
+        self._guard(f"account_strategy_cycle:{account_id}", now, perform,
+                    channel_account_id=account.get("channel_account_id"), account_id=account_id)
 
     def tick_daily(self, now: datetime) -> None:
         now = self._clock(now)
@@ -332,7 +346,7 @@ class RuntimeScheduler:
                     continue
             worker = Thread(
                 target=self._account_cycle if self.schedule_provider is None else self._scheduled_account_cycle,
-                args=(account_id, signal_date, now) if self.schedule_provider is None else (account, now),
+                args=(account, signal_date, now) if self.schedule_provider is None else (account, now),
                 name=f"pte-strategy-{account_id}",
                 daemon=True,
             )

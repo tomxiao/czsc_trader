@@ -275,14 +275,19 @@ class EquityAdviceClient:
                 raise TypeError("equity rerun requires the matching EC replacement snapshot")
             account = {**account, "account_v4_json": replacement.before}
         import json
-        events = {row["event_id"]:json.loads(row["payload"]) for row in self.store._connection.execute(
-            "SELECT event_id,payload FROM equity_account_events WHERE account_id=?",(account_id,))}
+        with self.store._lock:
+            event_rows = self.store._connection.execute(
+                "SELECT event_id,payload FROM equity_account_events WHERE account_id=?", (account_id,)
+            ).fetchall()
+            reconciliations = self.store._connection.execute(
+                "SELECT occurred_at FROM account_ledger WHERE account_id=? AND entry_type IN (?,?)",
+                (account_id, 'POSITION_ADJUSTMENT', 'SALE_SETTLEMENT'),
+            ).fetchall()
+        events = {row["event_id"]: json.loads(row["payload"]) for row in event_rows}
         point = prepared.as_of
         if any(datetime.fromisoformat(fill["occurred_at"]) > point for fill in self.store.account_fills(account_id)):
             raise ValueError("confirmed equity fill is later than the requested decision point")
-        if any(datetime.fromisoformat(row["occurred_at"]) > point for row in self.store._connection.execute(
-                "SELECT occurred_at FROM account_ledger WHERE account_id=? AND entry_type IN (?,?)",
-                (account_id, 'POSITION_ADJUSTMENT', 'SALE_SETTLEMENT'))):
+        if any(datetime.fromisoformat(row["occurred_at"]) > point for row in reconciliations):
             raise ValueError('confirmed account reconciliation is later than the requested decision point')
         for event in events.values():
             definition = event.get("definition")

@@ -1,7 +1,10 @@
 """Channel-account partitions share storage, never balances or write authority."""
-from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 import sqlite3
+from threading import Barrier
+from types import SimpleNamespace
 
 import pytest
 
@@ -14,6 +17,9 @@ from execution_channels.futu.channel import (
 from execution_channels.futu.channel_accounts import DEFAULT_CHANNEL_ACCOUNT
 from execution_channels.futu.equity_contracts import EquityAccountRules
 from execution_channels.futu.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION
+from paper_trading_engine.scheduler import RuntimeScheduler
+from paper_trading_engine.web_api import PteWebApi
+from scheduler_support import Engine
 
 
 def _config(name="us-primary", *, broker=42, channel=FUTU_US_SIM_CHANNEL_ID):
@@ -111,6 +117,99 @@ def disk_partitions(tmp_path, new_store):
         yield _partition_accounts(root)
     finally:
         root.close()
+
+
+def test_account_snapshot_and_strategy_workers_share_connection_safely(disk_partitions):
+    root, cn, us = disk_partitions
+    _account(us, "us-peer", us=True)
+    expected = {"us-strategy": '{"identity":"us-strategy"}', "us-peer": '{"identity":"us-peer"}'}
+    with root.atomic_decision_update():
+        root._connection.executemany("INSERT INTO equity_strategy_state VALUES (?, ?)", expected.items())
+    for account_id in expected:
+        us.set_virtual_paused(account_id, False)
+
+    ready = Barrier(8, timeout=10)
+
+    class ScheduleProvider:
+        def due_decision(self, account, observed_at):
+            assert account["account_v4_json"] == expected[account["account_id"]]
+            return None
+
+    runtime = SimpleNamespace(store=root, services={
+        scope.channel_account_id: SimpleNamespace(
+            store=scope, accounts=SimpleNamespace(status=scope.virtual_account),
+        ) for scope in (cn, us)
+    })
+    api = PteWebApi(SimpleNamespace(store=root, channel=None, virtual=None), multichannel_runtime=runtime)
+    scheduler = RuntimeScheduler(Engine(), None, root, schedule_provider=ScheduleProvider())
+    now = datetime.now(timezone.utc)
+
+    def read(worker):
+        account_id = tuple(expected)[(worker // 2) % len(expected)]
+        ready.wait()
+        for _ in range(150):
+            if worker % 2:
+                snapshot = api.virtual_account_snapshot(account_id)
+                assert snapshot["scope"]["account_id"] == account_id
+                assert snapshot["scope"]["channel_account_id"] == us.channel_account_id
+            else:
+                scheduler._scheduled_account_cycle({"account_id": account_id,
+                                                    "channel_account_id": us.channel_account_id}, now)
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        list(pool.map(read, range(8)))
+    assert root.operation_failures() == []
+    assert root.query_audit_events(event_type="SCHEDULER_OPERATION_FAILED") == []
+
+
+def test_scheduler_audit_failure_and_recovery_are_visible_under_owning_market(disk_partitions):
+    root, cn, us = disk_partitions
+    failing = True
+
+    def fail_until_recovered(*_):
+        if failing:
+            raise RuntimeError("fixture failure")
+
+    scheduler = RuntimeScheduler(Engine(), None, root,
+        schedule_provider=SimpleNamespace(due_decision=fail_until_recovered),
+        channel_operations={us.channel_account_id: SimpleNamespace(
+            refresh_account=fail_until_recovered, refresh_orders=fail_until_recovered,
+        )}, account_interval=5)
+    for scope, account_id in ((cn, "cn-strategy"), (us, "us-strategy")):
+        scope.set_virtual_paused(account_id, False)
+    start = datetime.now(timezone.utc)
+    scheduler.tick_fast(start)
+    scheduler.tick_daily(start)
+    for worker in scheduler._account_workers.values():
+        worker.join(5)
+        assert not worker.is_alive()
+    assert len(root.operation_failures()) == 4
+
+    failing = False
+    retry = start + timedelta(seconds=5)
+    scheduler.tick_fast(retry)
+    scheduler.tick_daily(retry)
+    for worker in scheduler._account_workers.values():
+        worker.join(5)
+        assert not worker.is_alive()
+
+    api = PteWebApi(SimpleNamespace(store=root, channel=None, virtual=None))
+    for market, scope, account_id in (("CN", cn, "cn-strategy"), ("US", us, "us-strategy")):
+        events = [event for event in api.audit_events({"market": market})["events"]
+                  if event["source"] == "scheduler"]
+        operations = {f"account_strategy_cycle:{account_id}": account_id}
+        if market == "US":
+            operations.update({f"{name}:{scope.channel_account_id}": None for name in ("account", "orders")})
+        assert len(events) == len(operations) * 2
+        for event in events:
+            assert event["channel_account_id"] == scope.channel_account_id
+            assert event["channel"] == scope.execution_channel_id
+            assert event["account_id"] == operations[event["details"]["operation"]]
+        for operation in operations:
+            assert [event["event_type"] for event in events if event["details"]["operation"] == operation] == [
+                "SCHEDULER_OPERATION_RECOVERED", "SCHEDULER_OPERATION_FAILED",
+            ]
+    assert root.operation_failures() == []
 
 
 # Independent risk: EC15; responsibility-level assertions.
