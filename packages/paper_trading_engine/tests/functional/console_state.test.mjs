@@ -360,6 +360,28 @@ test('account performance shows closed-trade win rate and explains unavailable r
   }
 });
 
+test('comparison shows the same closed-trade metrics and unavailable reasons as account performance', () => {
+  const source = readFileSync(new URL('../../src/paper_trading_engine/static/app.js',import.meta.url),'utf8')
+    .replace(/^import .*;\r?\n/gm,'').replace(/\bexport /g,'').replace("if(typeof document!=='undefined')boot();",'');
+  const app = {innerHTML:''};
+  const document = {querySelector:()=>app,querySelectorAll:()=>[]};
+  const render = runInNewContext(source+'\nrenderComparison',{document});
+  render({accounts:[
+    {account_id:'mixed',metrics:{closed_trades:3,win_rate:1/3,win_loss_ratio:3}},
+    {account_id:'open',metrics:{closed_trades:0,win_rate:null,win_loss_ratio_status:'NO_CLOSED_TRADES'}},
+    {account_id:'winning',metrics:{closed_trades:1,win_rate:1,win_loss_ratio_status:'NO_LOSSES'}},
+    {account_id:'losing',metrics:{closed_trades:1,win_rate:0,win_loss_ratio_status:'NO_WINS'}},
+  ]});
+  assert.match(app.innerHTML,/<th>已闭合交易<\/th><th>已闭合胜率<\/th><th>已闭合盈亏比<\/th>/);
+  for(const [id, count, rate, ratio] of [
+    ['mixed',3,'33.33%','3.000'], ['open',0,'—','无闭合交易'],
+    ['winning',1,'100.00%','无亏损交易'], ['losing',1,'0.00%','无盈利交易'],
+  ]){
+    const row = app.innerHTML.split('</tr>').find(html=>html.includes(`<td>${id}</td>`));
+    assert.ok(row?.endsWith(`<td>${count}</td><td>${rate}</td><td>${ratio}</td>`));
+  }
+});
+
 
 test('account record pagination bounds pages without losing or duplicating rows', () => {
   const rows=Array.from({length:25},(_,id)=>({id}));

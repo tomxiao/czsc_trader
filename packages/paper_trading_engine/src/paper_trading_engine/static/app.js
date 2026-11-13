@@ -546,7 +546,35 @@ async function cancelOrder(order,prefix,market,channel){
   }catch(error){toast(error.message);}
 }
 
-function renderComparison(s){document.querySelector('#app').innerHTML=`<section class="panel hero"><div><div class="eyebrow">只读评估</div><h1>虚拟账户比较</h1><div class="subtle">各账户按自身日终估值窗口统计，指标与账户详情页保持一致</div></div></section><section class="panel section"><div class="section-head"><h2>参与账户</h2><span class="badge">无交易干预</span></div><div class="comparison-select">${state.accounts.map(a=>`<label><input type="checkbox" value="${esc(a.account_id)}" ${s.accounts.some(x=>x.account_id===a.account_id)?'checked':''}> ${esc(a.name)} · ${esc(a.release_id)}</label>`).join('')}</div></section><section class="panel section"><div class="section-head"><h2>核心指标</h2><span class="badge">OPC优先级</span></div>${rowsTable([['账户',r=>r.account_id],['策略发布',r=>r.release_id],['绩效估值窗口',r=>r.metrics.observation_start&&r.metrics.observation_end?`${r.metrics.observation_start} 至 ${r.metrics.observation_end}`:'尚无日终快照'],['交易日',r=>r.metrics.observation_count??0],['闭合交易',r=>r.metrics.closed_trades??0],['累计收益',r=>pct(r.metrics.total_return)],['最大回撤',r=>pct(r.metrics.maximum_drawdown)],['卡玛比率',r=>r.metrics.calmar_ratio==null?'不可用':Number(r.metrics.calmar_ratio).toFixed(3)],['盈亏比',r=>r.metrics.win_loss_ratio==null?'不可用':Number(r.metrics.win_loss_ratio).toFixed(3)]],s.accounts)}</section>`;document.querySelectorAll('.comparison-select input').forEach(el=>el.onchange=()=>{const ids=[...document.querySelectorAll('.comparison-select input:checked')].map(x=>x.value);navigate('/comparison?'+comparisonQuery(ids));});}
+function renderComparison(snapshot){
+  const columns = [
+    ['账户', row=>row.account_id],
+    ['策略发布', row=>row.release_id],
+    ['绩效估值窗口', ({metrics})=>metrics.observation_start&&metrics.observation_end
+      ? `${metrics.observation_start} 至 ${metrics.observation_end}` : '尚无日终快照'],
+    ['交易日', ({metrics})=>metrics.observation_count??0],
+    ['累计收益', ({metrics})=>pct(metrics.total_return)],
+    ['最大回撤', ({metrics})=>pct(metrics.maximum_drawdown)],
+    ['卡玛比率', ({metrics})=>metrics.calmar_ratio==null?'不可用':Number(metrics.calmar_ratio).toFixed(3)],
+    ['已闭合交易', ({metrics})=>metrics.closed_trades??0],
+    ['已闭合胜率', ({metrics})=>pct(metrics.win_rate)],
+    ['已闭合盈亏比', ({metrics})=>closedWinLossRatio(metrics)],
+  ];
+  document.querySelector('#app').innerHTML=`
+    <section class="panel hero"><div><div class="eyebrow">只读评估</div><h1>虚拟账户比较</h1><div class="subtle">各账户按自身日终估值窗口统计，指标与账户详情页保持一致</div></div></section>
+    <section class="panel section">
+      <div class="section-head"><h2>参与账户</h2><span class="badge">无交易干预</span></div>
+      <div class="comparison-select">${state.accounts.map(account=>`<label><input type="checkbox" value="${esc(account.account_id)}" ${snapshot.accounts.some(row=>row.account_id===account.account_id)?'checked':''}> ${esc(account.name)} · ${esc(account.release_id)}</label>`).join('')}</div>
+    </section>
+    <section class="panel section">
+      <div class="section-head"><h2>核心指标</h2><span class="badge">OPC优先级</span></div>
+      ${rowsTable(columns,snapshot.accounts)}
+    </section>`;
+  document.querySelectorAll('.comparison-select input').forEach(input=>input.onchange=()=>{
+    const ids=[...document.querySelectorAll('.comparison-select input:checked')].map(item=>item.value);
+    navigate('/comparison?'+comparisonQuery(ids));
+  });
+}
 
 function renderAudit(s){
   const selected=new URLSearchParams(location.search),categories=['STRATEGY','TRADING','SYSTEM','OTHER'];
