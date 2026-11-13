@@ -316,7 +316,7 @@ test('virtual account navigation excludes retired accounts and stale selections'
   assert.equal(accounts.length,3);
 });
 
-test('channel summary shows market currency and leaves reconciliation to its drawer', () => {
+test('channel summary leads with broker total assets in the market currency', () => {
   const snapshot = {
     account:{cash:756290.717,total_assets:1002769.617,market_value:246478.9},
     logical_cash:756290.717,logical_total_assets:996212.117,
@@ -326,13 +326,18 @@ test('channel summary shows market currency and leaves reconciliation to its dra
     accounts:[],orders:[],fills:[],alerts:[],paused:false,
   };
   const html = channelMarkup(snapshot);
-  assert.equal((html.match(/class="panel metric"/g)||[]).length,3);
+  assert.deepEqual([...html.matchAll(/class="panel metric"><label>([^<]+)<\/label>/g)].map(match=>match[1]),
+    ['券商总资产','券商现金','PTE 账务现金','现金差额']);
+  assert.match(html,/<label>券商总资产<\/label><strong>1,002,769\.62 CNY<\/strong>/);
   assert.match(html,/资金对账正常/);
   assert.match(html,/估值口径不同/);
   assert.match(html,/data-reconciliation[^>]*>对账详情/);
   assert.doesNotMatch(html,/<details/);
-  assert.match(channelMarkup({...snapshot,market:'US',currency:'USD'}),/美股模拟盘/);
-  assert.match(channelMarkup({...snapshot,market:'US',currency:'USD'}),/756,290\.72 USD/);
+  const usHtml = channelMarkup({...snapshot,market:'US',currency:'USD'});
+  assert.match(usHtml,/美股模拟盘/);
+  assert.match(usHtml,/<label>券商总资产<\/label><strong>1,002,769\.62 USD<\/strong>/);
+  assert.match(usHtml,/756,290\.72 USD/);
+  assert.match(channelMarkup({...snapshot,account:null}),/<label>券商总资产<\/label><strong>—<\/strong>/);
 });
 
 

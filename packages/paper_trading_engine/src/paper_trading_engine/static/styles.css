@@ -184,6 +184,7 @@ main{padding:16px}
 .account-heading h1 .badge{vertical-align:middle;margin-left:7px}
 .primary-metrics,.channel-core-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
 .account-metrics.primary-metrics{grid-template-columns:repeat(5,minmax(0,1fr))}
+.channel-core-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}
 .primary-metrics .metric,.channel-core-metrics .metric{border:0;border-radius:0;background:transparent}
 .primary-metrics .metric+.metric,.channel-core-metrics .metric+.metric{border-left:1px solid var(--line)}
 .primary-metrics .metric strong,.channel-core-metrics .metric strong{font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
@@ -212,6 +213,9 @@ main{padding:16px}
   .decision-summary{align-items:flex-start}
   .primary-metrics .metric{padding:6px 4px}
   .primary-metrics .metric strong{font-size:12px}
+  .channel-core-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
   .channel-core-metrics .metric{padding:8px}
+  .channel-core-metrics .metric:nth-child(n+3){border-top:1px solid var(--line)}
+  .channel-core-metrics .metric:nth-child(3){border-left:0}
   .channel-core-metrics .metric strong{font-size:14px}
 }
