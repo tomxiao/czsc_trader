@@ -6,6 +6,7 @@ from dataclasses import asdict
 from datetime import datetime, timezone
 from decimal import Decimal
 import json
+from pathlib import Path
 
 from execution_channels.futu.lifecycle import AccountHealth
 from execution_channels.futu.audit import AuditCategory, AuditOutcome, AuditSeverity, EVENT_CATALOG
@@ -527,9 +528,20 @@ class PteWebApi:
             "scheduler_failures": status.get("scheduler_failures", []), "events": events,
         }
 
-    def comparison(self, account_ids: list[str], market: str | None = None) -> dict[str, object]:
+    def comparison(self, account_ids: list[str] | None, market: str | None = None) -> dict[str, object]:
         known = {row["account_id"]: row for row in self._account_rows(market)}
-        selected = list(dict.fromkeys(account_ids)) if account_ids else sorted(known)
+        if account_ids is None:
+            identity = getattr(self.operations, "runtime_identity", {})
+            repo_root = identity.get("release_root") or identity.get("repo_root")
+            history = Path(repo_root) / "strategies/deployments/history" if repo_root else None
+            retired_releases = {path.stem for path in history.glob("*.json")} if history else set()
+            selected = sorted(
+                account_id for account_id, row in known.items()
+                if row["run_state"] != "RETIRED"
+                and f'{row["strategy_id"]}-{row["strategy_version"]}' not in retired_releases
+            )
+        else:
+            selected = list(dict.fromkeys(account_ids))
         missing = next((item for item in selected if item not in known), None)
         if missing:
             raise ResourceNotFound(missing)

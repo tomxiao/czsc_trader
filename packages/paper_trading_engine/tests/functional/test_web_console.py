@@ -430,7 +430,41 @@ def test_PTE14_C01_market_filter_scopes_accounts_comparison_and_audit():
         )
     )
     assert [r["account_id"] for r in api.virtual_accounts("US")["accounts"]] == ["us"]
-    assert [r["account_id"] for r in api.comparison([], "US")["accounts"]] == ["us"]
+    assert [r["account_id"] for r in api.comparison(None, "US")["accounts"]] == ["us"]
     events = api.audit_events({"market": "US"})
     assert events["events"][0]["account_id"] == "us"
     assert observed == [{"market": "US"}]
+
+
+def test_comparison_defaults_exclude_retired_accounts_and_historical_releases(tmp_path):
+    history = tmp_path / "strategies/deployments/history"
+    history.mkdir(parents=True)
+    (history / "S002-v1.json").write_text("{}", encoding="utf-8")
+    rows = [
+        dict(account_id=account_id, name=account_id, strategy_id=strategy_id,
+             strategy_version="v1", run_state=run_state, channel_id="futu_simulate_cn")
+        for account_id, strategy_id, run_state in (
+            ("active", "S001", "RUNNING"), ("historical", "S002", "PAUSED"),
+            ("retired", "S001", "RETIRED"), ("paused", "S001", "PAUSED"),
+        )
+    ]
+    operations = SimpleNamespace(
+        store=SimpleNamespace(strategy_virtual_accounts=lambda: rows),
+        channel=None, virtual=SimpleNamespace(metrics=lambda _: {}),
+        runtime_identity={"mode": "PTE", "release_root": str(tmp_path)},
+    )
+    server = create_server(operations, port=0)
+    thread = Thread(target=server.serve_forever, kwargs={"poll_interval": .01}, daemon=True)
+    thread.start()
+    try:
+        for query, expected in (
+            ("market=CN", ["active", "paused"]),
+            ("market=CN&account_id=retired&account_id=historical", ["retired", "historical"]),
+            ("market=CN&account_id=", []),
+        ):
+            with urlopen(f"http://127.0.0.1:{server.server_port}/api/comparison?{query}", timeout=2) as response:
+                assert [row["account_id"] for row in json.load(response)["accounts"]] == expected
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join()

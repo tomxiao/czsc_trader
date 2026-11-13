@@ -17,7 +17,7 @@ export class ScopedLoader {
 }
 
 export const actionsForRoute = route => route.page==='channel'?['pause','resume','cancel']:route.page==='account'?['pause','resume']:[];
-export const comparisonQuery = ids => ids.map(id=>`account_id=${encodeURIComponent(id)}`).join('&');
+export const comparisonQuery = ids => ids.length ? ids.map(id=>`account_id=${encodeURIComponent(id)}`).join('&') : 'account_id=';
 export const auditQuery = filters => {
   const query=new URLSearchParams();
   Object.entries(filters||{}).forEach(([key,value])=>{if(value!=null&&value!=='')query.set(key,value);});
@@ -536,7 +536,7 @@ async function cancelOrder(order,prefix,market,channel){
   }catch(error){toast(error.message);}
 }
 
-function renderComparison(s){document.querySelector('#app').innerHTML=`<section class="panel hero"><div><div class="eyebrow">只读评估</div><h1>虚拟账户比较</h1><div class="subtle">各账户按自身日终估值窗口统计，指标与账户详情页保持一致</div></div></section><section class="panel section"><div class="section-head"><h2>参与账户</h2><span class="badge">无交易干预</span></div><div class="comparison-select">${state.accounts.map(a=>`<label><input type="checkbox" value="${esc(a.account_id)}" ${s.accounts.some(x=>x.account_id===a.account_id)?'checked':''}> ${esc(a.name)} · ${esc(a.release_id)}</label>`).join('')}</div></section><section class="panel section"><div class="section-head"><h2>核心指标</h2><span class="badge">OPC优先级</span></div>${rowsTable([['账户',r=>r.account_id],['策略发布',r=>r.release_id],['绩效估值窗口',r=>r.metrics.observation_start&&r.metrics.observation_end?`${r.metrics.observation_start} 至 ${r.metrics.observation_end}`:'尚无日终快照'],['交易日',r=>r.metrics.observation_count??0],['闭合交易',r=>r.metrics.closed_trades??0],['累计收益',r=>pct(r.metrics.total_return)],['最大回撤',r=>pct(r.metrics.maximum_drawdown)],['卡玛比率',r=>r.metrics.calmar_ratio==null?'不可用':Number(r.metrics.calmar_ratio).toFixed(3)],['盈亏比',r=>r.metrics.win_loss_ratio==null?'不可用':Number(r.metrics.win_loss_ratio).toFixed(3)]],s.accounts)}</section>`;document.querySelectorAll('.comparison-select input').forEach(el=>el.onchange=()=>{const ids=[...document.querySelectorAll('.comparison-select input:checked')].map(x=>x.value);navigate(`/comparison${ids.length?'?'+comparisonQuery(ids):''}`);});}
+function renderComparison(s){document.querySelector('#app').innerHTML=`<section class="panel hero"><div><div class="eyebrow">只读评估</div><h1>虚拟账户比较</h1><div class="subtle">各账户按自身日终估值窗口统计，指标与账户详情页保持一致</div></div></section><section class="panel section"><div class="section-head"><h2>参与账户</h2><span class="badge">无交易干预</span></div><div class="comparison-select">${state.accounts.map(a=>`<label><input type="checkbox" value="${esc(a.account_id)}" ${s.accounts.some(x=>x.account_id===a.account_id)?'checked':''}> ${esc(a.name)} · ${esc(a.release_id)}</label>`).join('')}</div></section><section class="panel section"><div class="section-head"><h2>核心指标</h2><span class="badge">OPC优先级</span></div>${rowsTable([['账户',r=>r.account_id],['策略发布',r=>r.release_id],['绩效估值窗口',r=>r.metrics.observation_start&&r.metrics.observation_end?`${r.metrics.observation_start} 至 ${r.metrics.observation_end}`:'尚无日终快照'],['交易日',r=>r.metrics.observation_count??0],['闭合交易',r=>r.metrics.closed_trades??0],['累计收益',r=>pct(r.metrics.total_return)],['最大回撤',r=>pct(r.metrics.maximum_drawdown)],['卡玛比率',r=>r.metrics.calmar_ratio==null?'不可用':Number(r.metrics.calmar_ratio).toFixed(3)],['盈亏比',r=>r.metrics.win_loss_ratio==null?'不可用':Number(r.metrics.win_loss_ratio).toFixed(3)]],s.accounts)}</section>`;document.querySelectorAll('.comparison-select input').forEach(el=>el.onchange=()=>{const ids=[...document.querySelectorAll('.comparison-select input:checked')].map(x=>x.value);navigate('/comparison?'+comparisonQuery(ids));});}
 
 function renderAudit(s){
   const selected=new URLSearchParams(location.search),categories=['STRATEGY','TRADING','SYSTEM','OTHER'];
@@ -600,8 +600,9 @@ async function loadRoute({showLoading=true,forceRender=false}={}){
       }));
     }
     else if(route.page==='comparison'){
-      const ids=new URLSearchParams(location.search).getAll('account_id');
-      snapshot=await getJson(scoped(`/api/comparison${ids.length?'?'+comparisonQuery(ids):''}`,market),{signal:request.signal});
+      const selection=new URLSearchParams(location.search);
+      const query=selection.has('account_id')?'?'+comparisonQuery(selection.getAll('account_id').filter(Boolean)):'';
+      snapshot=await getJson(scoped('/api/comparison'+query,market),{signal:request.signal});
     }
     else snapshot=await getJson(scoped(`/api/audit-events${location.search}`,market),{signal:request.signal});
     if(!state.loader.accept(request,scope))return;

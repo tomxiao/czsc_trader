@@ -145,8 +145,9 @@ def create_server(
                     channel_account_id = unquote(path[len("/api/channel-accounts/"):-len("/snapshot")])
                     self._json(200, api.channel_account_snapshot(channel_account_id))
                 elif path == "/api/comparison":
-                    query = parse_qs(parsed.query)
-                    ids, market = query.get("account_id", []), query.get("market", [None])[-1]
+                    query = parse_qs(parsed.query, keep_blank_values=True)
+                    ids = [value for value in query["account_id"] if value] if "account_id" in query else None
+                    market = query.get("market", [None])[-1] or None
                     self._json(200, api.comparison(ids) if market is None else api.comparison(ids, market))
                 elif path == "/api/audit-events":
                     query = parse_qs(parsed.query, keep_blank_values=True)

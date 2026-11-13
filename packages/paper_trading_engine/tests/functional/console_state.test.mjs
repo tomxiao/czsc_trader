@@ -122,6 +122,7 @@ test('FT-PTEJS01 console state preserves scope, stable polling and Chinese prese
   assert.deepEqual(actionsForRoute({page: 'account'}), ['pause', 'resume']);
   assert.deepEqual(actionsForRoute({page: 'channel'}), ['pause', 'resume', 'cancel']);
   assert.equal(comparisonQuery(['alpha', 'beta']), 'account_id=alpha&account_id=beta');
+  assert.equal(comparisonQuery([]), 'account_id=');
   const first = {as_of: '2026-09-04T09:00:00Z', account: {cash: '100000.0000'}};
   const later = {as_of: '2026-09-04T09:00:05Z', account: {cash: '100000.0000'}};
   assert.equal(snapshotFingerprint(first), snapshotFingerprint(later));
