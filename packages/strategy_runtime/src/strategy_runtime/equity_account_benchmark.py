@@ -1,4 +1,4 @@
-"""Fixed full-target benchmark for the V4 account contract."""
+"""Fixed full-target benchmark for equity account replay."""
 from strategy_runtime.account_strategy import AccountDecision, AccountStepResult
 from strategy_runtime.equity_replay import StateRecord
 

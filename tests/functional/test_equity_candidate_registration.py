@@ -11,7 +11,7 @@ def test_TDR_03_C04_equity_registration_load_and_source_snapshot(tmp_path):
     source = request.experiment.resolve(context.repository.root) / 'src'
     source.mkdir(exist_ok=True)
     (source / 'strategy.py').write_text('from strategy_runtime import AccountDecision, AccountStepResult, StateRecord\n'
-        'def step(ctx,state):\n return AccountStepResult(AccountDecision.from_facts(1, "hold", facts={"close":ctx.history.last()["Close"]}, next_watch="next bar"),cycle_values=StateRecord())\n', encoding='utf-8')
+        'def step(ctx,state):\n return AccountStepResult(AccountDecision.from_facts(1, "hold", facts={"target":1}, next_watch="next bar"),cycle_values=StateRecord())\n', encoding='utf-8')
     definition = replace(request.candidate.definition,source_sha256=equity_source_hash(source, ('strategy.py',)))
     candidate = replace(request.candidate,definition=definition,source_root=source)
     record = register_candidate(context.repository, CandidateRegistrationRequest(candidate, request.experiment, (), ()))

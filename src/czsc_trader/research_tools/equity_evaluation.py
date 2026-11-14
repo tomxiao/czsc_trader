@@ -13,7 +13,7 @@ from zoneinfo import ZoneInfo
 import platform
 
 import pandas as pd
-from dataflows import (DataRequest, EquityDataRequest, EquityProduct, EquityQuery, PreparedDataRef, SourceRef, TimeInterval, PriceAdjustment)
+from dataflows import (EquityDataRequest, EquityProduct, EquityQuery, PreparedDataRef, SourceRef, TimeInterval, PriceAdjustment)
 from strategy_runtime.equity import equity_hash
 from strategy_runtime.runtime import StrategyRuntime
 from strategy_runtime.step_data import STEP_DATA_CONTRACT, StepDataWindow
@@ -61,7 +61,6 @@ class EquityEvaluationRequest:
     lineage: object | None = field(default=None, kw_only=True)
     input_binding: EquityInputBinding | None = field(default=None, kw_only=True)
     audit_inputs_sha256: str | None = field(default=None, kw_only=True)
-    observation_requests: tuple[DataRequest | None, ...] = field(default=(), kw_only=True)
     step_data_windows: tuple[StepDataWindow, ...] = field(default=(), kw_only=True)
 
     def __post_init__(self):
@@ -75,12 +74,12 @@ class EquityEvaluationRequest:
         if type(self.step_data_windows) is not tuple or any(type(x) is not StepDataWindow for x in self.step_data_windows):
             raise TypeError("equity evaluation requires typed step data grants")
         names = [window.name for window in self.step_data_windows]
-        declared = {item.name for item in self.candidate.definition.step_data_inputs}
-        if len(set(names)) != len(names) or not set(names).issubset(declared):
+        inputs = {item.name: item for item in self.candidate.definition.step_data_inputs}
+        if len(set(names)) != len(names) or not set(names).issubset(inputs):
             raise ValueError("equity evaluation grants must name distinct declared step inputs")
-        end = self.window.end.astimezone(ZoneInfo(self.candidate.instrument.timezone)).date()
-        if any(window.start < self.history_start or window.end > end for window in self.step_data_windows):
-            raise ValueError("step data grant exceeds the authorized evaluation history")
+        if any(window.end > self.window.end.astimezone(ZoneInfo(inputs[window.name].availability.timezone)).date()
+               for window in self.step_data_windows):
+            raise ValueError("step data grant exceeds the authorized evaluation end")
         from .evaluation import EvaluationCost, EvaluationLineage
         EvaluationCost(self.scenario_id, self.fee_rate, self.measurement_tier)
         if type(self.window_id) is not str or not self.window_id.strip():
@@ -108,17 +107,6 @@ class EquityEvaluationRequest:
             raise TypeError("prepared requires PreparedDataRef")
         if self.input_binding is not None and (type(self.input_binding) is not EquityInputBinding or self.input_binding.prepared != self.prepared):
             raise ValueError("equity input binding differs from prepared data")
-        if type(self.observation_requests) is not tuple or any(x is not None and type(x) is not DataRequest for x in self.observation_requests):
-            raise TypeError('observation requests require typed DFLS selections')
-        if self.observation_requests and len(self.observation_requests) != len(self.candidate.definition.observation_inputs):
-            raise ValueError('observation requests differ from declared inputs')
-        for item, query in zip(self.candidate.definition.observation_inputs, self.observation_requests):
-            if query is None:
-                end = pd.Timestamp(self.window.end).tz_convert(self.candidate.instrument.timezone).date()
-                if not item.inactive_on(end):
-                    raise ValueError('missing request for an active observation')
-            else:
-                item.validate_request(query)
 
     def requests(self, specification):
         return tuple(query for _, query in self.request_items(specification))
@@ -130,30 +118,21 @@ class EquityEvaluationRequest:
             for window in self.step_data_windows)
 
     def request_items(self, specification):
-        """Stable product keys; auxiliary products never replace the traded asset."""
+        """Host products for valuation, trading sessions and execution."""
         end = pd.Timestamp(self.window.end).tz_convert(self.candidate.instrument.timezone).date()
         primary = tuple((product.name.lower(), EquityDataRequest(
             self.candidate.instrument, getattr(self.sources, product.name.lower()),
             EquityQuery(product, self.history_start, end, specification.decision_clock, PriceAdjustment.NONE if product is EquityProduct.SESSIONS else PriceAdjustment.BACKWARD))) for product in EquityProduct)
-        auxiliary = tuple(
-            (item.data_key(query.parameters.query.product), query)
-            for item in self.candidate.definition.auxiliary_inputs
-            for query in item.requests(self.history_start, end))
         execution = ()
         if self.candidate.definition.execution_input is not None:
             item = self.candidate.definition.execution_input
             execution = tuple((item.data_key(query.parameters.query.product), query)
                 for query in item.requests(pd.Timestamp(self.window.start).tz_convert(self.candidate.instrument.timezone).date(), end))
-        observations = tuple((item.data_key(), query) for item, query in zip(
-            self.candidate.definition.observation_inputs, self.observation_requests, strict=True)) if self.observation_requests else tuple(
-                (item.data_key(), item.request(self.history_start, end, source_root=self.candidate.source_root))
-                for item in self.candidate.definition.observation_inputs)
-        return primary + auxiliary + execution + tuple((key, query) for key, query in observations if query is not None)
+        return primary + execution
 
     def identity(self, specification):
-        from strategy_runtime import (equity_features, equity_replay as srt_replay, equity_buy_hold_v4,
-            equity_source_runtime, replay_contracts, account_strategy,
-            dataset_observations, observation_preparation, account_planning)
+        from strategy_runtime import (equity_features, equity_replay as srt_replay, equity_account_benchmark,
+            equity_source_runtime, replay_contracts, account_strategy, account_planning)
         from strategy_evaluator import equity_assessment as se_assessment
         from czsc_trader.application import account_replay, ec_boundary, execution_inputs
         from . import equity_replay, equity_assessment, parameter_evaluation, account_preparation
@@ -170,9 +149,9 @@ class EquityEvaluationRequest:
         engine_sources = {item.__module__: sha256(Path(inspect.getsourcefile(item)).read_bytes()).hexdigest()
             for item in (EquityEvaluationRequest, EquityStrategyCandidate, StrategyRuntime,
                 PortfolioHistoricalExecutor, resolve_fill, summarize_equity_ledger)}
-        for module in (equity_features, srt_replay, equity_buy_hold_v4, equity_source_runtime,
-                replay_contracts, account_strategy, account_replay, dataset_observations,
-                observation_preparation, account_planning, step_data, market_features, strategy_performance, se_assessment,
+        for module in (equity_features, srt_replay, equity_account_benchmark, equity_source_runtime,
+                replay_contracts, account_strategy, account_replay,
+                account_planning, step_data, market_features, strategy_performance, se_assessment,
                 equity_replay, equity_assessment, parameter_evaluation, account_preparation, accounting,
                 portfolio, account_ledger, channel, contracts, policy, state, serialization,
                 entry_cycle, planning, intent, session_rules, planning_result, market_rules, rule_constraints,
@@ -296,23 +275,12 @@ def _audit_inputs(request, specification, products):
               "constraints": _records(products["constraints"]), "specification": asdict(specification),
               "initial_cash": request.initial_cash, "fee_rate": request.fee_rate}
     definition = request.candidate.definition
-    decision_inputs = {}
-    decision_inputs["sessions"] = _records(products["sessions"])
-    if definition.auxiliary_inputs:
-        decision_inputs["auxiliary"] = {item.name: {
-            "bars": _records(products[item.data_key(EquityProduct.BARS)]),
-            "sessions": _records(products[item.data_key(EquityProduct.SESSIONS)])}
-            for item in definition.auxiliary_inputs}
+    decision_inputs = {"sessions": _records(products["sessions"])}
     if definition.execution_input is not None:
         item = definition.execution_input
         decision_inputs['execution'] = {'bars': _records(products[item.data_key(EquityProduct.BARS)]),
             'sessions': _records(products[item.data_key(EquityProduct.SESSIONS)])}
-    if definition.observation_inputs:
-        decision_inputs['observations'] = {item.name: _records(products[item.data_key()]) if item.data_key() in products else
-            {'status': 'INACTIVE', 'activation_at': item.activation_at.isoformat()}
-                                          for item in definition.observation_inputs}
-    if decision_inputs:
-        inputs["decision_inputs"] = decision_inputs
+    inputs["decision_inputs"] = decision_inputs
     return inputs
 
 

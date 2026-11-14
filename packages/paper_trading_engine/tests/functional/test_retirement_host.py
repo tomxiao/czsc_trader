@@ -11,7 +11,7 @@ import pytest
 from execution_channels.futu.account_retirement import AccountRetirementResult, AccountRetirementStatus
 from paper_trading_engine.account_strategy_cycle import AccountStrategyCycle
 from paper_trading_engine.cli import _strategy_deployments
-from paper_trading_engine.formal_v4_advice import FormalV4AdviceClient
+from paper_trading_engine.equity_runtime import EquityRuntimeAdviceClient
 from paper_trading_engine.multichannel_runtime import MultiChannelRuntime
 from paper_trading_engine.web import create_server
 
@@ -26,7 +26,7 @@ def test_inactive_accounts_never_load_or_prepare_strategy(state):
     cycle = AccountStrategyCycle(None, None, store)
     with pytest.raises(ValueError, match='inactive'):
         cycle.run_latest('old', observed_at=datetime.now(timezone.utc))
-    client = object.__new__(FormalV4AdviceClient)
+    client = object.__new__(EquityRuntimeAdviceClient)
     client.store = store
     with pytest.raises(ValueError, match='inactive'):
         client._account_release('old')

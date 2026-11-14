@@ -7,15 +7,15 @@ if TYPE_CHECKING:
     from .contracts import AdviceDecision, OrderSpec
     from .account_binding import (
         AccountStrategyBinding, AccountBindingUpdate, AccountBindingUpdateResult,
-        AccountBindingUpdateStatus, V4AccountBindingUpdate, V4StateContinuation, V4StateMigration,
+        AccountBindingUpdateStatus, EquityAccountBindingUpdate, EquityStateContinuation, EquityStateMigration,
     )
     from .account_maintenance import update_account_bindings
-    from .v4_account_maintenance import account_binding_facts_sha256
+    from .equity_account_maintenance import account_binding_facts_sha256
 
 __all__ = [
     "AdviceDecision", "OrderSpec", "AccountStrategyBinding", "AccountBindingUpdate",
     "AccountBindingUpdateResult", "AccountBindingUpdateStatus", "update_account_bindings",
-    "V4AccountBindingUpdate", "V4StateContinuation", "V4StateMigration", "account_binding_facts_sha256",
+    "EquityAccountBindingUpdate", "EquityStateContinuation", "EquityStateMigration", "account_binding_facts_sha256",
     "EquityAdviceClient", "prepare_equity_decision", "ExecutionReferenceBinding", "PreparedExecutionReference",
     "EquityPteInspectionProtocol", "EquityPteScenario", "inspect_equity_release",
 ]
@@ -29,8 +29,8 @@ _EXPORT_MODULES = {
     'AccountStrategyBinding': 'account_binding', 'AccountBindingUpdate': 'account_binding',
     'AccountBindingUpdateResult': 'account_binding', 'AccountBindingUpdateStatus': 'account_binding',
     'update_account_bindings': 'account_maintenance',
-    'V4AccountBindingUpdate': 'account_binding', 'V4StateContinuation': 'account_binding',
-    'V4StateMigration': 'account_binding', 'account_binding_facts_sha256': 'v4_account_maintenance',
+    'EquityAccountBindingUpdate': 'account_binding', 'EquityStateContinuation': 'account_binding',
+    'EquityStateMigration': 'account_binding', 'account_binding_facts_sha256': 'equity_account_maintenance',
 }
 
 

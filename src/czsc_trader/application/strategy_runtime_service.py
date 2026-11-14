@@ -88,10 +88,11 @@ def deploy_strategy(context: RepositoryContext, reference: str) -> CommandResult
         registry = StrategyRegistry(context.strategy_root)
         strategy_id, version = _version_parts(reference)
         release = prospective_release(registry.get_version(strategy_id, version))
-        native_v4 = release.payload.get('runtime', {}).get('kind') == 'ACCOUNT_REPLAY'
-        if native_v4:
-            from strategy_runtime.equity_definition import EquityStrategyDefinition
-            definition = EquityStrategyDefinition.from_dict(dict(release.payload['equity_definition']))
+        account_replay = release.payload.get('runtime', {}).get('kind') == 'ACCOUNT_REPLAY'
+        if account_replay:
+            from strategy_runtime import STEP_DATA_CONTRACT
+            if release.payload['runtime']['contract_version'] != STEP_DATA_CONTRACT:
+                raise ValueError('equity deployment requires the V5 DFLS step contract')
             runtime_hash = RuntimeBinding.from_dict(binding).spec.implementation_sha256
         else:
             definition = StrategyRuntime().describe(
@@ -115,7 +116,7 @@ def deploy_strategy(context: RepositoryContext, reference: str) -> CommandResult
             _write_object(receipt_path, receipt)
             created_receipt = True
         deployment = load_strategy_deployment(context.strategy_root, reference)
-        if not native_v4:
+        if not account_replay:
             StrategyRuntime(context.strategy_root).describe(release)
     except Exception as exc:
         if created_receipt and receipt_path is not None:
@@ -158,7 +159,7 @@ def _installed_identity(context: RepositoryContext, reference: str) -> dict[str,
     if candidate is not None and not candidate.startswith(f"{strategy_id}-"):
         candidate = f"{strategy_id}-{candidate}"
     if release.payload.get("runtime", {}).get("kind") == "ACCOUNT_REPLAY":
-        # Native V4 fees belong to the execution account, outside the frozen package.
+        # Equity replay fees belong to the execution account, outside the frozen package.
         fee_rate = None
         runtime_hash = binding.spec.implementation_sha256
     else:

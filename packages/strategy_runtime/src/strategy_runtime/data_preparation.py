@@ -4,7 +4,7 @@ This module owns data acquisition and causal observation construction. It does
 not resolve market rules, simulate fills or inspect an execution account.
 """
 from dataclasses import dataclass, replace
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from enum import StrEnum
 from collections.abc import Mapping
 
@@ -133,11 +133,10 @@ def prepare_observations(definition, products, identities, *, bindings=(), as_of
         **observation_inputs(definition, products, identities, bindings=bindings))
 
 
-def forward_requests(dataflows, binding, interval, definition, source_root, calendars, *, cutoff):
-    """Expand an explicitly observation-only recipe to one causal decision point."""
+def forward_equity_requests(binding, interval, definition, calendars, *, cutoff):
+    """Expand host equity products to one causal decision point."""
     from zoneinfo import ZoneInfo
     from .equity_definition import InputBindingScope
-    from .observation_preparation import observation_forward_end, resolve_observation_requests
     if binding.scope is not InputBindingScope.OBSERVATION:
         raise ValueError('forward recipe requires explicit observation-only input migration')
     items = []
@@ -179,12 +178,4 @@ def forward_requests(dataflows, binding, interval, definition, source_root, cale
                                                                completed_through=completed_through))))
     requests = tuple(EquityDataRequest(p.instrument, p.source, p.query)
                      for p in dict.fromkeys(p for _, p in items))
-    observation_items, observation_ends = [], {}
-    for bound in binding.observation_bindings:
-        end = observation_forward_end(bound.input, cutoff, default_timezone=definition.instrument.timezone)
-        observation_ends[bound.input.name] = end
-        observation_items.extend(resolve_observation_requests(dataflows, (bound.input,),
-            date.fromisoformat(bound.request.start) if bound.request is not None else bound.input.history_start,
-            end, source_root=source_root, as_of=cutoff))
-    requests += tuple(query for _, query in observation_items if query is not None)
-    return requests, items, observation_items, observation_ends
+    return requests, items

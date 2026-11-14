@@ -1,4 +1,4 @@
-"""Maintenance CLI for explicit channel registration and native V4 accounts."""
+"""Maintenance CLI for explicit channel registration and V5 equity accounts."""
 from .ec_boundary import execution_rules
 
 from contextlib import ExitStack
@@ -16,7 +16,7 @@ from execution_channels.futu.store import PaperStore
 def _prepare_data(args):
     from dataflows import TimeInterval
     from .data_space import create_dataflows
-    from .formal_v4_advice import FormalV4AdviceClient
+    from .equity_runtime import EquityRuntimeAdviceClient
 
     if args.as_of.utcoffset() is None or args.as_of > datetime.now(timezone.utc):
         raise ValueError('prepare-data requires an aware as-of timestamp no later than now')
@@ -27,7 +27,7 @@ def _prepare_data(args):
         store = root.scope(args.channel_account_id)
         flows = create_dataflows(data_dir=args.data_dir, space=args.data_space, config_root=args.config_root,
             opend_host=args.opend_host, opend_port=args.opend_port, resources=resources)
-        client = FormalV4AdviceClient(repo_root=args.repo_root, store=store, dataflows=flows, data_dir=args.data_dir)
+        client = EquityRuntimeAdviceClient(repo_root=args.repo_root, store=store, dataflows=flows, data_dir=args.data_dir)
         result = client.prepare_data(args.account_id, interval, as_of=args.as_of)
         return {'account_id': args.account_id, 'status': result.status, 'as_of': args.as_of.isoformat(),
                 'prepared': None if result.reference is None else asdict(result.reference),
@@ -91,8 +91,8 @@ def run_channel_command(args):
                 AuditRecorder(scoped).record('ACCOUNT_PAUSED', source='cli.channel', actor_type='OPERATOR',
                     account_id=args.account_id, channel=scoped.execution_channel_id)
             return account
-        from .formal_v4_advice import FormalV4AdviceClient
-        client = FormalV4AdviceClient(repo_root=args.repo_root, store=scoped, dataflows=None, data_dir=args.data_dir)
+        from .equity_runtime import EquityRuntimeAdviceClient
+        client = EquityRuntimeAdviceClient(repo_root=args.repo_root, store=scoped, dataflows=None, data_dir=args.data_dir)
         if args.channel_action == 'resume-account':
             from execution_channels.futu.audit import AuditRecorder
             client._account_release(args.account_id)
@@ -102,11 +102,11 @@ def run_channel_command(args):
                 AuditRecorder(scoped).record('ACCOUNT_RESUMED', source='cli.channel', actor_type='OPERATOR',
                     account_id=args.account_id, channel=scoped.execution_channel_id)
             return account
-        if args.channel_action == 'create-v4':
+        if args.channel_action == 'create-v5':
             expected = {'account_id','strategy_id','strategy_version','release_hash','symbol','asset','fee_rate','initial_cash'}
             if (type(value) is not dict or set(value) - {'name'} != expected
                     or ('name' in value and type(value['name']) is not str)):
-                raise ValueError('invalid explicit V4 account definition')
+                raise ValueError('invalid explicit V5 account definition')
             binding = client.validate_account_binding(strategy_id=value['strategy_id'],
                 strategy_version=value['strategy_version'], symbol=value['symbol'], asset=value['asset'], fee_rate=value['fee_rate'])
             if binding.release_hash != value['release_hash']:
@@ -124,11 +124,11 @@ def run_channel_command(args):
             from strategy_runtime import EquityInputBinding
             from .execution_reference import ExecutionReferenceBinding
             if type(value) is not dict or set(value) != {'account_id', 'release_hash', 'fee_rate', 'binding', 'execution_reference'}:
-                raise ValueError('invalid explicit V4 input definition')
+                raise ValueError('invalid explicit V5 account input definition')
             reference = ExecutionReferenceBinding.from_dict(value['execution_reference'])
             if args.channel_action == 'bind-recipe':
-                from .formal_v4_advice import FormalV4Inputs
-                return {'input_identity': client.register_recipe(value['account_id'], FormalV4Inputs(
+                from .equity_runtime import EquityAccountInputs
+                return {'input_identity': client.register_recipe(value['account_id'], EquityAccountInputs(
                     value['release_hash'], EquityInputBinding.from_dict(value['binding']), value['fee_rate'], reference))}
             return {'input_identity': client.register_inputs(value['account_id'], EquityInputBinding.from_dict(value['binding']),
                 expected_release_hash=value['release_hash'], fee_rate=value['fee_rate'], execution_reference=reference)}

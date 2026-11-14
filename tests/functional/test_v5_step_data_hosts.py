@@ -14,7 +14,7 @@ from dataflows.equity_contracts import EquityProduct, ProviderKey, TimeInterval,
 from dataflows.equity_data import equity_metadata
 from dataflows.local_strategy_data import fetch_strategy_feature_evidence
 from paper_trading_engine.data_space import AccountDataflows
-from paper_trading_engine.formal_v4_advice import FormalV4AdviceClient
+from paper_trading_engine.equity_runtime import EquityRuntimeAdviceClient
 from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy, CnEquitySpec, EquityStrategyCandidate, EquityStrategyDefinition,
                               ExecutionPolicy, FeatureGraph, FrozenDataAsset, ObservationAvailability,
                               ResearchExecutionSpec, StepDataInput, StepDataWindow, StrategyComputation,
@@ -101,8 +101,8 @@ def test_step_reads_use_isolated_research_and_account_spaces(tmp_path):
         return receipts
 
     historical = run(pinned_step_data(study, prepared.reference, grants))
-    online = run(FormalV4AdviceClient._step_loader(client, 'account', candidate, None, None))
-    replayed = run(FormalV4AdviceClient._step_loader(client, 'account', candidate,
+    online = run(EquityRuntimeAdviceClient._step_loader(client, 'account', candidate, None, None))
+    replayed = run(EquityRuntimeAdviceClient._step_loader(client, 'account', candidate,
         tuple(row.to_dict() for row in online), None))
     assert replayed == online
     assert {row.prepared.space_id for row in historical} == {study.binding.space_id}
@@ -110,7 +110,7 @@ def test_step_reads_use_isolated_research_and_account_spaces(tmp_path):
     assert [row.visible_slice_sha256 for row in historical] == [row.visible_slice_sha256 for row in online]
     assert next(row.last for row in online if row.window.name == industry.name) == first_bar_end.isoformat()
     with pytest.raises(ValueError, match='SPACE_MISMATCH'):
-        run(FormalV4AdviceClient._step_loader(client, 'different-account', candidate,
+        run(EquityRuntimeAdviceClient._step_loader(client, 'different-account', candidate,
             tuple(row.to_dict() for row in online), None))
 
 

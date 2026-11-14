@@ -14,7 +14,7 @@ def run_frozen_equity(instance, bars, constraints, executor, *, start, end, fee_
     """Use causal SRT targets and the channel's sole sizing and execution path."""
     candidate = instance.candidate
     if candidate.definition.account_replay:
-        raise ValueError('V4 requires the stateful account channel')
+        raise ValueError('equity account replay requires the V5 DFLS step channel')
     candidate.verify()
     specification = execution_spec(instance.specification)
     if executor.spec.fingerprint != specification.fingerprint or executor.fee_rate != fee_rate:

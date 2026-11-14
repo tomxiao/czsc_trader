@@ -358,10 +358,11 @@ def validate_inspection(root, reference):
             or normalized.get("selection") != report.selection.to_dict()
             or normalized.get("experiment") != {"type": "ExperimentRef", "strategy_id": report.owner.strategy_id, "experiment_id": report.owner.experiment_id}
             or normalized.get("data_kind") not in {"HISTORICAL", "SYNTHETIC"}
-            or protocol.get("method_version") not in {"candidate-inspection-v2", "candidate-inspection-v4"}
+            or protocol.get("method_version") not in {"candidate-inspection-v2", "candidate-inspection-v4",
+                                                        "candidate-inspection-v5"}
             or protocol.get("comparison") != "ECONOMIC_V1"):
         raise ValueError("inspection request/protocol identity differs")
-    if protocol.get("method_version") == "candidate-inspection-v4" and (
+    if protocol.get("method_version") in {"candidate-inspection-v4", "candidate-inspection-v5"} and (
             protocol.get("runtime_kind") != "ACCOUNT_REPLAY" or normalized.get("runtime_kind") != "ACCOUNT_REPLAY"):
         raise ValueError("account inspection method differs from runtime kind")
     origin, plan = report.origin, report.plan

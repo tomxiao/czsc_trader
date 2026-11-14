@@ -15,7 +15,7 @@ from strategy_runtime.inspection import InspectionRuntimePermit
 from execution_channels.futu.equity_contracts import EquityAccountRules
 
 if TYPE_CHECKING:
-    from .formal_v4_advice import FormalV4Inputs
+    from .equity_runtime import EquityAccountInputs
 
 
 def paper_account_name(release_id: str, supplied: str | None = None) -> str:
@@ -103,7 +103,7 @@ class AccountBindingUpdate:
 
 
 @dataclass(frozen=True, slots=True)
-class V4StateContinuation:
+class EquityStateContinuation:
     """Attest to private-state compatibility between exact frozen versions."""
 
     source_runtime_release_id: str
@@ -116,7 +116,7 @@ class V4StateContinuation:
 
 
 @dataclass(frozen=True, slots=True)
-class V4StateMigration:
+class EquityStateMigration:
     """Reviewed strategy fields. Platform-owned ledger facts are derived separately."""
 
     account_values: StateRecord
@@ -143,29 +143,29 @@ class V4StateMigration:
 
 
 @dataclass(frozen=True, slots=True)
-class V4AccountBindingUpdate:
+class EquityAccountBindingUpdate:
     binding: AccountBindingUpdate
     channel_account_id: str
     expected_facts_sha256: str
     rules: EquityAccountRules
-    inputs: 'FormalV4Inputs'
-    state: V4StateContinuation | V4StateMigration
+    inputs: 'EquityAccountInputs'
+    state: EquityStateContinuation | EquityStateMigration
 
     def __post_init__(self) -> None:
-        from .formal_v4_advice import FormalV4Inputs
+        from .equity_runtime import EquityAccountInputs
 
-        if type(self.binding) is not AccountBindingUpdate or type(self.inputs) is not FormalV4Inputs:
-            raise TypeError("V4 account update requires typed binding and input contracts")
+        if type(self.binding) is not AccountBindingUpdate or type(self.inputs) is not EquityAccountInputs:
+            raise TypeError("V5 account update requires typed binding and input contracts")
         if self.inputs.release_hash != self.binding.target_release_hash:
-            raise ValueError("V4 inputs must belong to the target release")
+            raise ValueError("V5 inputs must belong to the target release")
         if type(self.channel_account_id) is not str or not self.channel_account_id.strip():
-            raise ValueError("V4 account update requires channel account identity")
+            raise ValueError("V5 account update requires channel account identity")
         if type(self.expected_facts_sha256) is not str or not re.fullmatch(r"[0-9a-f]{64}", self.expected_facts_sha256):
-            raise ValueError("V4 account update requires the account facts SHA-256")
+            raise ValueError("V5 account update requires the account facts SHA-256")
         if type(self.rules) is not EquityAccountRules:
-            raise TypeError("V4 account update requires typed account rules")
-        if type(self.state) not in (V4StateContinuation, V4StateMigration):
-            raise TypeError("V4 account update requires an explicit state treatment")
+            raise TypeError("V5 account update requires typed account rules")
+        if type(self.state) not in (EquityStateContinuation, EquityStateMigration):
+            raise TypeError("V5 account update requires an explicit state treatment")
 
     @property
     def account_id(self) -> str:

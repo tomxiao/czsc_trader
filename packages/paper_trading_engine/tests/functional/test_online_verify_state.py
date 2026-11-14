@@ -66,7 +66,7 @@ def verification(monkeypatch):
                     "channel_account_id": "cn",
                     "release_hash": "a" * 64,
                     "run_state": expected["run_state"],
-                    "decision_contract": "V4",
+                    "decision_contract": "V5",
                     "health": "OK",
                 },
                 "decision": {
@@ -110,7 +110,7 @@ def test_PTE15_C01_readonly_paused_account_never_drives(verification):
 def test_PTE15_C02_driving_paused_account_rejected_before_http(verification):
     plan, _, calls = verification
     plan["accounts"]["one"]["run_state"] = "PAUSED"
-    with pytest.raises(ValueError, match="running V4 accounts"):
+    with pytest.raises(ValueError, match="running V5 accounts"):
         online_verify.verify(1, plan, drive_dev=True)
     assert calls == []
 

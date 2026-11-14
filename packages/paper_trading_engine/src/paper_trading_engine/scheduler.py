@@ -87,7 +87,7 @@ class RuntimeScheduler:
         )):
             raise ValueError("scheduler intervals must be positive and finite")
         # Legacy CN daily sessions close at 15:00; configuration cannot remove
-        # the five-hour data completion window. Calendar providers own V4 times.
+        # the five-hour data completion window. Calendar providers own equity runtimes' schedules.
         self.preparation_time = max(time.fromisoformat(preparation_time), time(20))
         self.audit = audit or (
             AuditRecorder(store) if hasattr(store, "append_audit_event") else None

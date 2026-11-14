@@ -1,4 +1,4 @@
-"""Session-owned V4 equity preparation, event replay and immutable evidence.
+"""Session-owned V5 equity preparation, event replay and immutable evidence.
 
 EC produces account facts once; SE summarizes observations. Readers validate
 content and reference integrity without independently replaying accounting.
@@ -17,10 +17,10 @@ from pathlib import Path
 from weakref import WeakValueDictionary, ref
 from typing import TYPE_CHECKING
 
-from dataflows import Dataflows, DataSpaceBinding, EquityDataRequest, EquityProduct, PreparedDataRef, PreparePolicy, ProviderConfig, TimeInterval
+from dataflows import Dataflows, DataSpaceBinding, EquityProduct, PreparedDataRef, PreparePolicy, ProviderConfig, TimeInterval
 from strategy_runtime import STEP_DATA_CONTRACT, StepDataWindow
 from strategy_runtime.equity import ResearchExecutionSpec, equity_hash
-from strategy_runtime.equity_definition import EquityAuxiliaryBinding, EquityInputBinding, EquityStrategyCandidate, ExecutionInputBinding
+from strategy_runtime.equity_definition import EquityInputBinding, EquityStrategyCandidate, ExecutionInputBinding
 from strategy_runtime.strategy_performance import StrategyPerformanceBudget, StrategyPerformanceExceeded
 from strategy_evaluator.equity_metrics import summarize_equity_ledger
 
@@ -52,7 +52,7 @@ def _read(content):
 
 
 def primary_input_digest(value):
-    """Canonical primary identity from already decoded V4 input content."""
+    """Canonical primary identity from decoded equity input evidence."""
     primary = {"schema": value["schema"],
         "products": {key: value["products"][key] for key in ("bars", "sessions", "trading_facts", "constraints")},
         "data": {key: value["data"][key] for key in ("bars", "sessions", "trading_facts", "constraints")}}
@@ -95,7 +95,6 @@ class _SessionState:
         self.engine_sources = None
         self.input_fact_hashes = {}
         self.replay_statistics = {}
-        self.observation_selections = {}
         self.performance_pilots = set()
         self.candidate_runs = 0
         self.benchmark_runs = 0
@@ -117,10 +116,10 @@ def _benchmark_candidate(request):
     from strategy_runtime.equity_features import FeatureGraph
     from strategy_runtime.equity_replay import StrategyStateSchema
     from strategy_runtime.replay_contracts import StrategyComputation
-    from strategy_runtime.equity_buy_hold_v4 import step
+    from strategy_runtime import equity_account_benchmark
     from strategy_runtime.models import ExecutionPolicy
-    root = Path(inspect.getsourcefile(step)).parent
-    module = "equity_buy_hold_v4"
+    root = Path(inspect.getsourcefile(equity_account_benchmark)).parent
+    module = "equity_account_benchmark"
     files = (module + ".py",)
     definition = EquityStrategyDefinition(request.candidate.instrument,
         request.candidate.definition.execution_spec, request.candidate.warmup_bars,
@@ -159,47 +158,6 @@ def prepare_equity(access, request, *, execution):
         raise ValueError("equity request differs from its research context")
     request.candidate.verify()
     definition = request.candidate.definition
-    if definition.observation_inputs:
-        from strategy_runtime.observation_preparation import resolve_observation_requests
-        from strategy_runtime.dataset_observations import observation_request_to_dict
-        from zoneinfo import ZoneInfo
-        end = request.window.end.astimezone(ZoneInfo(request.candidate.instrument.timezone)).date()
-        selection = equity_hash({'declarations': [item.to_dict() for item in definition.observation_inputs],
-            'start': request.history_start.isoformat(), 'end': request.window.end.isoformat(),
-            'source_root': str(request.candidate.source_root),
-            'explicit': [observation_request_to_dict(query) if query is not None else None
-                         for query in request.observation_requests]})
-        if selection not in state.observation_selections:
-            if request.observation_requests:
-                queries = []
-                for item, query in zip(definition.observation_inputs, request.observation_requests):
-                    if item.inactive_on(end):
-                        if query is not None:
-                            raise ValueError('inactive observation cannot select physical data')
-                        queries.append(None)
-                        continue
-                    if query is None:
-                        raise ValueError('missing request for an active observation')
-                    item.validate_request(query)
-                    first, last = date.fromisoformat(query.start), date.fromisoformat(query.end)
-                    if item.history_end is None and last > end:
-                        raise ValueError('observation selection exceeds evaluation end')
-                    if item.inactive_on(last):
-                        raise ValueError('active observation selection ends before required-from')
-                    (_, resolved), = resolve_observation_requests(access.data, (item,), first, last,
-                        source_root=request.candidate.source_root, as_of=request.window.end)
-                    if resolved != query:
-                        raise ValueError('observation selections differ from declared calendar and interval')
-                    queries.append(resolved)
-                state.observation_selections[selection] = tuple(queries)
-            else:
-                items = resolve_observation_requests(access.data, definition.observation_inputs,
-                    request.history_start, end, source_root=request.candidate.source_root, as_of=request.window.end)
-                state.observation_selections[selection] = tuple(query for _, query in items)
-        queries = state.observation_selections[selection]
-        if request.observation_requests and request.observation_requests != queries:
-            raise ValueError('observation selections differ from declared calendar and interval')
-        request = replace(request, observation_requests=queries)
     if request.prepared is not None and request.prepared.space_id != access.data.binding.space_id:
         raise ValueError("prepared data belongs to another research space")
     query_identity = _query_identity(request, spec)
@@ -224,22 +182,14 @@ def prepare_equity(access, request, *, execution):
         binding = EquityInputBinding(prepared_ref, request.candidate.instrument, spec.fingerprint,
             tuple((product.name.lower(), identities[product.name.lower()]["content_sha256"]) for product in EquityProduct),
             request.candidate.warmup_bars,
-            request_bindings=tuple((role, query.parameters) for role, query in request.request_items(spec)
-                                   if type(query) is EquityDataRequest),
-            observation_bindings=_observation_bindings(definition, request.request_items(spec), identities,
-                end if definition.observation_inputs else None),
-            auxiliary_inputs=tuple(EquityAuxiliaryBinding(item,
-                identities[item.data_key(EquityProduct.BARS)]["content_sha256"],
-                identities[item.data_key(EquityProduct.SESSIONS)]["content_sha256"])
-                for item in definition.auxiliary_inputs), **({'execution_input': ExecutionInputBinding(definition.execution_input,
+            request_bindings=tuple((role, query.parameters) for role, query in request.request_items(spec)),
+            **({'execution_input': ExecutionInputBinding(definition.execution_input,
                     identities['execution:bars']['content_sha256'], identities['execution:sessions']['content_sha256'])}
                     if definition.execution_input is not None else {}))
         if request.input_binding is not None and request.input_binding != binding:
             raise ValueError("equity input identity differs from prepared assets")
         fact_key = (snapshot.sha256, request.initial_cash, request.fee_rate, spec.fingerprint,
-                    equity_hash({"auxiliary": [asdict(item) for item in definition.auxiliary_inputs],
-                                 "observations": [item.to_dict() for item in definition.observation_inputs],
-                                 "execution": None if definition.execution_input is None else asdict(definition.execution_input)}))
+                     definition.execution_input)
         if fact_key not in state.input_fact_hashes:
             state.input_fact_hashes[fact_key] = equity_hash(_audit_inputs(request, spec, state.products[snapshot.sha256]))
         facts_hash = state.input_fact_hashes[fact_key]
@@ -271,14 +221,6 @@ def prepare_equity(access, request, *, execution):
         return value
 
 
-def _observation_bindings(definition, request_items, identities, end):
-    from strategy_runtime.dataset_observations import DatasetObservationBinding
-    requests = dict(request_items)
-    return tuple(DatasetObservationBinding(item, None, None, end) if item.data_key() not in requests else
-        DatasetObservationBinding(item, requests[item.data_key()], identities[item.data_key()]['content_sha256'])
-        for item in definition.observation_inputs)
-
-
 def _require_prepared(state, value):
     if (type(value) is not PreparedAccountEvaluation or value.scope_token != state.token
             or state.prepared.get(id(value)) is not value):
@@ -288,19 +230,11 @@ def _require_prepared(state, value):
 def _replay(state, prepared, *, benchmark=False):
     from strategy_runtime.data_preparation import prepare_observations
     candidate = _benchmark_candidate(prepared.request) if benchmark else prepared.candidate
-    graph = candidate.definition.feature_graph
-    context_key = equity_hash({"auxiliary": [asdict(x) for x in candidate.definition.auxiliary_inputs],
-                              "observations": [x.to_dict() for x in candidate.definition.observation_inputs],
-                              "session": candidate.definition.session_context,
-                              "contract_version": candidate.definition.contract_version})
-    key = (prepared.snapshot.sha256, equity_hash(graph.to_dict()), candidate.definition.execution_spec.data_latency_seconds, context_key)
+    definition = candidate.definition
+    key = (prepared.snapshot.sha256, definition.execution_spec.data_latency_seconds, definition.session_context)
     if key not in state.replays:
         products = state.products[prepared.snapshot.sha256]
-        base = next((value for k, value in state.replays.items() if k[0] == key[0] and k[2:] == key[2:]), None)
-        identities = _read(prepared.snapshot.data_content)
-        state.replays[key] = (base.with_graph(graph) if base is not None else prepare_observations(
-            candidate.definition, products, identities,
-            bindings=prepared.request.input_binding.observation_bindings))
+        state.replays[key] = prepare_observations(definition, products, _read(prepared.snapshot.data_content))
     return candidate, state.replays[key]
 
 
@@ -428,11 +362,10 @@ def _performance_group(prepared):
     request = prepared.request
     # Every later account still enforces the budget on its actual branches.
     return (definition.source_sha256, definition.dependencies, definition.entrypoint,
-            definition.computation, definition.feature_graph, definition.market_features,
-            definition.state_schema, definition.warmup_bars,
-            tuple((item.name, item.warmup_bars) for item in definition.auxiliary_inputs),
+            definition.state_schema, definition.warmup_bars, definition.step_data_inputs,
             definition.session_context, definition.parameter_schema_json,
-            prepared.snapshot.sha256, request.window, request.initial_cash, request.fee_rate)
+            prepared.snapshot.sha256, request.step_data_windows, request.prepared.manifest_sha256,
+            request.window, request.initial_cash, request.fee_rate)
 
 
 def _account_owner(prepared, *, benchmark):

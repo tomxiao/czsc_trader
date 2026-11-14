@@ -1,10 +1,9 @@
-"""US SRT adapter consumed by the normal AccountEngine and PaperStore."""
+"""V5 equity adapter consumed by AccountEngine and PaperStore."""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from collections.abc import Mapping
 from datetime import datetime
-from types import MappingProxyType
 from typing import TYPE_CHECKING
 
 from dataflows import TimeInterval, TradingSession
@@ -37,8 +36,7 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
         raise ValueError('PTE equity runtime requires the V5 DFLS step contract')
     if (binding.instrument != candidate.instrument or binding.specification_hash != candidate.execution_spec_hash
             or binding.warmup_bars != candidate.warmup_bars
-            or tuple(x.input for x in binding.auxiliary_inputs) != candidate.definition.auxiliary_inputs
-            or tuple(x.input for x in binding.observation_bindings) != candidate.definition.observation_inputs):
+            or binding.auxiliary_inputs or binding.observation_bindings):
         raise ValueError("equity preparation differs from candidate contract")
     identities = binding.expected_identities
     fetched = fetch_prepared_products(dataflows, binding.bind_requests(requests),
@@ -113,7 +111,6 @@ class PreparedEquityDecision:
     interval: TimeInterval
     fee_rate: float
     execution_reference: PreparedExecutionReference
-    auxiliary_histories: Mapping[str, pd.DataFrame] = field(default_factory=dict)
     sessions: pd.DataFrame | None = None
     trading_sessions: tuple[TradingSession, ...] = ()
     v4_constraint: Mapping | None = None
@@ -150,6 +147,8 @@ class PreparedEquityDecision:
             raise ValueError('execution reference is later than the decision')
         if type(self.candidate) is not EquityStrategyCandidate or type(self.binding) is not EquityInputBinding or type(self.interval) is not TimeInterval:
             raise TypeError("prepared equity decision requires typed candidate/input/interval")
+        if self.candidate.definition.contract_version != STEP_DATA_CONTRACT:
+            raise ValueError('PTE equity runtime requires the V5 DFLS step contract')
         import pandas as pd
         if not isinstance(self.history, pd.DataFrame) or self.history.empty:
             raise ValueError("prepared equity history is empty")
@@ -160,18 +159,6 @@ class PreparedEquityDecision:
         if self.execution_reference.observed_through != ends.iloc[-1]:
             raise ValueError('HFQ signal and RAW execution reference must share the completed observation time')
         self.candidate.verify()
-        if not isinstance(self.auxiliary_histories, Mapping):
-            raise TypeError('prepared auxiliary histories require a mapping')
-        if set(self.auxiliary_histories) != {x.name for x in self.candidate.definition.auxiliary_inputs}:
-            raise ValueError('prepared auxiliary coverage differs')
-        for frame in self.auxiliary_histories.values():
-            if not isinstance(frame, pd.DataFrame) or frame.empty:
-                raise ValueError('prepared auxiliary history is empty')
-            ends, available = pd.to_datetime(frame.Date), pd.to_datetime(frame.AvailableDate)
-            if ends.dt.tz is None or available.dt.tz is None or ends.max() > self.as_of or available.max() > self.as_of:
-                raise ValueError('prepared auxiliary history contains future information')
-        object.__setattr__(self, 'auxiliary_histories', MappingProxyType(
-            {key: frame.copy(deep=True) for key, frame in self.auxiliary_histories.items()}))
         if self.sessions is not None:
             object.__setattr__(self, 'sessions', self.sessions.copy(deep=True))
         if type(self.trading_sessions) is not tuple or any(type(x) is not TradingSession for x in self.trading_sessions):
@@ -192,19 +179,18 @@ class PreparedEquityDecision:
         value = {
             'as_of': self.as_of.isoformat(),
             'execution_reference': self.execution_reference.to_dict(),
-            'auxiliary': {key: frame.to_json(date_format='iso', date_unit='us') for key, frame in self.auxiliary_histories.items()},
+            'auxiliary': {},
             'sessions': None if self.sessions is None else self.sessions.to_json(date_format='iso', date_unit='us'),
             'calendar': [{'session_date': x.session_date.isoformat(), 'timezone': x.timezone,
                           'segments': [(s.start.isoformat(), s.end.isoformat()) for s in x.segments]}
                          for x in self.trading_sessions],
         }
-        if self.candidate.definition.account_replay:
-            value.update(
-                v4_constraint=None if self.v4_constraint is None else dict(self.v4_constraint),
-                v4_replay=None if self.v4_replay is None else self.v4_replay.identity,
-                buy_sellable_at=None if self.buy_sellable_at is None else self.buy_sellable_at.isoformat())
-            if self.live_interval:
-                value['live_interval'] = True
+        value.update(
+            v4_constraint=None if self.v4_constraint is None else dict(self.v4_constraint),
+            v4_replay=None if self.v4_replay is None else self.v4_replay.identity,
+            buy_sellable_at=None if self.buy_sellable_at is None else self.buy_sellable_at.isoformat())
+        if self.live_interval:
+            value['live_interval'] = True
 
         return canonical_sha256(value)
 
@@ -286,7 +272,7 @@ class EquityAdviceClient:
             raise ValueError("equity candidate differs from account market binding")
         if candidate.definition.contract_version != STEP_DATA_CONTRACT:
             raise ValueError('PTE equity runtime requires the V5 DFLS step contract')
-        from .equity_v4_advice import account_decision
+        from .account_step_advice import account_decision
         return account_decision(self.store, prepared, account, actual_quantity, available_cash,
             trading_date, portfolio_revision, state_revision,
             through_cursor=None if replacement is None else replacement.event_cursor)

@@ -291,8 +291,10 @@ def _validate_candidate_snapshot(record: CandidateRegistration, root: Path) -> N
     sources = set(descriptor.get('source_files', ()))
     assets = {}
     if descriptor.get('kind') == 'ACCOUNT_REPLAY':
-        for observation in payload.get('equity_definition', {}).get('observation_inputs', ()):
-            asset = observation.get('asset')
+        definition = payload.get('equity_definition', {})
+        input_field = 'step_data_inputs' if descriptor.get('contract_version') == 5 else 'observation_inputs'
+        for declaration in definition.get(input_field, ()):
+            asset = declaration.get('asset')
             if asset is None:
                 continue
             if type(asset) is not dict or set(asset) != {'relative_path', 'sha256'}:

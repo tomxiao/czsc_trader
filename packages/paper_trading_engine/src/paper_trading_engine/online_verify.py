@@ -69,7 +69,7 @@ def _validate(plan, drive_dev):
         if entry['run_state'] not in ('PAUSED', 'RUNNING', 'RETIRING', 'RETIRED'):
             raise ValueError('invalid account run state')
         if drive_dev and ('decision' not in entry or entry['run_state'] != 'RUNNING'):
-            raise ValueError('--drive-dev requires running V4 accounts and explicit decision expectations')
+            raise ValueError('--drive-dev requires running V5 accounts and explicit decision expectations')
         if any(type(entry[k]) is not int or entry[k] < 0 for k in ('quantity', 'orders', 'fills') if k in entry):
             raise ValueError('quantity, orders and fills must be nonnegative integers')
         if 'decision' in entry:
@@ -197,7 +197,7 @@ def _verify_account(account_id, expected, drive_dev, get, record):
     fields = {key: expected[key] for key in ('channel_account_id', 'release_hash', 'run_state')}
     fields.update(account_id=account_id, health='OK')
     if drive_dev:
-        fields['decision_contract'] = 'V4'
+        fields['decision_contract'] = 'V5'
     if not record(prefix + '.binding', fields, _selected({**snapshot['account'], **snapshot['scope']}, fields)):
         return
     driven = None

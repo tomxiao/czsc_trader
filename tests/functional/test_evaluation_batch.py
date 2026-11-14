@@ -71,14 +71,14 @@ def test_TDR_07_runtime_input_rejection_preserves_spawn_pool(tmp_path):
     context.evaluation.resources = ExecutionResources(2)
     candidate = request.candidate
     path = candidate.source_root / 'strategy.py'
-    path.write_text('def step(ctx, state):\n    view = ctx.history\n    return view.to_frame()\n', encoding='utf-8')
+    path.write_text('def step(ctx, state):\n    return ctx.dfls.fetch(None)\n', encoding='utf-8')
     definition = replace(candidate.definition, source_sha256=equity_source_hash(candidate.source_root, ('strategy.py',)))
     request = replace(request, candidate=replace(candidate, definition=definition))
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         prepared = context.evaluation.prepare(request, execution=execution)
         outcome, = context.evaluation.evaluate_many((prepared,), execution=execution)
         assert outcome.status is EvaluationStatus.FAILED
-        assert 'DecisionHistory' in outcome.error.message and 'to_frame' in outcome.error.message
+        assert 'strategy must request a declared input' in outcome.error.message
         assert execution.stats.unknown == 0
         assert not execution.executor.broken
 

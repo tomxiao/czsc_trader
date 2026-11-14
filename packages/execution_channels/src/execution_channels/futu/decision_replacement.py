@@ -98,7 +98,8 @@ def capture_replacement(store, account_id: str, decision_id: str, initial: dict 
         events = store.query_audit_events(account_id=account_id, event_type="ACCOUNT_STRATEGY_BOUND", limit=1)
         if (not events or events[0]["release_hash"] != account["release_hash"]
                 or events[0]["details"].get("previous_release_hash") != old_hash
-                or events[0]["details"].get("state_treatment") != "V4StateContinuation"):
+                or events[0]["details"].get("state_treatment") not in {
+                    "V4StateContinuation", "EquityStateContinuation"}):
             raise DecisionReplacementConflict("the old decision state has no verified continuation into the bound release")
         live = state["state"]
         after = {**after, "state": {**after["state"], "binding": live["binding"], "revision": live["revision"]}}

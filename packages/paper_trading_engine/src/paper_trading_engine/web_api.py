@@ -338,7 +338,9 @@ class PteWebApi:
                 store, accounts = services.store, services.accounts
                 channel_scope = {
                     "channel_account_id": channel_account_id,
-                    "decision_contract": "V4" if account["equity_rules_json"] is not None else "LEGACY",
+                    "decision_contract": (
+                        "V5" if account["equity_rules_json"] is not None else "LEGACY"
+                    ),
                 }
             status = accounts.status(account_id)
         except KeyError as exc:

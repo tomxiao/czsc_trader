@@ -42,7 +42,7 @@ def _accounts(root, market, frequency, *, drawdown_basis="BAR_CLOSE", with_bench
         "from strategy_runtime import AccountDecision, AccountStepResult\n"
         "from strategy_runtime.equity_replay import StateRecord\n"
         "def step(ctx, state):\n"
-        "    target = ctx.parameters['allocation'] * (.25,.5,.25,0.)[len(ctx.history)%4]\n"
+        "    target = ctx.parameters['allocation'] * (.25,.5,.25,0.)[(state.revision + 1)%4]\n"
         "    return AccountStepResult(AccountDecision.from_facts(target, 'allocation', "
         "facts={'target':target}, next_watch='next bar'), cycle_values=StateRecord())\n",
         encoding="utf-8",

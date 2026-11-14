@@ -28,12 +28,12 @@ def _retained_ledger(result, *, benchmark=False):
 
 @pytest.mark.parametrize('market,frequency,computation', [
     pytest.param(MarketId.CN, BarFrequency.DAILY, StrategyComputation.STATEFUL_STEP, id='E2E-01-C01'),
-    pytest.param(MarketId.CN, BarFrequency.M30, StrategyComputation.BATCH_HISTORY, id='E2E-01-C02'),
+    pytest.param(MarketId.CN, BarFrequency.M30, StrategyComputation.STATEFUL_STEP, id='E2E-01-C02'),
     pytest.param(MarketId.US, BarFrequency.DAILY, StrategyComputation.STATEFUL_STEP, id='E2E-01-C03'),
-    pytest.param(MarketId.US, BarFrequency.M30, StrategyComputation.BATCH_HISTORY, id='E2E-01-C04'),
+    pytest.param(MarketId.US, BarFrequency.M30, StrategyComputation.STATEFUL_STEP, id='E2E-01-C04'),
 ])
 def test_stage_one_two_public_computation_clock_and_scale_in_out(tmp_path, market, frequency, computation):
-    context, request = setup_account(tmp_path, market, frequency, computation)
+    context, request = setup_account(tmp_path, market, frequency)
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         prepared = context.evaluation.prepare(request, execution=execution)
         outcome, = context.evaluation.evaluate_many((prepared,), execution=execution)

@@ -120,13 +120,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     channel = actions.add_parser("channel")
     channel_actions = channel.add_subparsers(dest="channel_action", required=True)
-    for operation in ("list", "status", "register", "create-v4", "bind-inputs", "bind-recipe", "pause", "resume", "pause-account", "resume-account", "normalize-account-name", "prepare-data"):
+    for operation in ("list", "status", "register", "create-v5", "bind-inputs", "bind-recipe", "pause", "resume", "pause-account", "resume-account", "normalize-account-name", "prepare-data"):
         leaf = channel_actions.add_parser(operation)
         _common(leaf)
         leaf.set_defaults(definition=None)
         if operation not in {"list", "register"}:
             leaf.add_argument("--channel-account-id", required=True)
-        if operation in {"register", "create-v4", "bind-inputs", "bind-recipe"}:
+        if operation in {"register", "create-v5", "bind-inputs", "bind-recipe"}:
             leaf.add_argument("--definition", required=True, type=Path)
         if operation in {"pause-account", "resume-account", "normalize-account-name", "prepare-data"}:
             leaf.add_argument("--account-id", required=True)

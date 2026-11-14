@@ -92,7 +92,7 @@ def test_forward_selection_only_requests_completed_hfq_observations(market_name,
     from zoneinfo import ZoneInfo
     from dataflows import BarFrequency, MarketId, EquityProduct, TradingSession, TimeInterval
     from dataflows.equity_data import session_record
-    from strategy_runtime.data_preparation import forward_requests
+    from strategy_runtime.data_preparation import forward_equity_requests
     from packages.strategy_runtime.tests.binding_fixture_support import binding_fixture
 
     original, _ = binding_fixture(MarketId(market_name))
@@ -129,10 +129,9 @@ def test_forward_selection_only_requests_completed_hfq_observations(market_name,
     interval = sessions[2].segments[0]
     definition = SimpleNamespace(instrument=binding.instrument, observation_inputs=(),
                                  execution_spec=SimpleNamespace(decision_clock=BarFrequency.DAILY))
-    requests, items, observation_items, _ = forward_requests(
-        None, binding, interval, definition, tmp_path, calendars, cutoff=interval.start
+    requests, items = forward_equity_requests(
+        binding, interval, definition, calendars, cutoff=interval.start
     )
-    assert not observation_items
     assert len(requests) == len({r.parameters for r in requests})
     for _, parameters in items:
         expected = {
@@ -141,8 +140,8 @@ def test_forward_selection_only_requests_completed_hfq_observations(market_name,
         }
         assert parameters.query.end == expected[parameters.query.product]
     with pytest.raises(ValueError, match="explicit observation-only input migration"):
-        forward_requests(
-            None, original, interval, definition, tmp_path, calendars, cutoff=interval.start
+        forward_equity_requests(
+            original, interval, definition, calendars, cutoff=interval.start
         )
 
 
@@ -193,7 +192,7 @@ def test_SRT_10_C04_forward_requires_explicit_observation_migration(tmp_path):
     from zoneinfo import ZoneInfo
     from dataflows import MarketId, EquityProduct, TradingSession, TimeInterval
     from dataflows.equity_data import session_record
-    from strategy_runtime.data_preparation import forward_requests
+    from strategy_runtime.data_preparation import forward_equity_requests
     from packages.strategy_runtime.tests.binding_fixture_support import binding_fixture
 
     original, _ = binding_fixture(MarketId.US)
@@ -230,6 +229,6 @@ def test_SRT_10_C04_forward_requires_explicit_observation_migration(tmp_path):
     interval = sessions[2].segments[0]
     definition = SimpleNamespace(instrument=binding.instrument, observation_inputs=())
     with pytest.raises(ValueError, match="explicit observation-only input migration"):
-        forward_requests(
-            None, original, interval, definition, tmp_path, calendars, cutoff=interval.start
+        forward_equity_requests(
+            original, interval, definition, calendars, cutoff=interval.start
         )

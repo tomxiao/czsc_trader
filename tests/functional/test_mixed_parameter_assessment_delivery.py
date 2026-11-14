@@ -39,7 +39,7 @@ def mixed_plan(tmp_path, market):
         "from strategy_runtime import AccountDecision, AccountStepResult, StateRecord\n"
         "def step(ctx, state):\n"
         "    p = ctx.parameters\n"
-        "    target = float(ctx.history.last()['Close'] >= p['threshold']) if not ctx.portfolio.quantity else 0.\n"
+        "    target = float(10. >= p['threshold']) if not ctx.portfolio.quantity else 0.\n"
         "    return AccountStepResult(AccountDecision.from_facts(target, 'mixed parameter fixture', "
         "facts={'lookback':p['lookback'], 'probe':p['probe'], 'mode':p['mode']}, "
         "next_watch='next session'), cycle_values=StateRecord())\n", encoding="utf-8")
@@ -97,7 +97,7 @@ def mixed_plan(tmp_path, market):
 def test_TDR_12_C06_mixed_parameter_calmar_schema15_delivery_is_storage_only(tmp_path, monkeypatch, market):
     with mixed_plan(tmp_path, market) as (context, center, plan, plan_ref, children, execution):
         assert center.candidate.instrument.market is market
-        assert center.candidate.definition.contract_version == 4
+        assert center.candidate.definition.contract_version == 5
         pressure = context.evaluation.prepare(replace(center.request, scenario_id="PRESSURE",
             measurement_tier="STRESS", fee_rate=center.request.fee_rate * 2,
             input_binding=None, audit_inputs_sha256=None), execution=execution)

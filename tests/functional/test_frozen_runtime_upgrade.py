@@ -131,14 +131,14 @@ def committed_upgrade(request, tmp_path, committed_upgrade_seed):
 
 
 def _with_seed(candidate):
-    from strategy_runtime.dataset_observations import DatasetObservationInput, FrozenDataAsset
+    from strategy_runtime import FrozenDataAsset, ObservationAvailability, StepDataInput
     path = candidate.source_root / 'assets/seed.csv'
     path.parent.mkdir(exist_ok=True)
     path.write_bytes(b'Date,score\n2026-10-12,1\n')
     asset = FrozenDataAsset('assets/seed.csv', sha256(path.read_bytes()).hexdigest())
-    observation = DatasetObservationInput('seed', Dataset.STRATEGY_FEATURE_EVIDENCE,
-        symbol='S900-v1', history_start=date(2026, 10, 12), history_end=date(2026, 10, 12), asset=asset)
-    return replace(candidate, definition=replace(candidate.definition, observation_inputs=(observation,)))
+    item = StepDataInput('seed', Dataset.STRATEGY_FEATURE_EVIDENCE, 'S900-v1', 'daily', 1,
+        ObservationAvailability(candidate.instrument.timezone, '00:00'), asset=asset)
+    return replace(candidate, definition=replace(candidate.definition, step_data_inputs=(item,)))
 
 
 def _legacy_source_identity(context, request, stored):
@@ -187,6 +187,8 @@ def _build_obsolete_v4(upgrade, market):
     frozen = json.loads(version_path.read_bytes())
     definition = frozen['strategy_payload']['equity_definition']
     definition.pop('execution_policy')
+    definition['contract_version'] = 4
+    frozen['strategy_payload']['runtime']['contract_version'] = 4
     frozen.pop('release_hash')
     frozen['release_hash'] = canonical_sha256(frozen)
     version_path.write_bytes(m._upgrade_json(frozen))
@@ -322,12 +324,12 @@ def test_native_upgrade_preserves_history_and_resets_qualification(upgrade, mark
                      from_state='RESEARCH', to_state='PAPER_READY')
     with (context.strategy_root / 'S900/lifecycle.jsonl').open('a') as stream:
         stream.write(json.dumps(lifecycle) + '\n')
-    from paper_trading_engine.formal_v4_advice import FormalV4AdviceClient
+    from paper_trading_engine.equity_runtime import EquityRuntimeAdviceClient
     from paper_trading_engine.ec_boundary import execution_rules
     store = SimpleNamespace(virtual_account=lambda _: {'strategy_id': 'S900', 'strategy_version': 'v1',
         'release_hash': current.release_hash, 'run_state': 'PAUSED'}, equity_account_rules=lambda _: execution_rules(
         candidate.instrument, candidate.definition.execution_spec))
-    client = FormalV4AdviceClient(repo_root=context.root, store=store, dataflows=None, data_dir=context.root / '.tmp/pte')
+    client = EquityRuntimeAdviceClient(repo_root=context.root, store=store, dataflows=None, data_dir=context.root / '.tmp/pte')
     _, loaded_release, loaded = client._account_release('native')
     assert loaded.candidate_id == 'C9877'
     assert loaded.content_identity == candidate.content_identity
@@ -581,6 +583,6 @@ def test_new_candidate_must_satisfy_current_contract(obsolete_v4):
         feature_graph=None, state_schema=None, computation=None, auxiliary_inputs=(), observation_inputs=(),
         execution_policy=None, analysis_price='RAW'))
     before = _bytes(context.strategy_root)
-    with pytest.raises(ValueError, match='native account contract 4'):
+    with pytest.raises(ValueError, match='V5 DFLS step contract'):
         replace(request, candidate=invalid)
     assert _bytes(context.strategy_root) == before

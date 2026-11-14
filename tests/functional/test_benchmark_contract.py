@@ -17,7 +17,7 @@ def test_TDR_06_C02_missing_lot_size_rejected():
 
 
 @pytest.mark.parametrize('market', [MarketId.CN])
-def test_TDR_06_C01_v4_benchmark_identity_binds_economics_not_candidate_label(tmp_path, market):
+def test_TDR_06_C01_benchmark_identity_binds_economics_not_candidate_label(tmp_path, market):
     context, request = setup_account(tmp_path, market, BarFrequency.DAILY)
     assert EvaluationBenchmark.from_dict(request.benchmark.to_dict()) == request.benchmark
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
@@ -33,11 +33,12 @@ def test_TDR_06_C03_auxiliary_observations_do_not_change_benchmark_inputs(tmp_pa
     context, legacy, _, _ = setup_auxiliary(tmp_path)
     request = current_account_request(context, legacy)
     without_auxiliary = replace(request, candidate=replace(request.candidate,
-        definition=replace(request.candidate.definition, auxiliary_inputs=(), session_context=False)))
+        definition=replace(request.candidate.definition, step_data_inputs=(), session_context=False)),
+        step_data_windows=())
     with ResearchExecutionSession(context, experiment=request.experiment) as execution:
         observed = context.evaluation.prepare(request, execution=execution)
         primary_only = context.evaluation.prepare(without_auxiliary, execution=execution)
-        assert observed.snapshot.sha256 != primary_only.snapshot.sha256
+        assert observed.request.prepared.manifest_sha256 != primary_only.request.prepared.manifest_sha256
         assert observed.snapshot.primary_sha256 == primary_only.snapshot.primary_sha256
         assert observed.benchmark_identity == primary_only.benchmark_identity
         baseline = observed.benchmark_identity.to_dict()

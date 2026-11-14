@@ -153,7 +153,7 @@ def test_history_account_preflight_is_readonly_and_never_admits_running_strategy
     def forbidden(*args, **kwargs):
         pytest.fail('history preflight must not load a strategy, prepare data or connect to a broker')
     monkeypatch.setattr('paper_trading_engine.srt_advice_client.SrtAdviceClient.validate_account_binding', forbidden)
-    monkeypatch.setattr('paper_trading_engine.formal_v4_advice.FormalV4AdviceClient._account_release', forbidden)
+    monkeypatch.setattr('paper_trading_engine.equity_runtime.EquityRuntimeAdviceClient._account_release', forbidden)
     monkeypatch.setattr('dataflows.Dataflows.__init__', forbidden)
     monkeypatch.setattr('execution_channels.futu.futu_gateway.FutuGateway.__init__', forbidden)
     # Keep SQLite's read-side WAL files present before taking the baseline, as

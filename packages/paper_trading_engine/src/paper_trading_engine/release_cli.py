@@ -222,6 +222,7 @@ def _verify_strategy_runtime_wheel_boundary(artifacts: Path) -> None:
 
 
 def _verify_strategy_snapshot(strategy_root: Path) -> dict[str, str]:
+    from strategy_runtime import STEP_DATA_CONTRACT
     from strategy_runtime.deployment import validate_release_integrity, validate_release_package
 
     # Deployment authentication already verifies the native definition, entry
@@ -242,6 +243,8 @@ def _verify_strategy_snapshot(strategy_root: Path) -> dict[str, str]:
         if release.payload.get("runtime", {}).get("kind") == "ACCOUNT_REPLAY":
             # A frozen strategy may be included before deployment, e.g. a new
             # US account. Authenticate it without manufacturing a receipt.
+            if reference in inventory and release.payload["runtime"]["contract_version"] != STEP_DATA_CONTRACT:
+                raise RuntimeError(f"{reference}: active equity deployments require the V5 DFLS step contract")
             if reference not in inventory:
                 validate_release_package(strategy_root, reference)
         elif reference in inventory:
@@ -998,7 +1001,7 @@ def migrate_runtime_database(runtime_root: Path, release_id: str) -> dict[str, o
 
 
 def _verify_native_account(client, account_id: str) -> str:
-    """Check a persisted V4 binding without fetching or preparing inputs."""
+    """Check a persisted V5 binding without fetching or preparing inputs."""
     from execution_channels.futu.equity_account_state import load_document, validate_document, position_from_dict
     from strategy_runtime.equity import equity_hash
 
@@ -1010,16 +1013,16 @@ def _verify_native_account(client, account_id: str) -> str:
             or account["qualification_snapshot"] not in {"PAPER_READY", "LIVE_READY"}
             or client.store._scope_market != candidate.instrument.market.value
             or client.store._scope_currency != definition.execution_spec.account.currency):
-        raise RuntimeError(f"{account_id}: V4 account instrument or qualification differs")
+        raise RuntimeError(f"{account_id}: V5 account instrument or qualification differs")
     inputs = client.inputs(account_id)
     recipe = client.recipe(account_id)
     for value in (inputs,) if recipe is None else (inputs, recipe):
         try:
             value.validate_candidate(release.release_hash, candidate)
         except (TypeError, ValueError) as exc:
-            raise RuntimeError(f"{account_id}: V4 inputs differ from the qualified account: {exc}") from exc
+            raise RuntimeError(f"{account_id}: V5 inputs differ from the qualified account: {exc}") from exc
         if value.fee_rate != inputs.fee_rate:
-            raise RuntimeError(f"{account_id}: V4 inputs differ from the qualified account fee")
+            raise RuntimeError(f"{account_id}: V5 inputs differ from the qualified account fee")
     document = load_document(account, initial_account_record(definition))
     validate_document(document)
     from strategy_runtime import AccountStrategyState
@@ -1030,12 +1033,12 @@ def _verify_native_account(client, account_id: str) -> str:
     active = position_from_dict(document["active"])
     if (bool(account["quantity"]) != (active is not None)
             or (active is not None and active.quantity != account["quantity"])):
-        raise RuntimeError(f"{account_id}: V4 state differs from confirmed holdings")
+        raise RuntimeError(f"{account_id}: V5 state differs from confirmed holdings")
     expected = equity_hash({"owner": account_id + ":" + release.release_hash,
         "implementation": candidate.implementation_hash,
         "specification": definition.execution_spec.fingerprint, "fee_rate": inputs.fee_rate})
     if state.binding not in (None, expected) or (state.revision > 0 and state.binding is None):
-        raise RuntimeError(f"{account_id}: V4 state binding differs from the qualified account")
+        raise RuntimeError(f"{account_id}: V5 state binding differs from the qualified account")
     return release.release_id
 
 
@@ -1087,7 +1090,7 @@ def _verify_runtime_configuration(root: Path, data: Path, database: Path, config
     from dotenv import dotenv_values
     from .runtime_config import PteRuntimeConfig
     from .srt_advice_client import SrtAdviceClient
-    from .formal_v4_advice import FormalV4AdviceClient
+    from .equity_runtime import EquityRuntimeAdviceClient
     from execution_channels.futu.store import PaperStore
 
     PteRuntimeConfig.load(config / "pte.json")
@@ -1140,17 +1143,17 @@ def _verify_runtime_configuration(root: Path, data: Path, database: Path, config
                 raise RuntimeError(f"{account_id}: account release hash differs from frozen strategy")
             elif release.payload.get("runtime", {}).get("kind") == "ACCOUNT_REPLAY":
                 if store is None or account.get("equity_rules_json") is None:
-                    raise RuntimeError(f"{account_id}: native V4 requires explicit account migration")
+                    raise RuntimeError(f"{account_id}: native V5 requires explicit account migration")
                 channel = account["channel_account_id"]
                 if channel not in formal:
-                    formal[channel] = FormalV4AdviceClient(repo_root=root, store=store.scope(channel),
+                    formal[channel] = EquityRuntimeAdviceClient(repo_root=root, store=store.scope(channel),
                         dataflows=None, data_dir=data)
                 validated.append(_verify_native_account(formal[channel], account_id))
                 # The immutable version, not a reconstructed runtime, owns the cutoff.
                 cutoff = frozen["selection_data_cutoff"]
             else:
                 if account.get("equity_rules_json") is not None:
-                    raise RuntimeError(f"{account_id}: legacy release cannot own V4 account rules")
+                    raise RuntimeError(f"{account_id}: legacy release cannot own V5 account rules")
                 identity = legacy.validate_account_binding(strategy_id=account["strategy_id"],
                     strategy_version=account["strategy_version"], symbol=account["symbol"], asset=account["asset_type"])
                 validated.append(identity.release_id)

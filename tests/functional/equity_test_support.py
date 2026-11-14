@@ -217,7 +217,7 @@ def setup_account_research(tmp_path):
         "facts={'quantity': ctx.portfolio.quantity}, next_watch='next bar'), cycle_values=StateRecord())\n", encoding="utf-8")
     definition = EquityStrategyDefinition(legacy.candidate.instrument, context.execution_spec, 1,
         "strategy:step", ("strategy.py",), equity_source_hash(root, ("strategy.py",)),
-        contract_version=4, computation=StrategyComputation.STATEFUL_STEP,
+        contract_version=5, computation=StrategyComputation.STATEFUL_STEP,
         feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema(), analysis_price="HFQ",
         execution_policy=ExecutionPolicy("TARGET_POSITION", {"capital_mode": "full_available_cash"}))
     candidate = EquityStrategyCandidate("S999", "C0001", definition, root)
@@ -233,10 +233,24 @@ def current_account_request(context, request):
     from hashlib import sha256
     if isinstance(request, EquityEvaluationRequest):
         return request
+    grants, step_inputs = (), ()
     if request.formal:
         definition = request.candidate.definition
         content = (request.candidate.source_root / "strategy.py").read_text(encoding="utf-8")
-        content = content.replace('.iloc[-1]["Close"]', '.last()["Close"]')
+        if definition.auxiliary_inputs:
+            from strategy_runtime import ObservationAvailability, StepDataInput, StepDataWindow
+            from dataflows import Dataset
+            auxiliary, = definition.auxiliary_inputs
+            step_inputs = (StepDataInput(auxiliary.name, Dataset.EQUITY_BARS, auxiliary.instrument.symbol,
+                auxiliary.frequency.value, 2, ObservationAvailability(auxiliary.instrument.timezone, '00:00'),
+                instrument=auxiliary.instrument, source=auxiliary.source),)
+            grants = (StepDataWindow(auxiliary.name, request.history_start, request.window.end.date()),)
+            content = content.replace('def decide(ctx):', (
+                'from zoneinfo import ZoneInfo\nfrom strategy_runtime import StepDataWindow\n'
+                'def decide(ctx):\n'
+                f'    day = ctx.point.observed_through.astimezone(ZoneInfo({auxiliary.instrument.timezone!r})).date()\n'
+                f'    observed = ctx.dfls.fetch(StepDataWindow({auxiliary.name!r}, day, day))'))
+            content = content.replace('ctx.auxiliary_histories["market"]', 'observed')
     else:
         target = "1" if request.candidate.decide is hold else "0 if ctx.portfolio.quantity else 1"
         content = ('from strategy_runtime.equity_definition import EquityDecision\n'
@@ -251,8 +265,9 @@ def current_account_request(context, request):
     root = request.experiment.resolve(context.repository.root) / ".tmp" / sha256(content.encode()).hexdigest()
     root.mkdir(parents=True, exist_ok=True)
     (root / "strategy.py").write_text(content, encoding="utf-8")
-    definition = replace(definition, auxiliary_inputs=tuple(replace(item, analysis_price="HFQ") for item in definition.auxiliary_inputs), entrypoint="strategy:step", source_sha256=equity_source_hash(root, ("strategy.py",)),
-        contract_version=4, computation=StrategyComputation.STATEFUL_STEP,feedback_mode='CONFIRMED_EXECUTION',
+    definition = replace(definition, auxiliary_inputs=(), step_data_inputs=step_inputs,
+        entrypoint="strategy:step", source_sha256=equity_source_hash(root, ("strategy.py",)),
+        contract_version=5, computation=StrategyComputation.STATEFUL_STEP,feedback_mode='CONFIRMED_EXECUTION',
         feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema(), analysis_price="HFQ",
         execution_policy=ExecutionPolicy("TARGET_POSITION", {"capital_mode": "full_available_cash"}))
     candidate_id = request.candidate.candidate_id if request.formal else "C0001"
@@ -262,7 +277,8 @@ def current_account_request(context, request):
         benchmark=EvaluationBenchmark(EquityBuyHold(context.execution_spec)),
         drawdown_basis=request.drawdown_basis or "BAR_CLOSE", concentration_basis=request.concentration_basis or "MAX_SINGLE",
         window_id=request.window_id,scenario_id=request.scenario_id,measurement_tier=request.measurement_tier,
-        frequency_window_days=request.frequency_window_days,lineage=request.lineage)
+         frequency_window_days=request.frequency_window_days,lineage=request.lineage,
+         step_data_windows=grants)
 
 
 @contextmanager

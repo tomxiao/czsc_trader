@@ -19,7 +19,7 @@ from .forward_chart import render_forward_chart_html
 from execution_channels.futu.store import PaperStore
 from execution_channels.futu.channel import ChannelAccountConfig, FUTU_SIMULATE_CN_CHANNEL_ID, FUTU_US_SIM_CHANNEL_ID
 from execution_channels.futu.futu_execution import ChannelExecution, ChannelReconciliationError
-from .formal_v4_advice import FormalV4AdviceClient
+from .equity_runtime import EquityRuntimeAdviceClient
 from .inspection_broker import RecordedInspectionBroker
 
 
@@ -167,7 +167,7 @@ def _inspect_forward_chart(store, facts, market_data, cache_dir, *, strategy_roo
                 raise ValueError(f"forward chart decision {field} differs from the stored fact")
         explanation = (payload.get("strategy_output") or {}).get("explanation")
         if explanation is None or event["explanation"] != explanation:
-            raise ValueError("forward chart is missing the saved V4 explanation")
+            raise ValueError("forward chart is missing the saved strategy explanation")
     html = render_forward_chart_html(context, inline_assets=True)
     if len(html.encode("utf-8")) > OUTPUT_LIMIT:
         raise ValueError("isolated forward chart exceeds the publication size limit")
@@ -233,7 +233,7 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, execution
             channel.channel_id = channel_id
             orders, reports = [], set()
             def advice_client():
-                client = FormalV4AdviceClient(repo_root=permit.isolated_repository, store=store,
+                client = EquityRuntimeAdviceClient(repo_root=permit.isolated_repository, store=store,
                     dataflows=dataflows, data_dir=path.parent, inspection_permit=permit,
                     inspection_data_windows=step_data_windows)
                 client.register_inputs('equity', binding, expected_release_hash=permit.release_sha256,
@@ -368,12 +368,13 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, execution
             "environment": protocol.to_dict()["environment"]}
 
 
-def verify_equity_inspection_facts(outcome: dict, protocol: dict):
+def verify_equity_inspection_facts(outcome: dict, protocol: dict, *, historical=False):
     """Recheck saved ledger arithmetic and declared expectations without running a simulator."""
     declared = EquityPteInspectionProtocol.from_dict(protocol)
-    if outcome.get('runtime') != {'advice': 'FormalV4AdviceClient', 'execution': 'ChannelExecution',
+    advice = 'FormalV4AdviceClient' if historical else EquityRuntimeAdviceClient.__name__
+    if outcome.get('runtime') != {'advice': advice, 'execution': 'ChannelExecution',
             'account_engine': 'AccountEngine', 'store': 'PaperStore', 'admission': 'INSPECTION'}:
-        raise ValueError('inspection did not execute the formal V4 runtime')
+        raise ValueError('saved inspection runtime identity differs from its protocol')
     if outcome.get("environment") != protocol["environment"]:
         raise ValueError("equity inspection environment identity differs")
     scenarios = outcome.get("scenarios", [])

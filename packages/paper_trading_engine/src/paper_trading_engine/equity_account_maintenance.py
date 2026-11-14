@@ -1,4 +1,4 @@
-"""Offline V4 rebinding of durable accounts and their confirmed positions."""
+"""Offline V5 rebinding of durable accounts and their confirmed positions."""
 
 from .ec_boundary import initial_account_record, execution_rules
 
@@ -18,12 +18,12 @@ from strategy_runtime.equity import equity_hash
 from strategy_runtime.equity_replay import CycleState, StateRecord
 from strategy_runtime.replay_contracts import CycleBudget
 
-from .account_binding import AccountBindingUpdateResult, AccountBindingUpdateStatus, AccountStrategyBinding, V4StateContinuation, paper_account_name
+from .account_binding import AccountBindingUpdateResult, AccountBindingUpdateStatus, AccountStrategyBinding, EquityStateContinuation, paper_account_name
 from execution_channels.futu.broker import TERMINAL_INTENT_STATUSES, TERMINAL_ORDER_STATUSES
 from execution_channels.futu.channel import STRATEGY_ACCOUNT_TYPE, channel_profile
 from execution_channels.futu.equity_account_state import (budget_to_dict, load_document, position_from_dict,
                                    position_to_dict, save_document, validate_document)
-from .formal_v4_advice import FormalV4AdviceClient
+from .equity_runtime import EquityRuntimeAdviceClient
 from execution_channels.futu.lifecycle import DecisionState, RunState
 from .runtime_lock import RuntimeDatabaseLock
 from execution_channels.futu.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION, _utc_now
@@ -59,7 +59,7 @@ def account_binding_facts_sha256(store: PaperStore, account_id: str) -> str:
 def _plan_identity(release, updates):
     def state_identity(state):
         value = {"source_runtime_release_id": state.source_runtime_release_id, "evidence": state.evidence}
-        if type(state) is not V4StateContinuation:
+        if type(state) is not EquityStateContinuation:
             value["execution_locked_quantity"] = state.execution_locked_quantity
             for name in ("account_values", "cycle_values", "pending_cycle_values"):
                 record = getattr(state, name)
@@ -89,7 +89,7 @@ def _validate_execution(facts, decisions):
     local = [row for row in rows["intents"] if row["decision_id"] in replaceable]
     if any(row["attention_required"] or (row["status"] not in TERMINAL_INTENT_STATUSES
            and row["decision_id"] not in replaceable) for row in rows["intents"]):
-        raise ValueError("unresolved intents block V4 binding update")
+        raise ValueError("unresolved intents block V5 binding update")
     fills = Counter()
     for row in rows["fills"]:
         fills[row["order_id"]] += row["quantity"]
@@ -98,22 +98,22 @@ def _validate_execution(facts, decisions):
         if (report["status"] not in TERMINAL_ORDER_STATUSES
                 or int(report["cumulative_filled_quantity"]) != row["cumulative_filled_quantity"]
                 or row["cumulative_filled_quantity"] != fills.pop(row["channel_order_id"], 0)):
-            raise ValueError("unfinished or unreconciled orders block V4 binding update")
+            raise ValueError("unfinished or unreconciled orders block V5 binding update")
     if fills or any(row["status"] == DecisionState.EXECUTING for row in decisions):
-        raise ValueError("unreconciled execution blocks V4 binding update")
+        raise ValueError("unreconciled execution blocks V5 binding update")
     from .account_engine import AccountEngine
     account = facts["account"]
     released_cash = AccountEngine._cash_after_replaceable_intents(account,
         [{**row, "payload": json.loads(row["payload"])} for row in local])
     if released_cash - Decimal(account["cash"]) != Decimal(account["frozen_cash"]):
-        raise ValueError("unexplained frozen cash blocks V4 binding update")
+        raise ValueError("unexplained frozen cash blocks V5 binding update")
     return replaceable
 
 
 def _legacy_document(facts, treatment, update):
     account, rows = facts["account"], facts["rows"]
-    if type(treatment) is V4StateContinuation:
-        raise ValueError("legacy accounts require an explicit V4 state mapping")
+    if type(treatment) is EquityStateContinuation:
+        raise ValueError("legacy accounts require an explicit V5 state mapping")
     if (rows["equity_account_events"] or Decimal(account["receivable"]) != 0
             or any(row["entry_type"] in {"SPLIT", "CASH_DIVIDEND", "EQUITY_PAYMENT"} for row in rows["account_ledger"])):
         raise ValueError("legacy equity actions or outstanding receivables require resolved ledger evidence")
@@ -131,7 +131,7 @@ def _legacy_document(facts, treatment, update):
                 or Decimal(row["fee"]) != Decimal(fill["fee"])):
             raise ValueError("legacy position quantity is not supported by confirmed fills and ledger")
         occurred_at = datetime.fromisoformat(fill["occurred_at"])
-        # Legacy fills have a confirmed timestamp rather than a V4 execution interval.
+        # Legacy fills have a confirmed timestamp rather than a V5 execution interval.
         interval = TimeInterval(occurred_at, occurred_at + timedelta(microseconds=1))
         quantity += delta
         if quantity < 0 or quantity != row["quantity_after"] or (active is None and delta < 0):
@@ -150,7 +150,7 @@ def _legacy_document(facts, treatment, update):
         raise ValueError("legacy fills and ledger do not reconcile to confirmed holdings")
     previous = json.loads(account["last_decision_payload"]) if account["last_decision_payload"] else {}
     if "fee_rate" in previous and Decimal(str(previous["fee_rate"])) != Decimal(str(update.inputs.fee_rate)):
-        raise ValueError("V4 migration cannot change the account model fee")
+        raise ValueError("V5 migration cannot change the account model fee")
     if (active is None) != (treatment.cycle_values is None):
         raise ValueError("legacy strategy cycle mapping must match confirmed holdings")
     cycle = None if active is None else CycleState(active.cycle_id, active.entry_interval.start, treatment.cycle_values)
@@ -179,10 +179,10 @@ def _state_binding(account_id, release_hash, candidate, fee_rate):
                         "specification": candidate.execution_spec_hash, "fee_rate": fee_rate})
 
 
-def _v4_document(store, facts, update, candidate, runtime_root, load_release, data_dir):
+def _bound_state_document(store, facts, update, candidate, runtime_root, load_release, data_dir):
     account, treatment = facts["account"], update.state
     if treatment.source_runtime_release_id is None:
-        raise ValueError("existing V4 state requires an exact source runtime release")
+        raise ValueError("existing V5 state requires an exact source runtime release")
     source_runtime = load_release(runtime_root, treatment.source_runtime_release_id)
     # Offline migration authenticates the immutable source document without executing or
     # interpreting its retired strategy input contract through the current SRT loader.
@@ -194,20 +194,20 @@ def _v4_document(store, facts, update, candidate, runtime_root, load_release, da
         raise ValueError('source runtime release differs from the confirmed account binding')
     old_definition = dict(old_release.payload['equity_definition'])
     old_specification = execution_spec_from_dict(old_definition['execution_spec'])
-    source_client = FormalV4AdviceClient(repo_root=source_runtime.release_root, store=store,
+    source_client = EquityRuntimeAdviceClient(repo_root=source_runtime.release_root, store=store,
                                          dataflows=None, data_dir=data_dir)
     source_record = store.v4_runtime_binding(update.account_id)
     old_inputs = source_record['inputs'] if source_record is not None else json.loads(
         source_client._path(update.account_id).read_text(encoding='utf-8'))
     if old_inputs['release_hash'] != old_release.release_hash or old_inputs['fee_rate'] != update.inputs.fee_rate:
-        raise ValueError('V4 rebinding cannot change the model fee or use inputs for another release')
+        raise ValueError('V5 rebinding cannot change the model fee or use inputs for another release')
     if account.get('account_v4_json') is None:
         document = load_document(account, initial_account_record(candidate.definition))
     else:
         document = json.loads(account['account_v4_json'])
         if document.get('schema_version') == 1:
-            if type(treatment) is V4StateContinuation:
-                raise ValueError('retired V4 account document requires explicit V4 mapping')
+            if type(treatment) is EquityStateContinuation:
+                raise ValueError('retired V5 account document requires explicit V5 mapping')
             document = {**document, 'schema_version': 2, 'locked_quantity': treatment.execution_locked_quantity}
     validate_document(document)
     old_state = AccountStrategyState.from_dict(document['state'])
@@ -215,22 +215,22 @@ def _v4_document(store, facts, update, candidate, runtime_root, load_release, da
         'implementation': canonical_sha256(old_definition), 'specification': old_specification.fingerprint,
         'fee_rate': old_inputs['fee_rate']})
     if old_state.binding != old_binding and (old_state.revision or old_state.binding is not None):
-        raise ValueError('current V4 state binding differs from the source release')
+        raise ValueError('current V5 state binding differs from the source release')
     active = position_from_dict(document["active"])
     if (active.quantity if active is not None else 0) != account["quantity"]:
-        raise ValueError("current V4 position does not match the confirmed account holdings")
+        raise ValueError("current V5 position does not match the confirmed account holdings")
     same_rules = store.equity_account_rules(update.account_id) == update.rules
     if not same_rules and (active is not None or document["budget"] is not None
                            or document["buy_locks"] or Decimal(account["receivable"]) != 0):
         raise ValueError("active positions, budgets or settlement require compatible execution rules")
-    if type(treatment) is V4StateContinuation:
+    if type(treatment) is EquityStateContinuation:
         if not same_rules or canonical_sha256(candidate.definition.state_schema.to_dict()) != canonical_sha256(old_definition['state_schema']):
-            raise ValueError("state or execution contract changed, explicit V4 mapping is required")
+            raise ValueError("state or execution contract changed, explicit V5 mapping is required")
         return document
     if (old_state.cycle is None) != (treatment.cycle_values is None):
-        raise ValueError("V4 strategy cycle mapping must match the current position cycle")
+        raise ValueError("V5 strategy cycle mapping must match the current position cycle")
     if (document["pending_cycle"] is None) != (treatment.pending_cycle_values is None):
-        raise ValueError("V4 pending cycle mapping must preserve current pending state")
+        raise ValueError("V5 pending cycle mapping must preserve current pending state")
     cycle = None if old_state.cycle is None else replace(old_state.cycle, values=treatment.cycle_values)
     document["state"] = replace(old_state, account=treatment.account_values, cycle=cycle).to_dict()
     document["locked_quantity"] = treatment.execution_locked_quantity
@@ -266,22 +266,22 @@ def _prepare(store, facts, update, release, runtime_root, load_release, data_dir
             or account["channel_id"] != channel["channel_id"] or channel["market"] != profile.market
             or channel["currency"] != profile.currency or update.rules.instrument.market.value != profile.market
             or update.rules.execution.account.currency != profile.currency):
-        raise ValueError("V4 binding update requires a paused strategy account in its declared channel and market")
+        raise ValueError("V5 binding update requires a paused strategy account in its declared channel and market")
     if account["release_hash"] != update.binding.expected_release_hash:
         raise ValueError("current release hash differs from the expected hash")
     if canonical_sha256(facts) != update.expected_facts_sha256:
         raise ValueError("current account facts differ from the reviewed snapshot")
     decisions = store.account_decisions(update.account_id)
     replaceable = _validate_execution(facts, decisions)
-    client = FormalV4AdviceClient(repo_root=release.release_root, store=store, dataflows=None, data_dir=data_dir)
+    client = EquityRuntimeAdviceClient(repo_root=release.release_root, store=store, dataflows=None, data_dir=data_dir)
     target, candidate, identity = client.load_release(account["strategy_id"], update.binding.target_version)
     if (target.release_hash != update.binding.target_release_hash or execution_rules(candidate.instrument, candidate.definition.execution_spec).instrument != update.rules.instrument
             or update.rules.execution != execution_rules(candidate.instrument, candidate.definition.execution_spec).execution or candidate.instrument.symbol != account["symbol"]
             or candidate.instrument.asset_class.value.lower() != account["asset_type"]):
-        raise ValueError("target qualified release differs from the V4 binding request")
+        raise ValueError("target qualified release differs from the V5 binding request")
     definition = candidate.definition
     if definition.execution_spec.decision_clock is not BarFrequency.DAILY:
-        raise ValueError("V4 forward recipe requires a daily frozen execution clock")
+        raise ValueError("V5 forward recipe requires a daily frozen execution clock")
     update.inputs.validate_candidate(target.release_hash, candidate)
     # Validate the explicit live projection before any account mutation.
     replace(update.inputs, binding=update.inputs.binding.for_observations()).validate_candidate(target.release_hash, candidate)
@@ -291,7 +291,7 @@ def _prepare(store, facts, update, release, runtime_root, load_release, data_dir
         account["symbol"], update.inputs.fee_rate, instrument=candidate.instrument)
     if account["strategy_version"] == binding.version and account["selection_data_cutoff"] != version.selection_data_cutoff:
         raise ValueError("same-version binding cannot change its selection cutoff")
-    document = (_v4_document(store, facts, update, candidate, runtime_root, load_release, data_dir)
+    document = (_bound_state_document(store, facts, update, candidate, runtime_root, load_release, data_dir)
                 if account["equity_rules_json"] else _legacy_document(facts, update.state, update))
     retired_budget = (None if account["equity_rules_json"]
                       else _retire_unused_legacy_budget(document, definition.execution_policy))
@@ -364,7 +364,7 @@ def _apply(store, update, prepared, plan_sha256):
     ])
 
 
-def update_v4_account_bindings(runtime_root, target_release_id, updates, *, load_release):
+def update_equity_account_bindings(runtime_root, target_release_id, updates, *, load_release):
     release = load_release(runtime_root, target_release_id)
     shared = release.runtime_root / "shared"
     database = shared / "state" / "runtime.db"
@@ -391,7 +391,7 @@ def update_v4_account_bindings(runtime_root, target_release_id, updates, *, load
             if all(already):
                 return AccountBindingUpdateResult(AccountBindingUpdateStatus.ALREADY_APPLIED, ids)
             if any(already):
-                raise ValueError("V4 binding batch has an inconsistent applied identity")
+                raise ValueError("V5 binding batch has an inconsistent applied identity")
             scoped = {item.account_id: store.scope(facts[item.account_id]["account"]["channel_account_id"])
                       for item in updates}
             prepared = {item.account_id: _prepare(scoped[item.account_id], facts[item.account_id], item, release,

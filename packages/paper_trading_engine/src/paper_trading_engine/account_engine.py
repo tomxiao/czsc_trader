@@ -255,7 +255,7 @@ class AccountEngine:
         window = prepared.tradable_window
         if window.start != window.end:
             raise AccountDecisionBlockedError("PTE单次决策要求单交易日策略窗口")
-        # Re-reading an ended V4 interval is a read, not a calculation using
+        # Re-reading an ended equity interval is a read, not a calculation using
         # today's fills at the earlier decision point. Keep the observation
         # integrity checks, but do not run strategy or planning again.
         from .equity_advice import PreparedEquityDecision

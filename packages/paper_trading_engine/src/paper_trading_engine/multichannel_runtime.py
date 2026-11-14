@@ -16,7 +16,7 @@ from execution_channels.futu.channel import ChannelAccountConfig
 from execution_channels.futu.channel_accounts import DEFAULT_CHANNEL_ACCOUNT
 from .coordinator import PteCoordinator, ReconnectableExecution
 from .equity_advice import PreparedEquityDecision
-from .formal_v4_advice import FormalV4AdviceClient, FormalV4ScheduleProvider
+from .equity_runtime import EquityRuntimeAdviceClient, EquityScheduleProvider
 from execution_channels.futu.futu_execution import ChannelExecution
 from execution_channels.futu.futu_gateway import FutuGateway, FutuGatewayError
 from .srt_advice_client import SrtAdviceClient
@@ -45,7 +45,7 @@ class ChannelServices:
     accounts: AccountEngine
     execution: object
     cycle: AccountStrategyCycle
-    formal: FormalV4AdviceClient
+    formal: EquityRuntimeAdviceClient
     retirement_calendar: object | None = None
 
     def refresh_account(self):
@@ -68,8 +68,8 @@ class RuntimeScheduleProvider:
             return None
         services = self.runtime.services[account['channel_account_id']]
         if account['equity_rules_json'] is not None:
-            return FormalV4ScheduleProvider(services.formal, services.accounts).due_decision(account, observed_at)
-        # Legacy CN daily strategy contract is explicit and independent of V4 clocks.
+            return EquityScheduleProvider(services.formal, services.accounts).due_decision(account, observed_at)
+        # The legacy CN scheduler has its own daily clock.
         local = observed_at.astimezone(ZoneInfo('Asia/Shanghai'))
         start = datetime.combine(local.date(), self.preparation_time, local.tzinfo)
         if local < start:
@@ -84,7 +84,7 @@ class RuntimeScheduleProvider:
             raise ValueError('only a running account can execute a scheduled decision')
         services = self.runtime.services[account['channel_account_id']]
         if account['equity_rules_json'] is not None:
-            return FormalV4ScheduleProvider(services.formal, services.accounts).run_scheduled(
+            return EquityScheduleProvider(services.formal, services.accounts).run_scheduled(
                 account_id, task, observed_at, clock=lambda: datetime.now(timezone.utc))
         return services.cycle.run(account_id,
             signal_date=task.decision_at.astimezone(ZoneInfo('Asia/Shanghai')).date(), observed_at=observed_at)
@@ -159,7 +159,7 @@ class MultiChannelRuntime:
         if account['equity_rules_json'] is None:
             return self.console_view.drive_virtual_account_decision(account_id)
         services = self.services[account['channel_account_id']]
-        return FormalV4ScheduleProvider(services.formal, services.accounts).drive_decision(
+        return EquityScheduleProvider(services.formal, services.accounts).drive_decision(
             account_id, datetime.now(timezone.utc), clock=lambda: datetime.now(timezone.utc),
         )
 
@@ -239,7 +239,7 @@ def build_multichannel_runtime(args, store, dataflows, *, gateway_factory=FutuGa
             audit = AuditRecorder(scoped)
             legacy = SrtAdviceClient(repo_root=args.repo_root, data_dir=args.data_dir,
                                      asset=args.asset, audit=audit, dataflows=dataflows)
-            formal = FormalV4AdviceClient(repo_root=args.repo_root, store=scoped,
+            formal = EquityRuntimeAdviceClient(repo_root=args.repo_root, store=scoped,
                                           dataflows=dataflows, data_dir=args.data_dir,
                                           account_dataflows=account_dataflows)
             for account in scoped.strategy_virtual_accounts():

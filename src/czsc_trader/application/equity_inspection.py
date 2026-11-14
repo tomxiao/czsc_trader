@@ -28,14 +28,14 @@ def _json(value):
     return json.loads(json.dumps(value, default=encode, allow_nan=False))
 
 
-def replay_identity(replay, runtime_kind='US_EQUITY'):
-    return {'runtime_kind': runtime_kind, 'coordinate': replay.coordinate.to_dict(),
+def replay_identity(replay):
+    return {'runtime_kind': 'ACCOUNT_REPLAY', 'coordinate': replay.coordinate.to_dict(),
         'input_binding': _json(replay.input_binding.to_dict()),
         'window': _json(asdict(replay.window)), 'initial_cash': replay.initial_cash,
         'one_way_cost': replay.one_way_cost, 'income_policy': TRADING_INCOME_POLICY,
         'price_basis': 'HFQ', 'quantity_basis': 'SIMULATED_INTEGER_UNITS',
         'execution_reference': replay.execution_reference.to_dict(),
-         'baseline': None if replay.baseline is None else replay.baseline.to_dict(),
+         'baseline': None,
          **({'step_data_windows': [item.to_dict() for item in replay.step_data_windows]}
             if replay.step_data_windows else {})}
 
@@ -53,23 +53,22 @@ def _records(frame):
 
 
 def replay_account(candidate, flows, replay):
-    products, identities = _products(flows, replay)
+    if candidate.definition.contract_version != STEP_DATA_CONTRACT:
+        raise ValueError('technical account replay requires the V5 DFLS step contract')
     if candidate.execution_spec_hash != replay.input_binding.specification_hash or candidate.instrument != replay.input_binding.instrument:
         raise ValueError('technical replay market contract differs')
     if candidate.warmup_bars != replay.input_binding.warmup_bars:
         raise ValueError('technical replay warmup differs')
-    if candidate.definition.auxiliary_inputs != tuple(x.input for x in replay.input_binding.auxiliary_inputs):
-        raise ValueError('technical replay auxiliary contract differs')
-    if candidate.definition.observation_inputs != tuple(x.input for x in replay.input_binding.observation_bindings):
-        raise ValueError('technical replay observation contract differs')
     execution = replay.input_binding.execution_input
     if candidate.definition.execution_input != (None if execution is None else execution.input):
         raise ValueError('technical replay execution input contract differs')
+    declared = {item.name for item in candidate.definition.step_data_inputs}
+    if any(window.name not in declared for window in replay.step_data_windows):
+        raise ValueError('technical replay grants require declared V5 step inputs')
+    products, identities = _products(flows, replay)
     from .execution_inputs import execution_constraints
     products["constraints"], identities["constraints"] = execution_constraints(
         candidate.definition, products, {k: v["metadata"] for k, v in identities.items()})
-    if candidate.definition.contract_version != STEP_DATA_CONTRACT:
-        raise ValueError('technical account replay requires the V5 DFLS step contract')
     return _replay_account_v5(candidate, flows, replay, products, identities)
 
 
@@ -81,8 +80,7 @@ def _replay_account_v5(candidate, flows, replay, products, identities):
     from execution_channels.historical import PortfolioHistoricalExecutor
     definition = candidate.definition
     spec = definition.execution_spec
-    prepared = prepare_observations(definition, products, identities,
-        bindings=replay.input_binding.observation_bindings)
+    prepared = prepare_observations(definition, products, identities)
     from ..research_tools.equity_replay import pinned_step_data
     load = pinned_step_data(flows, replay.input_binding.prepared, replay.step_data_windows)
     executor = PortfolioHistoricalExecutor(specification=execution_spec(spec), initial_cash=replay.initial_cash,
@@ -104,7 +102,7 @@ def _replay_account_v5(candidate, flows, replay, products, identities):
          'strategy_data_reads': outcome.data_reads,
         'source': {name: _records(frame) for name, frame in products.items()}, 'data': identities,
         'definition': definition.to_dict(), 'content_sha256': candidate.content_identity.content_sha256,
-        'input': replay_identity(replay, 'ACCOUNT_REPLAY')})
+        'input': replay_identity(replay)})
 
 
 def compute_equity(base, space, candidate, verified, replay):
@@ -239,7 +237,7 @@ def inspect_equity_candidate(context, request, control, registration, selection)
     runtime_kind = request.protocol.to_dict()['runtime_kind']
     normalized = {'schema_version': 2, 'runtime_kind': runtime_kind, 'candidate': request.candidate.to_dict(),
         'selection': request.selection.to_dict(), 'experiment': request.experiment.to_dict(), 'target': request.target.to_dict(),
-        'protocol_sha256': protocol.sha256, 'replays': [replay_identity(x, runtime_kind) for x in request.replays],
+        'protocol_sha256': protocol.sha256, 'replays': [replay_identity(x) for x in request.replays],
         'additional_files': [x.to_dict() for x in request.additional_files], 'remaining_risks': list(request.remaining_risks),
         'data_kind': request.data_kind.value}
     request_ref = store.put_json(normalized)
@@ -255,11 +253,12 @@ def inspect_equity_candidate(context, request, control, registration, selection)
         candidate = _load_inspection_candidate(context, request.candidate)
         if type(candidate) is not EquityStrategyCandidate:
             raise ValueError('equity inspection requires formal equity candidate')
-        if candidate.payload['runtime']['kind'] != runtime_kind:
-            raise ValueError('equity inspection protocol differs from candidate contract')
+        if candidate.definition.contract_version != STEP_DATA_CONTRACT:
+            raise ValueError('equity inspection requires the V5 DFLS step contract')
+        declared = {item.name for item in candidate.definition.step_data_inputs}
         for replay in request.replays:
-            if candidate.definition.contract_version == STEP_DATA_CONTRACT and replay.baseline is not None:
-                raise ValueError('V4 technical equivalence compares candidate and package; legacy evaluation baseline is unsupported')
+            if any(window.name not in declared for window in replay.step_data_windows):
+                raise ValueError('technical replay grants require declared V5 step inputs')
             if pd.Timestamp(replay.window.end).tz_convert(candidate.instrument.timezone).date() > request.target.selection_data_cutoff:
                 raise ValueError('equity replay exceeds selection cutoff')
             if any((q.parameters.query.end if type(q.parameters) is EquityParameters else pd.Timestamp(q.end).date())
@@ -273,13 +272,6 @@ def inspect_equity_candidate(context, request, control, registration, selection)
         controller.stage = InspectionStage.EQUIVALENCE
         jobs = equivalence_jobs(request, candidate, verified, workspace, controller)
         for index, ok, facts in jobs.completed:
-            replay = request.replays[index]
-            if ok and replay.baseline is not None:
-                _, data = replay.baseline.evidence._read_verified(context.root)
-                baseline = json.loads(data)
-                matches = _baseline_matches(baseline, replay, facts['candidate'], registration.content_sha256, registration.key)
-                facts['baseline'] = {'status': 'PASS' if matches else 'FAIL', 'evidence': store.put(data).to_dict()}
-                facts['passed'] = facts['passed'] and matches
             passed = ok and facts.get('passed') is True
             behavior.append(f.InspectionCaseResult('replay-' + str(index),
                 f.InspectionStatus.PASS if passed else f.InspectionStatus.FAIL,
@@ -316,7 +308,7 @@ def inspect_equity_candidate(context, request, control, registration, selection)
         chart_status = f.InspectionStatus(chart['status'])
         pte.append(f.InspectionCaseResult('pte-forward-chart', chart_status,
             f.InspectionReason.OK if chart_status is f.InspectionStatus.PASS else f.InspectionReason.PTE_FAILURE,
-            'saved V4 decision explanations projected into isolated forward charts',
+            'saved V5 decision explanations projected into isolated forward charts',
             (coverage, *chart_evidence)))
         controller.stage = InspectionStage.FINALIZE
         controller.tick(force=True)
@@ -349,6 +341,7 @@ def inspect_equity_candidate(context, request, control, registration, selection)
 def validate_pass_facts(root, report, normalized, protocol):
     from .research_evidence import _read
     from paper_trading_engine.equity_inspection import verify_equity_inspection_facts
+    historical = protocol['method_version'] != 'candidate-inspection-v5'
     if len(report.behavior_equivalence.cases) != len(normalized['replays']):
         raise ValueError('equity replay coverage differs')
     for index, (case, replay) in enumerate(zip(report.behavior_equivalence.cases, normalized['replays'], strict=True)):
@@ -361,17 +354,20 @@ def validate_pass_facts(root, report, normalized, protocol):
         if facts['release_hash'] != report.release.release_sha256 or facts['package_hash'] != report.release.package_sha256:
             raise ValueError('equity replay release identity differs')
         definition = EquityStrategyDefinition.from_dict(left['definition'])
+        if not historical and (definition.contract_version != STEP_DATA_CONTRACT
+                or replay['baseline'] is not None or type(left.get('strategy_data_reads')) is not list):
+            raise ValueError('inspection evidence differs from the V5 DFLS step contract')
         if definition.content_identity.content_sha256 != report.origin.content_sha256 or left['content_sha256'] != report.origin.content_sha256:
             raise ValueError('equity replay content differs')
         ledger, source = left['facts'], left['source']
         if definition.account_replay:
             if (normalized['runtime_kind'] != 'ACCOUNT_REPLAY' or facts.get('runtime_kind') != 'ACCOUNT_REPLAY'
                     or 'final_state' not in left or left['final_state']['revision'] != len(ledger['account_points'])):
-                raise ValueError('V4 account state or contract coverage differs')
+                raise ValueError('equity account state or contract coverage differs')
             from strategy_runtime import StrategyComputation
             expected_batch_status = ('PASS' if definition.computation is StrategyComputation.BATCH_HISTORY else 'NOT_APPLICABLE')
             if left.get('batch_consistency', {}).get('status') != expected_batch_status:
-                raise ValueError('V4 historical/online batch consistency is missing')
+                raise ValueError('saved account replay computation differs')
         else:
             raise ValueError('legacy RAW inspection evidence cannot certify the HFQ runtime')
         expected_times = [x['Date'] for x in source['bars'] if pd.Timestamp(x['BarStart']) >= pd.Timestamp(replay['window']['start'])
@@ -403,10 +399,10 @@ def validate_pass_facts(root, report, normalized, protocol):
     if len(coverage) != 1:
         raise ValueError('equity PTE coverage absent')
     outcome = _read(coverage[0].evidence[0].resolve(root))
-    verify_equity_inspection_facts(outcome, protocol['pte'])
+    verify_equity_inspection_facts(outcome, protocol['pte'], historical=historical)
     chart_cases = [x for x in report.pte_runtime.cases if x.case_id == 'pte-forward-chart']
     chart = outcome.get('forward_chart')
-    if chart is None and not chart_cases:
+    if historical and chart is None and not chart_cases:
         return  # Historical inspection reports retain their original scope.
     if (len(chart_cases) != 1 or chart is None or chart['status'] != 'PASS'
             or chart_cases[0].evidence[0] != coverage[0].evidence[0]):

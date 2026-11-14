@@ -25,18 +25,18 @@ def run_backtest(
 ) -> BacktestEvaluation:
     """Explicitly backtest an existing frozen version without publishing reports.
 
-    Research candidates use the V4 execution session for either market.
+    Equity account replay uses the V5 research execution session for either market.
     """
     if not isinstance(context, ResearchContext):
         raise TypeError("backtest requires ResearchContext")
     from strategy_runtime.equity_definition import EquityStrategyCandidate
     from ..research_tools.equity_evaluation import EquityEvaluationRequest
     if type(strategy) in (EquityStrategyCandidate,) or type(request) is EquityEvaluationRequest:
-        raise TypeError("Research account replay requires ResearchExecutionSession, prepare and evaluate_many with session-owned V4 requests")
+        raise TypeError("Equity account replay requires ResearchExecutionSession and a V5 EquityEvaluationRequest")
     if context.execution_spec is not None:
         raise ValueError("explicit equity context cannot execute an exchange-bound legacy request")
     if type(strategy) is not StrategyVersion:
-        raise TypeError("run_backtest requires a frozen StrategyVersion; candidates use V4 prepare/evaluate_many")
+        raise TypeError("run_backtest requires a frozen StrategyVersion")
     if not isinstance(request, BacktestRequest):
         raise TypeError("backtest request must be BacktestRequest")
     if strategy.strategy_id != context.strategy_id:
@@ -60,6 +60,11 @@ def _run_authenticated_backtest(
             strategy.strategy_id, strategy.version)
         if stored.to_dict() != strategy.to_dict():
             raise ValueError("backtest version differs from the frozen registry record")
+        if stored.strategy_payload.get("runtime", {}).get("kind") == "ACCOUNT_REPLAY":
+            raise ValueError(
+                "backtest run uses the legacy request format. For V5 equity account replay, "
+                "use ResearchExecutionSession with EquityEvaluationRequest and explicit step_data_windows."
+            )
         snapshot = resolve_registered_strategy(repository, strategy.strategy_id, strategy.version)
         summary = _run_backtest(
             snapshot=snapshot,

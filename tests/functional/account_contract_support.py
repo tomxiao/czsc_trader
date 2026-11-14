@@ -28,7 +28,7 @@ def account_contract_request(source_root, market=MarketId.US):
         100 if market is MarketId.CN else 1, .01, .01, 0.)
     definition = EquityStrategyDefinition(instrument,
         spec, 1, 'strategy:step', ('strategy.py',), equity_source_hash(source_root, ('strategy.py',)),
-        contract_version=4, computation=StrategyComputation.STATEFUL_STEP,
+        contract_version=5, computation=StrategyComputation.STATEFUL_STEP,
         feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema(),
         execution_policy=ExecutionPolicy('TARGET_POSITION', {}))
     candidate = EquityStrategyCandidate('S999', 'C0001', definition, source_root)

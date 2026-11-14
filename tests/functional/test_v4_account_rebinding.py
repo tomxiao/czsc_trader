@@ -17,14 +17,14 @@ from czsc_trader.application import RepositoryContext, validate_release_package
 from czsc_trader.application import runtime_migration
 from dataflows import MarketId, TimeInterval
 from paper_trading_engine import (
-    AccountBindingUpdate, AccountBindingUpdateStatus, V4AccountBindingUpdate,
-    V4StateContinuation, V4StateMigration, account_binding_facts_sha256, update_account_bindings,
+    AccountBindingUpdate, AccountBindingUpdateStatus, EquityAccountBindingUpdate,
+    EquityStateContinuation, EquityStateMigration, account_binding_facts_sha256, update_account_bindings,
 )
 from paper_trading_engine import account_maintenance
 from paper_trading_engine.account_engine import AccountEngine
 from execution_channels.futu.broker import BrokerOrder
 from paper_trading_engine.ec_boundary import execution_rules
-from paper_trading_engine.formal_v4_advice import FormalV4AdviceClient, FormalV4Inputs, FormalV4ScheduleProvider
+from paper_trading_engine.equity_runtime import EquityRuntimeAdviceClient, EquityAccountInputs, EquityScheduleProvider
 from execution_channels.futu.order_reports import apply_order_report
 from execution_channels.futu.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION
 from strategy_manager import PaperTradingApproval, StrategyRegistry, freeze_contracts as f
@@ -45,7 +45,7 @@ def _fill_position(client, store, interval, candidate, seeds):
         store._connection.deserialize(seeds[key])
         return
     engine = AccountEngine(store, client, now=lambda: interval.start)
-    provider = FormalV4ScheduleProvider(client, engine)
+    provider = EquityScheduleProvider(client, engine)
     provider.run_scheduled('formal', provider.due_decision(store.virtual_account('formal'), interval.start), interval.start)
     intent, = store.account_intents('formal')
     store.set_setting('channel_reconciliation_status', 'OK')
@@ -133,20 +133,20 @@ def test_rebind_active_v4_and_block_historical_execution(formal_v4, tmp_path, mo
         source_state = json.loads(before['account_v4_json'])
         source_hash = before['release_hash']
         new_hash = _upgrade_target(client, candidate, source_hash, change_schema=change_schema)
-        request = V4AccountBindingUpdate(AccountBindingUpdate('formal', source_hash, new_hash, 'v1'),
+        request = EquityAccountBindingUpdate(AccountBindingUpdate('formal', source_hash, new_hash, 'v1'),
             'formal-channel', account_binding_facts_sha256(scoped, 'formal'),
             execution_rules(candidate.instrument, candidate.definition.execution_spec),
-            FormalV4Inputs(new_hash, evaluation.input_binding, evaluation.fee_rate, client.inputs('formal').execution_reference),
-            V4StateContinuation('source', 'reviewed fixture state'))
+            EquityAccountInputs(new_hash, evaluation.input_binding, evaluation.fee_rate, client.inputs('formal').execution_reference),
+            EquityStateContinuation('source', 'reviewed fixture state'))
         untouched = list(database._connection.iterdump())
         with pytest.raises(ValueError, match='reviewed snapshot'):
             update_account_bindings(runtime, 'target', (replace(request, expected_facts_sha256='0' * 64),))
         assert list(database._connection.iterdump()) == untouched
         if change_schema:
-            with pytest.raises(ValueError, match='explicit V4 mapping'):
+            with pytest.raises(ValueError, match='explicit V5 mapping'):
                 update_account_bindings(runtime, 'target', (request,))
             assert list(database._connection.iterdump()) == untouched
-            request = replace(request, state=V4StateMigration(StateRecord((('mapped', 42),)),
+            request = replace(request, state=EquityStateMigration(StateRecord((('mapped', 42),)),
                 'reviewed target field mapping', StateRecord(), StateRecord(), 'source'))
         old_history = {table: list(map(tuple, database._connection.execute(f'SELECT * FROM {table}')))
                        for table in ('orders', 'intents', 'fills', 'account_ledger', 'decisions', 'account_snapshots')}
@@ -165,7 +165,7 @@ def test_rebind_active_v4_and_block_historical_execution(formal_v4, tmp_path, mo
         assert target_state['active'] == source_state['active']
         assert target_state['last_interval'] == source_state['last_interval']
         assert target_state['state']['account']['values'] == ([['mapped', 42]] if change_schema else [])
-        reopened = FormalV4AdviceClient(repo_root=client.repo_root, store=scoped, dataflows=client.dataflows, data_dir=data)
+        reopened = EquityRuntimeAdviceClient(repo_root=client.repo_root, store=scoped, dataflows=client.dataflows, data_dir=data)
         live_inputs = replace(request.inputs, binding=request.inputs.binding.for_observations())
         assert reopened.recipe('formal') == live_inputs
         assert reopened.inputs('formal') == live_inputs
@@ -194,7 +194,7 @@ def test_rebind_to_qualified_successor_version(formal_v4, pending, tmp_path, mon
     if pending:
         client.register_recipe('formal', client.inputs('formal'))
         engine = AccountEngine(store, client, now=lambda: interval.start)
-        provider = FormalV4ScheduleProvider(client, engine)
+        provider = EquityScheduleProvider(client, engine)
         task = provider.due_decision(store.virtual_account('formal'), interval.start)
         provider.run_scheduled('formal', task, interval.start)
         store.set_virtual_paused('formal', True)
@@ -209,11 +209,11 @@ def test_rebind_to_qualified_successor_version(formal_v4, pending, tmp_path, mon
         first_signal = scoped.first_account_signal_date('formal')
         assert first_signal == min(row['signal_date'] for row in scoped.account_decisions('formal'))
         target, _, _ = client.load_release('S999', 'v2')
-        request = V4AccountBindingUpdate(AccountBindingUpdate('formal', before['release_hash'], target.release_hash, 'v2'),
+        request = EquityAccountBindingUpdate(AccountBindingUpdate('formal', before['release_hash'], target.release_hash, 'v2'),
             'formal-channel', account_binding_facts_sha256(scoped, 'formal'),
             execution_rules(candidate.instrument, candidate.definition.execution_spec),
-            FormalV4Inputs(target.release_hash, evaluation.input_binding, evaluation.fee_rate, client.inputs('formal').execution_reference),
-            V4StateContinuation('source', 'reviewed successor compatibility'))
+            EquityAccountInputs(target.release_hash, evaluation.input_binding, evaluation.fee_rate, client.inputs('formal').execution_reference),
+            EquityStateContinuation('source', 'reviewed successor compatibility'))
         assert update_account_bindings(runtime, 'target', (request,)).status is AccountBindingUpdateStatus.COMMITTED
         after = scoped.virtual_account('formal')
         assert after['strategy_version'] == 'v2' and after['release_hash'] == target.release_hash
@@ -296,7 +296,7 @@ def _check_rebound_input_update(client, store, monkeypatch, recipe_case):
         assert json.loads(store._connection.execute('SELECT value FROM settings WHERE key=?', (key,)).fetchone()[0]) == account_input_identity(value).to_dict()
     readonly = PaperStore.open_readonly(store.path)
     try:
-        reader = FormalV4AdviceClient(repo_root=client.repo_root, store=readonly.scope('formal-channel'),
+        reader = EquityRuntimeAdviceClient(repo_root=client.repo_root, store=readonly.scope('formal-channel'),
             dataflows=None, data_dir=client.data_dir)
         assert reader.inputs('formal') == updated and reader.recipe('formal') == updated
     finally:
@@ -310,7 +310,7 @@ def _check_rebound_input_update(client, store, monkeypatch, recipe_case):
 ], indirect=['formal_v4'])
 def test_legacy_same_session_cutover_cancels_locally_then_drives_new_release(
         formal_v4, tmp_path, monkeypatch, with_order, recipe_case):
-    from paper_trading_engine import v4_account_maintenance as maintenance
+    from paper_trading_engine import equity_account_maintenance as maintenance
     client, store, root, _, candidate, evaluation = formal_v4
     target_hash = store.virtual_account('formal')['release_hash']
     old_hash = 'a' * 64
@@ -344,11 +344,11 @@ def test_legacy_same_session_cutover_cancels_locally_then_drives_new_release(
     runtime, database, data = _runtime(tmp_path, client, root, monkeypatch)
     try:
         scoped = database.scope('formal-channel')
-        request = V4AccountBindingUpdate(AccountBindingUpdate('formal', old_hash, target_hash, 'v1'),
+        request = EquityAccountBindingUpdate(AccountBindingUpdate('formal', old_hash, target_hash, 'v1'),
             'formal-channel', account_binding_facts_sha256(scoped, 'formal'),
             execution_rules(candidate.instrument, candidate.definition.execution_spec),
-            FormalV4Inputs(target_hash, evaluation.input_binding, evaluation.fee_rate, client.inputs('formal').execution_reference),
-            V4StateMigration(StateRecord(), 'legacy same-session migration',
+            EquityAccountInputs(target_hash, evaluation.input_binding, evaluation.fee_rate, client.inputs('formal').execution_reference),
+            EquityStateMigration(StateRecord(), 'legacy same-session migration',
                 pending_cycle_values=StateRecord() if with_budget else None))
         original = maintenance._apply
         def fail_after_apply(*args):
@@ -380,7 +380,7 @@ def test_legacy_same_session_cutover_cancels_locally_then_drives_new_release(
                 "SELECT MAX(rowid) FROM account_ledger WHERE account_id='formal'").fetchone()[0]
         assert update_account_bindings(runtime, 'target', (request,)).status is AccountBindingUpdateStatus.ALREADY_APPLIED
         # Update the rebound recipe before driving the same service as the Web API.
-        reopened = FormalV4AdviceClient(repo_root=client.repo_root, store=scoped, dataflows=client.dataflows, data_dir=data)
+        reopened = EquityRuntimeAdviceClient(repo_root=client.repo_root, store=scoped, dataflows=client.dataflows, data_dir=data)
         _check_rebound_input_update(reopened, scoped, monkeypatch, recipe_case)
         scoped.set_virtual_paused('formal', False)
         from dataflows import EquityProduct, ProviderBinding, TradingSession
@@ -400,7 +400,7 @@ def test_legacy_same_session_cutover_cancels_locally_then_drives_new_release(
         reopened.dataflows._equity_providers = {key: extend_calendar(value)
             for key, value in reopened.dataflows._equity_providers.items()}
         engine = AccountEngine(scoped, reopened, now=lambda: effective.start)
-        provider = FormalV4ScheduleProvider(reopened, engine)
+        provider = EquityScheduleProvider(reopened, engine)
         result = provider.drive_decision('formal', effective.start)
         assert result['status'] == 'DECISION_COMPLETED' and not result['reused_decision']
         current = scoped.virtual_account('formal')['last_decision_id']
@@ -418,7 +418,7 @@ def test_legacy_same_session_cutover_cancels_locally_then_drives_new_release(
     pytest.param('filled', id='PTE18-C05'),
 ])
 def test_same_session_cutover_never_discards_execution_or_v4_state(evidence):
-    from paper_trading_engine import v4_account_maintenance as maintenance
+    from paper_trading_engine import equity_account_maintenance as maintenance
     from execution_channels.futu.lifecycle import DecisionState
     zone = ZoneInfo('America/New_York')
     interval = TimeInterval(datetime(2026, 10, 16, 9, 30, tzinfo=zone), datetime(2026, 10, 16, 16, tzinfo=zone))

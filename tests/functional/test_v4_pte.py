@@ -3,6 +3,7 @@
 from datetime import timedelta
 from decimal import Decimal
 import json
+from pathlib import Path
 
 import pytest
 from dataflows import MarketId, EquityProduct, TimeInterval
@@ -48,7 +49,7 @@ def native_account(tmp_path, market, computation=StrategyComputation.STATEFUL_ST
                 symbol=request.candidate.instrument.symbol,
                 asset_type=request.candidate.instrument.asset_class.value.lower(),
                 strategy_id='S999', strategy_name_snapshot='native', strategy_version='v1', release_hash='a'*64,
-                qualification_snapshot='INSPECTION', selection_data_cutoff='2026-10-12', channel_id=channel_id,
+                qualification_snapshot='INSPECTION', selection_data_cutoff='2026-10-11', channel_id=channel_id,
                 equity_rules=rules)
             initial.set_virtual_paused('native', False)
             assert initial._connection.execute('PRAGMA wal_checkpoint(TRUNCATE)').fetchone()[0] == 0
@@ -309,11 +310,8 @@ def intraday_inputs(context, request, products, *, unfilled_morning=False):
         ProviderBinding(source.provider,source.revision,fetch) for product in EquityProduct})
     spec = replace(context.execution_spec, decision_clock=BarFrequency.M30)
     context = create_research_context(context.repository,context.batch,providers=providers,execution_spec=spec)
-    auxiliary = tuple(replace(item, name='soxx_open', frequency=BarFrequency.M30)
-                      for item in request.candidate.definition.auxiliary_inputs
-                      if not cn and item.instrument.symbol == 'SOXX')
     candidate = replace(request.candidate, definition=replace(request.candidate.definition,
-        execution_spec=spec, auxiliary_inputs=auxiliary))
+        execution_spec=spec))
     request = replace(request,candidate=candidate,window=TimeInterval(grid[1].start,grid[-1].end),prepared=None,
         input_binding=None,audit_inputs_sha256=None,benchmark=EvaluationBenchmark(EquityBuyHold(spec)))
     request = replace_strategy(request, "from strategy_runtime import AccountDecision,AccountStepResult,StateRecord\n"
@@ -324,38 +322,46 @@ def intraday_inputs(context, request, products, *, unfilled_morning=False):
     return context,request,products
 
 
-def test_us_m30_opening_decision_uses_dynamic_auxiliary_bars(tmp_path, monkeypatch):
+def test_us_m30_opening_decision_reads_only_completed_step_bars(tmp_path, monkeypatch):
     from dataclasses import replace
     from types import SimpleNamespace
     from zoneinfo import ZoneInfo
 
-    from dataflows import PriceAdjustment
+    from dataflows import AssetClass, Dataset, InstrumentId
     from execution_channels.daily_execution import INTERVAL_TARGET_TRIGGER
     from execution_channels.instruments import TimeInterval as ChannelInterval
-    from paper_trading_engine.formal_v4_advice import FormalV4AdviceClient, FormalV4Inputs, FormalV4ScheduleProvider
-    from strategy_runtime import ExecutionPolicy
+    from paper_trading_engine.equity_runtime import EquityRuntimeAdviceClient, EquityAccountInputs, EquityScheduleProvider
+    from paper_trading_engine.data_space import AccountDataflows
+    from dataflows import DataSpace, ProviderConfig
+    from strategy_runtime import ExecutionPolicy, ObservationAvailability, StepDataInput
 
     context, request, _, store, permit, _ = native_account(tmp_path, MarketId.US, intraday=True)
     try:
-        request = replace_strategy(request, """from strategy_runtime import AccountDecision, AccountStepResult, StateRecord
+        request = replace_strategy(request, """from zoneinfo import ZoneInfo
+from strategy_runtime import AccountDecision, AccountStepResult, StateRecord, StepDataWindow
 def step(ctx, state):
-    mu = ctx.history.last()
-    soxx = ctx.auxiliary_histories['soxx_open'].last()
-    assert mu['Date'] == soxx['Date'] == ctx.point.execution_interval.start
-    assert mu['Close'] == 10.0 and soxx['Close'] == 200.0
-    return AccountStepResult(AccountDecision.from_facts(.5, 'opening', facts={'soxx': soxx['Close']},
+    day = ctx.point.observed_through.astimezone(ZoneInfo('America/New_York')).date()
+    soxx, = ctx.dfls.fetch(StepDataWindow('soxx_open', day, day)).itertuples()
+    assert soxx.Date == ctx.point.observed_through and soxx.Close == 200.
+    return AccountStepResult(AccountDecision.from_facts(.5, 'opening', facts={'soxx': soxx.Close},
         next_watch='next bar'), cycle_values=StateRecord())
 """)
+        soxx = InstrumentId(MarketId.US, AssetClass.ETF, 'SOXX')
+        step_input = StepDataInput('soxx_open', Dataset.EQUITY_BARS, soxx.symbol, '30m', 1,
+            ObservationAvailability(soxx.timezone, '00:00'), instrument=soxx, source=request.sources.bars)
         candidate = replace(request.candidate, definition=replace(request.candidate.definition,
+            step_data_inputs=(step_input,),
             execution_policy=ExecutionPolicy('TARGET_POSITION', {'execution_trigger': INTERVAL_TARGET_TRIGGER})))
         release = SimpleNamespace(release_hash=permit.release_sha256)
-        client = FormalV4AdviceClient(repo_root=permit.isolated_repository, store=store, dataflows=context.data,
-                                      data_dir=permit.workspace / 'runtime-data', inspection_permit=permit)
+        account_dataflows = AccountDataflows(tmp_path, DataSpace(Path('account-dfls')),
+            ProviderConfig(equity_bindings=context.data._equity_providers))
+        client = EquityRuntimeAdviceClient(repo_root=permit.isolated_repository, store=store, dataflows=context.data,
+                                      data_dir=permit.workspace / 'runtime-data', account_dataflows=account_dataflows)
         monkeypatch.setattr(client, '_account_release',
                             lambda account_id: (store.virtual_account(account_id), release, candidate))
-        client.register_recipe('native', FormalV4Inputs(release.release_hash, request.input_binding,
+        client.register_recipe('native', EquityAccountInputs(release.release_hash, request.input_binding,
             request.fee_rate, raw_binding(context.data, request.input_binding)))
-        scheduler = FormalV4ScheduleProvider(client, AccountEngine(store, client))
+        scheduler = EquityScheduleProvider(client, AccountEngine(store, client))
         opening_decision = request.window.start.astimezone(ZoneInfo('America/New_York'))
         assert (opening_decision.hour, opening_decision.minute) == (10, 0)
         task = scheduler.due_decision(store.virtual_account('native'), opening_decision)
@@ -366,15 +372,15 @@ def step(ctx, state):
         order, = adopted['payload']['orders']
         assert order['side'] == 'BUY'
 
-        pinned = FormalV4Inputs.from_dict(json.loads(client._interval_path(
+        pinned = EquityAccountInputs.from_dict(json.loads(client._interval_path(
             'native', release.release_hash, task.interval).read_bytes()))
         requests = dict(pinned.binding.request_bindings)
-        auxiliary = requests['auxiliary:soxx_open:bars']
-        assert requests['bars'].query.completed_through == auxiliary.query.completed_through == opening_decision
-        requests['auxiliary:soxx_open:bars'] = replace(
-            auxiliary, query=replace(auxiliary.query, adjustment=PriceAdjustment.NONE))
-        with pytest.raises(ValueError, match='declared observation'):
-            replace(pinned.binding, request_bindings=tuple(requests.items()))
+        assert requests['bars'].query.completed_through == opening_decision
+        assert set(requests) == {'bars', 'sessions'}
+        read, = adopted['payload']['strategy_output']['data_reads']
+        assert read['window']['name'] == 'soxx_open'
+        assert read['window']['start'] == read['window']['end'] == str(opening_decision.date())
+        assert read['rows'] == 1
     finally:
         store.close()
 
@@ -391,7 +397,7 @@ def test_m30_lunch_decision_uses_same_interval_and_confirmed_outcome(tmp_path, m
     from czsc_trader.application.equity_inspection import replay_account
     from execution_channels.daily_execution import INTERVAL_TARGET_TRIGGER
     from execution_channels.instruments import TimeInterval as ChannelInterval
-    from paper_trading_engine.formal_v4_advice import FormalV4AdviceClient, FormalV4Inputs, FormalV4ScheduleProvider
+    from paper_trading_engine.equity_runtime import EquityRuntimeAdviceClient, EquityAccountInputs, EquityScheduleProvider
     from strategy_manager.freeze_contracts import InspectionCoordinate
     from strategy_runtime import ExecutionPolicy
 
@@ -416,15 +422,15 @@ def step(ctx, state):
     release = SimpleNamespace(release_hash='a'*64)
 
     def provider_for(current_store):
-        client = FormalV4AdviceClient(repo_root=permit.isolated_repository, store=current_store, dataflows=context.data,
-                                      data_dir=permit.workspace / 'runtime-data', inspection_permit=permit)
+        client = EquityRuntimeAdviceClient(repo_root=permit.isolated_repository, store=current_store, dataflows=context.data,
+                                      data_dir=permit.workspace / 'runtime-data')
         monkeypatch.setattr(client, '_account_release',
                             lambda account_id: (current_store.virtual_account(account_id), release, candidate))
-        return client, FormalV4ScheduleProvider(client, AccountEngine(current_store, client))
+        return client, EquityScheduleProvider(client, AccountEngine(current_store, client))
 
     try:
         client, provider = provider_for(store)
-        client.register_recipe('native', FormalV4Inputs(release.release_hash, request.input_binding, request.fee_rate, raw))
+        client.register_recipe('native', EquityAccountInputs(release.release_hash, request.input_binding, request.fee_rate, raw))
         morning_task = provider.due_decision(store.virtual_account('native'), morning.start)
         assert morning_task.interval == morning
         provider.run_scheduled('native', morning_task, morning.start)

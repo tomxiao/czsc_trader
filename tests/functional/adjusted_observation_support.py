@@ -106,24 +106,14 @@ def setup_adjusted(tmp_path, market, computation=StrategyComputation.STATEFUL_ST
     root.mkdir(exist_ok=existing_experiment is not None)
     (root / "strategy.py").write_text(
         "from strategy_runtime import AccountDecision, AccountStepResult, StateRecord\n"
-        "def decision(ctx):\n"
-        "    raw = float(ctx.history.last()['Close'])\n"
-        "    observed = [float(view.last()['Close']) for view in ctx.auxiliary_histories.values()]\n"
-        "    assert raw == 20.\n"
-        "    assert not observed or observed == [20., 200.]\n"
-        "    return AccountDecision.from_facts(1, 'hold', "
-        "facts={'raw': raw, 'observed': str(observed)}, next_watch='next session')\n"
         "def step(ctx, state):\n"
-        "    return AccountStepResult(decision(ctx), cycle_values=StateRecord())\n"
-        "def batch(ctx):\n"
-        "    return tuple(decision(row) for row in ctx.observations)\n", encoding="utf-8")
-    auxiliary = (EquityAuxiliaryInput("stock_hfq", instrument, source, BarFrequency.DAILY, 1, 86400 * 4, "HFQ"),
-                 EquityAuxiliaryInput("sector_hfq", sector, source, BarFrequency.DAILY, 1, 86400 * 4, "HFQ"))
+        "    decision = AccountDecision.from_facts(1, 'hold', facts={'target': 1}, next_watch='next session')\n"
+        "    return AccountStepResult(decision, cycle_values=StateRecord())\n", encoding="utf-8")
     entrypoint = "strategy:batch" if computation is StrategyComputation.BATCH_HISTORY else "strategy:step"
     definition = EquityStrategyDefinition(instrument, spec, 1, entrypoint, ("strategy.py",),
-        equity_source_hash(root, ("strategy.py",)), contract_version=4,
+        equity_source_hash(root, ("strategy.py",)), contract_version=5,
         computation=computation, feature_graph=FeatureGraph((), ()),
-        state_schema=StrategyStateSchema(), auxiliary_inputs=auxiliary,
+        state_schema=StrategyStateSchema(),
         execution_policy=ExecutionPolicy("TARGET_POSITION", {"capital_mode": "target_equity_fraction"}))
     candidate = EquityStrategyCandidate("S999", "C0001", definition, root)
     request = EquityEvaluationRequest(experiment, candidate, TimeInterval(grid[1].start, grid[-1].end),

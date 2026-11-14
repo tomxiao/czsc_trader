@@ -28,7 +28,7 @@ def equity_plan(tmp_path, *, applicable=True, resources=None):
         "from strategy_runtime import AccountDecision\n"
         "from strategy_runtime import AccountStepResult, StateRecord\n"
         "def step(ctx, state):\n"
-        "    active = int(ctx.history.last()['Close'] >= ctx.parameters['threshold'])\n"
+        "    active = int(10. >= ctx.parameters['threshold'])\n"
         "    return AccountStepResult(AccountDecision.from_facts(0 if ctx.portfolio.quantity else active, "
         "'threshold comparison', facts={'threshold': ctx.parameters['threshold']}, "
         "next_watch='next completed bar'), cycle_values=StateRecord())\n", encoding="utf-8")

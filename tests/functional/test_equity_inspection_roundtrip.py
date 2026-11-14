@@ -29,8 +29,9 @@ def seed_registered_frozen_candidate(research,evaluation):
         path.write_bytes(content)
         return CandidateEvidence(relative,sha256(content).hexdigest())
     payload=write(f'{prefix}/payload.json',json.dumps(candidate.payload,sort_keys=True,separators=(',',':')).encode())
+    from czsc_trader.application._frozen_materials import candidate_install_files
     sources=tuple(write(f'{source_root}/{name}',(candidate.source_root/name).read_bytes())
-        for name in candidate.definition.source_files)
+        for name in candidate_install_files(candidate))
     record=CandidateRegistration(candidate.key,identity.content_sha256,identity.source_sha256,
         identity.dependency_sha256,payload,sources,source_root,
         tuple((item.name,item.version) for item in candidate.definition.dependencies),
@@ -38,15 +39,14 @@ def seed_registered_frozen_candidate(research,evaluation):
     StrategyRegistry(research.repository.research_registry_root).register_candidate(record,evidence_root=root)
 
 
-def test_TDR_20_C03_equity_inspection_requires_complete_auxiliary_identity():
+def test_TDR_20_C03_equity_inspection_rejects_legacy_auxiliary_binding():
     from dataflows import (AssetClass, BarFrequency, EquityDataRequest, EquityProduct, EquityQuery,
         InstrumentId, MarketId, PreparedDataRef, PriceAdjustment, SourceRef, TimeInterval)
     from strategy_runtime import EquityAuxiliaryBinding, EquityAuxiliaryInput, EquityInputBinding, InputBindingScope
     from paper_trading_engine.execution_reference import ExecutionReferenceBinding
     from czsc_trader.application import EquityInspectionReplay
 
-    # This constructor validates product coverage, not publication authenticity.
-    # Use real typed contracts; no research session or DFLS preparation is needed.
+    # Use an authenticated binding shape from the older strategy contract.
     instrument = InstrumentId(MarketId.US, AssetClass.STOCK, 'MU')
     source = SourceRef('contract-fixture', 'v1')
     day = date(2026, 10, 12)
@@ -63,12 +63,10 @@ def test_TDR_20_C03_equity_inspection_requires_complete_auxiliary_identity():
         request_bindings=tuple((key, request.parameters) for key, request in zip(
             ('bars', 'sessions', auxiliary.data_key(EquityProduct.BARS), auxiliary.data_key(EquityProduct.SESSIONS)), requests)))
     raw = replace(primary[0].parameters, query=replace(primary[0].parameters.query, adjustment=PriceAdjustment.NONE))
-    replay = EquityInspectionReplay(f.InspectionCoordinate('main', 'standard'), binding, requests,
-        TimeInterval(datetime(2026, 10, 12, 14, tzinfo=timezone.utc), datetime(2026, 10, 12, 15, tzinfo=timezone.utc)),
-        10000., .001, execution_reference=ExecutionReferenceBinding(raw, prepared, '1' * 64))
-    assert len(replay.requests) == len(replay.input_binding.expected_identities) == 4
-    with pytest.raises(ValueError, match='bound product selection|coverage'):
-        replace(replay, requests=replay.requests[:-1])
+    with pytest.raises(ValueError, match='V5 inspection strategy data requires step_data_windows'):
+        EquityInspectionReplay(f.InspectionCoordinate('main', 'standard'), binding, requests,
+            TimeInterval(datetime(2026, 10, 12, 14, tzinfo=timezone.utc), datetime(2026, 10, 12, 15, tzinfo=timezone.utc)),
+            10000., .001, execution_reference=ExecutionReferenceBinding(raw, prepared, '1' * 64))
 
 
 def assert_cancelled_inspection_cannot_freeze(context, request):

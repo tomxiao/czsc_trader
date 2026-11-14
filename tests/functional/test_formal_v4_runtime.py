@@ -1,5 +1,5 @@
 # Risk ownership: E2E-01
-"""Native frozen V4 admission and forward decisions on isolated CN/US fixtures."""
+"""Native frozen V5 admission and forward decisions on isolated CN/US fixtures."""
 from datetime import datetime, timedelta, timezone
 from dataclasses import replace
 from decimal import Decimal
@@ -21,7 +21,7 @@ from strategy_manager import PaperTradingApproval, StrategyRegistry
 from paper_trading_engine.account_engine import AccountEngine
 from execution_channels.futu.channel import ChannelAccountConfig, FUTU_SIMULATE_CN_CHANNEL_ID, FUTU_US_SIM_CHANNEL_ID
 from paper_trading_engine.ec_boundary import execution_rules
-from paper_trading_engine.formal_v4_advice import FormalV4AdviceClient, FormalV4ScheduleProvider
+from paper_trading_engine.equity_runtime import EquityRuntimeAdviceClient, EquityScheduleProvider
 from execution_channels.futu.store import PaperStore
 from test_v4_inspection_roundtrip import native_fixture
 from paper_trading_engine.execution_reference import ExecutionReferenceBinding
@@ -36,6 +36,28 @@ def raw_binding(dataflows, binding):
     return ExecutionReferenceBinding(parameters, result.reference, result.items[0].identity.content_sha256)
 
 
+def _install_v5_fixture(repository, candidate, reference):
+    from czsc_trader.application.runtime_migration import _upgrade_json, _upgrade_materials
+    from strategy_manager import canonical_sha256
+
+    registry = StrategyRegistry(repository.strategy_root)
+    family, version = reference.rsplit('-', 1)
+    upgraded, manifest, contents, _ = _upgrade_materials(candidate, registry.get_version(family, version))
+    package = repository.strategy_root / family / 'releases' / version
+    for relative, data in contents.items():
+        target = package / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+    version_path = repository.strategy_root / family / 'versions' / f'{version}.json'
+    version_path.write_bytes(_upgrade_json(upgraded.to_dict()))
+    receipt_path = repository.strategy_root / 'deployments' / f'{reference}.json'
+    receipt = json.loads(receipt_path.read_bytes())
+    receipt.update(strategy_version_hash=upgraded.release_hash, package_hash=manifest['package_hash'])
+    receipt.pop('receipt_hash')
+    receipt_path.write_bytes(_upgrade_json({**receipt, 'receipt_hash': canonical_sha256(receipt)}))
+    return upgraded
+
+
 @pytest.fixture(params=[MarketId.CN, MarketId.US])
 def formal_v4(tmp_path, request):
     market, successor = request.param if isinstance(request.param, tuple) else (request.param, False)
@@ -46,13 +68,17 @@ def formal_v4(tmp_path, request):
     seed = Path(__file__).parents[1] / 'fixtures/published' / f'{market.value}-{int(successor)}'
     shutil.copytree(seed, repository.strategy_root, dirs_exist_ok=True)
     registry = StrategyRegistry(repository.strategy_root)
-    version = registry.get_version('S999', 'v1')
     # Single-connection business flows use real SQLite without durability I/O.
     # Rebinding consumers back up this source into their own disk-backed runtime.
     root = PaperStore(Path(':memory:'))
     channel = FUTU_SIMULATE_CN_CHANNEL_ID if market is MarketId.CN else FUTU_US_SIM_CHANNEL_ID
     store = root.register_channel_account(ChannelAccountConfig('formal-channel', channel, 1234), capital=Decimal('1000000'))
-    client = FormalV4AdviceClient(repo_root=tmp_path, store=store, dataflows=context.data, data_dir=tmp_path / 'runtime-data')
+    client = EquityRuntimeAdviceClient(repo_root=tmp_path, store=store, dataflows=context.data, data_dir=tmp_path / 'runtime-data')
+    version = _install_v5_fixture(repository, evaluation.candidate, 'S999-v1')
+    if successor:
+        second = _install_v5_fixture(repository, evaluation.candidate, 'S999-v2')
+        registry.approve_paper_trading(PaperTradingApproval('S999', 'v2', second.release_hash,
+            'DEV', 'synthetic isolated successor approval'))
     with pytest.raises(Exception, match='not approved'):
         client.load_release('S999', 'v1')
     registry.approve_paper_trading(PaperTradingApproval('S999', 'v1', version.release_hash,
@@ -126,7 +152,7 @@ def test_daily_decision_prepares_after_close_and_waits_for_next_session(formal_v
     gate = previous.segments[-1].end + timedelta(hours=5)
     client._calendar_products(client.recipe('formal'), gate)
     engine = AccountEngine(store, client, now=lambda: gate)
-    provider = FormalV4ScheduleProvider(client, engine)
+    provider = EquityScheduleProvider(client, engine)
     account = store.virtual_account('formal')
     with patch.object(client.dataflows, 'prepare', side_effect=AssertionError('prices before close gate')):
         assert provider.due_decision(account, gate - timedelta(seconds=1)) is None
@@ -145,7 +171,7 @@ def test_daily_decision_prepares_after_close_and_waits_for_next_session(formal_v
     assert all(datetime.fromisoformat(leg['submit_after']) == interval.start for leg in decision['plan_legs'])
     assert task.submit_after > gate
     # Restart reuses the successful interval without replacing its publications.
-    reopened = FormalV4AdviceClient(repo_root=client.repo_root, store=store,
+    reopened = EquityRuntimeAdviceClient(repo_root=client.repo_root, store=store,
                                    dataflows=client.dataflows, data_dir=client.data_dir)
     with patch.object(client.dataflows, 'prepare', side_effect=AssertionError('must reuse prepared interval')):
         prepared = reopened.prepare_interval('formal', interval, observed_at=gate + timedelta(seconds=1))
@@ -388,7 +414,7 @@ def test_v4_rerun_after_order_window_uses_confirmed_channel_facts(formal_v4, mon
     client, store, _, interval, candidate, _ = formal_v4
     client.register_recipe('formal', client.inputs('formal'))
     engine = AccountEngine(store, client, now=lambda: interval.start)
-    provider = FormalV4ScheduleProvider(client, engine)
+    provider = EquityScheduleProvider(client, engine)
     prior = provider.drive_decision('formal', interval.start)
     intent, = store.account_intents('formal', prior['decision_id'])
     store.set_setting('channel_reconciliation_status', 'OK')

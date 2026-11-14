@@ -6,7 +6,8 @@ TDR 为研究员提供批次上下文、研究概览、账户评价与诊断、�
 研究目标、授权、候选选择和冻结批准见 [RSCH 契约](../../research/RSCH_AGENT.md)。
 用户 CLI 提供 `backtest run`；Python API 与 CLI 的结果保存行为分别说明如下。
 
-A 股、美股的新账户研究使用 V5 策略和显式研究会话，完整示例见[跨市场账户研究接口](#us-equity-research)。
+A 股、美股的 V5 账户回放通过 `ResearchExecutionSession` 和 `EquityEvaluationRequest` 执行。
+`backtest run` 面向旧式冻结回测请求。V5 使用[跨市场账户研究接口](#us-equity-research)提供取数授权。
 旧普通评价、发布和候选登记链已删除；历史材料仅用于明确的读取、诊断及技术检查，不能恢复为新研究计算入口。
 研究判断分别参阅[通用指南](../../research/RSCH_AGENT.md)、[A股补充](../../research/guides/CN_RESEARCH.md)和
 [美股补充](../../research/guides/US_RESEARCH.md)；本文维护平台契约，不代替研究政策。
@@ -274,7 +275,7 @@ def run_search(research, experiment, run_id, *, sampler, distributions,
 ### 策略性能验收
 
 V5 `prepare` 校验策略声明、源码和授权取数区间。
-自定义行情计算须声明窗口及参数，迁移方式见 [SRT 可见特征契约](../../packages/strategy_runtime/README.md#可见特征与显式状态)。
+策略的行情和特征依赖通过 [SRT V5 逐轮取数](../../packages/strategy_runtime/README.md#v5-策略编写与逐轮取数)声明并读取。
 
 从 `strategy_runtime` 导入 `StrategyPerformanceBudget`，使用
 `ResearchExecutionSession(..., performance_budget=StrategyPerformanceBudget())` 采集策略 CPU 基线。
@@ -289,7 +290,7 @@ TDR 先对同源码、同特征和状态声明、同输入及执行窗口的组�
 结构约束始终生效，数值上限由调用者按已校准预算启用。
 代表性样本应覆盖最大声明窗口及主要计算分支。CPU 计时在调用返回时判断上限，批次墙钟和进程超时需分别管理。
 
-通过`ResearchExecutionSession(..., checkpoint=ExecutionCheckpointRequest(run_id, CheckpointMode.CREATE或RESUME))`显式创建或恢复检查点。V4检查点保存结果、输入和账户依赖的不可变字节，恢复核对请求及对象身份，
+通过`ResearchExecutionSession(..., checkpoint=ExecutionCheckpointRequest(run_id, CheckpointMode.CREATE或RESUME))`显式创建或恢复检查点。V5检查点保存结果、输入和账户依赖的不可变字节，恢复核对请求及对象身份，
 不重新执行策略、提取账户事实或复算指标。缺失或损坏明确失败，不读取磁盘pickle、不退回旧格式恢复。
 当前检查点采用manifest v2及结果索引v3：原始材料和结果头在`blobs/`按内容摘要保存一次，小型索引引用这些字节。
 每个结果在依赖持久化完成后提交；普通计算不会隐式发布正式证据。旧格式或实现身份不匹配的检查点明确拒绝恢复，
@@ -352,10 +353,10 @@ JSON 输出的 `artifacts` 给出内容寻址文件路径，报告内图表链�
 ### 账户损益与路径诊断
 
 `diagnose_accounts(repository, request) -> AccountDiagnosisResult`要求强类型`AccountDiagnosisRequest`，引用正式证据及精确评价身份。
-本接口仅处理存量`account_evaluation` schema 7/8，不接受新V4结果；不构成旧研究计算入口。
+本接口仅处理存量`account_evaluation` schema 7/8，不接受新V5结果；不构成旧研究计算入口。
 `AccountRunRef(evidence, identity)`精确选择保存的评价；该历史诊断是显式的深入检查，会核验保存账本。
 `alternative`可指定同批次另一历史账户；市场、资金、费用及执行上下文不一致时返回不可比。
-V4账户事实通过显式投影供SE分析，不自动转换为历史诊断格式。
+V5账户事实通过显式投影供SE分析，不自动转换为历史诊断格式。
 
 窗口是原连续账户的切片，继承此前资金和持仓，不重置本金。首版支持单标的、只做多、全仓/现金、单周期一次买入和至多一次卖出的账本；加减仓、多次成交、日内往返等不支持，不降级为简化收益计算。
 
@@ -458,7 +459,7 @@ loaded = load_candidate(repository, candidate.key)
 源码留存于`assets/candidates/<候选>/`；原实验源码变化不会影响已登记快照。
 SM普通登记检查自身载荷和源码，来源附件保留为声明；显式完整读取仍可核验附件。
 
-`build_assessment_evidence(prepared, result, execution=execution)`将V4已有账户事实投影为SE输入，
+`build_assessment_evidence(prepared, result, execution=execution)`将V5已有账户事实投影为SE输入，
 不复算指标。派生关系使用`CandidateDerivation/EvaluationLineage`声明，不覆盖原登记。
 SE自检、比较及研究标准判断由RSCH显式组织，参见[SE手册](../../packages/strategy_evaluator/README.md)。
 
@@ -783,7 +784,10 @@ StrategyVersion和运行发布合同不变，不更改已冻结策略、SM状态
 
 目标A通过正常SRT/EC路径运行候选及发布实现，比较信号、决策、订单、成交、账户、交易与观察事实。只归一化纯运行身份；离散数量、状态、时点严格一致，明确金融浮点字段才适用容差。目标B使用正常PTE业务组件和独立的离线成交渠道；检查进入／持有／退出、无成交或部分成交、重复决定／回报、重启后与连续运行一致，以及适用故障。多档持仓调整按能力声明验证。测试许可、数据库及部署回执受隔离路径和包身份约束，普通PTE入口拒绝技术检验数据库。
 
-原生 V5 目标 B 复用正式 `FormalV4AdviceClient → AccountEngine → ChannelExecution → PaperStore`，
+V5 权益策略用 `EquityInspectionProtocol("candidate-inspection-v5", "ECONOMIC_V1", 0, pte)` 和 `EquityInspectionReplay`。
+回放请求绑定 HFQ 宿主产品、独立 RAW 执行参考以及 `step_data_windows`。历史 V4 报告仍可审计。
+
+原生 V5 目标 B 复用正式 `EquityRuntimeAdviceClient → AccountEngine → ChannelExecution → PaperStore`，
 只替换外部券商、时钟和隔离存储。待冻结包通过严格的`InspectionRuntimePermit`加载，
 不伪造正式安装或`PAPER_READY`资格。验收记录正式执行组件的拒单、未知回报、资金及账户健康行为；
 明确的业务未成交不能伪装为技术异常，真实不确定性和账户不一致仍须阻断。
@@ -947,8 +951,8 @@ PTE 独立准备 RAW 执行参考价，由 EC 结合富途账户和订单回报�
 普通首次冻结不改 schema；升级不会修改原研究来源或历史参数以迁就运行加载。
 
 在 `EquityEvaluationRequest.step_data_windows` 中为本次评价可能读取的输入提供获准准备区间，
-含所需预热。准备区间从 `history_start` 起至评价区间结束的市场本地日期内。策略每轮可在
-该区间内按分支选更小的读取窗口，同时遵守定义的最长回看跨度和数据可见时点。
+含所需预热。宿主产品从 `history_start` 起准备，策略输入可有独立的预热起点。各输入按声明的时区
+校验授权结束日。策略每轮可按分支选更小的读取窗口，同时遵守定义的最长回看跨度和数据可见时点。
 TDR 固定准备引用，将实际请求和切片指纹保存在 `run.strategy_data_reads`。隔离 PTE 的
 `EquityInspectionReplay.step_data_windows` 使用同一方式绑定准备好的输入。复用旧包时，
 先核对取数时点、数据可用性、目标、状态与订单计划，再验收隔离前瞻图。
@@ -1007,7 +1011,7 @@ V5 必须显式声明 `execution_policy`。`TARGET_POSITION` 声明仓位资金�
 `peak_in_flight` 记录峰值在途任务数（含已提交待执行的任务），`worker_bindings` 记录成功绑定的 `(PID, 逻辑 CPU)`。
 自动绑核支持具有单个处理器组的 64 位 Windows（进程池上限为 61）和可读取 CPU 拓扑的 Linux。
 拓扑识别失败会报错，绑核失败会作为相应账户任务的失败原因返回。已有显式 `ExecutionResources` 的调用仍可限制上限，
-并受可用物理核数量约束。显式 `max_workers=1` 保留进程内串行测量能力。V4 的原生线程池上限固定为 1。
+并受可用物理核数量约束。显式 `max_workers=1` 保留进程内串行测量能力。V5 的原生线程池上限固定为 1。
 
 同一次`evaluate_many`内相同完整请求只计算一次；再次显式调用仍属于新执行，免计算恢复须使用
 明确检查点或直接复用已有结果。会话通过弱引用登记句柄及结果，调用方释放后不再强制保留其原账。
@@ -1135,7 +1139,7 @@ EC 市场规则的数量步长和价位必须与执行合同一致。制度切�
 这些诊断在证据发布时依据声明行情和账户事实重新计算；不参与新增研究硬门槛。
 
 显式选择买持时，基准账户使用同标的、同初始资金、同起止点、同预热、同买入规则、同费用及公司行动处理。
-V4基准使用同一显式状态回放运行时，开盘权益事件先应用再计算整数股预算，避免拆股前取整改变买入数量。
+V5基准使用同一显式状态回放运行时，开盘权益事件先应用再计算整数股预算，避免拆股前取整改变买入数量。
 首个买单未成交时，后续区间继续尝试；不强制按理论起始价持仓，也不在窗口末尾虚构平仓。
 
 <a id="us-equity-api"></a>
@@ -1207,7 +1211,7 @@ with ResearchExecutionSession(context, experiment=experiment,
 原V1/V2/V3研究计算、读取、认证与转换分支已退役，旧原件不改写、不改签。
 原A股日期模型及现有V2冻结／PTE能力保留。V2技术复验的执行及数值审计为内部冻结适配，
 不再公开为研究账户执行入口；`run_backtest`也不能绕过当前权益研究准备合同。
-V4研究可运行不代表具备生产状态持久化、PTE部署或新的冻结准入。
+V5 研究结果、冻结准入和 PTE 账户资格各自使用对应的登记与审批流程。
 
 <a id="us-equity-verification"></a>
 
@@ -1228,7 +1232,7 @@ V4研究可运行不代表具备生产状态持久化、PTE部署或新的冻结
 
 ### 10.8 选型稳定性：读取原账户的窗口事实
 
-`project_selection_window_facts(repository, request)`批量消费显式的 V4 `EvidenceRef`，
+`project_selection_window_facts(repository, request)`批量消费显式的权益回放 `EvidenceRef`，
 返回选择／观察窗口的紧凑数值事实、来源绑定、失败明细和执行统计。
 支持 A股／美股、日线／M30；保持原账户持仓及其后复权账本权益，不从窗口起点重新建仓。
 预期观察点来自已保存的独立交易日历及决策频率；缺柱、陈旧估值按所属窗口报告不足，
@@ -1276,7 +1280,7 @@ evidence = SelectionStabilityEvidence(projection, analysis, result, plan.limitat
 独立证据使用`selection-stability-evidence-v1`，不修改 schema 15 或
 `CandidateAssessmentDelivery`。默认 INTEGRITY 只验证所附材料字节及显式引用，不重算本项、前五项，
 不递归认证材料 JSON 中列出的来源。紧凑证据保留外部不可变账户引用；若需要原账完全便携，
-调用方须把全部账户引用也加入`DeliveryContent.evidence`，原有 V4 闭包复制成本另计。
+调用方须把全部账户引用也加入`DeliveryContent.evidence`，原有权益证据闭包复制成本另计。
 历史材料不迁移、不重签；RSCH 后续只需固定候选集合、规则、日历、窗口和预算再调用本接口。
 
 聚焦用例见 [双市场独立附证与交付](../../tests/functional/test_selection_stability_delivery.py)、

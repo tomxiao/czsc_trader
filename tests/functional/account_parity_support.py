@@ -19,19 +19,13 @@ from research_scaffold_support import seeded_research_context
 STEP = '''from strategy_runtime import AccountDecision, AccountStepResult
 from strategy_runtime.equity_replay import StateRecord
 def step(ctx, state):
-    target = (.25, .5, .25, 0.)[len(ctx.history) % 4]
+    target = (.25, .5, .25, 0.)[(state.revision + 1) % 4]
     return AccountStepResult(AccountDecision.from_facts(target, 'synthetic allocation',
         facts={'target': target}, next_watch='next completed bar'), cycle_values=StateRecord())
 '''
-BATCH = '''from strategy_runtime import AccountDecision
-def calculate(ctx):
-    return tuple(AccountDecision.from_facts((.25,.5,.25,0.)[len(row.history)%4],
-        'synthetic allocation', facts={'visible':len(row.history)}, next_watch='next completed bar')
-        for row in ctx.observations)
-'''
 
 
-def setup_account(root, market, frequency, computation=StrategyComputation.STATEFUL_STEP, *, gap_kind=None):
+def setup_account(root, market, frequency, *, gap_kind=None):
     repository = RepositoryContext(root, root/'research', root/'research/registrations', root/'strategies')
     instrument = InstrumentId(market, AssetClass.STOCK, '600000.SH' if market is MarketId.CN else 'TEST')
     spec = ResearchExecutionSpec(CnEquitySpec() if market is MarketId.CN else UsEquitySpec(), frequency,
@@ -81,11 +75,11 @@ def setup_account(root, market, frequency, computation=StrategyComputation.STATE
     context.evaluation.resources=ExecutionResources(1,1)
     source_root = experiment.resolve(root)/'src'
     source_root.mkdir(exist_ok=True)
-    (source_root/'strategy.py').write_text(STEP if computation is StrategyComputation.STATEFUL_STEP else BATCH,encoding='utf-8')
+    (source_root/'strategy.py').write_text(STEP,encoding='utf-8')
     definition=EquityStrategyDefinition(instrument,spec,1,
-        'strategy:step' if computation is StrategyComputation.STATEFUL_STEP else 'strategy:calculate',
-        ('strategy.py',),equity_source_hash(source_root,('strategy.py',)),contract_version=4,execution_policy=ExecutionPolicy("TARGET_POSITION",{}),
-        computation=computation,feature_graph=FeatureGraph((),()),state_schema=StrategyStateSchema())
+        'strategy:step',
+        ('strategy.py',),equity_source_hash(source_root,('strategy.py',)),contract_version=5,execution_policy=ExecutionPolicy("TARGET_POSITION",{}),
+        computation=StrategyComputation.STATEFUL_STEP,feature_graph=FeatureGraph((),()),state_schema=StrategyStateSchema())
     candidate=EquityStrategyCandidate('S999','C0001',definition,source_root)
     grid=tuple(part for session in sessions for part in session.bars(frequency))
     request=EquityEvaluationRequest(experiment,candidate,TimeInterval(grid[1].start,grid[-1].end),

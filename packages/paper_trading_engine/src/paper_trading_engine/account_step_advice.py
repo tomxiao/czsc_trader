@@ -1,4 +1,4 @@
-"""Convert the shared V4 single-step result to a durable PTE decision proposal."""
+"""Convert the shared V5 single-step result to a durable PTE decision proposal."""
 from dataclasses import asdict, fields
 from datetime import date, datetime
 from decimal import Decimal
@@ -32,7 +32,7 @@ def account_decision(store, prepared, account, actual_quantity, available_cash, 
     candidate = prepared.candidate
     definition, rules = candidate.definition, store.equity_account_rules(account["account_id"])
     if prepared.v4_replay is None or prepared.buy_sellable_at is None:
-        raise ValueError("native V4 decision requires its prepared clock and trading constraints")
+        raise ValueError("native V5 decision requires its prepared clock and trading constraints")
     document = load_document(account, initial_account_record(definition))
     validate_document(document)
     state = AccountStrategyState.from_dict(document["state"])
@@ -42,11 +42,11 @@ def account_decision(store, prepared, account, actual_quantity, available_cash, 
     interval = {key: getattr(prepared.interval, key).isoformat() for key in ("start", "end")}
     if document["last_interval"] == interval:
         if document["last_inputs"] != prepared.data_identity:
-            raise ValueError("adopted V4 interval cannot change its prepared input identity")
+            raise ValueError("adopted V5 interval cannot change its prepared input identity")
         return _cached(json.loads(account["last_decision_payload"]), actual_quantity, available_cash,
                        portfolio_revision, state_revision)
     if document["last_interval"] is not None and datetime.fromisoformat(document["last_interval"]["end"]) > prepared.interval.start:
-        raise ValueError("V4 decisions cannot overlap or move backwards")
+        raise ValueError("V5 decisions cannot overlap or move backwards")
     active = strategy_position(position_from_dict(document["active"]))
     feedback = PositionFeedback(active, strategy_position(position_from_dict(document["latest_closed"])))
     portfolio = EquityPortfolio(available_cash, actual_quantity, float(account["receivable"]), state.revision,

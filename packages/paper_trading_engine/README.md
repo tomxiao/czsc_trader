@@ -33,13 +33,13 @@ EC 不导入 DFLS 或 SRT，也不自行查询数据。PTE 的 `ScheduledDecisio
 只有 `RETIRED` 表示清仓、结算和回笼均已完成；请求受理不保证即时成交。
 
 `retirement_calendar` 独立准备 DFLS 交易日历，再投影为 EC `RetirementSession`；
-不加载冻结策略。V4 使用已登记运行绑定的日历源与费率；旧账户使用环境中该市场
+不加载冻结策略。V5 使用已登记运行绑定的日历源与费率；旧账户使用环境中该市场
 唯一的正式日历源及最后持久决策中明确保存的费率。A 股午休分段、美股提前收市和
 下一结算交易日均取日历事实；资料缺失明确阻断清仓，不推测交易日，也不影响其他账户对账。
 空仓账户的退役无需行情或日历。未决订单、实际可卖量及实际成交由 EC 和富途处理，
 资金回到所属渠道资本池，历史记录保留。操作方法见[PTE 运维手册](../../docs/PTE_OPERATIONS.md)。
 
-V4决策在 `strategy_output.execution_plan` 留存原目标与EC规划结果。资金不足或可卖量不足
+V5决策在 `strategy_output.execution_plan` 留存原目标与EC规划结果。资金不足或可卖量不足
 可以形成受约束计划或无单受阻计划，仍采纳决策并保存金融状态；HOLD/WAIT或零订单不代表目标已达成。
 `PaperStore.decision_execution_effect(account_id, decision_id, valuation_price=..., at=...)`
 从确认账本返回执行进度、实际仓位、资金和目标偏差，CN与US模拟渠道共用该入口。
@@ -89,13 +89,13 @@ SRT 产生策略提案，EC 在采纳决策的同一事务中保存`EntryCycleSt
 ## 双市场隔离技术检验
 
 A 股与美股原生 V5 隔离检验使用独立数据库和显式许可，复用正式
-`FormalV4AdviceClient → AccountEngine → ChannelExecution → PaperStore` 链路。
+`EquityRuntimeAdviceClient → AccountEngine → ChannelExecution → PaperStore` 链路。
 仅将外部券商、时钟和运行存储替换为受控环境；拒单、未知回报、资金释放及健康状态采用正式实现。
-`FormalV4AdviceClient` 的 `inspection_permit` 只允许加载指定隔离目录中身份匹配的待冻结包；
+`EquityRuntimeAdviceClient` 的 `inspection_permit` 只允许加载指定隔离目录中身份匹配的待冻结包；
 普通入口仍要求正式安装记录和模拟交易资格，不为检验创建虚假的 `PAPER_READY` 资格。
 离线 `RecordedInspectionBroker` 按协议提供合成回报及撤单确认，仅验证平台处理能力，
 此入口使用 V5 策略和录制或模拟的渠道回报。正式接入按账户和渠道另行验证。
-`prepare_equity_decision` 认证 SRT 的 HFQ 行情、辅助行情及观察表；独立的
+`prepare_equity_decision` 认证宿主使用的 HFQ 行情和日历。策略在 `step()` 中读取所需数据。独立的
 `ExecutionReferenceBinding` 指定 DFLS RAW 行情请求、准备引用和内容指纹，生成
 `PreparedExecutionReference`。该 RAW 价格只进入 EC，不能放进 SRT 输入绑定或上下文。
 两种价格必须对应同一已完成观察时间，缺失或过期数据明确阻断。
@@ -130,19 +130,17 @@ intent 转为 `EXPIRED`，记录该状态转换并计入过期能力覆盖。过
 
 正式模拟账户使用已部署、且该发布哈希具备 `PAPER_READY` 或 `LIVE_READY` 资格的 V5 冻结包。
 同版本升级后的资格按新哈希登记，账户改绑采用独立维护流程。PTE 与 TDR 共用
-[SRT V5 策略契约](../strategy_runtime/README.md#v5-策略编写与逐轮取数)。既有接口和记录如
-`FormalV4Inputs`、`advice.equity.v4` 的命名表达宿主数据契约；策略计算版本由冻结定义的
-`contract_version` 指定。
+[SRT V5 策略契约](../strategy_runtime/README.md#v5-策略编写与逐轮取数)。账户使用
+`EquityAccountInputs` 声明宿主输入。策略计算契约以冻结定义的 `contract_version=5` 为准。
+`advice.equity.v4`、`v4-inputs` 和账户状态字段沿用已持久化的格式。
 
-`FormalV4Inputs` 使用 schema 3，独立保存主行情和交易网格的 HFQ `binding` 与 PTE 的 RAW
+`EquityAccountInputs` 使用 schema 3，独立保存主行情和交易网格的 HFQ `binding` 与 PTE 的 RAW
 `execution_reference`。策略辅助输入在 `step()` 内按所声明的 DFLS 窗口读取。正式账户的
 `strategy_output.data_reads` 保存每轮读取回执，同区间复算用原准备引用和切片校验。
 缺数据、声明与绑定不符或资源内容漂移明确失败。
 
-动态观察的可选 `required_from` 明确种子覆盖期间尚未启用的增量输入。正式配方在其发布时间前
-保留 INACTIVE 绑定，不发送该观察的物理请求、不生成内容指纹；启用后从 `history_start` 读取预热
-并生成真实请求及内容身份。已采用区间仍固定原绑定；启用后缺数据明确失败，不能继续当作未启用。
-该状态和可用时点计算由 CN/US 研究、隔离技术检验与正式 PTE 共用。
+策略通过 `ctx.dfls.fetch(StepDataWindow(...))` 读取每轮所需数据。PTE 按虚拟账户复用 DFLS 实例，
+宿主配方只声明行情、日历及执行参考。
 
 EC 根据冻结的 `execution_policy` 和目标仓位生成 `ReplayLeg`，支持基于已持有库存的日内依赖执行。每条腿保留带时区的提交子时间窗，
 后续腿只有在声明的前序腿确认全部成交后才可提交；部分成交、未知或失败不能视为依赖完成。
@@ -156,9 +154,9 @@ SRT 只计算后复权行情并输出仓位和解释；EC 使用独立的未复�
 不识别 T 日与 T+1 日之间的除权除息事件，接受旧报价可能无法成交或产生损失；下一次已完成行情更新后
 重新生成报价。平台不据此改变策略信号或执行规则。
 日线 `DAILY_FORWARD_V2` 配方只取已完成交易日行情及可得日历，每个执行区间保存固定绑定。
-自动 M30 准备仍需要 DFLS 部分交易时段产品，当前明确拒绝；显式准备的 M30 技术检验保持支持。
-EC V4 账户文档使用 schema 2，`locked_quantity` 与周期预算由 EC 持久化；策略私有状态不承载数量锁。
-旧文档必须通过显式 `V4StateMigration.execution_locked_quantity` 迁移，禁止运行时猜测字段含义。
+M30 自动准备按交易日历选择最近一根已完成的 30 分钟线，并要求 DFLS 支持当日部分时段行情。
+EC 账户文档使用 schema 2，`locked_quantity` 与周期预算由 EC 持久化；策略私有状态不承载数量锁。
+旧文档必须通过显式 `EquityStateMigration.execution_locked_quantity` 迁移，禁止运行时猜测字段含义。
 
 维护命令使用数据库单写锁，应在服务停止时运行。`pte channel list / status` 只读本地快照，不连接富途。
 `register` 接受 `--definition` JSON：
@@ -173,7 +171,7 @@ EC V4 账户文档使用 schema 2，`locked_quantity` 与周期预算由 EC 持�
 
 其余命令均显式传入 `--channel-account-id`，并沿用公共 `--database / --data-dir / --repo-root`：
 
-- `create-v4 --definition`：必填字段为 `account_id/strategy_id/strategy_version/release_hash/symbol/asset/fee_rate/initial_cash`。`name` 可省略，显式提供时必须为 `{发布版本}模拟账户`。A 股 `account create` 的 `--name` 使用相同规则，新账户暂停。
+- `create-v5 --definition`：必填字段为 `account_id/strategy_id/strategy_version/release_hash/symbol/asset/fee_rate/initial_cash`。`name` 可省略，显式提供时必须为 `{发布版本}模拟账户`。A 股 `account create` 的 `--name` 使用相同规则，新账户暂停。
 - `normalize-account-name --channel-account-id <渠道账户> --account-id <策略账户>`：离线统一存量账户显示名。保留账户 ID、策略全名和交易账本，相同名称重复执行不新增审计事件。重绑时显示名随发布版本更新。
 - `bind-inputs --definition` 固定输入，或 `bind-recipe --definition` 注册连续日线准备；字段为 `account_id/release_hash/fee_rate/binding/execution_reference`，其中 `binding` 使用 `EquityInputBinding.to_dict()`，`execution_reference` 为独立 RAW 行情引用。
 - `prepare-data --account-id --interval-start --interval-end --as-of` 以带时区的时间戳准备当前账户配方的宿主数据。按实际 `as_of` 和执行区间起点中较早的时点选择输入。结果包含准备引用及逐请求状态，账户库以只读方式打开。策略在正式决策中另外记录逐轮取数回执。
@@ -181,14 +179,14 @@ EC V4 账户文档使用 schema 2，`locked_quantity` 与周期预算由 EC 持�
 - `pause / resume` 仅改变渠道状态；恢复必须先完成富途对账。渠道恢复不连带启用策略账户。
 
 已重绑账户可以通过同一 `bind-inputs`／`bind-recipe` 入口更新配方。PTE 校验完整的
-`FormalV4Inputs`（schema 3），在 `ec_boundary.account_input_identity` 中将新旧配方投影为
+`EquityAccountInputs`（schema 3），在 `ec_boundary.account_input_identity` 中将新旧配方投影为
 EC 的 `AccountInputIdentity`；EC 不解析 PTE 配方字段或版本。更新要求当前发布、标的、
 执行规则和模型费率不变，并在事务内比较旧配方快照，防止并发覆盖。失败不改变原绑定，
 成功保留重绑生效时间、历史输入记录和账户账本。无需迁移现有数据库；旧配方仍明确拒绝。
 
 注册、输入绑定及代码交付均不等于生产部署或账户生效；既有冻结包升级和生产切换按单独批准的维护方案执行。
 
-### 正式 V4 数据源配置与重绑
+### 正式 V5 数据源配置与重绑
 
 在宿主 `--config-root` 下用 `equity-sources.json` 注册行情、交易日历及动态数据。下方域名和来源名称仅用于展示配置结构。账户配方中的角色和 `SourceRef(provider, revision)` 必须对应实际注册项。
 
@@ -208,17 +206,17 @@ EC 的 `AccountInputIdentity`；EC 不解析 PTE 配方字段或版本。更新�
 
 账户重绑时用新版输入配方显式绑定 `trading_facts`。生产来源缺失或请求不完整会导致数据准备失败。发布前需要逐市场核实真实动态来源及其覆盖范围。
 
-离线维护使用 `update_account_bindings(runtime_root, target_release_id, updates)`。旧账户合同使用 `AccountBindingUpdate`。原生账户使用 `V4AccountBindingUpdate`，显式携带当前与目标发布身份、渠道、账户事实指纹、生效区间、目标规则、`FormalV4Inputs` 和状态处理方式。用 `account_binding_facts_sha256` 取得已暂停账户的事实指纹。
+离线维护使用 `update_account_bindings(runtime_root, target_release_id, updates)`。旧账户合同使用 `AccountBindingUpdate`。原生账户使用 `EquityAccountBindingUpdate`，显式携带当前与目标发布身份、渠道、账户事实指纹、生效区间、目标规则、`EquityAccountInputs` 和状态处理方式。用 `account_binding_facts_sha256` 取得已暂停账户的事实指纹。
 
-- 首次迁入 V4 使用 `V4StateMigration`。已确认的仓位周期取自真实成交及账本，策略私有字段和证据由调用者提供。迁移边界前已结清的公司行动随原账本保留，跨边界待支付的股息需要先核对。
+- 首次迁入 V5 使用 `EquityStateMigration`。已确认的仓位周期取自真实成交及账本，策略私有字段和证据由调用者提供。迁移边界前已结清的公司行动随原账本保留，跨边界待支付的股息需要先核对。
 - 旧 EC 周期预算仅在目标 `signal_cash_fraction` 执行政策仍使用它时延续。迁入 `TARGET_POSITION` 或不使用周期预算的 `FROZEN_RULE` 时，在换绑事务内结束旧预算，将原预算及空 pending 映射完整记入绑定审计；确认持仓、策略周期及历史账本不变。非空 pending 私有状态不能自动丢弃，须先明确映射。预算迁移验收须继续完成新版本在线决策，不能只验证换绑成功。
-- 已运行 V4 账户可以重绑同版本的新哈希或同策略族的后继版本。兼容状态使用 `V4StateContinuation`，字段变更使用显式 `V4StateMigration`。两者均核对旧发布身份，延续确认周期、预算及已确认账户事件游标。
+- 已运行 V5 账户可以重绑同版本的新哈希或同策略族的后继版本。兼容状态使用 `EquityStateContinuation`，字段变更使用显式 `EquityStateMigration`。两者均核对旧发布身份，延续确认周期、预算及已确认账户事件游标。
 - 所有目标账户及生效配方在一个 SQLite 事务中切换，返回 `COMMITTED`。相同计划重试返回 `ALREADY_APPLIED`。配方由同一数据库记录持久化，运行、重启和发布预检读取同一身份。历史区间和原已采纳决策保留用于追溯，调度从新绑定的生效区间开始。
-- 旧合同首次迁入 V4 时，允许在同一生效交易日撤销尚未提交的旧计划：账户必须暂停，旧决策不能存在渠道订单、成交或提交结果不明的证据。维护事务将旧待执行决策及本地意图标记为 `CANCELLED`，释放可核对的预占并记录审计；无订单的已完成决策保留原态。历史决策及采纳记录不删除，未成交周期预算显式迁移。启动后恢复账户为 `RUNNING`，通过在线决策接口生成新发布的同日决策；只验证时保持渠道暂停。已运行 V4 的已采纳状态区间不得以此方式回退或重叠。
+- 旧合同首次迁入 V5 时，允许在同一生效交易日撤销尚未提交的旧计划：账户必须暂停，旧决策不能存在渠道订单、成交或提交结果不明的证据。维护事务将旧待执行决策及本地意图标记为 `CANCELLED`，释放可核对的预占并记录审计；无订单的已完成决策保留原态。历史决策及采纳记录不删除，未成交周期预算显式迁移。启动后恢复账户为 `RUNNING`，通过在线决策接口生成新发布的同日决策；只验证时保持渠道暂停。已运行 V5 的已采纳状态区间不得以此方式回退或重叠。
 
 发布快照完整保留冻结包和部署记录。`strategies/deployments/` 根目录组成当前发布集合，
 执行运行合同验收；`deployments/history/` 保存退出集合的凭据原件，只验证凭据、版本、
-源码闭包和包哈希，不加载旧策略。尚未部署且未转入历史集合的 V4 包仍执行技术校验。
+源码闭包和包哈希，不加载旧策略。未部署的冻结包仍校验包身份。当前权益部署要求策略 V5。
 当前 S002-v1、S003-v1 转入历史集合，不删除冻结包、资格历史或账户账本。
 
 只读发布预检对当前集合账户验证精确发布资格、执行规则、输入配方与已确认持仓。
@@ -236,7 +234,7 @@ EC 的 `AccountInputIdentity`；EC 不解析 PTE 配方字段或版本。更新�
 | --- | --- |
 | `GET /api/health` | 发布标识、Git 提交、制品清单哈希、实例和调度心跳 |
 | `GET /api/channel-accounts/{channel_account_id}/snapshot` | 指定渠道账户的市场、币种、策略账户 ID、资金、平账账户、对账和失败状态 |
-| `GET /api/virtual-accounts/{account_id}/snapshot` | 实际渠道归属、发布哈希、决策（含 V4 解释和订单腿）、订单、成交及仓位 |
+| `GET /api/virtual-accounts/{account_id}/snapshot` | 实际渠道归属、发布哈希、决策（含 V5 解释和订单腿）、订单、成交及仓位 |
 | `GET /api/audit-events?channel_account_id=…&account_id=…` | 按渠道账户隔离的事件，可继续按 `event_type`、`decision_id` 筛选 |
 
 `channel_account_id` 是注册的渠道账户 ID，例如 `futu-cn-default`，与渠道类型 `futu_simulate_cn` 不同。
@@ -245,7 +243,7 @@ EC 的 `AccountInputIdentity`；EC 不解析 PTE 配方字段或版本。更新�
 已移除聚合 `GET /api/status` 和无渠道限定的 `POST /api/{pause,resume,cancel-token,cancel}`。旧 A 股渠道 URL 继续供现有运维调用使用。
 运行、维护及技术检验统一使用 `ChannelExecution`，历史导入名 `FutuExecution` 已移除。
 
-现有 `POST /api/virtual-accounts/{account_id}/decision` 接受 JSON `{}`。对 V4，它通过账户所属渠道复用正式日历、区间数据准备和决策采纳逻辑。账户须健康且处于 `RUNNING`；暂停账户禁止人工和自动数据准备、决策。日线决策在 T 交易日实际收盘满 5 小时后才允许准备完整 T 日数据，执行区间仍为下一个交易日，按所属市场日历处理周末、节假日、夏令时及提前收盘。人工驱动遵守同一时间门槛。返回 `DECISION_COMPLETED` 或 `DECISION_REUSED`，附发布哈希、区间、数据身份和决策 ID。它保存正式决策、账户状态及审计，并可产生待提交订单意图；需要阻止渠道提交时使用渠道暂停。重复调用复用当前区间已采纳的决策。运行冲突或无有效区间时返回 HTTP 409。旧 CN 调度配置不得早于 20:00，配置更晚时仍按配置执行；渠道订单轮询和账户对账不因策略账户暂停而停止。
+现有 `POST /api/virtual-accounts/{account_id}/decision` 接受 JSON `{}`。对 V5，它通过账户所属渠道复用正式日历、区间数据准备和决策采纳逻辑。账户须健康且处于 `RUNNING`；暂停账户禁止人工和自动数据准备、决策。日线决策在 T 交易日实际收盘满 5 小时后才允许准备完整 T 日数据，执行区间仍为下一个交易日，按所属市场日历处理周末、节假日、夏令时及提前收盘。人工驱动遵守同一时间门槛。返回 `DECISION_COMPLETED` 或 `DECISION_REUSED`，附发布哈希、区间、数据身份和决策 ID。它保存正式决策、账户状态及审计，并可产生待提交订单意图；需要阻止渠道提交时使用渠道暂停。重复调用复用当前区间已采纳的决策。运行冲突或无有效区间时返回 HTTP 409。旧 CN 调度配置不得早于 20:00，配置更晚时仍按配置执行；渠道订单轮询和账户对账不因策略账户暂停而停止。
 
 在 PTE 所在宿主用该版本的 Python 执行：
 
@@ -276,7 +274,7 @@ python -m paper_trading_engine.online_verify --port 8080 --plan .tmp/pte-verify-
 }
 ```
 
-如需验收指定的 V4 决策，增加 `decision`，包含带时区的 `interval.start/end`、预期 `action` 和 `target_quantity`，可用 `case_key`、`judgment` 核对决策分支与解释。工具关联数据准备与决策生成事件；缺少对应周期或审计证据时返回 `BLOCKED`。可选的 `quantity`、`orders`、`fills` 分别核对当前持仓及账户累计订单、成交笔数。
+如需验收指定的 V5 决策，增加 `decision`，包含带时区的 `interval.start/end`、预期 `action` 和 `target_quantity`，可用 `case_key`、`judgment` 核对决策分支与解释。工具关联数据准备与决策生成事件；缺少对应周期或审计证据时返回 `BLOCKED`。可选的 `quantity`、`orders`、`fills` 分别核对当前持仓及账户累计订单、成交笔数。
 
 仅隔离 DEV 可以显式加 `--drive-dev`。此时 `release` 使用 `{"mode":"DEV","repo_root":"<隔离工作目录绝对路径>"}`，所有目标账户须为 `RUNNING` 并提供预期决策；需要仅验证决策时暂停对应渠道以阻止订单提交。设 `decision.fresh=true` 要求本次实际生成，复用视为不达标。固定时点的双市场闭环使用聚焦测试中的受控时钟和模拟渠道。工具报告逐项 `PASS`、`FAIL`、`BLOCKED`，退出码分别为 0、1、2，输出路径须是新文件。生产恢复顺序见 [PTE 发布与运维](../../docs/PTE_OPERATIONS.md#web-api-在线验收)。
 
@@ -297,7 +295,7 @@ python -m paper_trading_engine.online_verify --port 8080 --plan .tmp/pte-verify-
 剩余冻结资金只释放一次，持仓、实际成交费用和入场周期预算保持真实事实。不新增账户阻塞，
 也不清除无关阻塞或暂停。重复回报和服务重启不重复释放资金，不重新产生人工确认事项。
 
-同一已终结尝试不重新挂单。V4同一份认证输入、观察时点和执行区间，即使部分成交改变账户
+同一已终结尝试不重新挂单。V5同一份认证输入、观察时点和执行区间，即使部分成交改变账户
 并使重算的剩余订单或计划哈希变化，也复用已结束的尝试。旧入场周期由`OPEN`变为`HOLD`
 时，同信号、同有效交易日的已终结计划仍按既有身份规则复用。下一执行周期由SRT新决策决定是否再次买入，
 PTE不自动追价或强制补单。依赖该买单`FILLED_ALL`的未提交卖单记为`SKIPPED_DEPENDENCY`，
@@ -475,11 +473,11 @@ CSV作为行情来源。生产配置更新、准备记录切换和服务部署�
 
 退役测试分工：EC 验证清仓、成交和资金账本；本模块验证策略停调度、真实交易日历、
 Web 202／200、CLI 状态和账户快照。资金回笼、事务回滚及控制令牌保留真实存储／HTTP链路。
-原生 V4 前瞻集成复用按市场及版本形态生成的不可变冻结包；每例仍独立准备 DFLS 输入、
+原生 V5 前瞻集成复用按市场及版本形态生成的不可变冻结包；每例仍独立准备 DFLS 输入、
 复制发布包并创建账户，不共享审批、运行状态或可变行情。准备不改账断言由前瞻主场景承接。
 
 聚焦入口见[宿主退役](tests/functional/test_retirement_host.py)、
 [回笼与控制接口](tests/functional/test_account_retirement.py)和
-[原生 V4 前瞻](../../tests/functional/test_formal_v4_runtime.py)。
+[原生 V5 前瞻](../../tests/functional/test_formal_v4_runtime.py)。
 全仓验收统一使用[回归脚本](../../scripts/test-all.ps1)，保留发布包验收、前端用例与 Ruff；
 失败修复后只补测受影响用例，并分别记录首次全仓结果与补测证据。
