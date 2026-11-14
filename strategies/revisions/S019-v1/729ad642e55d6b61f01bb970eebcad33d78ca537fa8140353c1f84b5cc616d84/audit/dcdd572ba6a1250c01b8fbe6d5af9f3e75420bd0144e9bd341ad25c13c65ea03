@@ -1,0 +1,65 @@
+{
+  "status": "PASS",
+  "release_hash": "2731ce128e54da295073e4ceeefb889068b9b0ac7ca7b77b96e711f8b0514f79",
+  "samples": 7,
+  "summary": "明确首半小时反弹、量比与持仓风险依据。事件可区分拒单、未提交过期、渠道待确认及已成交。",
+  "limitation": " 同一交易日存在多轮时，信号区显示最后一轮，事件区保留入场和后续持有等逐笔记录。所选图例未出现风险带内减仓。",
+  "results": [
+    {
+      "case": "entry-hold-exit-restart",
+      "date": "2022-01-10",
+      "decision": "DEC-20220111-2230-54DF823DE522",
+      "judgment": "继续空仓",
+      "reason": "NO_ORDER",
+      "status": "PASS"
+    },
+    {
+      "case": "entry-hold-exit-restart",
+      "date": "2022-01-11",
+      "decision": "DEC-20220111-2300-97EC7815531C",
+      "judgment": "触发入场",
+      "reason": "PLAN_FILLED",
+      "status": "PASS"
+    },
+    {
+      "case": "entry-hold-exit-restart",
+      "date": "2022-01-11",
+      "decision": "DEC-20220111-2330-DBD85BD0A769",
+      "judgment": "延续目标仓位",
+      "reason": "NO_ORDER",
+      "status": "PASS"
+    },
+    {
+      "case": "entry-hold-exit-restart",
+      "date": "2022-01-18",
+      "decision": "DEC-20220119-2230-DCBCC06EC8F1",
+      "judgment": "目标清仓",
+      "reason": "PLAN_FILLED",
+      "status": "PASS"
+    },
+    {
+      "case": "expired-unsubmitted",
+      "date": "2022-01-11",
+      "decision": "DEC-20220111-2330-DB5BE5DE8AAA",
+      "judgment": "触发入场",
+      "reason": "EXECUTION_EXPIRED",
+      "status": "PASS"
+    },
+    {
+      "case": "submission-unknown",
+      "date": "2022-01-11",
+      "decision": "DEC-20220111-2300-F4D6F13F5405",
+      "judgment": "触发入场",
+      "reason": "CHANNEL_RESULT_UNCERTAIN",
+      "status": "PASS"
+    },
+    {
+      "case": "rejected-then-flat-after-opening",
+      "date": "2022-01-11",
+      "decision": "DEC-20220111-2300-F4D6F13F5405",
+      "judgment": "触发入场",
+      "reason": "ORDER_REJECTED",
+      "status": "PASS"
+    }
+  ]
+}
