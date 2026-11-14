@@ -55,7 +55,8 @@ test('MU first paper signal shows the recorded no-order decision and explanation
  f.window.location={hash:'#2026-11-06'};f.mount(f.root,c);
  assert.equal(f.root.dataset.selectedDate,'2026-11-06');
  assert.match(f.root.querySelector('.event-heading').textContent,/2026-11-06 · 决策 1 笔/);
- assert.match(f.root.querySelector('.event-details').textContent,/2026-11-08 21:36:43 · 决策：等待；目标 0 股.*生效 2026-11-09/);
+ assert.match(f.root.querySelector('.event-details').textContent,/2026-11-08 21:36:43 · 信号日 2026-11-06 · 生效日 2026-11-09/);
+ assert.match(f.root.querySelector('.event-details').textContent,/策略判断：no opportunity/);
  assert.match(f.root.querySelector('.event-details').textContent,/计划无需下单/);
  assert.match(f.root.querySelector('.signal-reading').textContent,/no opportunity.*已记录的入场判断/);
  f.svg.fire('keydown',{key:'ArrowRight'});
@@ -67,6 +68,35 @@ test('MU first paper signal shows the recorded no-order decision and explanation
  current.window.location={hash:'#2026-11-06'};current.mount(current.root,c);
  assert.match(current.root.querySelector('.signal-reading').textContent,/继续空仓 · 无需下单/);
  assert.match(current.root.querySelector('.event-details').textContent,/已替代/);
+});
+test('S011 forward events distinguish a renewed buy plan from strategy entry, and flat exit from a sell',()=>{
+ const graph=fixture(),chart=context();
+ chart.mode='PAPER';chart.strategy.currency='CNY';chart.observations=[];chart.execution.fills=[];
+ chart.market_data.bars=['2026-03-04','2026-03-05','2026-03-06'].map(date=>({date,open:1,high:1.1,low:.9,close:1}));
+ const cases=[
+   {decision_id:'hold',signal_date:'2026-03-04',valid_session:'2026-03-05',generated_at:'2026-03-04T12:00:00Z',
+     explanation:{judgment:'延续目标仓位',basis:[{key:'conditions',text:'压力评分 0.0294872，退出线 0.025。'}]},
+     action:'BUY',target_position:1,position_at_decision:0,target_quantity:100300,status:'INCOMPLETE',state_reason:'EXECUTION_EXPIRED',
+     execution_plan:{trigger:'PREVIOUS_ZERO_FILL',orders:[{side:'BUY',quantity:100300}],
+       planning_result:{status:'CONSTRAINED',reasons:['INSUFFICIENT_CASH']}}},
+   {decision_id:'exit',signal_date:'2026-03-05',valid_session:'2026-03-06',generated_at:'2026-03-05T12:00:00Z',
+     explanation:{judgment:'目标清仓',basis:[{key:'conditions',text:'信号已到期。'}]},
+     action:'WAIT',target_position:0,position_at_decision:0,target_quantity:0,status:'COMPLETED',state_reason:'NO_ORDER',
+     execution_plan:{trigger:'TARGET_CHANGED',orders:[],planning_result:{status:'NO_CHANGE',reasons:[]}}},
+ ];
+ chart.execution.decisions=cases;
+ chart.execution.intents=[{decision_id:'hold',status:'EXPIRED',channel_order_id:null}];
+ graph.window.location={hash:'#2026-03-04'};graph.mount(graph.root,chart);
+ const events=()=>graph.root.querySelector('.event-details').textContent;
+ assert.match(events(),/策略判断：延续目标仓位\n目标仓位：100%/);
+ assert.match(events(),/执行计划：买入 100,300 股；原因：上一交易日零成交、可用资金不足/);
+ assert.match(events(),/执行结果：未完成；提交时限已过；未提交、未成交/);
+ assert.doesNotMatch(events(),/入场/);
+ graph.svg.fire('keydown',{key:'ArrowRight'});
+ assert.match(events(),/策略判断：目标清仓\n目标仓位：0%/);
+ assert.match(events(),/执行计划：账户已空仓，无需下单；原因：目标仓位变化/);
+ assert.match(events(),/执行结果：计划无需下单/);
+ assert.doesNotMatch(events(),/卖出|等待|已完成/);
 });
 test('snapshot interpretation is text only and explanation preserves judgment',()=>{
  const f=fixture();f.mount(f.root,context());const reading=f.root.querySelector('.signal-reading');

@@ -22,6 +22,16 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   const superseded=new Set(decisions.filter(item=>item.status==='SUPERSEDED').map(item=>item.decision_id));
   const observations=context.observations.filter(item=>!isPaper||!superseded.has(item.decision_id));
   const fills=[...context.execution.fills].sort((a,b)=>Date.parse(a.occurred_at)-Date.parse(b.occurred_at));
+  const byDecision=items=>{
+    const index=new Map();
+    for(const item of items)if(item.decision_id){
+      if(!index.has(item.decision_id))index.set(item.decision_id,[]);
+      index.get(item.decision_id).push(item);
+    }
+    return index;
+  };
+  const intentsByDecision=byDecision(context.execution.intents||[]);
+  const fillsByDecision=byDecision(fills);
   const snapshots=context.execution.snapshots;
   const observationStart=context.window.forward_observation_start;
   const byDate=new Map([...observations].sort((a,b)=>String(a.generated_at||a.signal_date).localeCompare(String(b.generated_at||b.signal_date))).map(item=>[item.signal_date,item]));
@@ -118,18 +128,61 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     const lines=events.flatMap(event=>{
       if(event.fill)return [fillSummary(event.fill)];
       const item=event.decision;
+      if(isPaper)return paperDecisionLines(item);
       const details=[`${localTime(item.generated_at)} · 决策：${actionLabel(item.action)}；目标 ${quantity(item.target_quantity)}；${statusLabel(item.status)}；生效 ${item.valid_session}；信号 ${item.signal_date}`];
       if(item.state_reason)details.push(`状态原因：${reasonLabel(item.state_reason)}；记录 ${localTime(item.state_changed_at)}`);
       const observation=observationById.get(item.decision_id);
       if(item.explanation){
         const value=item.explanation;
         details.push(`决策判断：${value.judgment}`);
-        if(!compactEmbed)details.push(...value.basis.map(fact=>fact.text),value.explanation,`接下来关注：${value.next_watch}`);
+        details.push(...value.basis.map(fact=>fact.text),value.explanation,`接下来关注：${value.next_watch}`);
       }else details.push(observation?`决策依据：${explanation(observation)}`:'决策依据：无可用于本图的策略观察事实');
       return details;
     });
     if(!lines.length)lines.push('当日无可展示的决策或成交事件');
     return lines.join('\n');
+  }
+  const planTriggerLabel={
+    INITIAL_TARGET:'首次建立目标',TARGET_CHANGED:'目标仓位变化',
+    PREVIOUS_ZERO_FILL:'上一交易日零成交',UNCHANGED_TARGET:'目标仓位未变',
+  };
+  const constraintLabel={
+    INSUFFICIENT_CASH:'可用资金不足',BELOW_MINIMUM_UNIT:'不足最小交易单位',
+    BELOW_PRICE_TICK:'低于最小报价单位',INSUFFICIENT_SELLABLE_QUANTITY:'可卖数量不足',
+    ORDER_QUANTITY_LIMIT:'委托数量受限',DEPENDENCY_UNAVAILABLE:'前序条件未满足',
+  };
+  function paperDecisionLines(item){
+    const details=[];
+    if(!compactEmbed)details.push(`记录 ${localTime(item.generated_at)} · 信号日 ${item.signal_date} · 生效日 ${item.valid_session}`);
+    const observation=observationById.get(item.decision_id);
+    const legacyJudgment=observation?.signal_panel?.explanation?.judgment;
+    details.push(`策略判断：${item.explanation?.judgment||legacyJudgment||'未记录'}`);
+    const weight=item.target_position==null?'未记录':`${(item.target_position*100).toLocaleString('zh-CN',{maximumFractionDigits:4})}%`;
+    details.push(`目标仓位：${weight}${item.target_quantity==null?'':`；计划目标 ${quantity(item.target_quantity)}`}`);
+    const plan=item.execution_plan;
+    const planOrders=plan?.orders||[];
+    const flat=item.target_position===0&&item.position_at_decision===0;
+    const noOrder=item.state_reason==='NO_ORDER';
+    const planText=planOrders.length?planOrders.map(order=>`${order.side==='BUY'?'买入':'卖出'} ${quantity(order.quantity)}`).join('、')
+      :plan?.planning_result?.status==='BLOCKED'?'未生成委托'
+      :noOrder?(flat?'账户已空仓，无需下单':'无需下单')
+      :plan?'未生成委托':'未记录委托计划';
+    const planReasons=[planTriggerLabel[plan?.trigger],...(plan?.planning_result?.reasons||[]).map(reason=>constraintLabel[reason]||reason)].filter(Boolean);
+    details.push(`执行计划：${planText}${planReasons.length?`；原因：${planReasons.join('、')}`:''}`);
+
+    const intents=intentsByDecision.get(item.decision_id)||[];
+    const confirmed=fillsByDecision.get(item.decision_id)||[];
+    const expiredBeforeSubmission=item.state_reason==='EXECUTION_EXPIRED'&&intents.length>0&&
+      intents.every(intent=>intent.status==='EXPIRED'&&!intent.channel_order_id);
+    let result=noOrder?'计划无需下单':statusLabel(item.status);
+    if(!noOrder&&item.state_reason)result+=`；${reasonLabel(item.state_reason)}`;
+    if(confirmed.length){
+      const quantityBySide=side=>confirmed.filter(fill=>fill.side===side).reduce((sum,fill)=>sum+Number(fill.quantity),0);
+      const bought=quantityBySide('BUY'),sold=quantityBySide('SELL');
+      result+=`；确认成交 ${[bought?`买入 ${quantity(bought)}`:null,sold?`卖出 ${quantity(sold)}`:null].filter(Boolean).join('、')}`;
+    }else if(expiredBeforeSubmission)result+='；未提交、未成交';
+    details.push(`执行结果：${result}`);
+    return details;
   }
   const eventHeight=128;
   function eventPanel(x,y,width){
@@ -153,8 +206,10 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
       ACCOUNT_RETIRED:'账户退出前撤回未执行计划',SUBMISSION_STARTED:'开始提交订单',
       PLAN_FILLED:'计划全部成交',PLAN_ENDED_WITHOUT_COMPLETION:'计划全部结束，未完成原定交易',
       NORMAL_UNFILLED:'限价买单正常结束，零成交',DEPENDENCY_NOT_TRIGGERED:'前序买入未成交，条件未触发',
+      NORMAL_PARTIAL:'订单正常结束，部分成交',ORDER_REJECTED:'渠道拒单',SUBMISSION_FAILED:'委托提交失败',
+      PLANNING_BLOCKED:'执行计划受限，未下单',OBSERVATION_SUPPRESSED:'本轮信号未计算，未下单',
       CHANNEL_RESULT_UNCERTAIN:'渠道结果待确认',CHANNEL_EXECUTION:'渠道执行中',AWAITING_EXECUTION:'等待执行',
-      AWAITING_FILL_RECONCILIATION:'等待成交事实对账',EXECUTION_WINDOW_PASSED:'执行时窗已结束',EXECUTION_EXPIRED:'报送时窗已结束',
+      AWAITING_FILL_RECONCILIATION:'等待成交对账',EXECUTION_WINDOW_PASSED:'执行时限已过',EXECUTION_EXPIRED:'提交时限已过',
       REPLACED:'由新决策替代',EXPIRED:'超过执行时限',CANCELLED:'执行前撤回',REJECTED:'订单拒绝',
       MIGRATION_NO_ORDER:'历史计划无需下单',MIGRATION_SUBMISSION_UNCERTAIN:'历史渠道提交结果待确认',
       MIGRATION_ALL_PLANNED_ORDERS_FILLED:'历史计划全部成交',

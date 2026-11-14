@@ -6,6 +6,7 @@ from concurrent.futures import CancelledError, Executor, Future
 from datetime import date, datetime, timezone
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 from queue import Empty, Queue
@@ -16,8 +17,11 @@ from typing import Any, Callable
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 
+from execution_channels.daily_execution import DailyExecutionTrigger
 from execution_channels.futu.audit import AuditRecorder
 from execution_channels.futu.channel import channel_profile
+from execution_channels.futu.lifecycle import planned_orders
+from execution_channels.planning.result import PlanningResult
 from strategy_runtime.signal_explanation import SignalExplanationSnapshot
 from .chart_market_data import AccountChartDataError, LEGACY_CHART_UPDATE_TIME
 from .file_publication import replace_published_file
@@ -28,7 +32,7 @@ from execution_channels.futu.trading_window import SHANGHAI
 ACCOUNT_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 INPUT_LIMIT = 5 * 1024 * 1024
 OUTPUT_LIMIT = 20 * 1024 * 1024
-CACHE_RENDER_REVISION = "pte-forward-chart-v15"
+CACHE_RENDER_REVISION = "pte-forward-chart-v16"
 
 
 def _path_comparison_key(path: Path) -> str:
@@ -349,13 +353,31 @@ class AccountChartService:
             "side": row.get("side") or payload.get("side"),
             "quantity": row.get("quantity") or payload.get("quantity"),
             "limit_price": row.get("limit_price") or payload.get("limit_price"),
+            "status": row["status"],
+            "channel_order_id": row.get("channel_order_id"),
         }
 
     @staticmethod
     def _decision_event(row: dict[str, Any]) -> dict[str, Any]:
         payload = dict(row.get("payload") or {})
-        raw = (payload.get("strategy_output") or {}).get("explanation")
+        strategy_output = payload.get("strategy_output") or {}
+        raw = strategy_output.get("explanation")
         explanation = SignalExplanationSnapshot.from_dict(raw).to_dict() if raw is not None else None
+        execution = strategy_output.get("execution_plan") or {}
+        target = execution.get("target", (payload.get("identity_facts") or {}).get("target_position"))
+        if target is not None and (type(target) not in (int, float) or not math.isfinite(target) or not 0 <= target <= 1):
+            raise ValueError("chart strategy target must be a weight in [0,1]")
+        trigger = execution.get("execution_trigger")
+        planning_result = execution.get("planning_result")
+        position = payload.get("actual_quantity")
+        if position is not None and (type(position) is not int or position < 0):
+            raise ValueError("chart decision requires a nonnegative account quantity")
+        plan_orders = []
+        for order in planned_orders(payload):
+            side, quantity = order["side"], order["quantity"]
+            if side not in ("BUY", "SELL") or type(quantity) is not int or quantity <= 0:
+                raise ValueError("chart plan requires a valid order side and positive quantity")
+            plan_orders.append({"side": side, "quantity": quantity})
         return {
             "account_id": row["account_id"], "decision_id": row["decision_id"],
             "signal_date": row["signal_date"], "valid_session": row["valid_session"],
@@ -364,6 +386,12 @@ class AccountChartService:
             "state_events": row["state_events"],
             "action": payload.get("action"), "target_quantity": payload.get("target_quantity"),
             "explanation": explanation,
+            "target_position": target, "position_at_decision": position,
+            "execution_plan": {
+                "orders": plan_orders,
+                "trigger": None if trigger is None else DailyExecutionTrigger(trigger).value,
+                "planning_result": None if planning_result is None else PlanningResult.from_dict(planning_result).to_dict(),
+            },
         }
 
     def _request(self, account: dict[str, Any], *, refresh_source: bool = False) -> dict[str, Any]:

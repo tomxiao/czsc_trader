@@ -63,9 +63,17 @@ interface StrategyChartContext {
       action: string; target_quantity: number; status: string;
       state_reason?: string; state_changed_at?: string;
       explanation?: DecisionExplanation | null;
+      target_position?: number | null; position_at_decision?: number | null;
+      execution_plan?: {
+        orders: Array<{side: 'BUY' | 'SELL'; quantity: number}>;
+        trigger: 'INITIAL_TARGET' | 'TARGET_CHANGED' | 'PREVIOUS_ZERO_FILL' | 'UNCHANGED_TARGET' | null;
+        planning_result: {status: 'READY' | 'CONSTRAINED' | 'BLOCKED' | 'NO_CHANGE' | 'SUPPRESSED';
+          reasons: string[]; desired_quantity: number; planned_quantity: number} | null;
+      };
     }>;
+    intents?: Array<{decision_id: string; status: string; channel_order_id: string | null}>;
     fills: Array<{
-      fill_id: string; occurred_at: string; session?: string; time_precision?: 'SESSION' | 'TIMESTAMP';
+      fill_id: string; decision_id?: string; occurred_at: string; session?: string; time_precision?: 'SESSION' | 'TIMESTAMP';
       side: 'BUY' | 'SELL'; quantity: number; price: number; fee: number | null;
     }>;
     snapshots: Array<{session: string; quantity: number}>;

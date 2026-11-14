@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import pandas as pd
 import pytest
 
-from paper_trading_engine.forward_chart import render_forward_chart_html
+from paper_trading_engine.forward_chart import FORWARD_CHART_CONTRACT_VERSION, render_forward_chart_html
 
 
 def test_mu_no_order_decision_drives_chart_start_and_saved_explanation(tmp_path):
@@ -53,9 +53,45 @@ def test_mu_no_order_decision_drives_chart_start_and_saved_explanation(tmp_path)
         _inspect_forward_chart(store, {"decisions": [row]}, market_data, tmp_path)
 
 
+@pytest.mark.parametrize(
+    'signal_date,target,judgment,trigger,order,planning,status,reason',
+    [
+        ('2026-03-04', 1.0, '延续目标仓位', 'PREVIOUS_ZERO_FILL', {'side': 'BUY', 'quantity': 100300},
+         {'status': 'CONSTRAINED', 'reasons': ['INSUFFICIENT_CASH'], 'desired_quantity': 103600,
+          'planned_quantity': 100300}, 'INCOMPLETE', 'EXECUTION_EXPIRED'),
+        ('2026-03-05', 0.0, '目标清仓', 'TARGET_CHANGED', None,
+         {'status': 'NO_CHANGE', 'reasons': [], 'desired_quantity': 0, 'planned_quantity': 0},
+         'COMPLETED', 'NO_ORDER'),
+    ],
+    ids=['s011-renewed-buy-expired', 's011-zero-target-already-flat'],
+)
+def test_s011_decision_projection_keeps_strategy_and_execution_facts(
+    signal_date, target, judgment, trigger, order, planning, status, reason,
+):
+    from paper_trading_engine.account_chart import AccountChartService
+
+    orders = [order] if order is not None else []
+    explanation = {'state_key': 'decision', 'case_key': 'target', 'judgment': judgment,
+                   'basis': [{'key': 'target', 'text': judgment}], 'next_watch': '下一个信号日',
+                   'explanation': judgment}
+    event = AccountChartService._decision_event({
+        'account_id': 's011', 'decision_id': signal_date, 'signal_date': signal_date,
+        'valid_session': '2026-03-06', 'generated_at': f'{signal_date}T12:00:00Z',
+        'status': status, 'state_reason': reason, 'state_changed_at': None, 'state_events': [],
+        'payload': {'actual_quantity': 0, 'orders': orders, 'target_quantity': planning['planned_quantity'],
+                    'strategy_output': {'explanation': explanation, 'execution_plan': {
+                        'target': target, 'execution_trigger': trigger, 'planning_result': planning,
+                    }}},
+    })
+    assert event['explanation']['judgment'] == judgment
+    assert (event['target_position'], event['position_at_decision']) == (target, 0)
+    assert event['execution_plan'] == {'orders': orders, 'trigger': trigger, 'planning_result': planning}
+    assert (event['status'], event['state_reason']) == (status, reason)
+
+
 def _context() -> dict[str, object]:
     return {
-        "contract_version": "pte_forward_chart.v4",
+        "contract_version": FORWARD_CHART_CONTRACT_VERSION,
         "strategy": {
             "account_id": "s007-v1",
             "strategy_id": "S007",
