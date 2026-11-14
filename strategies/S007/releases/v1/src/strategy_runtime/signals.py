@@ -126,7 +126,7 @@ def _seed_panel(seed: pd.DataFrame, features: list[str]) -> pd.DataFrame:
         raise RuntimeContractError("S007-v1 feature seed has an invalid frozen range")
     return panel
 
-def calculate_s007_history(
+def calculate_scores(
     panel: pd.DataFrame, normalization: Mapping[str, Any], score: Mapping[str, Any]
 ) -> pd.DataFrame:
     orientations = {
@@ -148,6 +148,10 @@ def calculate_s007_history(
     confirmation = normalized.mul(pd.Series(confirmation_weights), axis=1).sum(
         axis=1, min_count=len(confirmation_weights)
     )
+    return base, confirmation
+
+def calculate_s007_history(panel, normalization, score):
+    base, confirmation = calculate_scores(panel, normalization, score)
     current = 0
     targets: list[int] = []
     actions: list[str] = []

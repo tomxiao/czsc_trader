@@ -1,0 +1,237 @@
+{
+  "status": "PASS",
+  "release": "f2d46e4b9b57cf7eadb87a0c988b63cd16a6a8293128a9cbd6ac9d5693a2d22d",
+  "candidate": "4ea3590534ac991431ba47a7d743c21ca6bea0a19d6856a316b117cefc266833",
+  "first": "2026-09-03",
+  "last": "2026-11-03",
+  "decisions": 38,
+  "restart": true,
+  "cases": {
+    "继续空仓": {
+      "account_id": "isolated",
+      "decision_id": "DEC-20260903-2030-654325D57C2C",
+      "signal_date": "2026-09-03",
+      "valid_session": "2026-09-04",
+      "generated_at": "2026-11-14T12:47:56.833330+00:00",
+      "status": "COMPLETED",
+      "state_reason": "NO_ORDER",
+      "state_changed_at": "2026-11-14T12:47:56.833330+00:00",
+      "state_events": [
+        {
+          "sequence": 1,
+          "state": "COMPLETED",
+          "reason": "NO_ORDER",
+          "occurred_at": "2026-11-14T12:47:56.833330+00:00",
+          "related_decision_id": null
+        }
+      ],
+      "action": "WAIT",
+      "target_quantity": 0,
+      "explanation": {
+        "state_key": "target",
+        "case_key": "flat",
+        "judgment": "继续空仓",
+        "basis": [
+          {
+            "key": "summary",
+            "text": "主评分低于入场线。"
+          },
+          {
+            "key": "conditions",
+            "text": "主评分 -0.0432221，入场线 0.1045，退出线 0.0478574。确认评分 -0.211013，确认线 -0.0120733。"
+          }
+        ],
+        "next_watch": "下一交易日收盘后复核主评分与确认评分。",
+        "explanation": "主评分低于入场线。 主评分 -0.0432221，入场线 0.1045，退出线 0.0478574。确认评分 -0.211013，确认线 -0.0120733。"
+      },
+      "target_position": 0.0,
+      "position_at_decision": 0,
+      "execution_plan": {
+        "orders": [],
+        "trigger": "INITIAL_TARGET",
+        "planning_result": {
+          "status": "NO_CHANGE",
+          "reasons": [],
+          "desired_quantity": 0,
+          "planned_quantity": 0
+        }
+      }
+    },
+    "触发入场": {
+      "account_id": "isolated",
+      "decision_id": "DEC-20260922-2030-02A53E97FEC9",
+      "signal_date": "2026-09-22",
+      "valid_session": "2026-09-23",
+      "generated_at": "2026-11-14T12:48:30.943964+00:00",
+      "status": "INCOMPLETE",
+      "state_reason": "EXECUTION_EXPIRED",
+      "state_changed_at": "2026-11-14T12:48:31.111650+00:00",
+      "state_events": [
+        {
+          "sequence": 1,
+          "state": "PENDING",
+          "reason": "PLAN_GENERATED",
+          "occurred_at": "2026-11-14T12:48:30.943964+00:00",
+          "related_decision_id": null
+        },
+        {
+          "sequence": 2,
+          "state": "INCOMPLETE",
+          "reason": "EXECUTION_EXPIRED",
+          "occurred_at": "2026-11-14T12:48:31.111650+00:00",
+          "related_decision_id": null
+        }
+      ],
+      "action": "BUY",
+      "target_quantity": 58000,
+      "explanation": {
+        "state_key": "target",
+        "case_key": "long",
+        "judgment": "触发入场",
+        "basis": [
+          {
+            "key": "summary",
+            "text": "主评分与确认评分均达到买入门槛。"
+          },
+          {
+            "key": "conditions",
+            "text": "主评分 0.362611，入场线 0.1045，退出线 0.0478574。确认评分 0.246951，确认线 -0.0120733。"
+          }
+        ],
+        "next_watch": "下一交易日收盘后复核主评分与确认评分。",
+        "explanation": "主评分与确认评分均达到买入门槛。 主评分 0.362611，入场线 0.1045，退出线 0.0478574。确认评分 0.246951，确认线 -0.0120733。"
+      },
+      "target_position": 1.0,
+      "position_at_decision": 0,
+      "execution_plan": {
+        "orders": [
+          {
+            "side": "BUY",
+            "quantity": 58000
+          }
+        ],
+        "trigger": "TARGET_CHANGED",
+        "planning_result": {
+          "status": "READY",
+          "reasons": [],
+          "desired_quantity": 58000,
+          "planned_quantity": 58000
+        }
+      }
+    },
+    "目标清仓": {
+      "account_id": "isolated",
+      "decision_id": "DEC-20260923-2030-72C70E8F7326",
+      "signal_date": "2026-09-23",
+      "valid_session": "2026-09-24",
+      "generated_at": "2026-11-14T12:48:33.973742+00:00",
+      "status": "COMPLETED",
+      "state_reason": "NO_ORDER",
+      "state_changed_at": "2026-11-14T12:48:33.973742+00:00",
+      "state_events": [
+        {
+          "sequence": 1,
+          "state": "COMPLETED",
+          "reason": "NO_ORDER",
+          "occurred_at": "2026-11-14T12:48:33.973742+00:00",
+          "related_decision_id": null
+        }
+      ],
+      "action": "WAIT",
+      "target_quantity": 0,
+      "explanation": {
+        "state_key": "target",
+        "case_key": "flat",
+        "judgment": "目标清仓",
+        "basis": [
+          {
+            "key": "summary",
+            "text": "主评分已降至退出线或以下。"
+          },
+          {
+            "key": "conditions",
+            "text": "主评分 -0.0416561，入场线 0.1045，退出线 0.0478574。确认评分 0.0179761，确认线 -0.0120733。"
+          }
+        ],
+        "next_watch": "下一交易日收盘后复核主评分与确认评分。",
+        "explanation": "主评分已降至退出线或以下。 主评分 -0.0416561，入场线 0.1045，退出线 0.0478574。确认评分 0.0179761，确认线 -0.0120733。"
+      },
+      "target_position": 0.0,
+      "position_at_decision": 0,
+      "execution_plan": {
+        "orders": [],
+        "trigger": "TARGET_CHANGED",
+        "planning_result": {
+          "status": "NO_CHANGE",
+          "reasons": [],
+          "desired_quantity": 0,
+          "planned_quantity": 0
+        }
+      }
+    },
+    "延续目标仓位": {
+      "account_id": "isolated",
+      "decision_id": "DEC-20261028-2030-3AA2FDE4CCD8",
+      "signal_date": "2026-10-28",
+      "valid_session": "2026-10-29",
+      "generated_at": "2026-11-14T12:49:36.617336+00:00",
+      "status": "INCOMPLETE",
+      "state_reason": "EXECUTION_EXPIRED",
+      "state_changed_at": "2026-11-14T12:49:36.935925+00:00",
+      "state_events": [
+        {
+          "sequence": 1,
+          "state": "PENDING",
+          "reason": "PLAN_GENERATED",
+          "occurred_at": "2026-11-14T12:49:36.617336+00:00",
+          "related_decision_id": null
+        },
+        {
+          "sequence": 2,
+          "state": "INCOMPLETE",
+          "reason": "EXECUTION_EXPIRED",
+          "occurred_at": "2026-11-14T12:49:36.935925+00:00",
+          "related_decision_id": null
+        }
+      ],
+      "action": "BUY",
+      "target_quantity": 75300,
+      "explanation": {
+        "state_key": "target",
+        "case_key": "long",
+        "judgment": "延续目标仓位",
+        "basis": [
+          {
+            "key": "summary",
+            "text": "主评分高于退出线。"
+          },
+          {
+            "key": "conditions",
+            "text": "主评分 0.0856742，入场线 0.1045，退出线 0.0478574。确认评分 0.00349828，确认线 -0.0120733。"
+          }
+        ],
+        "next_watch": "下一交易日收盘后复核主评分与确认评分。",
+        "explanation": "主评分高于退出线。 主评分 0.0856742，入场线 0.1045，退出线 0.0478574。确认评分 0.00349828，确认线 -0.0120733。"
+      },
+      "target_position": 1.0,
+      "position_at_decision": 0,
+      "execution_plan": {
+        "orders": [
+          {
+            "side": "BUY",
+            "quantity": 75300
+          }
+        ],
+        "trigger": "PREVIOUS_ZERO_FILL",
+        "planning_result": {
+          "status": "CONSTRAINED",
+          "reasons": [
+            "INSUFFICIENT_CASH"
+          ],
+          "desired_quantity": 77200,
+          "planned_quantity": 75300
+        }
+      }
+    }
+  }
+}

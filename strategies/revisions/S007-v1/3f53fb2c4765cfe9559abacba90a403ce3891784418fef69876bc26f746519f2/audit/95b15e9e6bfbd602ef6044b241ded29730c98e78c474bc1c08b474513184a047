@@ -1,0 +1,92 @@
+from collections import Counter
+from datetime import datetime, time
+from importlib import import_module
+import json
+from pathlib import Path
+import sys
+from types import ModuleType, SimpleNamespace
+from uuid import UUID
+
+import numpy as np
+import pandas as pd
+from dataflows import DataResult, DataSpace, DataStatus, Dataset, PreparedDataRef
+from dataflows.asset_store import AssetStore
+from strategy_runtime import FrozenDataAsset, ObservationAvailability, StateRecord, StepDataInput
+from strategy_runtime.step_data import StepData
+
+ROOT = Path.cwd()
+HERE = Path(__file__).resolve().parent
+SOURCE = ROOT / 'strategies/S007/releases/v1/src/strategy_runtime'
+store = AssetStore(ROOT, DataSpace(Path('research/S007/assets/data')))
+assets = {
+    'calendar': '590657f0c8b72cc1278fe553ca65227699255d25748ad0bc20b341e4d17bfeee',
+    'feature_seed': '524491ae600fcce64002976da5136d481d70fbc3126b9c9765d356e65ec46926',
+    'price_daily': '3ad73616df3aa3eb10a4320613bee529c56bfceffb5ca9652b1ca2f9af619269',
+    'incremental_shibor_daily': 'ac90996d6e0dfca00e2ee762c630b7c1b10ce8b26504d13de2ae9db782ab2c88',
+    'incremental_chinext_daily_basic': '9fadd4e6b8f3d68fbcadef74b6f89c97a63f182a4bc91803f9c76f085cf4a842',
+    'incremental_etf_share_size': '9900bf78371c8080efb773a83791683dbf8a4a3dd44264e634d72e7c1780e1aa',
+    'incremental_spx_daily': '0f95de7e5fa46a9a992851a122bdefc54c5ceb2821d5905b9004adf2049042f5',
+    'sessions': '6effdbfc21467f049c6f855f3f86c5ac1625755acac92f190b21dbf1d861c52e',
+}
+
+def module(name, path):
+    package = ModuleType(name)
+    package.__path__ = [str(path)]
+    sys.modules[name] = package
+    return import_module(name + '.strategy')
+
+def products():
+    results = {name: store.read(key) for name, key in assets.items()}
+    dates = results['sessions'].dataframe.SessionDate
+    cal = results['calendar']
+    frame = cal.dataframe
+    extra = pd.date_range(frame.Date.iloc[-1] + pd.Timedelta(days=1), pd.Timestamp(dates.iloc[-1]))
+    tail = pd.DataFrame({'Date':extra, 'IsOpen':extra.strftime('%Y-%m-%d').isin(dates).astype(int)})
+    results['calendar'] = DataResult(DataStatus.READY, pd.concat([frame, tail], ignore_index=True), cal.identity)
+    return results
+
+def main():
+    old = module('s007_legacy', SOURCE)
+    new = module('s007_step', HERE/'S007')
+    definition = json.loads((ROOT/'strategies/S007/versions/v1.json').read_bytes())['strategy_payload']['equity_definition']
+    params = json.loads(definition['parameters_json'])
+    declarations = [StepDataInput('calendar',Dataset.TRADING_CALENDAR,'SSE','daily',450,
+                                 ObservationAvailability(str(new.ZONE),'00:00'))]
+    for item in definition['observation_inputs']:
+        declarations.append(StepDataInput(item['name'],Dataset(item['dataset']),item['symbol'],'daily',450,
+            ObservationAvailability(**item['availability']),
+            asset=FrozenDataAsset(**item['asset']) if item['asset'] else None))
+    sources = products()
+    legacy = {name: result.dataframe for name,result in sources.items()}
+    legacy['adjusted_daily'] = legacy.pop('price_daily')
+    canonical = old.signal_history(legacy, {'rule':json.loads(params['rule'])},
+                                  legacy['adjusted_daily'].Date.iloc[-1])
+    def load(window, request):
+        src = sources[window.name]
+        take = src.dataframe.Date.dt.date.between(window.start, window.end)
+        return (PreparedDataRef(store.space_id,UUID(int=1),assets[window.name]),
+                DataResult(DataStatus.READY,src.dataframe.loc[take].reset_index(drop=True),src.identity))
+    state = StateRecord((('target',0),('last_signal_date',None)))
+    decisions = []
+    for day,row in canonical.iterrows():
+        observed=datetime.combine(day.date(),time(15),new.ZONE)
+        as_of=datetime.combine(day.date(),time(20,30),new.ZONE)
+        data=StepData(declarations,as_of=as_of,observed_through=observed,load=load,source_root=HERE/'S007')
+        result=new.step(SimpleNamespace(point=SimpleNamespace(observed_through=observed),parameters=params,dfls=data),
+                        SimpleNamespace(account=state))
+        data.close()
+        state=StateRecord.from_dict(result.account.to_dict())
+        comparison=new.explain(row.target_position,row.base_score,row.confirmation_score,row.action,json.loads(params['rule'])['score'])
+        assert result.decision==comparison,(day,result.decision,comparison)
+        decisions.append({'signal_date':day.date().isoformat(),'target':result.decision.target,
+            'explanation':result.decision.explanation.to_dict(),'state':dict(state.values),
+            'reads':[r.to_dict() for r in data.receipts()]})
+    summary={'status':'PASS','decisions':len(decisions),'first':decisions[0]['signal_date'],
+        'last':decisions[-1]['signal_date'],'incremental_days':int((canonical.index>pd.Timestamp('2026-09-02')).sum()),
+        'judgments':dict(Counter(d['explanation']['judgment'] for d in decisions)),'assets':assets,
+        'original_score_columns':canonical.columns.tolist(), 'scope':'Archived source slices and SRT step; isolated PTE separately'}
+    (HERE/'s007-signal-evidence.json').write_text(json.dumps({'summary':summary,'rows':decisions},ensure_ascii=False),encoding='utf-8')
+    print(summary)
+
+if __name__=='__main__':
+    main()

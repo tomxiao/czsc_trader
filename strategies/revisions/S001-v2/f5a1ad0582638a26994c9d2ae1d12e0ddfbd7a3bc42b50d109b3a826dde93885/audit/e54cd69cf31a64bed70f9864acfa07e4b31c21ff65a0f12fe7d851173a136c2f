@@ -1,0 +1,237 @@
+{
+  "status": "PASS",
+  "release": "abfa1004fae9b2bf1dfc9481d3738006332e2b742f8ea923c4b02150bc1d5f0f",
+  "candidate": "f5528204c0a9fe8f42cf87c5d3f11a8b26ef5760cfbec2f7961e69db5d93202b",
+  "first": "2026-08-04",
+  "last": "2026-08-31",
+  "decisions": 20,
+  "restart": true,
+  "cases": {
+    "触发入场": {
+      "account_id": "isolated",
+      "decision_id": "DEC-20260804-2030-033BF4629145",
+      "signal_date": "2026-08-04",
+      "valid_session": "2026-08-05",
+      "generated_at": "2026-11-14T12:51:49.110928+00:00",
+      "status": "INCOMPLETE",
+      "state_reason": "EXECUTION_EXPIRED",
+      "state_changed_at": "2026-11-14T12:51:49.963151+00:00",
+      "state_events": [
+        {
+          "sequence": 1,
+          "state": "PENDING",
+          "reason": "PLAN_GENERATED",
+          "occurred_at": "2026-11-14T12:51:49.113934+00:00",
+          "related_decision_id": null
+        },
+        {
+          "sequence": 2,
+          "state": "INCOMPLETE",
+          "reason": "EXECUTION_EXPIRED",
+          "occurred_at": "2026-11-14T12:51:49.963151+00:00",
+          "related_decision_id": null
+        }
+      ],
+      "action": "BUY",
+      "target_quantity": 60300,
+      "explanation": {
+        "state_key": "target",
+        "case_key": "long",
+        "judgment": "触发入场",
+        "basis": [
+          {
+            "key": "summary",
+            "text": "震荡档综合评分达到入场线，确认条件已满足。"
+          },
+          {
+            "key": "conditions",
+            "text": "震荡档评分 0.191433，入场线 0.175，退出线 0.025。入场须连续 1 日达标；退出须满足最短持有 3 日，并连续 1 日确认。周线因子使用已完成周线。"
+          }
+        ],
+        "next_watch": "下一交易日收盘后复核综合评分及确认条件。",
+        "explanation": "震荡档综合评分达到入场线，确认条件已满足。 震荡档评分 0.191433，入场线 0.175，退出线 0.025。入场须连续 1 日达标；退出须满足最短持有 3 日，并连续 1 日确认。周线因子使用已完成周线。"
+      },
+      "target_position": 1.0,
+      "position_at_decision": 0,
+      "execution_plan": {
+        "orders": [
+          {
+            "side": "BUY",
+            "quantity": 60300
+          }
+        ],
+        "trigger": "INITIAL_TARGET",
+        "planning_result": {
+          "status": "READY",
+          "reasons": [],
+          "desired_quantity": 60300,
+          "planned_quantity": 60300
+        }
+      }
+    },
+    "延续目标仓位": {
+      "account_id": "isolated",
+      "decision_id": "DEC-20260805-2030-6D80E57C079D",
+      "signal_date": "2026-08-05",
+      "valid_session": "2026-08-06",
+      "generated_at": "2026-11-14T12:51:51.339621+00:00",
+      "status": "INCOMPLETE",
+      "state_reason": "EXECUTION_EXPIRED",
+      "state_changed_at": "2026-11-14T12:51:52.171693+00:00",
+      "state_events": [
+        {
+          "sequence": 1,
+          "state": "PENDING",
+          "reason": "PLAN_GENERATED",
+          "occurred_at": "2026-11-14T12:51:51.341629+00:00",
+          "related_decision_id": null
+        },
+        {
+          "sequence": 2,
+          "state": "INCOMPLETE",
+          "reason": "EXECUTION_EXPIRED",
+          "occurred_at": "2026-11-14T12:51:52.171693+00:00",
+          "related_decision_id": null
+        }
+      ],
+      "action": "BUY",
+      "target_quantity": 57700,
+      "explanation": {
+        "state_key": "target",
+        "case_key": "long",
+        "judgment": "延续目标仓位",
+        "basis": [
+          {
+            "key": "summary",
+            "text": "综合评分仍高于退出线，延续目标仓位。"
+          },
+          {
+            "key": "conditions",
+            "text": "震荡档评分 0.337561，入场线 0.175，退出线 0.025。入场须连续 1 日达标；退出须满足最短持有 3 日，并连续 1 日确认。周线因子使用已完成周线。"
+          }
+        ],
+        "next_watch": "下一交易日收盘后复核综合评分及确认条件。",
+        "explanation": "综合评分仍高于退出线，延续目标仓位。 震荡档评分 0.337561，入场线 0.175，退出线 0.025。入场须连续 1 日达标；退出须满足最短持有 3 日，并连续 1 日确认。周线因子使用已完成周线。"
+      },
+      "target_position": 1.0,
+      "position_at_decision": 0,
+      "execution_plan": {
+        "orders": [
+          {
+            "side": "BUY",
+            "quantity": 57700
+          }
+        ],
+        "trigger": "PREVIOUS_ZERO_FILL",
+        "planning_result": {
+          "status": "CONSTRAINED",
+          "reasons": [
+            "INSUFFICIENT_CASH"
+          ],
+          "desired_quantity": 60300,
+          "planned_quantity": 57700
+        }
+      }
+    },
+    "目标清仓": {
+      "account_id": "isolated",
+      "decision_id": "DEC-20260814-2030-7CCA7B77CA2E",
+      "signal_date": "2026-08-14",
+      "valid_session": "2026-08-17",
+      "generated_at": "2026-11-14T12:52:06.804059+00:00",
+      "status": "COMPLETED",
+      "state_reason": "NO_ORDER",
+      "state_changed_at": "2026-11-14T12:52:06.806313+00:00",
+      "state_events": [
+        {
+          "sequence": 1,
+          "state": "COMPLETED",
+          "reason": "NO_ORDER",
+          "occurred_at": "2026-11-14T12:52:06.806313+00:00",
+          "related_decision_id": null
+        }
+      ],
+      "action": "WAIT",
+      "target_quantity": 0,
+      "explanation": {
+        "state_key": "target",
+        "case_key": "flat",
+        "judgment": "目标清仓",
+        "basis": [
+          {
+            "key": "summary",
+            "text": "震荡档评分触及退出线，持有期和退出确认已满足。"
+          },
+          {
+            "key": "conditions",
+            "text": "震荡档评分 -0.161614，入场线 0.175，退出线 0.025。入场须连续 1 日达标；退出须满足最短持有 3 日，并连续 1 日确认。周线因子使用已完成周线。"
+          }
+        ],
+        "next_watch": "下一交易日收盘后复核综合评分及确认条件。",
+        "explanation": "震荡档评分触及退出线，持有期和退出确认已满足。 震荡档评分 -0.161614，入场线 0.175，退出线 0.025。入场须连续 1 日达标；退出须满足最短持有 3 日，并连续 1 日确认。周线因子使用已完成周线。"
+      },
+      "target_position": 0.0,
+      "position_at_decision": 0,
+      "execution_plan": {
+        "orders": [],
+        "trigger": "TARGET_CHANGED",
+        "planning_result": {
+          "status": "NO_CHANGE",
+          "reasons": [],
+          "desired_quantity": 0,
+          "planned_quantity": 0
+        }
+      }
+    },
+    "继续空仓": {
+      "account_id": "isolated",
+      "decision_id": "DEC-20260817-2030-E7FF71FDFF60",
+      "signal_date": "2026-08-17",
+      "valid_session": "2026-08-18",
+      "generated_at": "2026-11-14T12:52:08.345643+00:00",
+      "status": "COMPLETED",
+      "state_reason": "NO_ORDER",
+      "state_changed_at": "2026-11-14T12:52:08.347796+00:00",
+      "state_events": [
+        {
+          "sequence": 1,
+          "state": "COMPLETED",
+          "reason": "NO_ORDER",
+          "occurred_at": "2026-11-14T12:52:08.347796+00:00",
+          "related_decision_id": null
+        }
+      ],
+      "action": "WAIT",
+      "target_quantity": 0,
+      "explanation": {
+        "state_key": "target",
+        "case_key": "flat",
+        "judgment": "继续空仓",
+        "basis": [
+          {
+            "key": "summary",
+            "text": "综合评分低于入场线，继续空仓。"
+          },
+          {
+            "key": "conditions",
+            "text": "震荡档评分 0.126143，入场线 0.175，退出线 0.025。入场须连续 1 日达标；退出须满足最短持有 3 日，并连续 1 日确认。周线因子使用已完成周线。"
+          }
+        ],
+        "next_watch": "下一交易日收盘后复核综合评分及确认条件。",
+        "explanation": "综合评分低于入场线，继续空仓。 震荡档评分 0.126143，入场线 0.175，退出线 0.025。入场须连续 1 日达标；退出须满足最短持有 3 日，并连续 1 日确认。周线因子使用已完成周线。"
+      },
+      "target_position": 0.0,
+      "position_at_decision": 0,
+      "execution_plan": {
+        "orders": [],
+        "trigger": "UNCHANGED_TARGET",
+        "planning_result": {
+          "status": "NO_CHANGE",
+          "reasons": [],
+          "desired_quantity": 0,
+          "planned_quantity": 0
+        }
+      }
+    }
+  }
+}

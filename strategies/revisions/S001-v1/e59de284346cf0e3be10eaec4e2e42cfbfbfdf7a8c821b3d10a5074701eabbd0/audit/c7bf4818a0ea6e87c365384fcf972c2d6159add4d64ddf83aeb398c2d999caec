@@ -1,0 +1,71 @@
+from datetime import datetime,time
+from importlib import import_module
+import json
+from pathlib import Path
+import sys
+from types import ModuleType, SimpleNamespace
+from collections import Counter
+
+import pandas as pd
+from strategy_runtime import StateRecord
+from s001_probe import HERE,load,products
+
+def initial():
+    return dict(target=0,enter_count=0,exit_count=0,holding_days=0,last_signal_date=None,
+        daily='',intraday='',weekly='',daily_count=0,intraday_count=0,weekly_count=0,
+        weekly_factors='{}',recent_closes='[]')
+
+def main():
+    package=ModuleType('s001_step')
+    package.__path__=[str(HERE/'S001')]
+    sys.modules[package.__name__]=package
+    step=import_module(package.__name__+'.strategy')
+    st,math,_=load('v1')
+    frames={name:st.local_frame(products['observation:'+name],daily=name!='adjusted_30m')
+            for name in ('adjusted_daily','adjusted_30m','adjusted_weekly')}
+    days=pd.DatetimeIndex(frames['adjusted_daily'].Date)
+    open_dates=set(days.date)
+    grouped={name:{day.date():rows for day,rows in frame.groupby(frame.Date.dt.normalize())}
+             for name,frame in frames.items()}
+    class Read:
+        def fetch(self,window):
+            if window.name=='calendar':
+                idx=pd.date_range(window.start,window.end)
+                return pd.DataFrame({'Date':idx,'IsOpen':[int(d.date() in open_dates) for d in idx]})
+            return grouped[window.name][window.end].reset_index(drop=True)
+    # The two frozen versions use the same factor pipeline with separately
+    # authenticated parameters; keep separate state and compare their outputs.
+    for version in ('v1','v2'):
+        st,math,rule=load(version)
+        wanted=math.calculate_s001_history(frames['adjusted_30m'],frames['adjusted_daily'],
+                                           frames['adjusted_weekly'],rule,'588080.SH')
+        state=StateRecord(tuple(initial().items()))
+        summary=Counter()
+        summaries=[]
+        for i,(day,following) in enumerate(zip(days[:-1],days[1:],strict=True)):
+            now=datetime.combine(day.date(),time(15),step.ZONE)
+            after=datetime.combine(following.date(),time(9,30),step.ZONE)
+            point=SimpleNamespace(observed_through=now,execution_interval=SimpleNamespace(start=after))
+            prev=dict(state.values)
+            result=step.step(SimpleNamespace(point=point,dfls=Read(),parameters={'rule':json.dumps(rule)}),
+                             SimpleNamespace(account=state))
+            state=StateRecord.from_dict(result.account.to_dict())
+            row=wanted.loc[day]
+            expected=step.explain(int(row.target_position),int(wanted.iloc[i-1].target_position) if i else 0,
+                                  row.factor_score,row.regime,rule)
+            assert result.decision==expected,(version,day,result.decision,expected)
+            summary[expected.explanation.judgment]+=1
+            summaries.append({'signal_date':day.date().isoformat(),'target':result.decision.target,
+                              'explanation':result.decision.explanation.to_dict()})
+            if i % 200==0:
+                print(version,i,flush=True)
+            if str(day.date()) in ('2026-08-03','2026-08-04','2026-10-15'):
+                (HERE/f's001-{version}-state-{day.date()}.json').write_text(json.dumps(state.to_dict()),encoding='utf-8')
+        (HERE/f's001-{version}-signal-evidence.json').write_text(json.dumps({
+            'summary':{'status':'PASS','judgments':dict(summary),'decisions':len(summaries),
+                       'first':summaries[0]['signal_date'],'last':summaries[-1]['signal_date']},
+            'rows':summaries,'last_state':state.to_dict()},ensure_ascii=False),encoding='utf-8')
+        print(version,dict(summary),flush=True)
+
+if __name__=='__main__':
+    main()
