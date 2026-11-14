@@ -1,0 +1,109 @@
+from collections import Counter
+from datetime import datetime, time
+from importlib import import_module
+import json
+from pathlib import Path
+import sys
+from types import ModuleType, SimpleNamespace
+from uuid import UUID
+
+import pandas as pd
+from dataflows import DataSpace, Dataset, PreparedDataRef
+from dataflows.asset_store import AssetStore
+from strategy_runtime import StateRecord
+from strategy_runtime.dataset_observations import ObservationAvailability
+from strategy_runtime.step_data import StepData, StepDataInput
+
+ROOT = Path.cwd()
+HERE = Path(__file__).resolve().parent
+store = AssetStore(ROOT, DataSpace(Path("research/S015/assets/data")))
+assets = {
+    "calendar": "1ed31d6a26ee8ec33e8a52a32b40284ca7c1f06b4cd29a3a5f4233ad1f5fe8b5",
+    "price_daily": "9915020247401b7e4450927d8e7afa228cdbe63ef1905f60fcf0aaad4a8adae8",
+    "price_intraday": "d9f42fb0d0a28e133a21b6651e249f78d41b98e76bbcc567e1df2f5440c28cba",
+}
+products = {k: store.read(v) for k,v in assets.items()}
+definition = json.loads((ROOT / "strategies/S015/versions/v1.json").read_bytes())["strategy_payload"]["equity_definition"]
+parameters = json.loads(definition["parameters_json"])
+old_src = ROOT / "strategies/S015/releases/v1/src/strategy_runtime"
+
+def load_module(name, source, file="strategy"):
+    package = ModuleType(name)
+    package.__path__ = [str(source)]
+    sys.modules[name] = package
+    return import_module(f"{name}.{file}")
+
+legacy = load_module("s015_v4", old_src)
+candidate = load_module("s015_v5", HERE / "S015")
+zone = candidate.ZONE
+daily = products["price_daily"].dataframe
+intraday = products["price_intraday"].dataframe
+reference = legacy.signal_history(legacy.local_frame(daily.to_dict("records"), daily=True),
+                                  legacy.local_frame(intraday.to_dict("records")), parameters)
+inputs = (
+    StepDataInput("calendar", Dataset.TRADING_CALENDAR, "SZSE", "daily", candidate.MAX_CALENDAR_DAYS,
+                  ObservationAvailability(str(zone), "00:00")),
+    StepDataInput("price_daily", Dataset.ETF_OHLCV, "159326.SZ", "daily", 1,
+                  ObservationAvailability(str(zone), "15:00")),
+    StepDataInput("price_intraday", Dataset.ETF_OHLCV, "159326.SZ", "30m", candidate.MAX_CALENDAR_DAYS,
+                  ObservationAvailability(str(zone), "15:00")),
+)
+from dataflows import DataResult, DataStatus
+
+def load(window, request):
+    product = products[window.name]
+    frame = product.dataframe
+    selected = frame.loc[frame.Date.dt.date.between(window.start,window.end)].reset_index(drop=True)
+    # Historical input snapshots are pinned by their validated asset IDs. The
+    # loader here only exercises the SRT read contract and point-in-time filter.
+    ref = PreparedDataRef(store.space_id, UUID(int=1), assets[window.name])
+    return ref, DataResult(DataStatus.READY, selected, product.identity)
+
+state = StateRecord((("active", False),("repair_target", 0.0),("invalidation_origin",0.0),("last_signal_date",None)))
+result = []
+previous_state = None
+for session, expected in reference.iloc[1:].iterrows():
+    day = session.date()
+    observed = datetime.combine(day, time(15), zone)
+    as_of = datetime.combine(day, time(20,30), zone)
+    data = StepData(inputs, as_of=as_of, observed_through=observed, load=load)
+    point = SimpleNamespace(observed_through=observed)
+    outcome = candidate.step(SimpleNamespace(dfls=data, point=point, parameters=parameters),
+                             SimpleNamespace(account=state))
+    observed_reads = data.receipts()
+    data.close()
+    if expected.feature_ready:
+        assert sum(read.rows for read in observed_reads if read.window.name != "calendar") == 17
+    explanation = outcome.decision.explanation
+    intended = ("触发入场" if expected.entry_signal else "目标清仓" if expected.exit_signal else
+                "延续目标仓位" if expected.target_position else "继续空仓")
+    assert explanation.judgment == intended, (day, explanation.judgment, intended)
+    assert outcome.decision.target == expected.target_position * parameters["allocation"], day
+    if previous_state is None and len(result)==1:
+        previous_state = state
+    state = StateRecord.from_dict(outcome.account.to_dict())
+    fields = dict(state.values)
+    assert fields["repair_target"].hex() == float(expected.repair_target).hex(), day
+    assert fields["invalidation_origin"].hex() == float(expected.invalidation_origin).hex(), day
+    result.append({"signal_date": day.isoformat(), "judgment": intended,
+                   "target": outcome.decision.target, "state": fields,
+                   "explanation": explanation.to_dict(), "reads": [r.to_dict() for r in observed_reads]})
+
+data = StepData(inputs, as_of=as_of, observed_through=observed, load=load)
+try:
+    candidate.step(SimpleNamespace(dfls=data,point=point,parameters=parameters),
+                   SimpleNamespace(account=previous_state))
+except ValueError as error:
+    assert "前一交易日信号状态缺失" in str(error)
+else:
+    raise AssertionError("skipped session was silently accepted")
+finally:
+    data.close()
+
+summary = {"status":"PASS","scope":"strategy SRT StepData on archived products; no PTE account replay",
+            "first":result[0]["signal_date"],"last":result[-1]["signal_date"],
+            "decisions":len(result),"judgments":dict(Counter(row["judgment"] for row in result)),
+            "gap_rejected":True,
+            "assets":assets}
+(HERE / "s015-signal-evidence.json").write_text(json.dumps({"summary":summary,"rows":result}, ensure_ascii=False),encoding="utf-8")
+print(summary)

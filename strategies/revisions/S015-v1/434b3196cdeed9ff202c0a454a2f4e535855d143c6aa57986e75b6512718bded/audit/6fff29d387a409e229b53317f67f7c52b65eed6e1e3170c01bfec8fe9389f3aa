@@ -1,0 +1,175 @@
+{
+  "status": "ISOLATED_REHEARSAL_PASS",
+  "scope": "no main repository package update",
+  "original": {
+    "type": "FrozenVersionReference",
+    "strategy_id": "S015",
+    "version": "v1",
+    "release_hash": "434b3196cdeed9ff202c0a454a2f4e535855d143c6aa57986e75b6512718bded",
+    "package_hash": "e203d0fe4ff84aefe34b7377dc220ef632981a538df32410fd3c73d30d896d16"
+  },
+  "migrated": {
+    "type": "FrozenVersionReference",
+    "strategy_id": "S015",
+    "version": "v1",
+    "release_hash": "89cd71a6e75402858b303930a65338b12c8c2fbfa6a91fd2e232cb06116b78ca",
+    "package_hash": "2e8126b52db5f001e8a8e7cb98398ad00e2a6a83a9c0c5d3e07b4e1c564fcea7"
+  },
+  "candidate_content": "369b7d7817c83e366b84eca6767560a2c8153ad4a51af3bf5d0a39bdb909a377",
+  "chart_candidate": {
+    "scope": "archived decisions in isolated PTE",
+    "candidate_content": "369b7d7817c83e366b84eca6767560a2c8153ad4a51af3bf5d0a39bdb909a377",
+    "isolated_release_hash": "89cd71a6e75402858b303930a65338b12c8c2fbfa6a91fd2e232cb06116b78ca",
+    "cases": {
+      "继续空仓": {
+        "signal_date": "2025-01-22",
+        "decision_id": "DEC-20250122-2030-FA54F731DDC9",
+        "target": 0.0,
+        "plan": {
+          "orders": [],
+          "trigger": "INITIAL_TARGET",
+          "planning_result": {
+            "status": "NO_CHANGE",
+            "reasons": [],
+            "desired_quantity": 0,
+            "planned_quantity": 0
+          }
+        },
+        "status": "COMPLETED",
+        "reason": "NO_ORDER",
+        "explanation": {
+          "state_key": "target",
+          "case_key": "flat",
+          "judgment": "继续空仓",
+          "basis": [
+            {
+              "key": "summary",
+              "text": "收盘价未低于当前中心。"
+            },
+            {
+              "key": "conditions",
+              "text": "中心变化 0.0167446（对数价格），回到当前中心的空间 -0.1842%，入场门槛 0.1730%。"
+            }
+          ],
+          "next_watch": "下一交易日复核价格中心、修复目标和失效条件。",
+          "explanation": "收盘价未低于当前中心。 中心变化 0.0167446（对数价格），回到当前中心的空间 -0.1842%，入场门槛 0.1730%。"
+        }
+      },
+      "触发入场": {
+        "signal_date": "2025-01-23",
+        "decision_id": "DEC-20250123-2030-D993A8DA85FA",
+        "target": 1.0,
+        "plan": {
+          "orders": [
+            {
+              "side": "BUY",
+              "quantity": 92000
+            }
+          ],
+          "trigger": "TARGET_CHANGED",
+          "planning_result": {
+            "status": "READY",
+            "reasons": [],
+            "desired_quantity": 92000,
+            "planned_quantity": 92000
+          }
+        },
+        "status": "INCOMPLETE",
+        "reason": "EXECUTION_EXPIRED",
+        "explanation": {
+          "state_key": "target",
+          "case_key": "long",
+          "judgment": "触发入场",
+          "basis": [
+            {
+              "key": "summary",
+              "text": "价格低于上移的中心，且回到中心的空间达到入场门槛。"
+            },
+            {
+              "key": "conditions",
+              "text": "中心变化 0.000463177（对数价格），回到当前中心的空间 0.4651%，入场门槛 0.1730%。 后复权收盘 1.075000，修复目标 1.080000，当前中心 1.080000，失效线 1.079500。"
+            }
+          ],
+          "next_watch": "下一交易日复核价格中心、修复目标和失效条件。",
+          "explanation": "价格低于上移的中心，且回到中心的空间达到入场门槛。 中心变化 0.000463177（对数价格），回到当前中心的空间 0.4651%，入场门槛 0.1730%。 后复权收盘 1.075000，修复目标 1.080000，当前中心 1.080000，失效线 1.079500。"
+        }
+      },
+      "目标清仓": {
+        "signal_date": "2025-01-24",
+        "decision_id": "DEC-20250124-2030-9B02C530F857",
+        "target": 0.0,
+        "plan": {
+          "orders": [],
+          "trigger": "TARGET_CHANGED",
+          "planning_result": {
+            "status": "NO_CHANGE",
+            "reasons": [],
+            "desired_quantity": 0,
+            "planned_quantity": 0
+          }
+        },
+        "status": "COMPLETED",
+        "reason": "NO_ORDER",
+        "explanation": {
+          "state_key": "target",
+          "case_key": "flat",
+          "judgment": "目标清仓",
+          "basis": [
+            {
+              "key": "summary",
+              "text": "价格已达到本轮修复目标。"
+            },
+            {
+              "key": "conditions",
+              "text": "中心变化 0.0114918（对数价格），回到当前中心的空间 0.0000%，入场门槛 0.1730%。 后复权收盘 1.094000，修复目标 1.080000，当前中心 1.094000，失效线 1.079500。"
+            }
+          ],
+          "next_watch": "下一交易日复核价格中心、修复目标和失效条件。",
+          "explanation": "价格已达到本轮修复目标。 中心变化 0.0114918（对数价格），回到当前中心的空间 0.0000%，入场门槛 0.1730%。 后复权收盘 1.094000，修复目标 1.080000，当前中心 1.094000，失效线 1.079500。"
+        }
+      },
+      "延续目标仓位": {
+        "signal_date": "2025-02-19",
+        "decision_id": "DEC-20250219-2030-A98372D8580F",
+        "target": 1.0,
+        "plan": {
+          "orders": [
+            {
+              "side": "BUY",
+              "quantity": 90400
+            }
+          ],
+          "trigger": "PREVIOUS_ZERO_FILL",
+          "planning_result": {
+            "status": "CONSTRAINED",
+            "reasons": [
+              "INSUFFICIENT_CASH"
+            ],
+            "desired_quantity": 91100,
+            "planned_quantity": 90400
+          }
+        },
+        "status": "PENDING",
+        "reason": "PLAN_GENERATED",
+        "explanation": {
+          "state_key": "target",
+          "case_key": "long",
+          "judgment": "延续目标仓位",
+          "basis": [
+            {
+              "key": "summary",
+              "text": "价格尚未达到本轮修复目标，中心仍高于失效线。"
+            },
+            {
+              "key": "conditions",
+              "text": "中心变化 0.00137636（对数价格），回到当前中心的空间 -0.3199%，入场门槛 0.1730%。 后复权收盘 1.094000，修复目标 1.097000，当前中心 1.090500，失效线 1.083000。"
+            }
+          ],
+          "next_watch": "下一交易日复核价格中心、修复目标和失效条件。",
+          "explanation": "价格尚未达到本轮修复目标，中心仍高于失效线。 中心变化 0.00137636（对数价格），回到当前中心的空间 -0.3199%，入场门槛 0.1730%。 后复权收盘 1.094000，修复目标 1.097000，当前中心 1.090500，失效线 1.083000。"
+        }
+      }
+    }
+  },
+  "isolated_plan_sha256": "3a85cc03f989ca93d10809b3ab84cc7b5a88cc95c57cba1b8064b3208ed6c0e3"
+}
