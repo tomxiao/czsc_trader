@@ -27,7 +27,7 @@ def _entry_explanation(closes, dates, n, enter, group, common, total, p, allocat
                      for stamp, price in zip(stamps, closes, strict=True))
     basis = [('adjusted_closes', f'MU 后复权收盘价：{path}。')]
     if enter:
-        summary = f'MU 连续{span}收跌，首次目标仓位为 {target:.2%}。'
+        summary = f'MU 连续{span}收跌，首次累计投入目标为入场资金的 {target:.2%}。'
         basis.append(('entry_allocation',
                       f'按板块贡献判定，采用 {"板块主导" if group else "其他"} 档配置。'
                       f'板块估计贡献 {common:.4%}，分类门槛 {p["common_share"] * total:.4%}（对数收益）。'
@@ -40,7 +40,7 @@ def _entry_explanation(closes, dates, n, enter, group, common, total, p, allocat
     else:
         reason = 'MU 此前的收盘走势中断了连续下跌'
     summary = f'{reason}，未满足连续{span}收跌的买入条件。'
-    return _decision(target, '继续空仓 · 无需下单', summary,
+    return _decision(target, '继续空仓', f'{summary} MU 后复权收盘价 {path}。',
                      '等下一交易日收盘，再检查买入条件。', basis)
 
 
@@ -79,10 +79,33 @@ def entry_observation(windows, beta_window, entry_days, common_share):
             *map(float, prices[-(n+1):]), *dates)
 
 
+from datetime import timedelta
+from zoneinfo import ZoneInfo
+from strategy_runtime import StepDataWindow
+
+_ZONE = ZoneInfo("America/New_York")
+
+
+def bars(ctx, name, first, last, count=None):
+    frame = ctx.dfls.fetch(StepDataWindow(name, first, last))
+    if count is not None:
+        if len(frame) < count:
+            raise ValueError(f"{name}: 已完结行情不足 {count} 根")
+        frame = frame.tail(count)
+    return tuple(frame.to_dict("records"))
+
+
 def step(ctx, state):
     p = ctx.parameters
     n = int(p['entry_days'])
-    price, sector_price, common, total, group, enter, *history = ctx.market_feature('entry_observation')
+    day = ctx.point.observed_through.astimezone(_ZONE).date()
+    first = day - timedelta(days=119)
+    mu = bars(ctx, 'mu_daily', first, day, 63)
+    soxx = bars(ctx, 'soxx_daily', first, day, 63)
+    if mu[-1]['Date'].astimezone(_ZONE).date() != day:
+        raise ValueError('缺少信号日的 MU 收盘行情')
+    price, sector_price, common, total, group, enter, *history = entry_observation(
+        (mu, soxx), p['beta_window'], n, p['common_share'])
     closes, dates = history[:n+1], history[n+1:]
     allocation_now = float(p['common_budget'] if group else p['other_budget'])
     active = ctx.position.active
@@ -138,17 +161,17 @@ def step(ctx, state):
             promoted = bool(promoted or lift)
             target = float(allocation if promoted else allocation * p['initial_fraction'])
             if lift:
-                summary = f'已到允许加仓的日期，确认条件已满足，目标仓位提高至 {target:.2%}。'
+                summary = f'已到允许加仓的日期，确认条件已满足，累计投入目标提高至入场资金的 {target:.2%}。'
             elif promoted or p['initial_fraction'] >= 1:
-                summary = f'尚未触发退出，延续本轮目标仓位 {target:.2%}。'
+                summary = f'尚未触发退出，延续本轮累计投入目标 {target:.2%}。'
             elif mode == 'never':
-                summary = f'本轮不加仓，尚未触发退出，延续首次目标仓位 {target:.2%}。'
+                summary = f'本轮不加仓，尚未触发退出，延续首次累计投入目标 {target:.2%}。'
             elif held < p['earliest_add']:
-                summary = f'尚未到第 {p["earliest_add"]} 个交易日，延续首次目标仓位 {target:.2%}。'
+                summary = f'尚未到第 {p["earliest_add"]} 个交易日，延续首次累计投入目标 {target:.2%}。'
             elif active.buy_fills != 1:
                 summary = f'实际买入成交次数为 {active.buy_fills}，沿用首次目标仓位 {target:.2%}。'
             else:
-                summary = f'加仓确认条件尚未满足，延续首次目标仓位 {target:.2%}。'
+                summary = f'加仓确认条件尚未满足，延续首次累计投入目标 {target:.2%}。'
             confirmation_basis = _confirmation_basis(mode, price, sector_price, anchor, sector_anchor, p)
             details = (held_basis, ('exit_check', f'MU 后复权收盘 {price:,.4f}，价格退出线 {exit_line:,.4f}。'),
                        ('confirmation', confirmation_basis))

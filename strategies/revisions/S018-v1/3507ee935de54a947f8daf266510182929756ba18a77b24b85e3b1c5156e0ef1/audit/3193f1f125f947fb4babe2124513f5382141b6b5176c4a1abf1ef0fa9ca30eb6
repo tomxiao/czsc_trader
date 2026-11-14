@@ -1,0 +1,195 @@
+{
+  "status": "PASS",
+  "release_hash": "21dbd75dbf9f9108fa2f78062331c8d1f783893d052f469f7d414acb2ffc494e",
+  "package_hash": "0c8983b8ede98ecc32a75bcab336d5b0913c834295c62a8865f82176b32096db",
+  "samples": 58,
+  "scenarios": 10,
+  "coverage": {
+    "observed": [
+      "COMPLETED",
+      "DUPLICATE",
+      "EXPIRED",
+      "NO_ORDER",
+      "PARTIAL",
+      "RECONCILIATION_BLOCKED",
+      "REJECTED",
+      "RESTART",
+      "SUBMITTED",
+      "UNKNOWN"
+    ],
+    "missing": []
+  },
+  "baseline": "3507ee935de54a947f8daf266510182929756ba18a77b24b85e3b1c5156e0ef1",
+  "results": [
+    {
+      "case": "entry-partial-duplicate-restart",
+      "status": "PASS",
+      "summary": "Normal equity account path verified",
+      "account": {
+        "cash": "81844.8980",
+        "frozen_cash": "0.0000",
+        "quantity": 21,
+        "average_cost": "864.528666666667",
+        "receivable": "0.0000",
+        "realized_pnl": "0.0000",
+        "total_assets": "99981.8630",
+        "health": "OK"
+      },
+      "decisions": 1,
+      "fills": 2
+    },
+    {
+      "case": "rejected",
+      "status": "PASS",
+      "summary": "Normal equity account path verified",
+      "account": {
+        "cash": "100000.0000",
+        "frozen_cash": "0.0000",
+        "quantity": 0,
+        "average_cost": "0.0000",
+        "receivable": "0.0000",
+        "realized_pnl": "0.0000",
+        "total_assets": "100000.0000",
+        "health": "OK"
+      },
+      "decisions": 1,
+      "fills": 0
+    },
+    {
+      "case": "unknown",
+      "status": "PASS",
+      "summary": "Normal equity account path verified",
+      "account": {
+        "cash": "81368.2469",
+        "frozen_cash": "18631.7531",
+        "quantity": 0,
+        "average_cost": "0.0000",
+        "receivable": "0.0000",
+        "realized_pnl": "0.0000",
+        "total_assets": "100000.0000",
+        "health": "BLOCKED"
+      },
+      "decisions": 1,
+      "fills": 0
+    },
+    {
+      "case": "expired",
+      "status": "PASS",
+      "summary": "Normal equity account path verified",
+      "account": {
+        "cash": "100000.0000",
+        "frozen_cash": "0.0000",
+        "quantity": 0,
+        "average_cost": "0.0000",
+        "receivable": "0.0000",
+        "realized_pnl": "0.0000",
+        "total_assets": "100000.0000",
+        "health": "OK"
+      },
+      "decisions": 1,
+      "fills": 0
+    },
+    {
+      "case": "reconciliation-blocked",
+      "status": "PASS",
+      "summary": "Normal equity account path verified",
+      "account": {
+        "cash": "100000.0000",
+        "frozen_cash": "0.0000",
+        "quantity": 0,
+        "average_cost": "0.0000",
+        "receivable": "0.0000",
+        "realized_pnl": "0.0000",
+        "total_assets": "100000.0000",
+        "health": "OK"
+      },
+      "decisions": 0,
+      "fills": 0
+    },
+    {
+      "case": "normal-partial-expiry",
+      "status": "PASS",
+      "summary": "Normal equity account path verified",
+      "account": {
+        "cash": "99135.4713",
+        "frozen_cash": "0.0000",
+        "quantity": 1,
+        "average_cost": "864.528700000000",
+        "receivable": "0.0000",
+        "realized_pnl": "0.0000",
+        "total_assets": "99999.1363",
+        "health": "OK"
+      },
+      "decisions": 1,
+      "fills": 1
+    },
+    {
+      "case": "normal-zero-fill-expiry",
+      "status": "PASS",
+      "summary": "Normal equity account path verified",
+      "account": {
+        "cash": "100000.0000",
+        "frozen_cash": "0.0000",
+        "quantity": 0,
+        "average_cost": "0.0000",
+        "receivable": "0.0000",
+        "realized_pnl": "0.0000",
+        "total_assets": "100000.0000",
+        "health": "OK"
+      },
+      "decisions": 1,
+      "fills": 0
+    },
+    {
+      "case": "retained-real-window-1",
+      "status": "PASS",
+      "summary": "Normal equity account path verified",
+      "account": {
+        "cash": "53032.4330",
+        "frozen_cash": "0.0000",
+        "quantity": 55,
+        "average_cost": "935.945010909091",
+        "receivable": "0.0000",
+        "realized_pnl": "4509.4086",
+        "total_assets": "106620.5830",
+        "health": "OK"
+      },
+      "decisions": 15,
+      "fills": 4
+    },
+    {
+      "case": "retained-real-window-2",
+      "status": "PASS",
+      "summary": "Normal equity account path verified",
+      "account": {
+        "cash": "94303.8136",
+        "frozen_cash": "0.0000",
+        "quantity": 0,
+        "average_cost": "0E-12",
+        "receivable": "0.0000",
+        "realized_pnl": "-5696.1864",
+        "total_assets": "94303.8136",
+        "health": "OK"
+      },
+      "decisions": 43,
+      "fills": 6
+    },
+    {
+      "case": "flat-wait-no-order",
+      "status": "PASS",
+      "summary": "Normal equity account path verified",
+      "account": {
+        "cash": "100000.0000",
+        "frozen_cash": "0.0000",
+        "quantity": 0,
+        "average_cost": "0.0000",
+        "receivable": "0.0000",
+        "realized_pnl": "0.0000",
+        "total_assets": "100000.0000",
+        "health": "OK"
+      },
+      "decisions": 1,
+      "fills": 0
+    }
+  ]
+}

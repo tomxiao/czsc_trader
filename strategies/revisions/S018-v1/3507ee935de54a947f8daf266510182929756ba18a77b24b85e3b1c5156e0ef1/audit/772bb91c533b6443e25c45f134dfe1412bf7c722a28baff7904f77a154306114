@@ -1,0 +1,73 @@
+{
+  "status": "PASS",
+  "release_hash": "21dbd75dbf9f9108fa2f78062331c8d1f783893d052f469f7d414acb2ffc494e",
+  "samples": 8,
+  "summary": "明确区分首次入场累计投入、确认加仓、延续目标和退出。事件展示实际委托及成交，包括过期未提交、已提交无成交和部分成交。",
+  "limitation": " 使用归档历史行情和模拟渠道回报核验。",
+  "results": [
+    {
+      "case": "flat-wait-no-order",
+      "date": "2026-07-31",
+      "decision": "DEC-20260803-2130-A0B617E790BE",
+      "judgment": "继续空仓",
+      "reason": "NO_ORDER",
+      "status": "PASS"
+    },
+    {
+      "case": "retained-real-window-1",
+      "date": "2026-08-19",
+      "decision": "DEC-20260820-2130-CDB90EED0007",
+      "judgment": "触发入场",
+      "reason": "PLAN_FILLED",
+      "status": "PASS"
+    },
+    {
+      "case": "retained-real-window-1",
+      "date": "2026-08-12",
+      "decision": "DEC-20260813-2130-734E4FC162FE",
+      "judgment": "提高目标仓位",
+      "reason": "PLAN_FILLED",
+      "status": "PASS"
+    },
+    {
+      "case": "retained-real-window-1",
+      "date": "2026-08-20",
+      "decision": "DEC-20260821-2130-FA6B63E41207",
+      "judgment": "延续目标仓位",
+      "reason": "NO_ORDER",
+      "status": "PASS"
+    },
+    {
+      "case": "normal-zero-fill-expiry",
+      "date": "2026-08-07",
+      "decision": "DEC-20260810-2130-C726DEED650C",
+      "judgment": "触发入场",
+      "reason": "NORMAL_UNFILLED",
+      "status": "PASS"
+    },
+    {
+      "case": "retained-real-window-2",
+      "date": "2026-10-14",
+      "decision": "DEC-20261015-2130-79BC1374F373",
+      "judgment": "目标清仓",
+      "reason": "PLAN_FILLED",
+      "status": "PASS"
+    },
+    {
+      "case": "expired",
+      "date": "2026-08-07",
+      "decision": "DEC-20260811-0400-26FE83A03873",
+      "judgment": "触发入场",
+      "reason": "EXECUTION_EXPIRED",
+      "status": "PASS"
+    },
+    {
+      "case": "normal-partial-expiry",
+      "date": "2026-08-07",
+      "decision": "DEC-20260810-2130-C726DEED650C",
+      "judgment": "触发入场",
+      "reason": "NORMAL_PARTIAL",
+      "status": "PASS"
+    }
+  ]
+}

@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>S018-v1 · Isolated equity inspection · 前瞻观察</title>
+  <style>html{scrollbar-gutter:stable}</style>
+  <style>.strategy-chart{container-type:inline-size;color-scheme:dark;--bg:#0d1117;--surface:#151b23;--surface2:#1b2330;--text:#e6edf3;--muted:#8b98a7;--line:#303a47;--grid:#26303b;--up:#ff6675;--down:#34c38f;--signal:#a78bfa;--fill:#f6b84a;--position:#68a5ff;--forward:rgba(104,165,255,.07);--popover:rgba(17,24,32,.82);--shadow:rgba(0,0,0,.38)}
+.strategy-chart,.strategy-chart *{box-sizing:border-box}.strategy-chart{margin:0;background:var(--bg);color:var(--text);font-family:Inter,"Microsoft YaHei",sans-serif}.strategy-chart button,.strategy-chart select{font:inherit}.strategy-chart .forward-topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--line)}.strategy-chart .forward-brand{display:flex;align-items:center;gap:10px;min-width:0}.strategy-chart .forward-logo{display:grid;place-items:center;width:26px;height:26px;border-radius:8px;background:var(--text);color:var(--surface);font-weight:600}.strategy-chart .forward-brand h1{margin:0;font-size:16px;font-weight:500;line-height:1.35}.strategy-chart .forward-brand p{margin:2px 0 0;color:var(--muted);font-size:12px}.strategy-chart .forward-status{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;white-space:nowrap}.strategy-chart .forward-status span{width:8px;height:8px;border-radius:50%;background:var(--down)}.strategy-chart .forward-status b{font-weight:400}.strategy-chart .forward-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:6px 16px;background:var(--surface2);border-bottom:1px solid var(--line)}.strategy-chart .forward-controls{display:flex;align-items:center;flex-wrap:wrap;gap:4px}.strategy-chart label.forward-controls{font-size:12px}.strategy-chart .forward-controls select{max-width:230px;border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:var(--surface);color:var(--text);font-size:12px;color-scheme:dark}.strategy-chart .forward-controls select:focus-visible{outline:2px solid var(--position);outline-offset:2px}.strategy-chart .forward-controls button{appearance:none;border:1px solid transparent;border-radius:6px;min-height:28px;padding:4px 10px;background:transparent;color:var(--muted);font-size:12px;cursor:pointer}.strategy-chart .forward-controls button[aria-pressed=true]{background:var(--surface);border-color:var(--line);color:var(--text)}.strategy-chart .forward-controls button:focus-visible{outline:2px solid var(--position);outline-offset:2px}.strategy-chart .forward-controls i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;background:var(--muted)}.strategy-chart .forward-controls i.signal{background:var(--signal)}.strategy-chart .forward-controls i.fill{background:var(--fill)}.strategy-chart .forward-controls i.position{background:var(--position)}.strategy-chart .forward-stage{position:relative;background:var(--surface);min-height:660px}.strategy-chart .forward-stage svg{display:block;width:100%;height:660px}.strategy-chart .forward-tooltip{position:absolute;z-index:4;min-width:210px;max-width:290px;padding:10px 12px;border:1px solid rgba(139,152,167,.35);border-radius:8px;background:var(--popover);box-shadow:0 10px 28px var(--shadow);backdrop-filter:blur(8px);pointer-events:none;font-size:12px;line-height:1.6}.strategy-chart .forward-tooltip[hidden]{display:none}.strategy-chart .forward-tooltip .head{display:flex;justify-content:space-between;gap:12px;font-weight:500;margin-bottom:4px}.strategy-chart .forward-tooltip .grid{display:grid;grid-template-columns:auto auto;gap:1px 14px}.strategy-chart .forward-tooltip .grid span:nth-child(odd){color:var(--muted)}.strategy-chart footer{display:flex;justify-content:space-between;gap:6px 20px;flex-wrap:wrap;padding:6px 16px;color:var(--muted);background:var(--surface2);border-top:1px solid var(--line);font-size:11px}.strategy-chart .axis{fill:var(--muted);font-size:11px}.strategy-chart .panel-label{fill:var(--muted);font-size:11px;font-weight:500}.strategy-chart .explain-main{fill:var(--text);font-size:12px;font-weight:500}.strategy-chart .explain-sub{fill:var(--muted);font-size:11px}.strategy-chart .grid-line{stroke:var(--grid);stroke-width:1}.strategy-chart .panel-rule{stroke:var(--line);stroke-width:1}.strategy-chart .crosshair{stroke:var(--text);stroke-width:1;stroke-dasharray:4 4;opacity:.66;pointer-events:none}.strategy-chart .cutoff{stroke:var(--fill);stroke-width:1;stroke-dasharray:5 4}.strategy-chart .cutoff-label{fill:var(--fill);font-size:11px}.strategy-chart .event-label{fill:var(--text);font-size:11px;font-weight:500;paint-order:stroke;stroke:var(--surface);stroke-width:4px;stroke-linejoin:round}
+@container(max-width:700px){.strategy-chart .forward-status{display:none}.strategy-chart .forward-stage{min-height:560px}.strategy-chart .forward-stage svg{height:560px}.strategy-chart .forward-tooltip{min-width:180px;max-width:230px}}.strategy-chart.embedded .forward-logo,.strategy-chart.embedded .forward-brand h1{display:none}.strategy-chart.embedded .forward-topbar{padding:6px 12px}.strategy-chart.embedded .forward-brand p{font-size:11px}.strategy-chart.embedded .forward-toolbar{padding:6px 12px}.strategy-chart.embedded .forward-stage{min-height:0}.strategy-chart .signal-panel-controls{position:absolute;z-index:2;display:flex;align-items:center;gap:8px;height:22px;min-width:0;font-size:11px;background:var(--surface)}.strategy-chart .signal-panel-controls[hidden],.strategy-chart .signal-panel-legend[hidden]{display:none}.strategy-chart .signal-panel-controls select{min-width:0;max-width:60%;height:22px;border:1px solid var(--line);border-radius:4px;padding:1px 5px;background:var(--surface2);color:var(--text);font-size:11px}.strategy-chart .signal-panel-controls select:focus-visible{outline:2px solid var(--position);outline-offset:1px}.strategy-chart .signal-panel-unit{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}.strategy-chart .signal-panel-legend{position:absolute;z-index:2;display:flex;gap:12px;height:14px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;font-size:10px;line-height:14px;scrollbar-width:none;background:var(--surface)}.strategy-chart .signal-panel-legend span{flex:none}.strategy-chart .signal-panel-description{color:var(--muted);margin-top:4px;white-space:normal}
+
+.strategy-chart .signal-reading{position:absolute;left:0;right:0;z-index:3;background:var(--surface);padding:10px 84px 10px 80px;display:grid;grid-template-columns:1fr;gap:10px;font-size:12px;line-height:18px;overflow:hidden}
+.strategy-chart .signal-reading[hidden],.strategy-chart .signal-legacy-notice[hidden]{display:none}
+.strategy-chart .reading-label{color:var(--muted);font-size:11px;line-height:15px;margin-bottom:5px;text-align:left;flex:none}
+.strategy-chart .reading-head{display:grid;grid-template-columns:1fr auto;gap:3px 12px;align-content:start;min-width:0}
+.strategy-chart .reading-head .reading-label,.strategy-chart .reading-head strong{grid-column:1/-1}
+.strategy-chart .reading-head strong{font-size:17px;line-height:23px;color:#f6cf86;font-weight:600}
+.strategy-chart .reading-date{font-size:11px;line-height:16px;color:var(--muted)}
+.strategy-chart .reading-head button{border:0;padding:0;background:none;color:#98b9e9;cursor:pointer;font-size:12px;justify-self:end}
+.strategy-chart .reading-head button:focus-visible{outline:2px solid var(--position)}
+.strategy-chart .reading-basis,.strategy-chart .reading-next{min-width:0;min-height:0;display:flex;flex-direction:column;align-items:stretch}
+.strategy-chart .reading-body{min-height:0;overflow:auto}
+.strategy-chart .reading-row+.reading-row{margin-top:5px}
+.strategy-chart .reading-detail{white-space:pre-wrap}
+.strategy-chart .signal-panel-footer{position:absolute;z-index:2;display:flex;flex-direction:column;gap:2px;height:30px;overflow:hidden;background:var(--surface)}
+.strategy-chart .signal-panel-footer .signal-panel-legend{position:static;flex:none}
+.strategy-chart .signal-legacy-notice{font-size:10px;line-height:14px;height:14px;flex:none;white-space:nowrap;overflow:auto;color:var(--muted)}
+@container(min-width:1000px){
+ .strategy-chart .signal-reading{grid-template-columns:minmax(210px,.85fr) minmax(300px,1.3fr) minmax(220px,1fr);gap:20px;padding:6px 84px 6px 80px;font-size:13px;line-height:20px}
+ .strategy-chart .reading-head{grid-template-rows:15px minmax(0,1fr) 16px;gap:4px 12px;border-right:1px solid var(--line);padding-right:20px}
+ .strategy-chart .reading-head .reading-label{margin:0}
+ .strategy-chart .reading-head strong{font-size:17px;line-height:22px}
+ .strategy-chart .reading-next{border-left:1px solid var(--line);padding-left:20px;font-size:13px;line-height:20px}
+}
+
+.strategy-chart .forward-stage svg:focus-visible{outline:2px solid var(--position);outline-offset:-2px}
+.strategy-chart .forward-controls button:hover{background:var(--surface);color:var(--text)}
+.strategy-chart .forward-controls[aria-label="观察窗口"]{gap:2px;padding:2px;border:1px solid var(--line);border-radius:7px;background:var(--bg)}
+.strategy-chart .forward-controls[aria-label="观察窗口"] button{min-width:48px;min-height:26px}
+@container(max-width:699px){.strategy-chart .forward-topbar,.strategy-chart .forward-toolbar{padding-left:12px;padding-right:12px}.strategy-chart footer{padding:6px 12px}.strategy-chart .forward-controls button{padding-left:8px;padding-right:8px}}
+
+@container(max-width:699px){.strategy-chart .signal-reading{padding:6px 68px 6px 64px}}
+
+.strategy-chart .reading-region-label{position:absolute;left:12px;top:6px;color:var(--muted);font-size:11px;line-height:15px;font-weight:500}
+.strategy-chart .event-scroll{height:100%;overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;scrollbar-gutter:stable;padding:8px 12px;background:var(--surface2);overflow-wrap:anywhere}
+.strategy-chart .event-heading{color:var(--text);font-size:12px;line-height:20px;font-weight:500}
+.strategy-chart .event-details{color:var(--muted);font-size:11px;line-height:18px;white-space:pre-wrap}
+.strategy-chart .event-scroll:focus-visible{outline:1px solid var(--position);outline-offset:-1px}
+html:has(.paper-embedded){overflow:hidden;scrollbar-gutter:auto!important}
+.strategy-chart.paper-embedded .reading-body,
+.strategy-chart.paper-embedded .signal-panel-legend,
+.strategy-chart.paper-embedded .signal-legacy-notice{overflow:clip}
+.strategy-chart.paper-embedded .reading-row{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
+@container(max-width:700px){.strategy-chart.paper-embedded .signal-reading{padding-inline:14px}}
+</style>
+</head>
+<body style="margin:0;background:#0d1117">
+  <main id="pte-forward-chart" class="strategy-chart" aria-label="S018-v1 · Isolated equity inspection前瞻观察图">
+    <header class="forward-topbar">
+      <div class="forward-brand"><span class="forward-logo" aria-hidden="true">P</span><div><h1 id="forward-title"></h1><p id="forward-subtitle"></p></div></div>
+      <div class="forward-status"><span></span><b id="forward-asof"></b></div>
+    </header>
+    <div class="forward-toolbar">
+  <div class="forward-controls" aria-label="观察窗口">
+    <button type="button" data-range="20" aria-pressed="false">20日</button>
+    <button type="button" data-range="40" aria-pressed="false">40日</button>
+    <button type="button" data-range="all" aria-pressed="true">全部</button>
+  </div>
+  <div class="forward-controls" aria-label="图层">
+    <button type="button" data-layer="signal" aria-pressed="true"><i class="signal"></i>策略信号</button>
+    <button type="button" data-layer="fill" aria-pressed="true"><i class="fill"></i>成交事件</button>
+    <button type="button" data-layer="position" aria-pressed="true"><i class="position"></i>持仓轨迹</button>
+  </div>
+</div>
+<section class="forward-stage" id="forward-stage">
+  <svg id="forward-svg" role="img" tabindex="0" aria-label="策略运行图，移动指针查看日期，左右方向键逐日浏览，Home和End跳至首尾，包含非交易日事件"></svg>
+  <div class="forward-tooltip" id="forward-tooltip" role="tooltip" hidden></div>
+</section>
+<footer><span>移动指针查看 · ← → 逐日浏览（含非交易日事件）</span><span>信号按信号日 · 成交按记录日期</span><span>K线后复权 · 成交价不复权；箭头仅标记日期</span></footer>
+
+  </main>
+  <script id="forward-context" type="application/json">{"contract_version":"pte_forward_chart.v6","execution":{"decisions":[{"account_id":"equity","action":"BUY","decision_id":"DEC-20260810-2130-C726DEED650C","execution_plan":{"orders":[{"quantity":21,"side":"BUY"}],"planning_result":{"desired_quantity":21,"planned_quantity":21,"reasons":[],"status":"READY"},"trigger":"INITIAL_TARGET"},"explanation":{"basis":[{"key":"summary","text":"MU 连续两个交易日收跌，首次累计投入目标为入场资金的 18.75%。"},{"key":"adjusted_closes","text":"MU 后复权收盘价：8 月 5 日 1,791.03 → 8 月 6 日 1,767.59 → 8 月 7 日 1,759.79。"},{"key":"entry_allocation","text":"按板块贡献判定，采用 其他 档配置。板块估计贡献 3.4209%，分类门槛 -0.6599%（对数收益）。本轮配置 37.50%，首次采用其中的 50.00%。"},{"key":"target_weight","text":"累计投入目标为首次入场可用现金的 18.75%。"}],"case_key":"long","explanation":"MU 连续两个交易日收跌，首次累计投入目标为入场资金的 18.75%。 MU 后复权收盘价：8 月 5 日 1,791.03 → 8 月 6 日 1,767.59 → 8 月 7 日 1,759.79。 按板块贡献判定，采用 其他 档配置。板块估计贡献 3.4209%，分类门槛 -0.6599%（对数收益）。本轮配置 37.50%，首次采用其中的 50.00%。 累计投入目标为首次入场可用现金的 18.75%。","judgment":"触发入场","next_watch":"关注渠道成交回报和下一交易日收盘。","state_key":"target"},"generated_at":"2026-11-14T14:05:36.909116+00:00","plan_explanation":{"detail":"按本轮目标仓位和当时账户持仓生成计划。 计划买入 21 股。","summary":"按本轮目标仓位和当时账户持仓生成计划。"},"position_at_decision":0,"result_explanation":{"detail":"委托结束，部分成交，买入 1 股。 成交股数以渠道确认记录为准。","summary":"委托结束，部分成交，买入 1 股。"},"signal_date":"2026-08-07","state_changed_at":"2026-11-14T14:05:37.157050+00:00","state_events":[{"occurred_at":"2026-11-14T14:05:36.909116+00:00","reason":"PLAN_GENERATED","related_decision_id":null,"sequence":1,"state":"PENDING"},{"occurred_at":"2026-11-14T14:05:36.965788+00:00","reason":"CHANNEL_RESULT_UNCERTAIN","related_decision_id":null,"sequence":2,"state":"EXECUTING"},{"occurred_at":"2026-11-14T14:05:37.157050+00:00","reason":"NORMAL_PARTIAL","related_decision_id":null,"sequence":3,"state":"INCOMPLETE"}],"state_reason":"NORMAL_PARTIAL","status":"INCOMPLETE","target_position":0.1875,"target_quantity":21,"valid_session":"2026-08-10"}],"fills":[{"account_id":"equity","channel_order_id":"inspection-channel:recorded-PTE-FD5BDCC93F89D24928A3","decision_id":"DEC-20260810-2130-C726DEED650C","fee":"0.8637","fill_id":"e8eb31d9-cbd1-5dca-b26c-d43dedc364c7","occurred_at":"2026-08-10T13:31:00+00:00","price":"863.665","quantity":1,"session":"2026-08-10","side":"BUY"}],"intents":[{"account_id":"equity","channel_order_id":"inspection-channel:recorded-PTE-FD5BDCC93F89D24928A3","channel_status":"CANCELLED_PART","decision_id":"DEC-20260810-2130-C726DEED650C","intent_id":"PTE-FD5BDCC93F89D24928A3","limit_price":"886.3400","quantity":21,"side":"BUY","status":"CANCELLED_PART","submitted_at":"2026-08-10T13:30:00+00:00","valid_session":"2026-08-10"}],"snapshots":[{"account_id":"equity","quantity":0,"session":"2026-08-07"}]},"market_data":{"adjustment":"hfq","as_of":"2026-10-30","bars":[{"close":1537.51,"date":"2026-05-12","high":1569.87,"low":1417.552,"open":1553.75},{"close":1611.61,"date":"2026-05-13","high":1634.25,"low":1563.29,"open":1630.66},{"close":1556.37,"date":"2026-05-14","high":1628.35,"low":1555.61,"open":1579.59},{"close":1453.67,"date":"2026-05-15","high":1503.53,"low":1442.35,"open":1469.49},{"close":1367.43,"date":"2026-05-18","high":1518.35,"low":1330.85,"open":1505.27},{"close":1401.83,"date":"2026-05-19","high":1456.25,"low":1308.77,"open":1335.51},{"close":1468.33,"date":"2026-05-20","high":1475.71,"low":1405.67,"open":1474.26},{"close":1528.55,"date":"2026-05-21","high":1534.15,"low":1468.75,"open":1477.07},{"close":1506.35,"date":"2026-05-22","high":1564.7498,"low":1498.75,"open":1517.98},{"close":1796.11,"date":"2026-05-26","high":1837.9498,"low":1644.94,"open":1645.35},{"close":1861.17,"date":"2026-05-27","high":1916.67,"low":1780.65,"open":1915.67},{"close":1851.39,"date":"2026-05-28","high":1903.3298,"low":1813.91,"open":1864.01},{"close":1946.35,"date":"2026-05-29","high":1966.35,"low":1885.37,"open":1918.35},{"close":2075.35,"date":"2026-06-01","high":2098.29,"low":2023.35,"open":2023.79},{"close":2132.549999999,"date":"2026-06-02","high":2157.47,"low":2038.752,"open":2104.35},{"close":2163.489999999,"date":"2026-06-03","high":2182.93,"low":2081.35,"open":2162.37},{"close":1996.35,"date":"2026-06-04","high":2077.089799999,"low":1947.71,"open":2018.55},{"close":1732.37,"date":"2026-06-05","high":1928.13,"low":1732.37,"open":1893.15},{"close":1902.91,"date":"2026-06-08","high":1930.25,"low":1837.35,"open":1880.88},{"close":1876.13,"date":"2026-06-09","high":1982.65,"low":1713.05,"open":1980.7},{"close":1788.11,"date":"2026-06-10","high":1919.31,"low":1770.85,"open":1814.61},{"close":1996.09,"date":"2026-06-11","high":1997.89,"low":1795.35,"open":1813.09},{"close":1967.57,"date":"2026-06-12","high":2029.5896,"low":1924.73,"open":1947.97},{"close":2180.33,"date":"2026-06-15","high":2199.29,"low":2107.3502,"open":2116.13},{"close":2045.87,"date":"2026-06-16","high":2225.1498,"low":2044.35,"open":2203.75},{"close":2090.73,"date":"2026-06-17","high":2191.69,"low":2032.63,"open":2126.95},{"close":2272.33,"date":"2026-06-18","high":2303.21,"low":2189.937,"open":2220.48},{"close":2427.11,"date":"2026-06-22","high":2431.47,"low":2341.49,"open":2396.78},{"close":2107.89,"date":"2026-06-23","high":2254.35,"low":2081.35,"open":2164.35},{"close":2101.37,"date":"2026-06-24","high":2170.989999999,"low":1986.5502,"open":2168.79},{"close":2431.47,"date":"2026-06-25","high":2514.35,"low":2276.97,"open":2470.35},{"close":2269.01,"date":"2026-06-26","high":2401.7742,"low":2247.07,"open":2282.5},{"close":2294.91,"date":"2026-06-29","high":2301.93,"low":2051.65,"open":2261.75},{"close":2312.93,"date":"2026-06-30","high":2341.71,"low":2253.67,"open":2293.81},{"close":2068.91,"date":"2026-07-01","high":2198.35,"low":2068.75,"open":2168.37},{"close":1955.47,"date":"2026-07-02","high":2133.63,"low":1904.91,"open":2087.35},{"close":1974.15,"date":"2026-07-06","high":2042.65,"low":1966.35,"open":2018.65},{"close":1881.41,"date":"2026-07-07","high":1888.69,"low":1787.97,"open":1850.67},{"close":1902.25,"date":"2026-07-08","high":1922.65,"low":1805.47,"open":1809.93},{"close":1987.93,"date":"2026-07-09","high":2075.65,"low":1978.91,"open":2037.67},{"close":1963.25,"date":"2026-07-10","high":2000.65,"low":1912.91,"open":1934.6},{"close":1878.65,"date":"2026-07-13","high":1891.65,"low":1809.85,"open":1862.65},{"close":1970.89,"date":"2026-07-14","high":1994.25,"low":1904.79,"open":1981.41},{"close":1813.21,"date":"2026-07-15","high":1961.45,"low":1751.9102,"open":1956.26},{"close":1711.05,"date":"2026-07-16","high":1780.07,"low":1685.67,"open":1738.18},{"close":1702.55,"date":"2026-07-17","high":1812.57,"low":1612.65,"open":1649.7},{"close":1735.57,"date":"2026-07-20","high":1806.6498,"low":1722.45,"open":1775.79},{"close":1946.29,"date":"2026-07-21","high":1970.41,"low":1837.7902,"open":1855.35},{"close":1923.61,"date":"2026-07-22","high":1969.89,"low":1876.77,"open":1881.15},{"close":1985.07,"date":"2026-07-23","high":2028.19,"low":1933.45,"open":1954.91},{"close":1846.55,"date":"2026-07-24","high":1938.93,"low":1812.65,"open":1922.71},{"close":1805.05,"date":"2026-07-27","high":1874.65,"low":1714.23,"open":1869.54},{"close":1645.71,"date":"2026-07-28","high":1701.37,"low":1582.83,"open":1683.87},{"close":1482.65,"date":"2026-07-29","high":1688.25,"low":1480.41,"open":1670.65},{"close":1753.97,"date":"2026-07-30","high":1769.65,"low":1582.65,"open":1590.92},{"close":1650.71,"date":"2026-07-31","high":1866.41,"low":1640.65,"open":1843.95},{"close":1663.65,"date":"2026-08-03","high":1677.89,"low":1544.85,"open":1577.36},{"close":1789.99,"date":"2026-08-04","high":1809.5098,"low":1721.65,"open":1738.29},{"close":1791.03,"date":"2026-08-05","high":1862.61,"low":1767.05,"open":1775.25},{"close":1767.59,"date":"2026-08-06","high":1831.31,"low":1658.65,"open":1690.87},{"close":1759.79,"date":"2026-08-07","high":1814.25,"low":1698.69,"open":1811.85},{"close":1726.65,"date":"2026-08-10","high":1794.628,"low":1713.45,"open":1731.98},{"close":1741.69,"date":"2026-08-11","high":1762.65,"low":1693.89,"open":1748.25},{"close":1827.23,"date":"2026-08-12","high":1876.25,"low":1803.73,"open":1830.53},{"close":1904.31,"date":"2026-08-13","high":1960.65,"low":1817.65,"open":1830.43},{"close":1947.97,"date":"2026-08-14","high":1972.65,"low":1917.05,"open":1963.29},{"close":2028.15,"date":"2026-08-17","high":2076.91,"low":1995.17,"open":2003.75},{"close":1886.17,"date":"2026-08-18","high":1961.99,"low":1857.93,"open":1918.85},{"close":1878.86,"date":"2026-08-19","high":1924.65,"low":1835.01,"open":1923.36},{"close":1953.31,"date":"2026-08-20","high":1959.21,"low":1862.79,"open":1874.67},{"close":1938.21,"date":"2026-08-21","high":1984.57,"low":1921.17,"open":1984.0},{"close":1825.51,"date":"2026-08-24","high":1877.55,"low":1779.86,"open":1874.21},{"close":1870.59,"date":"2026-08-25","high":1897.99,"low":1837.25,"open":1862.6},{"close":1881.45,"date":"2026-08-26","high":1896.1498,"low":1853.85,"open":1856.13},{"close":1875.43,"date":"2026-08-27","high":1942.07,"low":1818.43,"open":1938.67},{"close":1870.37,"date":"2026-08-28","high":1898.2498,"low":1822.83,"open":1843.23},{"close":1922.11,"date":"2026-08-31","high":1924.5898,"low":1866.23,"open":1867.43},{"close":1871.53,"date":"2026-09-01","high":1943.53,"low":1849.43,"open":1886.9},{"close":1916.81,"date":"2026-09-02","high":1920.65,"low":1858.9638,"open":1866.3},{"close":1920.97,"date":"2026-09-03","high":1924.17,"low":1842.4102,"open":1918.47},{"close":2037.83,"date":"2026-09-04","high":2040.19,"low":1942.65,"open":1947.32},{"close":2005.17,"date":"2026-09-08","high":2086.789999999,"low":1999.89,"open":2077.45},{"close":2060.19,"date":"2026-09-09","high":2089.45,"low":1989.23,"open":2002.26},{"close":1959.47,"date":"2026-09-10","high":2002.65,"low":1951.65,"open":1998.65},{"close":1955.17,"date":"2026-09-11","high":1992.63,"low":1939.41,"open":1991.04},{"close":1852.71,"date":"2026-09-14","high":1869.07,"low":1809.85,"open":1816.71},{"close":1859.85,"date":"2026-09-15","high":1894.53,"low":1844.91,"open":1879.65},{"close":1857.75,"date":"2026-09-16","high":1887.05,"low":1839.93,"open":1873.11},{"close":1959.65,"date":"2026-09-17","high":1977.05,"low":1911.65,"open":1913.78},{"close":2036.25,"date":"2026-09-18","high":2037.53,"low":1960.31,"open":1974.08},{"close":2092.57,"date":"2026-09-21","high":2133.63,"low":2066.01,"open":2094.63},{"close":2196.97,"date":"2026-09-22","high":2199.15,"low":2064.68,"open":2070.349999999},{"close":2148.41,"date":"2026-09-23","high":2215.65,"low":2133.15,"open":2204.79},{"close":2165.71,"date":"2026-09-24","high":2166.73,"low":2092.65,"open":2104.15},{"close":2169.21,"date":"2026-09-25","high":2222.09,"low":2150.65,"open":2196.309999999},{"close":2112.61,"date":"2026-09-28","high":2174.27,"low":2068.65,"open":2156.61},{"close":2134.809999999,"date":"2026-09-29","high":2169.9698,"low":2120.05,"open":2158.03},{"close":2134.869999999,"date":"2026-09-30","high":2171.65,"low":2129.369999999,"open":2158.17},{"close":2199.43,"date":"2026-10-01","high":2202.45,"low":2050.45,"open":2112.809999999},{"close":2154.43,"date":"2026-10-02","high":2220.65,"low":2148.67,"open":2219.34},{"close":2132.57,"date":"2026-10-05","high":2154.41,"low":2115.77,"open":2144.01},{"close":2095.77,"date":"2026-10-06","high":2153.27,"low":2095.17,"open":2133.61},{"close":2180.65,"date":"2026-10-07","high":2183.09,"low":2027.49,"open":2039.39},{"close":2076.329999999,"date":"2026-10-08","high":2181.6498,"low":2068.849999999,"open":2159.65},{"close":2062.65,"date":"2026-10-09","high":2112.99,"low":2038.65,"open":2112.99},{"close":1982.73,"date":"2026-10-12","high":2009.99,"low":1961.65,"open":2009.54},{"close":1911.03,"date":"2026-10-13","high":1911.85,"low":1862.71,"open":1872.79},{"close":1833.21,"date":"2026-10-14","high":1903.79,"low":1832.07,"open":1874.07},{"close":1867.43,"date":"2026-10-15","high":1868.25,"low":1720.95,"open":1748.1},{"close":1762.63,"date":"2026-10-16","high":1819.95,"low":1754.95,"open":1815.93},{"close":1814.75,"date":"2026-10-19","high":1858.57,"low":1806.09,"open":1832.04},{"close":1797.09,"date":"2026-10-20","high":1842.73,"low":1767.99,"open":1773.2},{"close":1832.29,"date":"2026-10-21","high":1861.85,"low":1783.85,"open":1852.42},{"close":1717.93,"date":"2026-10-22","high":1821.55,"low":1703.45,"open":1764.27},{"close":1760.05,"date":"2026-10-23","high":1788.73,"low":1721.63,"open":1729.53},{"close":1812.35,"date":"2026-10-26","high":1836.45,"low":1770.49,"open":1784.7},{"close":1862.47,"date":"2026-10-27","high":1876.69,"low":1826.2928,"open":1846.93},{"close":1971.41,"date":"2026-10-28","high":1984.95,"low":1923.63,"open":1928.37},{"close":1873.49,"date":"2026-10-29","high":1946.97,"low":1859.43,"open":1940.82},{"close":1774.43,"date":"2026-10-30","high":1818.03,"low":1728.12,"open":1772.94}],"identity":"764b9eb72c649f4567746cae302c50dc0800f7c695d598a7cb4a877bcab9d4ad"},"mode":"PAPER","observations":[],"strategy":{"account_id":"equity","currency":"USD","name":"Isolated equity inspection","release_hash":"21dbd75dbf9f9108fa2f78062331c8d1f783893d052f469f7d414acb2ffc494e","release_id":"S018-v1","strategy_id":"S018","symbol":"MU","version":"v1"},"window":{"context_sessions":60,"forward_observation_start":"2026-08-07","missing_observation_count":1,"selection_data_cutoff":"2026-10-30"}}</script>
+  <script>window.mountStrategyChart=function mountStrategyChart(root,context){
+  if(!(root instanceof HTMLElement)||!context||!['BACKTEST','PAPER'].includes(context.mode)||!context.strategy||!context.window||!context.market_data||!context.execution||![context.market_data.bars,context.observations,context.execution.decisions,context.execution.fills,context.execution.snapshots].every(Array.isArray))throw new TypeError('strategy chart requires a container and typed chart context');
+  if(context.mode==='PAPER'&&!['CNY','USD'].includes(context.strategy.currency))throw new TypeError('PTE chart requires an explicit channel currency');
+  if(root.dataset.strategyChartMounted)throw new Error('strategy chart is already mounted');
+  root.dataset.strategyChartMounted='true';root.classList.add('strategy-chart');
+  const lifecycle=new AbortController();let destroyed=false;
+  const listen=(node,type,handler)=>node.addEventListener(type,handler,{signal:lifecycle.signal});
+  const stage=root.querySelector('#forward-stage');
+  const svg=root.querySelector('#forward-svg');
+  const tooltip=root.querySelector('#forward-tooltip');
+  if(!stage||!svg||!tooltip){delete root.dataset.strategyChartMounted;throw new TypeError('strategy chart requires the shared chart shell');}
+  const embedded=window.parent!==window;
+  if(embedded)root.classList.add('embedded');
+  const isPaper=context.mode==='PAPER',compactEmbed=isPaper&&embedded;
+  if(compactEmbed)root.classList.add('paper-embedded');
+  const NS='http://www.w3.org/2000/svg';
+  const colors=new Map();
+  const css=name=>{if(!colors.has(name))colors.set(name,getComputedStyle(root).getPropertyValue(name).trim());return colors.get(name);};
+  const state={range:'all',layers:{signal:true,fill:true,position:true},selected:null,signalView:null};
+  const bars=context.market_data.bars;
+  const decisions=[...context.execution.decisions].sort((a,b)=>Date.parse(a.generated_at)-Date.parse(b.generated_at));
+  const superseded=new Set(decisions.filter(item=>item.status==='SUPERSEDED').map(item=>item.decision_id));
+  const observations=context.observations.filter(item=>!isPaper||!superseded.has(item.decision_id));
+  const fills=[...context.execution.fills].sort((a,b)=>Date.parse(a.occurred_at)-Date.parse(b.occurred_at));
+  const byDecision=items=>{
+    const index=new Map();
+    for(const item of items)if(item.decision_id){
+      if(!index.has(item.decision_id))index.set(item.decision_id,[]);
+      index.get(item.decision_id).push(item);
+    }
+    return index;
+  };
+  const intentsByDecision=byDecision(context.execution.intents||[]);
+  const fillsByDecision=byDecision(fills);
+  const snapshots=context.execution.snapshots;
+  const observationStart=context.window.forward_observation_start;
+  const byDate=new Map([...observations].sort((a,b)=>String(a.generated_at||a.signal_date).localeCompare(String(b.generated_at||b.signal_date))).map(item=>[item.signal_date,item]));
+  const observationById=new Map(context.observations.filter(item=>item.observation.status==='READY').map(item=>[item.decision_id,item.observation]));
+  const snapshotByDate=new Map(snapshots.map(item=>[item.session,item]));
+  const signalControls=document.createElement('div');signalControls.className='signal-panel-controls';signalControls.hidden=true;
+  const signalSelect=document.createElement('select');signalSelect.setAttribute('aria-label','选择信号分组');
+  const signalUnit=document.createElement('span');signalUnit.className='signal-panel-unit';
+  const signalLegend=document.createElement('div');signalLegend.className='signal-panel-legend';signalLegend.hidden=true;
+  const signalFooter=document.createElement('div');signalFooter.className='signal-panel-footer';
+  signalControls.appendChild(signalSelect);signalControls.appendChild(signalUnit);stage.appendChild(signalControls);stage.appendChild(signalFooter);signalFooter.appendChild(signalLegend);
+  const fmt=value=>Number(value).toLocaleString('zh-CN',{minimumFractionDigits:3,maximumFractionDigits:4});
+  const shortDate=value=>String(value).slice(5);
+  const actionLabel=value=>({BUY:'入场',ENTER:'入场',SELL:'退出',EXIT:'退出',ROTATE:'日内轮换',HOLD:'持有',WAIT:'等待',HOLD_POSITION:'持有',HOLD_CASH:'空仓观察',NO_EVENT:'无新增事件',INTRADAY_LONG_OVERLAY:'日内增强'}[String(value).toUpperCase()]||String(value||'无新增事件'));
+  const el=(name,attrs={},text='')=>{const node=document.createElementNS(NS,name);Object.entries(attrs).forEach(([key,value])=>node.setAttribute(key,String(value)));if(text)node.textContent=text;return node;};
+  const linePath=points=>points.map((point,index)=>`${index?'L':'M'}${point[0].toFixed(2)},${point[1].toFixed(2)}`).join(' ');
+  const extent=values=>[Math.min(...values),Math.max(...values)];
+  const scale=(domainMin,domainMax,rangeMin,rangeMax)=>value=>rangeMin+(Number(value)-domainMin)/(domainMax-domainMin||1)*(rangeMax-rangeMin);
+  const safe=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  const localTime=value=>{
+    if(!value)return '时间未记录';
+    const time=new Date(value);if(Number.isNaN(time.getTime()))return '时间格式异常';
+    return new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).format(time);
+  };
+  const fillDate=item=>item.session||localTime(item.occurred_at).slice(0,10);
+  const fillTime=item=>item.time_precision==='SESSION'||/^\d{4}-\d{2}-\d{2}$/.test(item.occurred_at||'')?`${fillDate(item)}（交易日，未记录时刻）`:localTime(item.occurred_at);
+  const statusLabel=value=>({PENDING:'待执行',EXECUTING:'执行中',COMPLETED:'已完成',SUPERSEDED:'已替代',CANCELLED:'已取消',INCOMPLETE:'未完成'}[value]||value);
+  const quantity=value=>value==null?'未记录':`${Number(value).toLocaleString('zh-CN')} 股`;
+  const fillCurrency=isPaper&&context.strategy.currency==='USD'?'美元':'元';
+  const money=value=>value==null?'未记录':`${Number(value).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})} ${fillCurrency}`;
+  const decisionDate=item=>isPaper?item.signal_date:localTime(item.generated_at).slice(0,10);
+  const dayDecisions=date=>decisions.filter(item=>decisionDate(item)===date);
+  const dayFills=date=>fills.filter(item=>fillDate(item)===date);
+  const fillSummary=item=>`${fillTime(item)} · 成交：${String(item.side).toUpperCase()==='BUY'?'买入':'卖出'} ${quantity(item.quantity)}，价格 ${fmt(item.price)} ${fillCurrency}（不复权），金额 ${money(Number(item.quantity)*Number(item.price))}，费用 ${money(item.fee)}`;
+  const eventDates=[...new Set([...bars.map(item=>item.date),...decisions.map(decisionDate),...fills.map(fillDate)])].sort();
+  const requestedDate=window.location?.hash?.slice(1);
+  if(isPaper&&eventDates.includes(requestedDate))state.selected=requestedDate;
+  const tradingDates=new Set(bars.map(item=>item.date));
+
+  const write=(selector,text)=>{const node=root.querySelector(selector);if(node)node.textContent=text;};
+  const isBacktest=context.mode==='BACKTEST';
+  write('#forward-title',`${context.strategy.release_id||context.strategy.reference_id} · ${context.strategy.name||context.strategy.symbol}`);
+  write('#forward-subtitle',isBacktest?`回测复盘 · ${context.strategy.symbol} · ${context.window.start} — ${context.window.end}`:`前瞻观察 · ${context.strategy.symbol} · ${context.strategy.account_id} · ${observationStart?`首个信号 ${observationStart}`:'等待首个信号'}`);
+  write('#forward-asof',`${isBacktest?'回测完成':'运行正常'} · 数据截至 ${context.market_data.as_of}`);
+
+
+  const reading=document.createElement('section');reading.className='signal-reading';reading.setAttribute('aria-label','策略信号解释');stage.appendChild(reading);
+  const legacyNotice=document.createElement('div');legacyNotice.className='signal-legacy-notice';legacyNotice.textContent='该记录未提供解释；保留原始信号值';signalFooter.appendChild(legacyNotice);
+  let expanded=false,readingDate=null;
+  const node=(tag,cls,text)=>{const element=document.createElement(tag);element.className=cls;if(text!=null)element.textContent=text;return element;};
+  function paintReading(observation,date){
+    if(readingDate!==date)expanded=false;readingDate=date;
+    const narrative=(isPaper?dayDecisions(date).findLast(item=>item.status!=='SUPERSEDED')?.explanation:null)
+      || (observation?.status==='READY'?observation.signal_panel?.explanation:null);
+    const legacy=observation?.status==='READY'&&!narrative;
+    reading.hidden=legacy||!state.layers.signal;legacyNotice.hidden=!legacy||!state.layers.signal;
+    signalControls.hidden=!legacy||!state.layers.signal||!signalSelect.options.length;
+    signalLegend.hidden=signalControls.hidden;
+    if(reading.hidden)return;
+    const unavailable=observation?.status==='UNAVAILABLE';
+    const judgment=narrative?.judgment||(unavailable?'观察不可用':'当日没有信号观察');
+    const reason=unavailable?observation.message:'该日期没有记录策略观察，不据此推断入场或退出。';
+    const head=node('div','reading-head');head.append(node('div','reading-label','当前判断'),node('strong','',judgment),node('span','reading-date',date));
+    if(narrative){const toggle=node('button','',expanded?'返回':'解释');toggle.type='button';toggle.setAttribute('aria-label',expanded?'返回信号结论':'解释策略判断');toggle.addEventListener('click',()=>{expanded=!expanded;paintReading(observation,date);});head.append(toggle);}
+    const basis=node('div','reading-basis');basis.append(node('div','reading-label',expanded?'怎么看这个判断':'判断依据'));
+    const body=node('div','reading-body');
+    if(expanded)body.append(node('div','reading-detail',narrative.explanation));
+    else if(narrative)(compactEmbed?narrative.basis.slice(0,1):narrative.basis).forEach(item=>{const row=node('div','reading-row',item.text);row.dataset.basisKey=item.key;body.append(row);});
+    else body.append(node('div','reading-detail',reason));
+    basis.append(body);
+    const next=node('div','reading-next');next.append(node('div','reading-label','接下来关注'),node('div','reading-body',narrative?.next_watch||(unavailable?'等待完整观察；交易结果以事件和账户记录为准。':'请选择有观察记录的日期。')));
+    reading.replaceChildren(node('span','reading-region-label','信号'),head,basis,next);
+  }
+
+  function visibleBars(){if(state.range==='all')return bars;return bars.slice(Math.max(0,bars.length-Number(state.range)));}
+  function add(node){svg.appendChild(node);return node;}
+  function factValue(item){
+    if(item.format==='PERCENT')return `${(Number(item.value)*100).toFixed(2)}%`;
+    if(item.format==='NUMBER')return Number(item.value).toFixed(4);
+    if(item.format==='BOOLEAN')return item.value?'是':'否';
+    return String(item.value);
+  }
+  function explanation(observation){
+    if(observation?.status!=='READY')return observation?.message||'当日没有策略观察事实';
+    if(observation.signal_panel?.explanation){const value=observation.signal_panel.explanation;return [value.judgment,...value.basis.map(item=>item.text)].join('；');}
+    return [...(observation.series||[]).map(item=>`${item.label} ${Number(item.value).toFixed(4)}${(item.guides||[]).map(guide=>` / ${guide.label} ${Number(guide.value).toFixed(4)}`).join('')}`),
+      ...(observation.facts||[]).map(item=>`${item.label} ${factValue(item)}`)].join('；');
+  }
+  function eventLines(date){
+    const events=[
+      ...dayDecisions(date).map(item=>({time:item.generated_at,decision:item})),
+      ...dayFills(date).map(item=>({time:item.occurred_at,fill:item})),
+    ].sort((a,b)=>Date.parse(a.time)-Date.parse(b.time));
+    const lines=events.flatMap(event=>{
+      if(event.fill)return [fillSummary(event.fill)];
+      const item=event.decision;
+      if(isPaper)return paperDecisionLines(item);
+      const details=[`${localTime(item.generated_at)} · 决策：${actionLabel(item.action)}；目标 ${quantity(item.target_quantity)}；${statusLabel(item.status)}；生效 ${item.valid_session}；信号 ${item.signal_date}`];
+      if(item.state_reason)details.push(`状态原因：${reasonLabel(item.state_reason)}；记录 ${localTime(item.state_changed_at)}`);
+      const observation=observationById.get(item.decision_id);
+      if(item.explanation){
+        const value=item.explanation;
+        details.push(`决策判断：${value.judgment}`);
+        details.push(...value.basis.map(fact=>fact.text),value.explanation,`接下来关注：${value.next_watch}`);
+      }else details.push(observation?`决策依据：${explanation(observation)}`:'决策依据：无可用于本图的策略观察事实');
+      return details;
+    });
+    if(!lines.length)lines.push('当日无可展示的决策或成交事件');
+    return lines.join('\n');
+  }
+  function paperDecisionLines(item){
+    const details=[];
+    if(!compactEmbed)details.push(`记录 ${localTime(item.generated_at)} · 信号日 ${item.signal_date} · 生效日 ${item.valid_session}`);
+    const observation=observationById.get(item.decision_id);
+    const legacyJudgment=observation?.signal_panel?.explanation?.judgment;
+    details.push(`策略判断：${item.explanation?.judgment||legacyJudgment||'未记录'}`);
+    const weight=item.target_position==null?'未记录':`${(item.target_position*100).toLocaleString('zh-CN',{maximumFractionDigits:4})}%`;
+    details.push(`目标仓位：${weight}`);
+    const plan=item.execution_plan;
+    const planOrders=plan?.orders||[];
+    const planText=planOrders.length?planOrders.map(order=>`${order.side==='BUY'?'买入':'卖出'} ${quantity(order.quantity)}`).join('、')
+      :plan?'无委托':'未记录委托计划';
+    const explanation=value=>value?(compactEmbed?value.summary:value.detail):'策略说明未记录';
+    details.push(`执行计划：${planText}`);
+    details.push(`计划说明：${explanation(item.plan_explanation)}`);
+
+    const intents=intentsByDecision.get(item.decision_id)||[];
+    const confirmed=fillsByDecision.get(item.decision_id)||[];
+    let result=item.state_reason==='NO_ORDER'?'无需下单':statusLabel(item.status);
+    if(intents.length){
+      const labels={PENDING_SUBMIT:'待提交',EXPIRED:'已过期',SUBMITTING:'提交中',
+        SUBMITTED:'已提交',REJECTED:'已拒绝',SUBMISSION_FAILED:'提交失败',
+        SUBMISSION_UNCERTAIN:'提交状态待确认',CANCELLED_ALL:'已取消',CANCELLED_PART:'部分取消',
+        FILLED_PART:'部分成交',FILLED_ALL:'全部成交'};
+      result+=`；委托 ${[...new Set(intents.map(intent=>labels[intent.channel_status||intent.status]||intent.channel_status||intent.status))].join('、')}`;
+      if(!compactEmbed){
+        const submitted=[...new Set(intents.map(intent=>intent.submitted_at).filter(Boolean))];
+        if(submitted.length)result+=`；渠道记录 ${submitted.map(localTime).join('、')}`;
+      }
+    }
+    if(confirmed.length){
+      const quantityBySide=side=>confirmed.filter(fill=>fill.side===side).reduce((sum,fill)=>sum+Number(fill.quantity),0);
+      const bought=quantityBySide('BUY'),sold=quantityBySide('SELL');
+      result+=`；确认成交 ${[bought?`买入 ${quantity(bought)}`:null,sold?`卖出 ${quantity(sold)}`:null].filter(Boolean).join('、')}`;
+    }
+    details.push(`执行结果：${result}`);
+    details.push(`结果说明：${explanation(item.result_explanation)}`);
+    return details;
+  }
+  const eventHeight=isPaper?168:128;
+  function eventPanel(x,y,width){
+    const frame=add(el('foreignObject',{x,y,width,height:eventHeight}));
+    const content=node('div','event-scroll');content.setAttribute('tabindex','0');content.setAttribute('aria-label',compactEmbed?'当日事件摘要':'当日事件，可滚动查看');
+    const main=node('div','event-heading'),details=node('div','event-details');content.append(main,details);frame.appendChild(content);
+    return date=>{
+      if(isPaper&&date&&root.dataset.selectedDate!==date){
+        root.dataset.selectedDate=date;
+        if(compactEmbed)root.dispatchEvent(new CustomEvent('pte-chart-date',{bubbles:true}));
+      }
+      const selectedFills=dayFills(date),selectedDecisions=dayDecisions(date);
+      const summary=[selectedDecisions.length?`决策 ${selectedDecisions.length} 笔`:'',selectedFills.length?`成交 ${selectedFills.length} 笔`:''].filter(Boolean).join(' · ')||'当日无可展示事件';
+      const title=`${date} · ${summary}${tradingDates.has(date)?'':' · 非交易日，无行情K线'}`;
+      if(main.textContent!==title){main.textContent=title;details.textContent=eventLines(date);content.scrollTop=0;}
+    };
+  }
+  function reasonLabel(value){
+    return ({
+      NO_ORDER:'计划无需下单',PLAN_GENERATED:'生成待执行计划',PLAN_REPLACED:'由新决策替代',
+      ACCOUNT_RETIRED:'账户退出前撤回未执行计划',SUBMISSION_STARTED:'开始提交订单',
+      PLAN_FILLED:'计划全部成交',PLAN_ENDED_WITHOUT_COMPLETION:'计划全部结束，未完成原定交易',
+      NORMAL_UNFILLED:'限价买单正常结束，零成交',DEPENDENCY_NOT_TRIGGERED:'前序买入未成交，条件未触发',
+      NORMAL_PARTIAL:'订单正常结束，部分成交',ORDER_REJECTED:'渠道拒单',SUBMISSION_FAILED:'委托提交失败',
+      PLANNING_BLOCKED:'执行计划受限，未下单',OBSERVATION_SUPPRESSED:'本轮信号未计算，未下单',
+      CHANNEL_RESULT_UNCERTAIN:'渠道结果待确认',CHANNEL_EXECUTION:'渠道执行中',AWAITING_EXECUTION:'等待执行',
+      AWAITING_FILL_RECONCILIATION:'等待成交对账',EXECUTION_WINDOW_PASSED:'执行时限已过',EXECUTION_EXPIRED:'提交时限已过',
+      REPLACED:'由新决策替代',EXPIRED:'超过执行时限',CANCELLED:'执行前撤回',REJECTED:'订单拒绝',
+      MIGRATION_NO_ORDER:'历史计划无需下单',MIGRATION_SUBMISSION_UNCERTAIN:'历史渠道提交结果待确认',
+      MIGRATION_ALL_PLANNED_ORDERS_FILLED:'历史计划全部成交',
+      MIGRATION_ORIGINAL_PLAN_REJECTED_OPERATOR_COMPENSATION:'原计划被拒绝，后续人工补偿成交独立保留',
+      MIGRATION_UNSUBMITTED_REPLACEMENT:'历史未提交计划已被替代',MIGRATION_ALL_INTENTS_ENDED:'历史订单意图全部结束，计划未完成',
+      MIGRATION_SUBMITTED_WORK_REMAINS:'历史已提交交易仍待结束',MIGRATION_VALID_SESSION_PASSED:'历史计划超过有效交易日',
+      MIGRATION_UNSUBMITTED_PLAN:'历史计划尚未提交',
+    }[value]||value);
+  }
+  function wrapExplanation(text,width,measure){
+    const lines=[];
+    for(const paragraph of text.split('\n')){
+      let line='';
+      for(const character of paragraph){
+        const next=line+character;
+        if(line&&measure.measureText(next).width>width){lines.push(line);line=character;}else{line=next;}
+      }
+      lines.push(line);
+    }
+    return lines;
+  }
+  const availabilityLabel=item=>item.status==='INACTIVE'?'当前不适用':item.status==='UNAVAILABLE'?'数据不可用':'有效';
+  const signalValue=(value,group)=>`${Number(group.format==='PERCENT'?value*100:value).toLocaleString('zh-CN',{minimumFractionDigits:group.precision,maximumFractionDigits:group.precision})}${group.format==='PERCENT'?'%':''}`;
+  const stateColor=index=>['--signal','--position','--fill','--up','--down'][index%5];
+  function signalViews(rows){
+    const views=new Map();let legacy=false;
+    rows.forEach(row=>{
+      const observation=byDate.get(row.date)?.observation;
+      if(observation?.status!=='READY')return;
+      if(!observation.signal_panel){legacy=true;return;}
+      const identity=observation.definition_sha256;
+      for(const [kind,items] of [['group',observation.signal_panel.groups],['state',observation.signal_panel.states]]){
+        for(const item of items){const key=`${identity}:${kind}:${item.key}`;if(!views.has(key))views.set(key,{key,kind,item,identity,since:row.date});}
+      }
+    });
+    const values=[...views.values()];
+    for(const view of values){const repeated=values.filter(other=>other.kind===view.kind&&other.item.key===view.item.key).length>1;view.label=`${view.kind==='state'?'状态 · ':''}${view.item.label}${repeated?`（${view.since} 起）`:''}`;}
+    if(values.length&&legacy)values.unshift({key:'legacy',kind:'legacy',label:'历史信号（原始值）'});
+    return values;
+  }
+  function signalItem(observation,view){
+    if(observation?.status!=='READY'||observation.definition_sha256!==view.identity)return null;
+    return observation.signal_panel;
+  }
+  function drawSignalPanel(rows,view,{left,innerW,top,height,x}){
+    const plotTop=top+25,plotBottom=top+height-34;
+    const definition=view.item;
+    const palette=['--signal','--position','--fill','--up','--down'];
+    let series=[],y=null;
+    const panels=rows.map(row=>({observation:byDate.get(row.date)?.observation,panel:signalItem(byDate.get(row.date)?.observation,view)}));
+    const legend=[];
+    if(view.kind==='group'){
+      const seriesMap=new Map();panels.forEach(({panel})=>(panel?.series||[]).filter(item=>item.group===definition.key).forEach(item=>seriesMap.set(item.key,item)));series=[...seriesMap.values()];
+      const available=panels.flatMap(({panel})=>(panel?.series||[]).filter(item=>item.group===definition.key&&item.status==='AVAILABLE'));
+      const values=available.flatMap(item=>[item.value,...item.guides.map(guide=>guide.value)]);
+      if(series.some(item=>item.render==='BAR'))values.push(0);
+      const [low,high]=values.length?extent(values):[0,1],pad=(high-low||Math.abs(low)||1)*.1;
+      y=scale(low-pad,high+pad,plotBottom,plotTop);
+      if(values.length)[low,high].forEach(value=>add(el('text',{x:left+innerW+8,y:y(value)+4,class:'axis'},signalValue(value,definition))));
+      for(const [seriesIndex,item] of series.entries()){
+        const color=css(palette[seriesIndex%palette.length]);legend.push({label:item.label,color,description:item.description});
+        let previous=null;const guidePrevious=new Map();
+        panels.forEach(({observation,panel},index)=>{
+          const sample=panel?.series.find(value=>value.key===item.key&&value.group===definition.key);
+          if(!sample||sample.status!=='AVAILABLE'){previous=null;guidePrevious.clear();return;}
+          const point=[x(index),y(sample.value)];
+          const identity=`${observation.strategy?.release_hash||observation.release_hash}:${sample.segment_id??''}`;
+          const title=`${rows[index].date} ${sample.label} ${signalValue(sample.value,definition)} ${definition.unit}；${sample.description}`;
+          if(item.render==='BAR')add(el('rect',{x:point[0]-Math.max(1,Math.min(5,innerW/rows.length*.3)),y:Math.min(y(0),point[1]),width:Math.max(2,Math.min(10,innerW/rows.length*.6)),height:Math.max(1,Math.abs(y(0)-point[1])),fill:color,'data-signal-series':item.key,'aria-label':title}));
+          else if(previous&&previous.index===index-1&&previous.identity===identity){
+            const d=item.render==='STEP'?`M${previous.point[0]},${previous.point[1]} H${point[0]} V${point[1]}`:linePath([previous.point,point]);
+            add(el('path',{d,fill:'none',stroke:color,'stroke-width':2,'data-signal-line':item.key}));
+          }
+          const dot=add(el('circle',{cx:point[0],cy:point[1],r:2.5,fill:color,'data-signal-series':item.key,'aria-label':title}));dot.appendChild(el('title',{},title));
+          previous={point,index,identity};
+          const currentGuideKeys=new Set();
+          for(const guide of sample.guides){
+            currentGuideKeys.add(guide.key);const gp=[x(index),y(guide.value)],prev=guidePrevious.get(guide.key);
+            if(prev&&prev.index===index-1&&prev.identity===identity)add(el('path',{d:item.render==='STEP'?`M${prev.point[0]},${prev.point[1]} H${gp[0]} V${gp[1]}`:linePath([prev.point,gp]),fill:'none',stroke:color,'stroke-dasharray':'4 3','stroke-width':1,opacity:.6,'data-signal-guide-line':guide.key}));
+            add(el('circle',{cx:gp[0],cy:gp[1],r:1.5,fill:color,'data-signal-guide':guide.key,'aria-label':`${rows[index].date} ${guide.label} ${signalValue(guide.value,definition)}`}));
+            guidePrevious.set(guide.key,{point:gp,index,identity});
+          }
+          for(const key of guidePrevious.keys())if(!currentGuideKeys.has(key))guidePrevious.delete(key);
+        });
+      }
+      if(!available.length)add(el('text',{x:left+8,y:(plotTop+plotBottom)/2+4,class:'axis'},'该区间没有有效数值；请选择日期查看状态'));
+    }else{
+      definition.options.forEach((option,index)=>legend.push({label:option.label,color:css(stateColor(index))}));
+      let count=0;
+      panels.forEach(({panel},index)=>{
+        const sample=panel?.states.find(item=>item.key===definition.key);
+        if(!sample||sample.status!=='AVAILABLE')return;
+        const optionIndex=definition.options.findIndex(option=>option.key===sample.value),option=definition.options[optionIndex];
+        const half=rows.length===1?Math.min(24,innerW/2):innerW/(rows.length-1)*.38;
+        const start=Math.max(left,x(index)-half),end=Math.min(left+innerW,x(index)+half);
+        const node=add(el('rect',{x:start,y:plotTop,width:Math.max(2,end-start),height:Math.max(2,plotBottom-plotTop),rx:2,fill:css(stateColor(optionIndex)),'data-signal-state':sample.key,'aria-label':`${rows[index].date} ${sample.label}：${option.label}`}));
+        node.appendChild(el('title',{},`${rows[index].date} ${sample.label}：${option.label}；${sample.description}`));count++;
+      });
+      if(!count)add(el('text',{x:left+8,y:(plotTop+plotBottom)/2+4,class:'axis'},'该区间没有有效状态'));
+    }
+    signalLegend.replaceChildren(...legend.map(item=>{const node=document.createElement('span');node.textContent=item.label;node.style.color=item.color;node.title=item.description||item.label;return node;}));
+    return {view,series,y};
+  }
+  function signalDetails(observation,view){
+    if(observation?.status==='UNAVAILABLE')return `<div class="head">观察不可用</div><div class="signal-panel-description">${safe(observation.message)}</div>`;
+    const panel=signalItem(observation,view);
+    if(!panel)return '<div class="head">当日没有该声明的信号观察</div>';
+    const items=view.kind==='state'?panel.states.filter(item=>item.key===view.item.key):panel.series.filter(item=>item.group===view.item.key);
+    return `<div class="head">${safe(view.label)}</div><div class="grid">${items.map(item=>{
+      let value=availabilityLabel(item);
+      if(item.status==='AVAILABLE')value=view.kind==='state'?item.options.find(option=>option.key===item.value).label:signalValue(item.value,view.item);
+      if(item.reason)value+=` · ${item.reason}`;
+      const guides=item.status==='AVAILABLE'?(item.guides||[]).map(guide=>`<span>${safe(guide.label)}</span><span>${safe(signalValue(guide.value,view.item))}</span>`).join(''):'';
+      return `<span title="${safe(item.description)}">${safe(item.label)}</span><span>${safe(value)}</span>${guides}`;
+    }).join('')}</div><div class="signal-panel-description">${safe(view.item.description)}</div>`;
+  }
+  function render(pointer=null){
+    if(destroyed)return;
+    colors.clear();
+    const rows=visibleBars();
+    if(!rows.length){
+      const width=Math.max(320,stage.clientWidth),date=state.selected||eventDates.at(-1)||context.window.end;
+      const top=width>=1000?190:290,height=top+eventHeight+16;
+      svg.replaceChildren();svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.style.height=`${height}px`;stage.style.minHeight=`${height}px`;
+      add(el('text',{x:18,y:25,class:'panel-label'},'没有可展示的行情；事件按原始记录展示'));
+      reading.style.top='42px';reading.style.height=`${top-55}px`;paintReading(byDate.get(date)?.observation,date||'');
+      state.selected=date;
+      add(el('text',{x:12,y:top+15,class:'panel-label'},'事件'));
+      eventPanel(68,top,width-92)(date);
+      return;
+    }
+    state.selected=state.selected||rows.at(-1).date;
+    const width=Math.max(320,stage.clientWidth),compact=width<700;
+    const left=compact?52:68,right=compact?56:72,innerW=width-left-right;
+    const priceTop=26,priceH=compact?220:Math.max(220,Math.min(280,Math.round(width*.19)));
+    const positionTop=priceTop+priceH+18,positionH=48;
+    const signalTop=positionTop+positionH+16,signalH=width>=1000?96:230;
+    reading.style.top=`${signalTop}px`;reading.style.height=`${signalH}px`;
+    signalFooter.style.left=`${left}px`;signalFooter.style.top=`${signalTop+signalH-30}px`;signalFooter.style.width=`${innerW}px`;
+    const measure=document.createElement('canvas').getContext('2d');
+    measure.font=`11px ${getComputedStyle(svg).fontFamily}`;
+    const explainTop=signalTop+signalH+12;
+    const explainH=eventHeight,axisTop=explainTop+explainH+8,height=axisTop+30;
+    svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.style.height=`${height}px`;stage.style.minHeight=`${height}px`;svg.replaceChildren();
+    const x=index=>left+(rows.length===1?innerW/2:index/(rows.length-1)*innerW);
+    const prices=rows.flatMap(row=>[Number(row.low),Number(row.high)]),[pmin,pmax]=extent(prices),pad=(pmax-pmin||pmax*.01)*.09;
+    const yPrice=scale(pmin-pad,pmax+pad,priceTop+priceH,priceTop);
+    const rowObservations=rows.map(row=>byDate.get(row.date)?.observation).filter(item=>item?.status==='READY');
+    const latestUnavailable=rows.map(row=>({date:row.date,observation:byDate.get(row.date)?.observation})).filter(item=>item.observation?.status==='UNAVAILABLE').at(-1);
+    const selectedObservation=byDate.get(state.selected||rows.at(-1).date)?.observation;
+    const views=signalViews(rows).filter(view=>selectedObservation?.status!=='READY'||(view.kind==='legacy'?!selectedObservation.signal_panel:view.identity===selectedObservation.definition_sha256));
+    if(selectedObservation?.status!=='READY')state.signalView=null;
+    if(!views.some(view=>view.key===state.signalView))state.signalView=(views.find(view=>view.kind==='group')||views.at(-1))?.key||null;
+    const signalView=views.find(view=>view.key===state.signalView),enhanced=signalView&&signalView.kind!=='legacy';
+    signalControls.hidden=!views.length||!state.layers.signal;signalLegend.hidden=!views.length||!state.layers.signal;
+    signalControls.style.left=`${left}px`;signalControls.style.top=`${signalTop}px`;signalControls.style.width=`${innerW}px`;
+    signalSelect.replaceChildren(...views.map(view=>{const option=document.createElement('option');option.value=view.key;option.textContent=view.label;option.title=view.item?.description||view.label;return option;}));signalSelect.value=state.signalView||'';
+    signalUnit.textContent=enhanced?(signalView.kind==='group'?`${signalView.item.unit} · ${signalView.item.basis}`:signalView.item.description):'原始数值';signalUnit.title=signalUnit.textContent;
+    const legacyObservations=views.length?rowObservations.filter(item=>!item.signal_panel):rowObservations;
+    const allSeries=legacyObservations.flatMap(item=>item.series||[]),signalValues=allSeries.flatMap(item=>[item.value,...(item.guides||[]).map(guide=>guide.value)]);
+    const [smin0,smax0]=signalValues.length?extent(signalValues):[0,1],spad=(smax0-smin0||1)*.12,ySignal=scale(smin0-spad,smax0+spad,signalTop+signalH-34,signalTop+25);
+    const quantities=[0,...snapshots.map(item=>Number(item.quantity))];
+    const qmax=Math.max(...quantities,1),yPosition=scale(0,qmax*1.08,positionTop+positionH,positionTop);
+    const forwardIndex=isPaper&&observationStart?rows.findIndex(row=>row.date>=observationStart):-1;
+    if(forwardIndex>=0){const startX=forwardIndex?x(forwardIndex-.5):left;add(el('rect',{x:startX,y:priceTop,width:left+innerW-startX,height:explainTop+explainH-priceTop,fill:css('--forward')}));add(el('line',{x1:startX,x2:startX,y1:priceTop,y2:explainTop+explainH,class:'cutoff'}));add(el('text',{x:startX+6,y:priceTop+12,class:'cutoff-label'},'前瞻观察区间'));}
+    const priceTicks=5;for(let index=0;index<priceTicks;index++){const value=pmin-pad+(pmax-pmin+2*pad)*index/(priceTicks-1),y=yPrice(value);add(el('line',{x1:left,x2:left+innerW,y1:y,y2:y,class:'grid-line'}));add(el('text',{x:left+innerW+8,y:y+4,class:'axis'},fmt(value)));}
+    const priceLabel=add(el('text',{x:8,y:priceTop+12,class:'panel-label','aria-label':'价格（后复权）'},'价格'));
+    priceLabel.appendChild(el('tspan',{x:8,dy:15},'后复权'));
+    add(el('text',{x:12,y:signalTop+18,class:'panel-label'},'信号'));add(el('text',{x:12,y:positionTop+12,class:'panel-label'},'持仓'));add(el('text',{x:12,y:explainTop+15,class:'panel-label'},'事件'));
+    const candleW=Math.max(3,Math.min(10,innerW/rows.length*.58));rows.forEach((row,index)=>{const rising=Number(row.close)>=Number(row.open),color=css(rising?'--up':'--down'),cx=x(index);add(el('line',{x1:cx,x2:cx,y1:yPrice(row.high),y2:yPrice(row.low),stroke:color,'stroke-width':1}));add(el('rect',{x:cx-candleW/2,y:yPrice(Math.max(row.open,row.close)),width:candleW,height:Math.max(1.5,Math.abs(yPrice(row.open)-yPrice(row.close))),fill:rising?color:css('--surface'),stroke:color,'stroke-width':1}));});
+    const seriesKeys=[...new Set(allSeries.map(item=>item.key))];const seriesColors=['--signal','--position','--fill','--up'];
+    if(state.layers.signal&&!enhanced)seriesKeys.forEach((key,seriesIndex)=>{const points=[];const guidePoints=new Map();rows.forEach((row,index)=>{const observation=byDate.get(row.date)?.observation;if(observation?.status!=='READY'||(views.length&&observation.signal_panel))return;const series=(observation.series||[]).find(item=>item.key===key);if(!series)return;points.push([x(index),ySignal(series.value),`${row.date} ${series.label} ${fmt(series.value)}`]);for(const guide of series.guides||[]){if(!guidePoints.has(guide.key))guidePoints.set(guide.key,{label:guide.label,points:[]});guidePoints.get(guide.key).points.push([x(index),ySignal(guide.value),`${row.date} ${guide.label} ${fmt(guide.value)}`]);}});const color=css(seriesColors[seriesIndex%seriesColors.length]);if(points.length>1)add(el('path',{d:linePath(points),fill:'none',stroke:color,'stroke-width':2}));points.forEach(point=>add(el('circle',{cx:point[0],cy:point[1],r:3,fill:color,'data-series-key':key,'aria-label':point[2]})));guidePoints.forEach((guide,guideKey)=>{if(guide.points.length>1)add(el('path',{d:linePath(guide.points),fill:'none',stroke:css('--fill'),'stroke-width':1,'stroke-dasharray':'4 4',opacity:.72}));guide.points.forEach(point=>add(el('circle',{cx:point[0],cy:point[1],r:2.5,fill:css('--fill'),'data-guide-key':guideKey,'aria-label':point[2]})));});});
+    if(enhanced){if(state.layers.signal)drawSignalPanel(rows,signalView,{left,innerW,top:signalTop,height:signalH,x});}
+    else if(!allSeries.length){
+      const warning=latestUnavailable?`${latestUnavailable.date} 观察不可用：${latestUnavailable.observation.message}`:'暂无可信策略信号';
+      const lines=wrapExplanation(warning,innerW-24,measure),maxLines=Math.max(1,Math.floor((signalH-16)/18));
+      const node=add(el('text',{x:left+12,y:signalTop+20,class:'axis','data-signal-warning':latestUnavailable?'unavailable':'empty'},''));
+      lines.slice(0,maxLines).forEach((line,index)=>node.appendChild(el('tspan',{x:left+12,dy:index?18:0},index===maxLines-1&&lines.length>maxLines?`${line.slice(0,-1)}…`:line)));
+      node.appendChild(el('title',{},warning));
+    }
+    else if(state.layers.signal){[smin0,smax0].forEach(value=>add(el('text',{x:left+innerW+8,y:ySignal(value)+4,class:'axis'},fmt(value))));if(!views.length)seriesKeys.forEach((key,index)=>{const series=allSeries.find(item=>item.key===key);add(el('text',{x:left+index*150,y:signalTop+12,fill:css(seriesColors[index%seriesColors.length]),class:'axis'},series.label));});else signalLegend.replaceChildren(...seriesKeys.map((key,index)=>{const label=document.createElement('span');label.textContent=allSeries.find(item=>item.key===key).label;label.style.color=css(seriesColors[index%seriesColors.length]);return label;}));}
+    fills.filter(item=>rows.some(row=>row.date===fillDate(item))).forEach(item=>{if(!state.layers.fill)return;const date=fillDate(item),index=rows.findIndex(row=>row.date===date),row=rows[index],buy=String(item.side).toUpperCase()==='BUY',cy=yPrice(buy?row.low:row.high)+(buy?-25:25),cx=x(index);add(el('path',{d:`M${cx},${cy} l-6,${buy?9:-9} h12 z`,fill:css('--fill'),'data-fill-id':item.fill_id}));});
+    if(state.layers.position){const positionPoints=[];rows.forEach((row,index)=>{const snapshot=snapshotByDate.get(row.date);const quantity=snapshot?.quantity;if(quantity!=null)positionPoints.push([x(index),yPosition(quantity)]);});if(positionPoints.length){let d=`M${positionPoints[0][0]},${positionPoints[0][1]}`;for(let i=1;i<positionPoints.length;i++)d+=` H${positionPoints[i][0]} V${positionPoints[i][1]}`;add(el('path',{d,fill:'none',stroke:css('--position'),'stroke-width':2}));}[0,qmax].forEach(value=>add(el('text',{x:left+innerW+8,y:yPosition(value)+4,class:'axis'},value?Number(value).toLocaleString('zh-CN'):'0')));}
+    [signalTop-10,positionTop-9,explainTop-9].forEach((y,index)=>{add(el('line',{x1:0,x2:width,y1:y,y2:y,class:'panel-rule'}));});add(el('rect',{x:left,y:explainTop,width:innerW,height:explainH,fill:css('--surface2')}));add(el('line',{x1:0,x2:width,y1:axisTop-4,y2:axisTop-4,class:'panel-rule'}));
+    const tickCount=Math.min(rows.length,compact?4:7);for(let i=0;i<tickCount;i++){const index=tickCount===1?0:Math.round(i*(rows.length-1)/(tickCount-1));add(el('text',{x:x(index),y:axisTop+18,class:'axis','text-anchor':i===0?'start':i===tickCount-1?'end':'middle'},shortDate(rows[index].date)));}
+    const cross=add(el('line',{y1:priceTop,y2:explainTop+explainH,class:'crosshair'})),priceDot=add(el('circle',{r:4,fill:css('--text'),stroke:css('--surface'),'stroke-width':2})),signalDot=add(el('circle',{r:4,fill:css('--signal'),stroke:css('--surface'),'stroke-width':2}));
+    const paintEvents=eventPanel(left,explainTop,innerW);
+    function showEvents(date){
+      state.selected=date;paintReading(byDate.get(date)?.observation,date);
+      paintEvents(date);
+    }
+    function select(index,pointer){
+      index=Math.max(0,Math.min(rows.length-1,index));
+      if(state.selected!==rows[index].date){state.selected=rows[index].date;render(pointer);return;}
+      const row=rows[index],decision=byDate.get(row.date),observation=decision?.observation;
+      showEvents(row.date);
+      cross.style.display='';priceDot.style.display='';
+      cross.setAttribute('x1',x(index));cross.setAttribute('x2',x(index));priceDot.setAttribute('cx',x(index));priceDot.setAttribute('cy',yPrice(row.close));
+      const first=!enhanced&&state.layers.signal&&observation?.status==='READY'&&(!views.length||!observation.signal_panel)?observation.series?.[0]:null;
+      signalDot.style.display=first?'':'none';if(first){signalDot.setAttribute('cx',x(index));signalDot.setAttribute('cy',ySignal(first.value));}
+      tooltip.innerHTML=`<div class="head">${safe(row.date)}</div><div class="head">行情（后复权）</div><div class="grid"><span>开 / 高</span><span>${fmt(row.open)} / ${fmt(row.high)}</span><span>低 / 收</span><span>${fmt(row.low)} / ${fmt(row.close)}</span></div>`;
+      if(enhanced&&state.layers.signal){
+        const panel=signalItem(observation,signalView),items=signalView.kind==='group'?(panel?.series||[]).filter(item=>item.group===signalView.item.key):(panel?.states||[]).filter(item=>item.key===signalView.item.key);
+        signalLegend.replaceChildren(...(items.length?items.map((item,index)=>{const label=document.createElement('span');const value=item.status==='AVAILABLE'?(signalView.kind==='group'?signalValue(item.value,signalView.item):item.options.find(option=>option.key===item.value).label):availabilityLabel(item);label.textContent=`${item.label}：${value}${(item.guides||[]).map(guide=>` / ${guide.label} ${signalValue(guide.value,signalView.item)}`).join('')}`;label.title=[item.description,item.reason].filter(Boolean).join('；');label.style.color=css(stateColor(signalView.kind==='state'&&item.status==='AVAILABLE'?item.options.findIndex(option=>option.key===item.value):index));return label;}):[Object.assign(document.createElement('span'),{textContent:observation?.status==='UNAVAILABLE'?`观察不可用：${observation.message}`:'当日没有该声明的信号观察',title:observation?.message||''})]));
+        if(pointer&&pointer[1]>=signalTop&&pointer[1]<=signalTop+signalH)tooltip.innerHTML=`<div class="head">${safe(row.date)}</div>${signalDetails(observation,signalView)}`;
+      }
+      if(!enhanced&&state.layers.signal&&pointer&&pointer[1]>=signalTop&&pointer[1]<=signalTop+signalH){
+        const failure=observation?.status==='UNAVAILABLE'?{date:row.date,observation}:!rowObservations.length?latestUnavailable:null;
+        if(failure)tooltip.innerHTML=`<div class="head">${safe(failure.date)}</div>${signalDetails(failure.observation,null)}`;
+      }
+      if(pointer){
+        tooltip.hidden=false;
+        const tooltipWidth=tooltip.offsetWidth,leftPos=pointer[0]+18;
+        tooltip.style.left=`${Math.max(0,leftPos+tooltipWidth>width?pointer[0]-tooltipWidth-18:leftPos)}px`;
+        tooltip.style.top=`${Math.max(0,Math.min(height-tooltip.offsetHeight,pointer[1]-34))}px`;
+      }
+    }
+    const selectedIndex=rows.findIndex(row=>row.date===state.selected);
+    if(state.selected&&selectedIndex<0){
+      showEvents(state.selected);cross.style.display='none';priceDot.style.display='none';signalDot.style.display='none';tooltip.hidden=true;
+    }else select(selectedIndex<0?rows.length-1:selectedIndex,pointer);
+    const overlay=add(el('rect',{x:left,y:priceTop,width:innerW,height:explainTop-priceTop,fill:'transparent'}));overlay.addEventListener('pointermove',event=>{const rect=svg.getBoundingClientRect(),px=(event.clientX-rect.left)*width/rect.width,py=(event.clientY-rect.top)*height/rect.height,index=Math.round((px-left)/innerW*(rows.length-1));select(index,[px,py]);});overlay.addEventListener('click',event=>{const rect=svg.getBoundingClientRect(),px=(event.clientX-rect.left)*width/rect.width;select(Math.round((px-left)/innerW*(rows.length-1)),null);tooltip.hidden=true;svg.focus({preventScroll:true});});overlay.addEventListener('pointerleave',()=>{tooltip.hidden=true;});
+  }
+  listen(svg,'keydown',event=>{
+    if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)||!eventDates.length)return;
+    event.preventDefault();
+    const current=eventDates.indexOf(state.selected);
+    const index=event.key==='Home'?0:event.key==='End'?eventDates.length-1:
+      Math.max(0,Math.min(eventDates.length-1,(current<0?eventDates.length-1:current)+(event.key==='ArrowLeft'?-1:1)));
+    state.selected=eventDates[index];tooltip.hidden=true;render();
+  });
+  listen(signalSelect,'change',()=>{state.signalView=signalSelect.value;tooltip.hidden=true;render();});
+  root.querySelectorAll('[data-range]').forEach(button=>listen(button,'click',()=>{state.range=button.dataset.range==='all'?'all':Number(button.dataset.range);root.querySelectorAll('[data-range]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));render();}));
+  root.querySelectorAll('[data-layer]').forEach(button=>listen(button,'click',()=>{const layer=button.dataset.layer;state.layers[layer]=!state.layers[layer];button.setAttribute('aria-pressed',String(state.layers[layer]));render();}));
+  const viewportWindow=embedded?window.parent:window;
+  listen(viewportWindow,'resize',()=>render());
+  let lastWidth=0;
+  const resizeObserver=new ResizeObserver(()=>{const width=stage.clientWidth;if(width!==lastWidth){lastWidth=width;render();}});
+  resizeObserver.observe(stage);
+  const destroy=()=>{if(destroyed)return;destroyed=true;lifecycle.abort();resizeObserver.disconnect();reading.remove();signalFooter.remove();signalControls.remove();svg.replaceChildren();tooltip.hidden=true;delete root.dataset.strategyChartMounted;};
+  listen(window,'pagehide',destroy);render();
+  return {destroy};
+};
+</script>
+  <script>mountStrategyChart(document.querySelector('#pte-forward-chart'), JSON.parse(document.querySelector('#forward-context').textContent));</script>
+</body>
+</html>
