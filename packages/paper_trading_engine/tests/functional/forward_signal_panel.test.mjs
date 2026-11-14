@@ -41,7 +41,8 @@ function render({width=1000,observations}={}){
     window:{selection_data_cutoff:dates[0],observation_start:dates[0]},
     market_data:{as_of:dates.at(-1),bars:dates.map(date=>({date,open:1,high:1.1,low:.9,close:1}))},
     observations:samples.flatMap((observation,i)=>observation?[{decision_id:`d${i}`,signal_date:dates[i],valid_session:'2026-09-11',generated_at:`${dates[i]}T12:30:00Z`,observation}]:[]),
-    execution:{decisions:[{decision_id:'d9',signal_date:dates[9],valid_session:'2026-09-11',generated_at:`${dates[9]}T12:30:00Z`,action:'WAIT',status:'COMPLETED',target_quantity:0}],fills:[],snapshots:[]}};
+     execution:{decisions:[{decision_id:'d9',signal_date:dates[9],valid_session:'2026-09-11',generated_at:`${dates[9]}T12:30:00Z`,action:'WAIT',status:'COMPLETED',target_quantity:0,
+       plan_explanation:{summary:'继续等待',detail:'策略原始计划说明'}}],fills:[],snapshots:[]}};
   nodes['forward-context'].textContent=JSON.stringify(context);
   nodes['pte-forward-chart'].querySelector=selector=>nodes[selector.slice(1)];
   nodes['pte-forward-chart'].querySelectorAll=()=>[];
@@ -79,7 +80,8 @@ test('v3 signal groups preserve gaps, segments and release boundaries while rend
   assert.deepEqual(svg.children.filter(node=>node.name==='rect'&&node.attributes.stroke).map(node=>({...node.attributes})),beforeCandles);
   assert.match(controls.textContent,/% · 相对变化/);
   svg.listeners.keydown({key:'End',preventDefault(){}});
-  assert.match(svg.textContent,/旧事件说明 0.4200/,'event explanation remains unchanged on its recorded date');
+  assert.match(svg.textContent,/策略判断：未记录[\s\S]*计划说明：策略原始计划说明/);
+  assert.doesNotMatch(svg.textContent,/旧事件说明 0.4200/);
   svg.listeners.keydown({key:'Home',preventDefault(){}});
   const overlay=svg.children.at(-1);
   overlay.listeners.pointermove({clientX:68+(1000-68-72)*2/9,clientY:(Number.parseFloat(controls.style.top)+35)*800/Number(svg.attributes.viewBox.split(' ')[3])});

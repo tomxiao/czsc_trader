@@ -35,11 +35,11 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
     execution:{
       decisions:[
         {decision_id:'TIMELINE',signal_date:'2026-09-03',valid_session:'2026-09-04',generated_at:'2026-09-04T09:00:00+08:00',action:'WAIT',status:'COMPLETED',target_quantity:0},
-        {decision_id:'OLD',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-02T12:30:00Z',action:'ROTATE',status:'SUPERSEDED',target_quantity:1000},
+        {decision_id:'OLD',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-02T12:30:00Z',action:'ROTATE',status:'SUPERSEDED',target_quantity:1000,explanation:{basis:[],judgment:'日内轮换'}},
         {decision_id:'NEW',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-02T17:30:00Z',action:'HOLD',status:'PENDING',target_quantity:0},
         {decision_id:'LEGACY',signal_date:'2026-09-03',valid_session:'2026-09-04',generated_at:'2026-09-03T13:00:00Z',action:'WAIT',status:'COMPLETED',state_reason:'NO_ORDER',state_changed_at:'2026-09-03T13:00:00Z',target_quantity:0},
         {decision_id:'VOID',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-03T14:00:00Z',action:'BUY',status:'CANCELLED',state_reason:'CANCELLED',state_changed_at:'2026-09-03T14:00:00Z',target_quantity:5000},
-        {decision_id:'WEEKEND',signal_date:'2026-09-04',valid_session:'2026-09-07',generated_at:'2026-09-05T03:00:00Z',action:'HOLD',status:'COMPLETED',state_reason:'NO_ORDER',state_changed_at:'2026-09-05T03:00:00Z',target_quantity:0},
+        {decision_id:'WEEKEND',signal_date:'2026-09-04',valid_session:'2026-09-07',generated_at:'2026-09-05T03:00:00Z',action:'HOLD',status:'COMPLETED',state_reason:'NO_ORDER',state_changed_at:'2026-09-05T03:00:00Z',target_quantity:0,explanation:{basis:[],judgment:'持有'},target_position:.5,execution_plan:{orders:[]},plan_explanation:{summary:'延续目标',detail:'策略延续原目标仓位'},result_explanation:{summary:'本轮无需委托',detail:'策略本轮无需委托'}},
       ],
       fills:[
         {fill_id:'<img>',channel_order_id:'O2',decision_id:'NEW',side:'SELL',quantity:400,price:1.2,fee:1,occurred_at:'2026-09-04T03:00:00Z'},
@@ -64,9 +64,10 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
   assert.match(svg.textContent,/事件/);
   assert.match(svg.textContent,/2026-09-04 · 决策 1 笔 · 成交 2 笔/);
   assert.match(svg.textContent,/2026-09-04 02:30:00 · 成交：买入/);
-  assert.match(svg.textContent,/2026-09-05 11:00:00 · 决策：持有/);
+  assert.match(svg.textContent,/记录 2026-09-05 11:00:00 · 信号日 2026-09-04 · 生效日 2026-09-07\n策略判断：持有\n目标仓位：50%/);
+  assert.match(svg.textContent,/执行计划：无委托\n计划说明：策略延续原目标仓位/);
   assert.match(svg.textContent,/2026-09-04 11:00:00 · 成交：卖出/);
-  assert.ok(svg.textContent.indexOf('2026-09-04 11:00:00 · 成交')<svg.textContent.indexOf('2026-09-05 11:00:00 · 决策'));
+  assert.ok(svg.textContent.indexOf('2026-09-04 11:00:00 · 成交')<svg.textContent.indexOf('记录 2026-09-05 11:00:00'));
   assert.ok(!svg.textContent.includes('已失效'));
   assert.ok(!svg.textContent.includes('目标 5,000 股'));
   for(const text of ['买入 100 股','卖出 400 股','123.45 元','费用 0.12 元','2026-09-04 02:30:00'])assert.ok(svg.textContent.includes(text),text);
@@ -85,20 +86,20 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
   assert.match(svg.textContent,/日内轮换/);
   assert.match(svg.textContent,/已替代/);
   assert.match(svg.textContent,/待执行/);
-  assert.match(svg.textContent,/生效 2026-09-04；信号 2026-09-02/);
-  assert.ok(svg.textContent.indexOf('20:30:00 · 决策')<svg.textContent.indexOf('01:30:00 · 决策'));
+  assert.match(svg.textContent,/信号日 2026-09-02 · 生效日 2026-09-04/);
+  assert.ok(svg.textContent.indexOf('记录 2026-09-02 20:30:00')<svg.textContent.indexOf('记录 2026-09-03 01:30:00'));
   assert.doesNotMatch(svg.textContent,/决策 0 笔|成交 0 笔/);
   assert.doesNotMatch(tooltip.innerHTML,/目标持仓|未记录|决策|成交/);
   overlay.listeners.pointermove({clientX:498,clientY:60});
   assert.match(svg.textContent,/2026-09-03 · 决策 2 笔/);
-  assert.match(svg.textContent,/目标 0 股/);
-  assert.match(svg.textContent,/2026-09-04 09:00:00 · 决策：等待/);
-  assert.ok(svg.textContent.indexOf('21:00:00 · 决策')<svg.textContent.indexOf('09:00:00 · 决策'));
+  assert.match(svg.textContent,/目标仓位：未记录/);
+  assert.match(svg.textContent,/记录 2026-09-04 09:00:00 · 信号日 2026-09-03/);
+  assert.ok(svg.textContent.indexOf('记录 2026-09-03 21:00:00')<svg.textContent.indexOf('记录 2026-09-04 09:00:00'));
   assert.doesNotMatch(svg.textContent,/已替代|已失效/);
   const candleCount=svg.children.filter(node=>node.name==='rect'&&node.attributes.stroke).length;
   let prevented=false;svg.listeners.keydown({key:'End',preventDefault(){prevented=true;}});assert.equal(prevented,true);
   assert.match(svg.textContent,/2026-09-04 · 决策 1 笔 · 成交 2 笔/);
-  assert.match(svg.textContent,/状态原因：计划无需下单/);
+  assert.match(svg.textContent,/执行结果：无需下单\n结果说明：策略本轮无需委托/);
   assert.equal(svg.children.filter(node=>node.name==='rect'&&node.attributes.stroke).length,candleCount);
   assert.equal(tooltip.hidden,true);
   svg.children.at(-1).listeners.pointermove({clientX:928,clientY:60});
@@ -250,7 +251,7 @@ test('account decision shows the continuing strategy judgment alongside a pendin
     const account_id=`s001-${version}`,account={account_id,quantity:actual};
     const decision={
       decision_id:'decision',action:'BUY',signal_date:'2026-11-11',valid_session:'2026-11-12',
-      strategy_output:{explanation:{judgment:'延续目标仓位'}},
+      strategy_output:{explanation:{basis:[],judgment:'延续目标仓位'}},
       execution_effect:{availability:'AVAILABLE',status:'WAITING',planning_status:'READY',
         target_weight:1,actual_weight:weight,actual_quantity:actual,planned_quantity:actual+topUp,
         orders:[{side:'BUY',quantity:topUp,status:'PENDING_SUBMIT'}]},

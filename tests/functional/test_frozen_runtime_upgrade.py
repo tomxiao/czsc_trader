@@ -6,7 +6,6 @@ rollback run through the real upgrade API without completed-inspection substitut
 """
 
 from dataclasses import replace
-from datetime import date
 from hashlib import sha256
 import json
 import shutil

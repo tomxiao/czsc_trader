@@ -118,6 +118,13 @@ def load_release(runtime_root: Path, release_id: str) -> RuntimeRelease:
     return _load_release(runtime_root, release_id, deployment_inventory)
 
 
+def load_release_for_migration(runtime_root: Path, release_id: str) -> RuntimeRelease:
+    """Authenticate the source bytes of a historical installation."""
+    from strategy_runtime.deployment import deployment_integrity_inventory
+
+    return _load_release(runtime_root, release_id, deployment_integrity_inventory)
+
+
 def _load_release(
     runtime_root: Path, release_id: str,
     inventory_reader: Callable[[Path], dict[str, str]],

@@ -78,6 +78,7 @@ def _runtime(tmp_path, client, root, monkeypatch):
         manifest={'database_schema': {'compatible': [RUNTIME_DATABASE_SCHEMA_VERSION]}})
         for name, path in (('source', source), ('target', client.repo_root))}
     monkeypatch.setattr(account_maintenance, 'load_release', lambda _, name: releases[name])
+    monkeypatch.setattr(account_maintenance, 'load_release_for_migration', lambda _, name: releases[name])
     return runtime, store, data
 
 

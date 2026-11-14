@@ -10,7 +10,7 @@ import json
 import sqlite3
 from threading import RLock
 
-from dataflows import BarFrequency, TimeInterval
+from dataflows import TimeInterval
 from strategy_manager import Qualification, StrategyRegistry
 from strategy_runtime import AccountStrategyState, EntryCycleState, canonical_sha256
 from strategy_runtime.account_strategy import PositionCycle
@@ -179,11 +179,11 @@ def _state_binding(account_id, release_hash, candidate, fee_rate):
                         "specification": candidate.execution_spec_hash, "fee_rate": fee_rate})
 
 
-def _bound_state_document(store, facts, update, candidate, runtime_root, load_release, data_dir):
+def _bound_state_document(store, facts, update, candidate, runtime_root, load_source_release, data_dir):
     account, treatment = facts["account"], update.state
     if treatment.source_runtime_release_id is None:
         raise ValueError("existing V5 state requires an exact source runtime release")
-    source_runtime = load_release(runtime_root, treatment.source_runtime_release_id)
+    source_runtime = load_source_release(runtime_root, treatment.source_runtime_release_id)
     # Offline migration authenticates the immutable source document without executing or
     # interpreting its retired strategy input contract through the current SRT loader.
     from strategy_runtime import StrategyRelease
@@ -257,7 +257,7 @@ def _retire_unused_legacy_budget(document, policy):
             "reason": "TARGET_POLICY_DOES_NOT_USE_CYCLE_BUDGET", "target_policy": policy.policy_type}
 
 
-def _prepare(store, facts, update, release, runtime_root, load_release, data_dir):
+def _prepare(store, facts, update, release, runtime_root, load_source_release, data_dir):
     account = facts["account"]
     channel = facts["channel"]
     profile = channel_profile(account["channel_id"])
@@ -280,8 +280,6 @@ def _prepare(store, facts, update, release, runtime_root, load_release, data_dir
             or candidate.instrument.asset_class.value.lower() != account["asset_type"]):
         raise ValueError("target qualified release differs from the V5 binding request")
     definition = candidate.definition
-    if definition.execution_spec.decision_clock is not BarFrequency.DAILY:
-        raise ValueError("V5 forward recipe requires a daily frozen execution clock")
     update.inputs.validate_candidate(target.release_hash, candidate)
     # Validate the explicit live projection before any account mutation.
     replace(update.inputs, binding=update.inputs.binding.for_observations()).validate_candidate(target.release_hash, candidate)
@@ -291,7 +289,7 @@ def _prepare(store, facts, update, release, runtime_root, load_release, data_dir
         account["symbol"], update.inputs.fee_rate, instrument=candidate.instrument)
     if account["strategy_version"] == binding.version and account["selection_data_cutoff"] != version.selection_data_cutoff:
         raise ValueError("same-version binding cannot change its selection cutoff")
-    document = (_bound_state_document(store, facts, update, candidate, runtime_root, load_release, data_dir)
+    document = (_bound_state_document(store, facts, update, candidate, runtime_root, load_source_release, data_dir)
                 if account["equity_rules_json"] else _legacy_document(facts, update.state, update))
     retired_budget = (None if account["equity_rules_json"]
                       else _retire_unused_legacy_budget(document, definition.execution_policy))
@@ -364,7 +362,7 @@ def _apply(store, update, prepared, plan_sha256):
     ])
 
 
-def update_equity_account_bindings(runtime_root, target_release_id, updates, *, load_release):
+def update_equity_account_bindings(runtime_root, target_release_id, updates, *, load_release, load_source_release):
     release = load_release(runtime_root, target_release_id)
     shared = release.runtime_root / "shared"
     database = shared / "state" / "runtime.db"
@@ -395,7 +393,7 @@ def update_equity_account_bindings(runtime_root, target_release_id, updates, *, 
             scoped = {item.account_id: store.scope(facts[item.account_id]["account"]["channel_account_id"])
                       for item in updates}
             prepared = {item.account_id: _prepare(scoped[item.account_id], facts[item.account_id], item, release,
-                         runtime_root, load_release, shared / "data") for item in updates}
+                         runtime_root, load_source_release, shared / "data") for item in updates}
             connection.rollback()
             if load_release(runtime_root, target_release_id).manifest_sha256 != release.manifest_sha256:
                 raise ValueError("target release changed during account binding validation")

@@ -53,13 +53,13 @@ def multifile_candidate(root):
         + SOURCE.replace("def step(ctx, state):", "counter = 0\ndef step(ctx, state):")
     )
     source = source.replace(
-        "    close = ctx.features",
+        "    close = 10.",
         "    global counter\n    counter += 1\n"
         "    expected_threshold, helper_count = 10., 0\n"
         "    if counter > 1:\n"
         "        from .rules import threshold\n"
         "        expected_threshold, helper_count = threshold()\n"
-        "    close = ctx.features",
+        "    close = 10.",
     )
     source = source.replace("close >= 10.", "close >= expected_threshold")
     source = source.replace(
@@ -208,8 +208,8 @@ def test_namespace_and_import_finder_cleanup_after_failure(tmp_path, failure):
     source += SOURCE
     if failure == "step":
         source = source.replace(
-            "    close = ctx.features",
-            '    raise RuntimeError("synthetic step failure")\n    close = ctx.features',
+            "    close = 10.",
+            '    raise RuntimeError("synthetic step failure")\n    close = 10.',
         )
     value = set_source(value, source)
     bars, constraints, executor = inputs(value)

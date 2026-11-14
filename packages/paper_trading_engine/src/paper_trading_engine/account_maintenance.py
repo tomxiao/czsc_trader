@@ -23,7 +23,7 @@ from .data_space import create_dataflows
 from execution_channels.futu.lifecycle import RunState, DecisionState
 from .runtime_config import PteRuntimeConfig
 from .runtime_lock import RuntimeDatabaseLock
-from .runtime_release import load_release
+from .runtime_release import load_release, load_release_for_migration
 from .srt_advice_client import SrtAdviceClient
 from execution_channels.futu.store import PaperStore, RUNTIME_DATABASE_SCHEMA_VERSION, _update_account_bindings
 
@@ -69,7 +69,8 @@ def update_account_bindings(
     if request_type is EquityAccountBindingUpdate:
         from .equity_account_maintenance import update_equity_account_bindings
 
-        return update_equity_account_bindings(runtime_root, target_release_id, updates, load_release=load_release)
+        return update_equity_account_bindings(runtime_root, target_release_id, updates,
+            load_release=load_release, load_source_release=load_release_for_migration)
     release = load_release(runtime_root, target_release_id)
     shared = release.runtime_root / "shared"
     database = shared / "state" / "runtime.db"

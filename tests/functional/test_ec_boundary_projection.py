@@ -7,19 +7,19 @@ import pickle
 import pytest
 from dataflows import BarFrequency, MarketId, TimeInterval
 from strategy_runtime import (AccountDecisionEngine, AccountSnapshot, AccountStrategyState,
-                              EquityPortfolio, PositionFeedback, StrategyComputation)
+                              EquityPortfolio, PositionFeedback)
 from execution_channels import contracts as ec
 from execution_channels.policy import ExecutionPolicy
 from execution_channels.planning import plan_account_decision
 from execution_channels.planning.intent import TradeIntent
 from execution_channels.serialization import from_record, to_record
 from czsc_trader.application import ec_boundary as boundary
-from packages.strategy_runtime.tests.v4_fixture_support import setup
+from packages.strategy_runtime.tests.v4_fixture_support import setup_step
 
 
 def prepared_facts(tmp_path, market=MarketId.US):
-    candidate, prepared, _, _, _, _, _ = setup(tmp_path, market, BarFrequency.M30,
-        StrategyComputation.STATEFUL_STEP, with_executor=False)
+    candidate, prepared, _, _, _, _, _ = setup_step(
+        tmp_path, market, BarFrequency.M30, with_executor=False)
     interval = TimeInterval(prepared._data.starts[1], prepared._data.ends[1])
     account = AccountSnapshot(candidate.instrument, candidate.definition.execution_spec.account.currency,
         interval.start, 0, 100000., 100000., 0., 0, 0)
@@ -92,20 +92,18 @@ def test_dynamic_projection_rejects_untyped_records(project):
         project({})
 
 
-def test_same_interval_observation_reuses_immutable_values_and_isolates_mapping(tmp_path, monkeypatch):
+def test_same_interval_observation_reuses_immutable_values(tmp_path, monkeypatch):
     candidate, prepared, interval, _ = prepared_facts(tmp_path)
     engine = AccountDecisionEngine(candidate, prepared)
     calls = []
-    original = engine._features.at
+    original = engine._visibility.advance
     def observe(when):
         calls.append(when)
         return original(when)
-    monkeypatch.setattr(engine._features, 'at', observe)
+    monkeypatch.setattr(engine._visibility, 'advance', observe)
     first = engine.observation(interval)
-    first[3]['foreign'] = object()
     second = engine.observation(interval)
-    assert 'foreign' not in second[3]
-    assert second[2] is first[2]
+    assert second is first
     assert calls == [interval.start]
     engine.observation(TimeInterval(prepared._data.starts[2], prepared._data.ends[2]))
     with pytest.raises(ValueError, match='causal time order'):

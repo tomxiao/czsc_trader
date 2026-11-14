@@ -116,7 +116,7 @@ def assert_frozen_preparation_identity(preparations, reference, monkeypatch):
         module = importlib.import_module(prefix + "." + ".".join(path.relative_to(result.candidate.source_root).with_suffix("").parts))
         assert Path(module.__file__).resolve() == path.resolve()
     assert result.equivalence_status == "NOT_YET_NUMERICALLY_VERIFIED"
-    with pytest.raises(ValueError, match="frozen contract version 4 is unsupported by the V1-to-V2 migration"):
+    with pytest.raises(ValueError, match="frozen contract version 5 is unsupported by the V1-to-V2 migration"):
         prepare_frozen_runtime_migration(RepositoryContext.discover(ROOT), FrozenRuntimeMigrationRequest(
             reference, "C9899", result.metadata_path.parent / "no-second-migration"))
     if reference == "S007-v1":

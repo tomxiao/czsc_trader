@@ -5,10 +5,7 @@ from datetime import date, datetime, timedelta, timezone
 import pandas as pd
 import pytest
 from dataflows import BarFrequency, TimeInterval, TradingSession
-from strategy_runtime import (
-    EquityPortfolio,
-    StrategyRuntime,
-)
+from strategy_runtime import StrategyRuntime
 from packages.strategy_runtime.tests.context_fixture_support import (
     make_candidate,
     fixture,
@@ -29,16 +26,8 @@ def test_SRT_15_C03_public_plan_context_causal_slice_halfday_and_isolation(tmp_p
     assert first == second
     assert context.auxiliary_histories["market"].Close.iloc[-1] == 11.0
     assert data[1].Close.tolist() == [10.0, 11.0, 10.0]
-    instance = StrategyRuntime(execution_spec=value.definition.execution_spec).create(value)
-    result = instance.propose(
-        data[0],
-        data[2].execution_interval,
-        EquityPortfolio(1000.0, 0, 0.0, 0),
-        auxiliary_histories={"market": data[1]},
-        sessions=data[3],
-        trading_sessions=data[4],
-    )
-    assert result.target == 1
+    with pytest.raises(ValueError, match="V5 DFLS step contract"):
+        StrategyRuntime(execution_spec=value.definition.execution_spec).create(value)
 
 
 def test_SRT_15_C05_daily_auxiliary_at_intraday_decision_uses_completed_prior_day(tmp_path):

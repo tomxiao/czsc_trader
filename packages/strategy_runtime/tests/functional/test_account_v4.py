@@ -15,7 +15,7 @@ from czsc_trader.application.account_replay import run_replay
 from czsc_trader.application.ec_boundary import execution_spec
 
 
-from packages.strategy_runtime.tests.v4_fixture_support import setup
+from packages.strategy_runtime.tests.v4_fixture_support import setup, setup_step
 
 
 @pytest.mark.parametrize(
@@ -43,16 +43,9 @@ def step(ctx,state):
 """
 
 
-@pytest.mark.parametrize(
-    "computation",
-    [
-        StrategyComputation.STATEFUL_STEP,
-    ],
-    ids=["SRT-14-C05"],
-)
-def test_future_suffix_does_not_change_prefix_accounts(tmp_path, computation):
-    c, p, e, b, r, sessions, frame = setup(
-        tmp_path / "first", MarketId.US, BarFrequency.M30, computation
+def test_SRT_14_C05_future_suffix_does_not_change_prefix_accounts(tmp_path):
+    c, p, e, b, r, sessions, frame = setup_step(
+        tmp_path / "first", MarketId.US, BarFrequency.M30
     )
     end = b.Date.iloc[-1].to_pydatetime()
     first = run_replay(
@@ -93,9 +86,9 @@ def test_future_suffix_does_not_change_prefix_accounts(tmp_path, computation):
     )
 
 
-def test_SRT_08_C06_v4_rejects_mismatched_prepared_frequency(tmp_path):
-    c, p, e, b, constraints, _, _ = setup(
-        tmp_path, MarketId.US, BarFrequency.M30, StrategyComputation.STATEFUL_STEP
+def test_SRT_08_C06_v5_rejects_mismatched_prepared_frequency(tmp_path):
+    c, p, e, b, constraints, _, _ = setup_step(
+        tmp_path, MarketId.US, BarFrequency.M30
     )
     with pytest.raises(ValueError, match="decision clock"):
         run_replay(
@@ -179,8 +172,8 @@ def test_SRT_27_C02_legacy_definitions_do_not_acquire_v4_fields_or_cn_auxiliary(
     ids=["SRT-15-C01", "SRT-15-C02"],
 )
 def test_calendar_breaks_and_dst_drive_actual_clock_without_filling_closed_time(tmp_path, market):
-    c, _, e, old, old_rules, _, _ = setup(
-        tmp_path, market, BarFrequency.M30, StrategyComputation.STATEFUL_STEP
+    c, _, e, old, old_rules, _, _ = setup_step(
+        tmp_path, market, BarFrequency.M30
     )
     zone = ZoneInfo(c.instrument.timezone)
     if market is MarketId.CN:

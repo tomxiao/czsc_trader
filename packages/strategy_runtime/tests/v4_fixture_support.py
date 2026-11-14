@@ -49,3 +49,19 @@ def setup(root, market, frequency, computation, *, with_executor=True):
     prepared=PreparedObservations.from_frames(bars,definition.feature_graph,frequency=frequency,timezone=instrument.timezone,sessions=session_frame,trading_sessions=sessions)
     executor=None if not with_executor else PortfolioHistoricalExecutor(specification=execution_spec(spec),initial_cash=100000.,fee_rate=.001,price_basis='HFQ')
     return candidate,prepared,executor,bars,constraints,sessions,session_frame
+
+
+def setup_step(root, market, frequency, *, with_executor=True):
+    """Current step fixture with the same host calendar and execution facts."""
+    from dataclasses import replace
+
+    candidate, _, executor, bars, constraints, sessions, session_frame = setup(
+        root, market, frequency, StrategyComputation.STATEFUL_STEP, with_executor=with_executor)
+    (root / 'strategy.py').write_text(
+        STEP.replace("int(ctx.history.last()['Close']-10)", 'state.revision'), encoding='utf-8')
+    definition = replace(candidate.definition, contract_version=5, feature_graph=FeatureGraph((), ()),
+        source_sha256=equity_source_hash(root, ('strategy.py',)))
+    candidate = replace(candidate, definition=definition)
+    prepared = PreparedObservations.from_frames(bars, definition.feature_graph, frequency=frequency,
+        timezone=candidate.instrument.timezone, sessions=session_frame, trading_sessions=sessions)
+    return candidate, prepared, executor, bars, constraints, sessions, session_frame

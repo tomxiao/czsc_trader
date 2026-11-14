@@ -9,7 +9,6 @@ from contextlib import closing
 from concurrent.futures import CancelledError
 from concurrent.futures.process import BrokenProcessPool
 from dataclasses import asdict, dataclass, field, replace
-from datetime import date
 from hashlib import sha256
 import inspect
 import json

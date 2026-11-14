@@ -267,7 +267,15 @@ def load_inspection_deployment(strategy_root: Path, release_id: str, permit: Ins
 
 def deployment_inventory(strategy_root: Path) -> dict[str, str]:
     """Return current deployments; authenticate retained history without loading it."""
+    return _deployment_inventory(strategy_root, validate_release_package)
 
+
+def deployment_integrity_inventory(strategy_root: Path) -> dict[str, str]:
+    """Authenticate a retained installation for audit or migration."""
+    return _deployment_inventory(strategy_root, validate_release_integrity)
+
+
+def _deployment_inventory(strategy_root: Path, validate_current) -> dict[str, str]:
     root = Path(strategy_root).resolve()
     deployments = root / "deployments"
     if not deployments.is_dir():
@@ -280,8 +288,12 @@ def deployment_inventory(strategy_root: Path) -> dict[str, str]:
         _verify_receipt_package(receipt, path.stem, package)
     inventory: dict[str, str] = {}
     for path in sorted(deployments.glob("S*-v*.json")):
-        deployment = load_strategy_deployment(root, path.stem)
-        inventory[deployment.release_id] = deployment.package_hash
+        if (deployments / 'history' / path.name).exists():
+            raise RuntimeCompatibilityError("strategy deployment is retained history, not a current release")
+        receipt = _deployment_receipt(path)
+        package = validate_current(root, path.stem)
+        _verify_receipt_package(receipt, path.stem, package)
+        inventory[path.stem] = package.package_sha256
     if not inventory:
         raise RuntimeCompatibilityError("strategy deployment inventory is empty")
     return inventory

@@ -14,10 +14,12 @@ from strategy_runtime import FrozenDataAsset, ObservationAvailability, StepDataI
 from strategy_runtime.step_data import StepData
 
 
-def reader(*, missing=False):
+def reader(*, missing=False, text_dates=False):
     declaration = StepDataInput('market', Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY,
         '000300.SH', 'daily', 7, ObservationAvailability('Asia/Shanghai', '17:00'))
     frame = pd.DataFrame({'Date': pd.to_datetime(['2026-03-02', '2026-03-03']), 'Close': [1., 2.]})
+    if text_dates:
+        frame['Date'] = frame.Date.dt.strftime('%Y-%m-%d')
     cutoff = datetime(2026, 3, 3, 8, tzinfo=timezone.utc)
     observed = datetime(2026, 3, 3, 7, tzinfo=timezone.utc)
     identity = DataIdentity(declaration.dataset.value, 'fixture', declaration.symbol,
@@ -36,10 +38,12 @@ def reader(*, missing=False):
     return StepData((declaration,), as_of=cutoff, observed_through=observed, load=load), calls
 
 
-def test_step_data_excludes_unpublished_rows_and_records_reproducible_slice():
-    data, calls = reader()
+@pytest.mark.parametrize('text_dates', [False, True], ids=['timestamps', 'provider-date-strings'])
+def test_step_data_excludes_unpublished_rows_and_records_reproducible_slice(text_dates):
+    data, calls = reader(text_dates=text_dates)
     window = StepDataWindow('market', date(2026, 3, 2), date(2026, 3, 3))
     visible = data.fetch(window)
+    assert visible.Date.dt.date.tolist() == [date(2026, 3, 2)]
     assert visible.Close.tolist() == [1.]
     read, = data.receipts()
     assert read.rows == 1

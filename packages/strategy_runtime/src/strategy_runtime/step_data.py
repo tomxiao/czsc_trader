@@ -232,8 +232,11 @@ class StepData:
         clock = datetime.strptime(item.availability.available_time, '%H:%M').time()
         floor = (source.dt.tz_localize(None).dt.normalize() + pd.Timedelta(
             days=item.availability.day_offset, hours=clock.hour, minutes=clock.minute)).dt.tz_localize(zone)
-        return frame.loc[(source <= self._observed_through) & (available <= self._as_of)
-                         & (floor <= self._as_of)].reset_index(drop=True)
+        visible = frame.loc[(source <= self._observed_through) & (available <= self._as_of)
+                            & (floor <= self._as_of)].reset_index(drop=True)
+        if not pd.api.types.is_datetime64_any_dtype(visible['Date']):
+            visible['Date'] = pd.to_datetime(visible['Date'], errors='raise')
+        return visible
 
     def close(self):
         self._load = None

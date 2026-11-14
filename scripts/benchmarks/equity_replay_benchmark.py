@@ -66,7 +66,7 @@ def run_benchmark(*,rows,repeats,market,output):
     spec=ResearchExecutionSpec(CnEquitySpec() if market is MarketId.CN else UsEquitySpec(),BarFrequency.M30,
         AccountPolicy(instrument.currency,CashAvailabilityPolicy.IMMEDIATE_RESEARCH),step,.01,.01,0.)
     definition=EquityStrategyDefinition(instrument,spec,1,'strategy:step',('strategy.py',),
-        equity_source_hash(source,('strategy.py',)),contract_version=4,computation=StrategyComputation.STATEFUL_STEP,
+        equity_source_hash(source,('strategy.py',)),contract_version=5,computation=StrategyComputation.STATEFUL_STEP,
         feature_graph=FeatureGraph((),()),state_schema=StrategyStateSchema(), analysis_price='HFQ',
         execution_policy=ExecutionPolicy('TARGET_POSITION', {'capital_mode':'full_available_cash'}))
     candidate=EquityStrategyCandidate('S999','C0001',definition,source)

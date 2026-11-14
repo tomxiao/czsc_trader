@@ -1,4 +1,5 @@
 """Strategy Runtime (SRT) public contracts."""
+from .step_data import STEP_DATA_CONTRACT, StepDataInput, StepDataWindow
 from .replay_contracts import (
     ReplayPoint, AccountSnapshot, ReplayOrder, ReplayLeg, CycleBudget,
     AccountExecutionPlan, StrategyComputation, ExecutionPrecision,
@@ -226,5 +227,4 @@ __all__ += ['ExecutionInput', 'ExecutionInputBinding']
 
 __all__ += ['DatasetObservationInput', 'DatasetObservationBinding', 'FrozenDataAsset',
             'ObservationAvailability', 'PreparedObservationTable', 'TableHistoryView', 'TableObservationStatus']
-from .step_data import STEP_DATA_CONTRACT, StepDataInput, StepDataWindow
 __all__ += ['STEP_DATA_CONTRACT', 'StepDataInput', 'StepDataWindow']

@@ -9,7 +9,7 @@ from dataflows import (AssetClass, BarFrequency, EquityProduct, InstrumentId, Ma
     TradingSession)
 from dataflows.equity_data import equity_metadata, session_record
 from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy, CnEquitySpec, UsEquitySpec,
-    EquityAuxiliaryInput, EquityStrategyCandidate, EquityStrategyDefinition,
+    EquityStrategyCandidate, EquityStrategyDefinition,
     ExecutionResources, ResearchExecutionSpec, StrategyComputation, equity_source_hash)
 from strategy_runtime.equity_features import FeatureGraph
 from strategy_runtime.models import ExecutionPolicy
@@ -29,7 +29,6 @@ def setup_adjusted(tmp_path, market, computation=StrategyComputation.STATEFUL_ST
     cn = market is MarketId.CN
     instrument = (InstrumentId(market, AssetClass.ETF, "510500.SH" if cn else "QQQ") if etf
                   else InstrumentId(market, AssetClass.STOCK, "600722.SH" if cn else "MU"))
-    sector = InstrumentId(market, AssetClass.ETF, ("159326.SZ" if etf else "510500.SH") if cn else "SOXX")
     source = SourceRef("adjusted-fixture", "v1")
     zone = ZoneInfo(instrument.timezone)
     sessions = []

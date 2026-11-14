@@ -50,7 +50,7 @@ def test_mu_no_order_decision_drives_chart_start_and_saved_explanation(tmp_path)
     assert "no opportunity" in artifact["html"]
     assert "/static/strategy-chart.js" not in artifact["html"]
     row["payload"]["strategy_output"].clear()
-    with pytest.raises(ValueError, match="missing the saved V4 explanation"):
+    with pytest.raises(ValueError, match="missing the saved strategy explanation"):
         _inspect_forward_chart(store, {"decisions": [row]}, market_data, tmp_path)
 
 

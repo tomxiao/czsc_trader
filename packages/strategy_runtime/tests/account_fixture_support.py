@@ -25,7 +25,7 @@ from strategy_runtime import (AccountPolicy, CashAvailabilityPolicy, EquityStrat
     EquityStrategyDefinition, ResearchExecutionSpec, UsEquitySpec, StrategyComputation, equity_source_hash)
 
 
-from strategy_runtime.equity_features import BarField, FeatureGraph, RawField
+from strategy_runtime.equity_features import FeatureGraph
 
 
 from strategy_runtime.equity_replay import (PreparedObservations, StateField, StateValueType, StrategyStateSchema)
@@ -42,7 +42,7 @@ from czsc_trader.application.ec_boundary import execution_spec
 SOURCE = '''from strategy_runtime import AccountDecision, AccountStepResult
 from strategy_runtime.equity_replay import StateRecord
 def step(ctx, state):
-    close = ctx.features.get("close").value
+    close = 10.
     if state.cycle is None:
         held, latched = 0, False
         target = int(close >= 10.)
@@ -60,12 +60,12 @@ def candidate(root):
     (root / 'strategy.py').write_text(SOURCE, encoding='utf-8')
     spec = ResearchExecutionSpec(UsEquitySpec(), BarFrequency.M30,
         AccountPolicy('USD', CashAvailabilityPolicy.IMMEDIATE_RESEARCH), 1, .01, .01, 0.)
-    graph = FeatureGraph((RawField('close', BarField.CLOSE),), ('close',))
+    graph = FeatureGraph((), ())
     schema = StrategyStateSchema(cycle_fields=(StateField('held', StateValueType.INT),
                                              StateField('latched', StateValueType.BOOL)))
     definition = EquityStrategyDefinition(InstrumentId(MarketId.US, AssetClass.STOCK, 'LITE'),
         spec, 1, 'strategy:step', ('strategy.py',), equity_source_hash(root, ('strategy.py',)), '{}',
-        contract_version=4,execution_policy=ExecutionPolicy("TARGET_POSITION", {"capital_mode":"full_available_cash"}), computation=StrategyComputation.STATEFUL_STEP, feature_graph=graph, state_schema=schema)
+        contract_version=5,execution_policy=ExecutionPolicy("TARGET_POSITION", {"capital_mode":"full_available_cash"}), computation=StrategyComputation.STATEFUL_STEP, feature_graph=graph, state_schema=schema)
     return EquityStrategyCandidate('S999', 'C0001', definition, root)
 
 
