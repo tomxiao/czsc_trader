@@ -64,6 +64,8 @@ interface StrategyChartContext {
       state_reason?: string; state_changed_at?: string;
       explanation?: DecisionExplanation | null;
       target_position?: number | null; position_at_decision?: number | null;
+      plan_explanation?: {summary: string; detail: string};
+      result_explanation?: {summary: string; detail: string};
       execution_plan?: {
         orders: Array<{side: 'BUY' | 'SELL'; quantity: number}>;
         trigger: 'INITIAL_TARGET' | 'TARGET_CHANGED' | 'PREVIOUS_ZERO_FILL' | 'UNCHANGED_TARGET' | null;
@@ -71,7 +73,8 @@ interface StrategyChartContext {
           reasons: string[]; desired_quantity: number; planned_quantity: number} | null;
       };
     }>;
-    intents?: Array<{decision_id: string; status: string; channel_order_id: string | null}>;
+    intents?: Array<{decision_id: string; status: string; channel_order_id: string | null;
+      channel_status?: string | null; submitted_at?: string | null}>;
     fills: Array<{
       fill_id: string; decision_id?: string; occurred_at: string; session?: string; time_precision?: 'SESSION' | 'TIMESTAMP';
       side: 'BUY' | 'SELL'; quantity: number; price: number; fee: number | null;

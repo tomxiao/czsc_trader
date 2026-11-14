@@ -291,6 +291,7 @@ def build_multichannel_runtime(args, store, dataflows, *, gateway_factory=FutuGa
         console.account_chart = AccountChartService(
             store, market_data=AccountChartMarketData(dataflows=dataflows, formal_inputs=formal_inputs),
             cache_dir=args.database.parent / 'charts',
+            strategy_root=args.repo_root / 'strategies',
             audit_for_account=lambda account: services_by_id[account['channel_account_id']].accounts.audit,
         )
         return MultiChannelRuntime(store, services_by_id, console_view=console,

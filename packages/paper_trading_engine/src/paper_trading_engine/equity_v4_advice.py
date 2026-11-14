@@ -7,7 +7,7 @@ import json
 from strategy_runtime import AccountDecisionEngine, AccountStrategyState, EquityPortfolio
 from strategy_runtime.account_strategy import PositionFeedback
 from .contracts import AdviceDecision, OrderSpec, PlanLegSpec
-from execution_channels.daily_execution import DAILY_TARGET_TRIGGER, INTERVAL_TARGET_TRIGGER, TARGET_TRIGGERS
+from execution_channels.daily_execution import DAILY_TARGET_TRIGGER, INTERVAL_TARGET_TRIGGER, TARGET_TRIGGERS, DailyExecutionTrigger
 from execution_channels.futu.equity_account_state import (load_document, validate_document, position_from_dict,
     budget_from_dict, recognized_events)
 from .ec_boundary import (initial_account_record, strategy_position, strategy_events, execution_plan, execution_admission, strategy_account_snapshot)
@@ -95,6 +95,10 @@ def account_decision(store, prepared, account, actual_quantity, available_cash, 
     if trigger in TARGET_TRIGGERS:
         execution_output["signal_status"] = plan.evidence.get("signal_status", "EVALUATED")
         execution_output["execution_trigger"] = plan.evidence.get("execution_trigger")
+        if (definition.execution_explainer
+                and execution_output["execution_trigger"] == DailyExecutionTrigger.PREVIOUS_ZERO_FILL
+                and previous_execution.evidence is not None):
+            execution_output["previous_plan"] = asdict(previous_execution.evidence)
     if trigger == INTERVAL_TARGET_TRIGGER:
         execution_output["execution_interval"] = dict(plan.evidence["execution_interval"])
         execution_output["decision_at"] = result.point.decision_at.isoformat()

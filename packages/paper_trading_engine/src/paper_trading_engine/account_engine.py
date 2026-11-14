@@ -559,8 +559,14 @@ class AccountEngine:
             compared = ("strategy", "signal_date", "valid_session", "target_quantity", "cycle_target_quantity",
                         "action", "execution_reference_price", "orders", "plan_legs", "plan_mode", "capital_mode",
                         "strategy_output", "observation", "v4_state_transition")
-            if all(json.dumps(payload.get(key), sort_keys=True, default=str) ==
-                   json.dumps(prior.get(key), sort_keys=True, default=str) for key in compared):
+            def comparable(record, key):
+                value = record.get(key)
+                if key == "strategy_output" and value and "execution_plan" in value:
+                    plan = {name: fact for name, fact in value["execution_plan"].items() if name != "previous_plan"}
+                    value = {**value, "execution_plan": plan}
+                return json.dumps(value, sort_keys=True, default=str)
+
+            if all(comparable(payload, key) == comparable(prior, key) for key in compared):
                 if capture_replacement(self.store, account_id, prior["decision_id"], initial) != snapshot:
                     raise DecisionReplacementConflict("account or order facts changed during the rerun")
                 return prior, "DECISION_REUSED", ()

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+import sqlite3
 
 import pandas as pd
 import pytest
@@ -87,6 +88,71 @@ def test_s011_decision_projection_keeps_strategy_and_execution_facts(
     assert (event['target_position'], event['position_at_decision']) == (target, 0)
     assert event['execution_plan'] == {'orders': orders, 'trigger': trigger, 'planning_result': planning}
     assert (event['status'], event['state_reason']) == (status, reason)
+
+
+def test_execution_explanation_reuses_exact_facts_and_retains_prior_results(tmp_path, monkeypatch):
+    from paper_trading_engine import execution_explanations as module
+    from strategy_runtime.execution_explanation import ExecutionExplanation, ExecutionResultContext
+
+    calls = []
+    release_hash = 'a' * 64
+
+    def authored(context):
+        calls.append(context)
+        count = sum(fill.quantity for fill in context.fills) if isinstance(context, ExecutionResultContext) else 0
+        return ExecutionExplanation(f'策略记录 {count}', f'策略详情 {count}')
+
+    class Invocation:
+        def __init__(self, candidate, *, execution_only):
+            assert candidate == 'fixture' and execution_only
+            self.execution_explainer = authored
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            pass
+
+    def load(root, release_id, digest):
+        assert (root, release_id, digest) == (tmp_path, 'S011-v1', release_hash)
+        return 'fixture'
+
+    monkeypatch.setattr(module, '_candidate', load)
+    monkeypatch.setattr(module, 'BoundEquityInvocation', Invocation)
+    path = tmp_path / 'explanations.sqlite3'
+    row = {'decision_id': 'D1', 'payload': {'strategy': {
+        'strategy_id': 'S011', 'version': 'v1', 'release_hash': release_hash,
+    }, 'strategy_output': {'execution_plan': {}}}}
+    base = {
+        'decision_id': 'D1', 'signal_date': '2026-03-04', 'valid_session': '2026-03-05',
+        'generated_at': '2026-03-04T12:00:00+00:00',
+        'status': 'EXECUTING', 'state_reason': 'CHANNEL_EXECUTION', 'state_changed_at': None,
+        'target_position': 1, 'position_at_decision': 0, 'explanation': {'judgment': '延续'},
+        'execution_plan': {'trigger': 'TARGET_CHANGED', 'orders': [{'side': 'BUY', 'quantity': 100}],
+            'planning_result': {'status': 'READY', 'reasons': [], 'planned_quantity': 100, 'desired_quantity': 100}},
+    }
+
+    def project(fills):
+        event = dict(base)
+        def on_error(_row, _hash, exc):
+            raise exc
+        module.ExecutionExplanationStore(path, tmp_path).project(
+            'acct', [row], [event], {}, {'D1': fills}, on_error)
+        return event
+
+    first = project([])
+    assert len(calls) == 2
+    assert project([]) == first
+    assert len(calls) == 2
+    updated = project([{'fill_id': 'F1', 'side': 'BUY', 'quantity': 40,
+                        'occurred_at': '2026-03-05T02:00:00+00:00'}])
+    assert len(calls) == 3
+    assert updated['plan_explanation'] == first['plan_explanation']
+    assert updated['result_explanation']['summary'] == '策略记录 40'
+    assert project([]) == first
+    assert len(calls) == 3
+    with sqlite3.connect(path) as connection:
+        assert connection.execute('SELECT count(*) FROM execution_explanations').fetchone() == (3,)
 
 
 def _context() -> dict[str, object]:

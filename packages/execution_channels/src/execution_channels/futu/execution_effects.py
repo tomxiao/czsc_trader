@@ -3,7 +3,9 @@ from datetime import date, datetime
 from decimal import Decimal
 
 from ..execution_intervals import ExecutionInterval
-from ..daily_execution import PreviousDailyExecution, daily_execution_outcome
+from ..daily_execution import (
+    PreviousDailyExecution, PreviousOrderIntent, PreviousPlanEvidence, daily_execution_outcome,
+)
 from ..execution_effects import DecisionExecutionEffect, OrderExecutionEffect, decision_execution_effect
 from .broker import TERMINAL_INTENT_STATUSES, TERMINAL_ORDER_STATUSES, UNRESOLVED_INTENT_STATUSES
 from .lifecycle import DecisionState, planned_orders
@@ -49,6 +51,8 @@ class ExecutionEffectStore:
             planned = planned_orders(decision['payload'])
             ordered = filled = 0
             terminal = True
+            intents = []
+            reports = []
             if planned and decision['status'] not in {DecisionState.SUPERSEDED, DecisionState.CANCELLED}:
                 ordered = sum(order['quantity'] for order in planned)
                 filled = self._connection.execute('''
@@ -70,8 +74,16 @@ class ExecutionEffectStore:
                 position = position_from_dict(load_document(self.virtual_account(account_id))['active'])
                 if position is not None:
                     buy_cost = Decimal(str(position.buy_cost))
+            reports_by_id = {report['channel_order_id']: report for report in reports}
+            def intent_fact(intent):
+                order = reports_by_id.get(intent['channel_order_id'], {})
+                return PreviousOrderIntent(intent['intent_id'], intent['status'], intent['channel_order_id'],
+                                           order.get('status'), order.get('created_at'))
             return PreviousDailyExecution(prior['target'], daily_execution_outcome(ordered, filled, terminal=terminal),
-                adjacent(prior), None if entry_cash is None else Decimal(entry_cash), buy_cost)
+                adjacent(prior), None if entry_cash is None else Decimal(entry_cash), buy_cost,
+                PreviousPlanEvidence(decision_id, prior['valid_session'], decision['status'], decision['state_reason'],
+                    filled, tuple(map(intent_fact, intents)))
+                if ordered and terminal else None)
 
     def decision_execution_effect(self, account_id: str, decision_id: str, *,
                                   valuation_price: Decimal | float, at: datetime) -> DecisionExecutionEffect:

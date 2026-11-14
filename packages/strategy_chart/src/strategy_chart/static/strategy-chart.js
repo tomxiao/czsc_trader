@@ -95,7 +95,7 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     const judgment=narrative?.judgment||(unavailable?'观察不可用':'当日没有信号观察');
     const reason=unavailable?observation.message:'该日期没有记录策略观察，不据此推断入场或退出。';
     const head=node('div','reading-head');head.append(node('div','reading-label','当前判断'),node('strong','',judgment),node('span','reading-date',date));
-    if(narrative&&!compactEmbed){const toggle=node('button','',expanded?'返回':'解释');toggle.type='button';toggle.setAttribute('aria-label',expanded?'返回信号结论':'解释策略判断');toggle.addEventListener('click',()=>{expanded=!expanded;paintReading(observation,date);});head.append(toggle);}
+    if(narrative){const toggle=node('button','',expanded?'返回':'解释');toggle.type='button';toggle.setAttribute('aria-label',expanded?'返回信号结论':'解释策略判断');toggle.addEventListener('click',()=>{expanded=!expanded;paintReading(observation,date);});head.append(toggle);}
     const basis=node('div','reading-basis');basis.append(node('div','reading-label',expanded?'怎么看这个判断':'判断依据'));
     const body=node('div','reading-body');
     if(expanded)body.append(node('div','reading-detail',narrative.explanation));
@@ -142,15 +142,6 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     if(!lines.length)lines.push('当日无可展示的决策或成交事件');
     return lines.join('\n');
   }
-  const planTriggerLabel={
-    INITIAL_TARGET:'首次建立目标',TARGET_CHANGED:'目标仓位变化',
-    PREVIOUS_ZERO_FILL:'上一交易日零成交',UNCHANGED_TARGET:'目标仓位未变',
-  };
-  const constraintLabel={
-    INSUFFICIENT_CASH:'可用资金不足',BELOW_MINIMUM_UNIT:'不足最小交易单位',
-    BELOW_PRICE_TICK:'低于最小报价单位',INSUFFICIENT_SELLABLE_QUANTITY:'可卖数量不足',
-    ORDER_QUANTITY_LIMIT:'委托数量受限',DEPENDENCY_UNAVAILABLE:'前序条件未满足',
-  };
   function paperDecisionLines(item){
     const details=[];
     if(!compactEmbed)details.push(`记录 ${localTime(item.generated_at)} · 信号日 ${item.signal_date} · 生效日 ${item.valid_session}`);
@@ -158,33 +149,39 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     const legacyJudgment=observation?.signal_panel?.explanation?.judgment;
     details.push(`策略判断：${item.explanation?.judgment||legacyJudgment||'未记录'}`);
     const weight=item.target_position==null?'未记录':`${(item.target_position*100).toLocaleString('zh-CN',{maximumFractionDigits:4})}%`;
-    details.push(`目标仓位：${weight}${item.target_quantity==null?'':`；计划目标 ${quantity(item.target_quantity)}`}`);
+    details.push(`目标仓位：${weight}`);
     const plan=item.execution_plan;
     const planOrders=plan?.orders||[];
-    const flat=item.target_position===0&&item.position_at_decision===0;
-    const noOrder=item.state_reason==='NO_ORDER';
     const planText=planOrders.length?planOrders.map(order=>`${order.side==='BUY'?'买入':'卖出'} ${quantity(order.quantity)}`).join('、')
-      :plan?.planning_result?.status==='BLOCKED'?'未生成委托'
-      :noOrder?(flat?'账户已空仓，无需下单':'无需下单')
-      :plan?'未生成委托':'未记录委托计划';
-    const planReasons=[planTriggerLabel[plan?.trigger],...(plan?.planning_result?.reasons||[]).map(reason=>constraintLabel[reason]||reason)].filter(Boolean);
-    details.push(`执行计划：${planText}${planReasons.length?`；原因：${planReasons.join('、')}`:''}`);
+      :plan?'无委托':'未记录委托计划';
+    const explanation=value=>value?(compactEmbed?value.summary:value.detail):'策略说明未记录';
+    details.push(`执行计划：${planText}`);
+    details.push(`计划说明：${explanation(item.plan_explanation)}`);
 
     const intents=intentsByDecision.get(item.decision_id)||[];
     const confirmed=fillsByDecision.get(item.decision_id)||[];
-    const expiredBeforeSubmission=item.state_reason==='EXECUTION_EXPIRED'&&intents.length>0&&
-      intents.every(intent=>intent.status==='EXPIRED'&&!intent.channel_order_id);
-    let result=noOrder?'计划无需下单':statusLabel(item.status);
-    if(!noOrder&&item.state_reason)result+=`；${reasonLabel(item.state_reason)}`;
+    let result=item.state_reason==='NO_ORDER'?'无需下单':statusLabel(item.status);
+    if(intents.length){
+      const labels={PENDING_SUBMIT:'待提交',EXPIRED:'已过期',SUBMITTING:'提交中',
+        SUBMITTED:'已提交',REJECTED:'已拒绝',SUBMISSION_FAILED:'提交失败',
+        SUBMISSION_UNCERTAIN:'提交状态待确认',CANCELLED_ALL:'已取消',CANCELLED_PART:'部分取消',
+        FILLED_PART:'部分成交',FILLED_ALL:'全部成交'};
+      result+=`；委托 ${[...new Set(intents.map(intent=>labels[intent.channel_status||intent.status]||intent.channel_status||intent.status))].join('、')}`;
+      if(!compactEmbed){
+        const submitted=[...new Set(intents.map(intent=>intent.submitted_at).filter(Boolean))];
+        if(submitted.length)result+=`；渠道记录 ${submitted.map(localTime).join('、')}`;
+      }
+    }
     if(confirmed.length){
       const quantityBySide=side=>confirmed.filter(fill=>fill.side===side).reduce((sum,fill)=>sum+Number(fill.quantity),0);
       const bought=quantityBySide('BUY'),sold=quantityBySide('SELL');
       result+=`；确认成交 ${[bought?`买入 ${quantity(bought)}`:null,sold?`卖出 ${quantity(sold)}`:null].filter(Boolean).join('、')}`;
-    }else if(expiredBeforeSubmission)result+='；未提交、未成交';
+    }
     details.push(`执行结果：${result}`);
+    details.push(`结果说明：${explanation(item.result_explanation)}`);
     return details;
   }
-  const eventHeight=128;
+  const eventHeight=isPaper?168:128;
   function eventPanel(x,y,width){
     const frame=add(el('foreignObject',{x,y,width,height:eventHeight}));
     const content=node('div','event-scroll');content.setAttribute('tabindex','0');content.setAttribute('aria-label',compactEmbed?'当日事件摘要':'当日事件，可滚动查看');

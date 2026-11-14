@@ -561,6 +561,7 @@ class EquityStrategyDefinition:
     execution_policy: ExecutionPolicy | None = None
     market_features: tuple[MarketFeature, ...] = ()
     step_data_inputs: tuple[StepDataInput, ...] = ()
+    execution_explainer: str | None = None
 
     def __post_init__(self):
         import re
@@ -646,6 +647,12 @@ class EquityStrategyDefinition:
                 raise ValueError("source manifest must contain relative Python paths")
         if self.entrypoint.split(':')[0].replace('.', '/') + '.py' not in self.source_files:
             raise ValueError("entrypoint absent from source manifest")
+        if self.execution_explainer is not None:
+            if (self.contract_version != STEP_DATA_CONTRACT or type(self.execution_explainer) is not str
+                    or not re.fullmatch(r"[A-Za-z_]\w*(?:\.[A-Za-z_]\w*)*:[A-Za-z_]\w*", self.execution_explainer)):
+                raise ValueError("execution explainer requires a V5 module:function")
+            if self.execution_explainer.split(':')[0].replace('.', '/') + '.py' not in self.source_files:
+                raise ValueError("execution explainer absent from source manifest")
         if not re.fullmatch('[a-f0-9]{64}', self.source_sha256):
             raise ValueError("invalid source hash")
         params = json.loads(self.parameters_json, parse_constant=lambda x: (_ for _ in ()).throw(ValueError(x)))
@@ -765,6 +772,8 @@ class EquityStrategyDefinition:
                 return type(value)(record(item) for item in value)
             return value
         result = {"runtime_kind": "ACCOUNT_REPLAY" if self.account_replay else "US_EQUITY", **record(self)}
+        if self.execution_explainer is None:
+            result.pop('execution_explainer')
         if self.step_data_inputs:
             result['step_data_inputs'] = tuple(item.to_dict() for item in self.step_data_inputs)
         else:
@@ -912,7 +921,7 @@ class EquityStrategyCandidate:
             tree = ast.parse(content.decode('utf-8'), filename=name)
             if self.definition.contract_version == 4:
                 _verify_decision_access(tree, name, self.definition)
-            if self.definition.market_features:
+            if self.definition.market_features or self.definition.execution_explainer:
                 functions[name] = {node.name for node in tree.body if type(node) is ast.FunctionDef}
             for node in ast.walk(tree):
                 if isinstance(node, ast.Import):
@@ -943,6 +952,10 @@ class EquityStrategyCandidate:
             filename = path + '/__init__.py' if path + '/__init__.py' in sources else path + '.py'
             if function not in functions[filename]:
                 raise ValueError('market feature is not a declared top-level function: ' + feature.entrypoint)
+        if self.definition.execution_explainer:
+            module, function = self.definition.execution_explainer.split(':')
+            if function not in functions[module.replace('.', '/') + '.py']:
+                raise ValueError('execution explainer must be a declared top-level function')
 
     def decide(self, context):
         if self.definition.contract_version != 2:

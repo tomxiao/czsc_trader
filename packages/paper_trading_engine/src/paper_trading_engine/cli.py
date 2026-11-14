@@ -306,6 +306,7 @@ def _build_engine(args: argparse.Namespace, resources: ExitStack):
         store,
         market_data=AccountChartMarketData(dataflows=dataflows),
         cache_dir=args.database.parent / "charts",
+        strategy_root=args.repo_root / "strategies",
         audit=audit,
     )
     startup_timings["chart_service_ms"] = round(

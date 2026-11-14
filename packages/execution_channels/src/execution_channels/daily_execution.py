@@ -40,12 +40,32 @@ def daily_execution_outcome(ordered: int, filled: int, *, terminal: bool) -> Dai
 
 
 @dataclass(frozen=True, slots=True)
+class PreviousOrderIntent:
+    intent_id: str
+    status: str
+    channel_order_id: str | None
+    channel_status: str | None
+    submitted_at: str | None
+
+
+@dataclass(frozen=True, slots=True)
+class PreviousPlanEvidence:
+    decision_id: str
+    valid_session: str
+    status: str
+    reason: str
+    filled_quantity: int
+    intents: tuple[PreviousOrderIntent, ...]
+
+
+@dataclass(frozen=True, slots=True)
 class PreviousDailyExecution:
     target: float
     outcome: DailyExecutionOutcome
     previous_session: bool
     entry_cash: Decimal | None = None
     buy_cost: Decimal = Decimal(0)
+    evidence: PreviousPlanEvidence | None = None
 
     def __post_init__(self):
         if type(self.target) not in (int, float) or not 0 <= self.target <= 1:

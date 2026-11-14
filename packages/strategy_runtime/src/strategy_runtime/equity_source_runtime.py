@@ -14,7 +14,7 @@ _active = ContextVar('equity_source_invocation', default=None)
 class BoundEquityInvocation:
     """One account owns a module namespace and an in-memory source snapshot."""
 
-    def __init__(self, candidate, *, performance=None):
+    def __init__(self, candidate, *, performance=None, execution_only=False):
         self.candidate = candidate
         self.performance = performance
         self.token = None
@@ -22,6 +22,8 @@ class BoundEquityInvocation:
         self.prefix = self.namespace + '.'
         self.finder = None
         self.function = None
+        self.execution_explainer = None
+        self.execution_only = execution_only
         self.market_functions = {}
         self.checks = 0
         self.bytes_read = 0
@@ -88,8 +90,15 @@ class BoundEquityInvocation:
         sys.modules[self.namespace] = package
         self.finder = SourceFinder()
         sys.meta_path.insert(0, self.finder)
-        module_name, function_name = self.candidate.definition.entrypoint.split(':')
         from importlib import import_module
+        if self.execution_only:
+            module_name, function_name = self.candidate.definition.execution_explainer.split(':')
+            self.execution_explainer = getattr(import_module(prefix + module_name), function_name)
+            if not callable(self.execution_explainer):
+                raise TypeError('execution explainer must be callable')
+            self.loads = 1
+            return
+        module_name, function_name = self.candidate.definition.entrypoint.split(':')
         module = import_module(prefix + module_name)
         function = getattr(module, function_name)
         if not callable(function):
@@ -113,6 +122,7 @@ class BoundEquityInvocation:
 
     def _cleanup(self):
         self.function = None
+        self.execution_explainer = None
         self.market_functions.clear()
         if self.finder is not None:
             sys.meta_path.remove(self.finder)

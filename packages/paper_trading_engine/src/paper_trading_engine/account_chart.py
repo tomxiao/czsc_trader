@@ -6,11 +6,13 @@ from concurrent.futures import CancelledError, Executor, Future
 from datetime import date, datetime, timezone
 import hashlib
 import json
+import logging
 import math
 import os
 from pathlib import Path
 from queue import Empty, Queue
 import re
+import sqlite3
 from threading import Event, RLock, Thread
 import time
 from typing import Any, Callable
@@ -26,13 +28,15 @@ from strategy_runtime.signal_explanation import SignalExplanationSnapshot
 from .chart_market_data import AccountChartDataError, LEGACY_CHART_UPDATE_TIME
 from .file_publication import replace_published_file
 from .forward_chart import ChartObservation, FORWARD_CHART_CONTRACT_VERSION, render_forward_chart_html
+from .execution_explanations import ExecutionExplanationStore
 from execution_channels.futu.trading_window import SHANGHAI
 
 
 ACCOUNT_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 INPUT_LIMIT = 5 * 1024 * 1024
 OUTPUT_LIMIT = 20 * 1024 * 1024
-CACHE_RENDER_REVISION = "pte-forward-chart-v16"
+CACHE_RENDER_REVISION = "pte-forward-chart-v17"
+_LOG = logging.getLogger(__name__)
 
 
 def _path_comparison_key(path: Path) -> str:
@@ -128,6 +132,7 @@ class AccountChartService:
         shutdown_timeout_seconds: float = 2,
         audit: AuditRecorder | None = None,
         audit_for_account=None,
+        strategy_root: Path | None = None,
         executor: Executor | None = None,
         renderer: Callable[[object], str] = render_forward_chart_html,
     ) -> None:
@@ -143,6 +148,8 @@ class AccountChartService:
         self.audit = audit or AuditRecorder(store)
         self.audit_for_account = audit_for_account or (lambda _: self.audit)
         self.renderer = renderer
+        self.execution_explanations = (ExecutionExplanationStore(self.cache_dir.parent / 'execution-explanations.sqlite3',
+            Path(strategy_root)) if strategy_root is not None else None)
         self._executor = executor or _DaemonSingleWorker()
         self._owns_executor = executor is None
         self._jobs: dict[str, Future[None]] = {}
@@ -403,10 +410,15 @@ class AccountChartService:
         with self._store_guard:
             if self._closing.is_set():
                 raise _RefreshCancelled
-            decision_rows = self.store.account_decisions(account_id)
-            intent_rows = self.store.account_intents(account_id)
-            fill_rows = self.store.account_fills(account_id)
-            snapshot_rows = self.store.account_snapshots(account_id)
+            if self.execution_explanations is None:
+                decision_rows = self.store.account_decisions(account_id)
+                intent_rows = self.store.account_intents(account_id)
+                fill_rows = self.store.account_fills(account_id)
+                snapshot_rows = self.store.account_snapshots(account_id)
+                order_rows = ()
+            else:
+                decision_rows, intent_rows, order_rows, fill_rows, snapshot_rows = (
+                    self.store.account_observation_facts(account_id))
         decisions = [
             self._decision(row)
             for row in decision_rows
@@ -415,6 +427,14 @@ class AccountChartService:
         missing_observation_count = len(decision_rows) - len(decisions)
         observation_start = min((row["signal_date"] for row in decision_rows), default=None)
         intents = [self._intent(row) for row in intent_rows]
+        orders_by_id = {row['channel_order_id']: row for row in order_rows}
+        intent_facts: dict[str, list[dict[str, object]]] = {}
+        for intent in intents:
+            order = orders_by_id.get(intent['channel_order_id'])
+            intent['channel_status'] = None if order is None else order['status']
+            intent['submitted_at'] = None if order is None else order.get('created_at')
+            if intent['decision_id'] and intent['intent_id']:
+                intent_facts.setdefault(intent['decision_id'], []).append(intent)
         profile = channel_profile(account["channel_id"])
         formal_zone = (ZoneInfo(profile.timezone)
                        if account.get("equity_rules_json") is not None else None)
@@ -434,6 +454,19 @@ class AccountChartService:
             for row in fill_rows
             if (session := self._fact_date(row, ("occurred_at", "session"), formal_zone)) is not None
         ]
+        events = [self._decision_event(row) for row in decision_rows]
+        if self.execution_explanations is not None:
+            fill_facts: dict[str, list[dict[str, object]]] = {}
+            for fill in fills:
+                if fill['decision_id'] and fill['fill_id'] and fill['occurred_at']:
+                    fill_facts.setdefault(fill['decision_id'], []).append(fill)
+            def record_failure(row, release_hash, exc):
+                _LOG.warning("strategy execution explanation failed account=%s decision=%s release=%s: %s",
+                    account_id, row['decision_id'], release_hash, type(exc).__name__)
+            try:
+                self.execution_explanations.project(account_id, decision_rows, events, intent_facts, fill_facts, record_failure)
+            except (OSError, sqlite3.Error) as exc:
+                _LOG.warning("strategy execution explanation storage failed account=%s: %s", account_id, type(exc).__name__)
         snapshots = [
             {
                 "account_id": row.get("account_id"),
@@ -472,7 +505,7 @@ class AccountChartService:
             },
             "observations": decisions,
             "execution": {
-                "decisions": [self._decision_event(row) for row in decision_rows],
+                "decisions": events,
                 "intents": intents, "fills": fills, "snapshots": snapshots,
             },
         }

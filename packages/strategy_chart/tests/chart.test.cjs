@@ -57,7 +57,7 @@ test('MU first paper signal shows the recorded no-order decision and explanation
  assert.match(f.root.querySelector('.event-heading').textContent,/2026-11-06 · 决策 1 笔/);
  assert.match(f.root.querySelector('.event-details').textContent,/2026-11-08 21:36:43 · 信号日 2026-11-06 · 生效日 2026-11-09/);
  assert.match(f.root.querySelector('.event-details').textContent,/策略判断：no opportunity/);
- assert.match(f.root.querySelector('.event-details').textContent,/计划无需下单/);
+ assert.match(f.root.querySelector('.event-details').textContent,/执行结果：无需下单/);
  assert.match(f.root.querySelector('.signal-reading').textContent,/no opportunity.*已记录的入场判断/);
  f.svg.fire('keydown',{key:'ArrowRight'});
  assert.equal(f.root.dataset.selectedDate,'2026-11-09');
@@ -77,6 +77,8 @@ test('S011 forward events distinguish a renewed buy plan from strategy entry, an
    {decision_id:'hold',signal_date:'2026-03-04',valid_session:'2026-03-05',generated_at:'2026-03-04T12:00:00Z',
      explanation:{judgment:'延续目标仓位',basis:[{key:'conditions',text:'压力评分 0.0294872，退出线 0.025。'}]},
      action:'BUY',target_position:1,position_at_decision:0,target_quantity:100300,status:'INCOMPLETE',state_reason:'EXECUTION_EXPIRED',
+     plan_explanation:{summary:'上轮过期。',detail:'上轮买入委托过期未提交，本轮按可用资金重建计划。'},
+     result_explanation:{summary:'本轮过期。',detail:'本轮买入委托过期未提交，账户仍为空仓。'},
      execution_plan:{trigger:'PREVIOUS_ZERO_FILL',orders:[{side:'BUY',quantity:100300}],
        planning_result:{status:'CONSTRAINED',reasons:['INSUFFICIENT_CASH']}}},
    {decision_id:'exit',signal_date:'2026-03-05',valid_session:'2026-03-06',generated_at:'2026-03-05T12:00:00Z',
@@ -89,13 +91,14 @@ test('S011 forward events distinguish a renewed buy plan from strategy entry, an
  graph.window.location={hash:'#2026-03-04'};graph.mount(graph.root,chart);
  const events=()=>graph.root.querySelector('.event-details').textContent;
  assert.match(events(),/策略判断：延续目标仓位\n目标仓位：100%/);
- assert.match(events(),/执行计划：买入 100,300 股；原因：上一交易日零成交、可用资金不足/);
- assert.match(events(),/执行结果：未完成；提交时限已过；未提交、未成交/);
+ assert.match(events(),/执行计划：买入 100,300 股\n计划说明：上轮买入委托过期未提交，本轮按可用资金重建计划。/);
+ assert.match(events(),/执行结果：未完成；委托 已过期\n结果说明：本轮买入委托过期未提交，账户仍为空仓。/);
+ assert.doesNotMatch(events(),/上一交易日零成交/);
  assert.doesNotMatch(events(),/入场/);
  graph.svg.fire('keydown',{key:'ArrowRight'});
  assert.match(events(),/策略判断：目标清仓\n目标仓位：0%/);
- assert.match(events(),/执行计划：账户已空仓，无需下单；原因：目标仓位变化/);
- assert.match(events(),/执行结果：计划无需下单/);
+ assert.match(events(),/执行计划：无委托\n计划说明：策略说明未记录/);
+ assert.match(events(),/执行结果：无需下单\n结果说明：策略说明未记录/);
  assert.doesNotMatch(events(),/卖出|等待|已完成/);
 });
 test('snapshot interpretation is text only and explanation preserves judgment',()=>{

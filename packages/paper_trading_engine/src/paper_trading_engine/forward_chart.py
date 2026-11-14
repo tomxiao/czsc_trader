@@ -14,7 +14,7 @@ from strategy_runtime import (
 )
 
 
-FORWARD_CHART_CONTRACT_VERSION = "pte_forward_chart.v5"
+FORWARD_CHART_CONTRACT_VERSION = "pte_forward_chart.v6"
 
 
 @dataclass(frozen=True, slots=True)
