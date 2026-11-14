@@ -1,58 +1,28 @@
-"""S011 pressure signal: HFQ observations and current-account-equity targets."""
-from types import SimpleNamespace
+"""S011-v1 V5 candidate for same-version upgrade review."""
+
+from datetime import date, timedelta
+from math import isfinite
+from zoneinfo import ZoneInfo
+
 import pandas as pd
-from strategy_runtime import (AccountDecision, AccountStepResult, StateRecord,
-    SignalBasisSnapshot, SignalExplanationSnapshot)
-from .signal_math import features, policy
+from strategy_runtime import (AccountDecision, AccountStepResult, SignalBasisSnapshot,
+                              SignalExplanationSnapshot, StateRecord, StepDataWindow)
 
 
-def local_frame(view, *, timezone='Asia/Shanghai', daily=False):
-    frame = pd.DataFrame([dict(row) for row in view])
-    stamp = pd.to_datetime(frame.Date)
-    if stamp.dt.tz is not None:
-        stamp = stamp.dt.tz_convert(timezone).dt.tz_localize(None)
-    frame['Date'] = stamp.dt.normalize() if daily else stamp
-    return frame
+ZONE = ZoneInfo('Asia/Shanghai')
+FIRST_OBSERVATION = date(2024, 12, 26)
 
 
-def signal_history(inputs, parameters):
-    for name in ('daily', 'market', 'bars'):
-        first = pd.Timestamp(inputs[name].Date.iloc[0]).normalize()
-        if first != pd.Timestamp('2024-12-26'):
-            raise ValueError('S011 canonical history is missing: ' + name)
-    panel = features(inputs)
-    sessions = panel.index[panel.index >= pd.Timestamp('2025-02-05')]
-    if len(sessions) == 0 or sessions[0] != pd.Timestamp('2025-02-05'):
-        raise ValueError('S011 canonical signal start is missing')
-    return policy(panel, parameters, sessions)
+def rank(series):
+    current = series.iloc[-1]
+    values = [value for value in series if isfinite(value)]
+    if not isfinite(current) or len(values) < 20:
+        raise ValueError('S011 压力评分可用样本少于冻结版要求')
+    return ((sum(value < current for value in values)
+             + .5 * sum(value == current for value in values)) / len(values) - .5)
 
 
-def _decision(target, judgment, summary, details, watch):
-    basis = (SignalBasisSnapshot('summary', summary), SignalBasisSnapshot('conditions', details),
-             SignalBasisSnapshot('target_weight', '本轮以开仓周期锁定的股数为准。' if target else '目标空仓。'))
-    return AccountDecision(target, SignalExplanationSnapshot(
-        'target', 'long' if target else 'flat', judgment, basis, watch,
-        ' '.join(item.text for item in basis)))
-
-
-def financial_signal(windows, entry, exit_, lookback, max_days, spx_weight, tail_weight):
-    inputs = dict(zip(('market', 'spx', 'price_daily', 'price_intraday'), windows, strict=True))
-    parameters = dict(zip(('entry', 'exit', 'lookback', 'max_days', 'spx_weight', 'tail_weight'), (entry, exit_, lookback, max_days, spx_weight, tail_weight), strict=True))
-    observed = {'daily': local_frame(inputs['price_daily'], daily=True),
-        'bars': local_frame(inputs['price_intraday']),
-        'market': local_frame(inputs['market'], daily=True),
-        'spx': local_frame(inputs['spx'], timezone='America/New_York', daily=True)}
-    row = signal_history(observed, parameters).iloc[-1]
-    return float(row.target_position), str(row.reason), float(row.score), int(row.intent_age)
-
-
-def step(ctx, state):
-    for name, count in {'market': 16384, 'spx': 16384, 'price_daily': 16384, 'price_intraday': 131072}.items():
-        if len(ctx.observations[name]) > count:
-            raise ValueError('Canonical observation exceeds declared history: ' + name)
-    row = SimpleNamespace(**dict(zip(('target_position', 'reason', 'score', 'intent_age'), ctx.market_feature('financial_signal'), strict=True)))
-    target = float(row.target_position)
-    reason = str(row.reason)
+def explain(target, reason, score, age, params):
     judgment, summary = {
         'PRESSURE_ENTRY': ('触发入场', '压力评分达到入场线，触发买入信号。'),
         'CASH': ('继续空仓', '压力评分低于入场线，继续空仓。'),
@@ -60,8 +30,68 @@ def step(ctx, state):
         'PRESSURE_RELEASED': ('目标清仓', '压力评分降至退出线或以下，触发退出。'),
         'SIGNAL_EXPIRED': ('目标清仓', '压力评分尚未触发退出，但持有信号已到期。'),
     }[reason]
-    details = (f'压力评分 {row.score:.6g}，入场线 {ctx.parameters["entry"]:.6g}，'
-               f'退出线 {ctx.parameters["exit"]:.6g}。信号已持续 {int(row.intent_age)} 个交易日，'
-               f'有效期上限 {ctx.parameters["max_days"]} 个交易日。')
-    decision = _decision(target, judgment, summary, details, '下一交易日复核压力评分和信号有效期。')
-    return AccountStepResult(decision, cycle_values=StateRecord())
+    details = (f'压力评分 {score:.6g}，入场线 {params["entry"]:.6g}，退出线 {params["exit"]:.6g}。'
+               f'信号已持续 {age} 个交易日，有效期上限 {params["max_days"]} 个交易日。')
+    weight = '本轮以开仓周期锁定的股数为准。' if target else '目标空仓。'
+    basis = (SignalBasisSnapshot('summary', summary), SignalBasisSnapshot('conditions', details),
+             SignalBasisSnapshot('target_weight', weight))
+    return AccountDecision(target, SignalExplanationSnapshot('target', 'long' if target else 'flat',
+        judgment, basis, '下一交易日复核压力评分和信号有效期。', ' '.join((summary, details, weight))))
+
+
+def step(ctx, state):
+    params = ctx.parameters
+    length = params['lookback']
+    day = ctx.point.observed_through.astimezone(ZONE).date()
+
+    def fetch(name, start, end=day):
+        return ctx.dfls.fetch(StepDataWindow(name, start, end))
+
+    calendar_start = max(FIRST_OBSERVATION, day - timedelta(days=219))
+    calendar = fetch('calendar', calendar_start)
+    if not pd.DatetimeIndex(calendar.Date).equals(pd.date_range(calendar_start, day)):
+        raise ValueError('S011 交易日历区间不完整')
+    sessions = pd.DatetimeIndex(calendar.loc[calendar.IsOpen.eq(1), 'Date'].iloc[-length - 1:])
+    if not len(sessions) or sessions[-1].date() != day:
+        raise ValueError('S011 缺少信号日历')
+    if len(sessions) < length + 1 and calendar_start != FIRST_OBSERVATION:
+        raise ValueError('S011 回看窗口缺少交易日')
+    lookback = sessions[-length:]
+
+    daily = fetch('daily', sessions[-5].date())
+    bars = fetch('bars', lookback[0].date())
+    market = fetch('market', sessions[0].date())
+    spx = fetch('spx', lookback[0].date() - timedelta(days=10), day - timedelta(days=1))
+    if list(daily.Date) != list(sessions[-5:]) or list(market.Date) != list(sessions):
+        raise ValueError('S011 日线窗口不完整')
+    clocks = bars.Date.dt.strftime('%H:%M')
+    tails = bars.loc[clocks.isin(('13:30', '15:00')), ['Date', 'Close']].copy()
+    tails['session'] = tails.Date.dt.normalize()
+    tails['clock'] = clocks.loc[tails.index]
+    close = tails.pivot(index='session', columns='clock', values='Close')
+    if not close.index.equals(lookback) or close.isna().any().any():
+        raise ValueError('S011 尾盘行情不完整')
+    idx = spx.Date.searchsorted(lookback, side='left') - 1
+    if min(idx) < 0 or ((lookback - pd.DatetimeIndex(spx.Date.iloc[idx])).days > 10).any():
+        raise ValueError('S011 缺少符合时点要求的 SPX 行情')
+    if not ((daily.High - daily.Low) / daily.Close).map(isfinite).all():
+        raise ValueError('S011 风险检查缺少有效 ETF 日线')
+    w, spx_w = params['tail_weight'], params['spx_weight']
+    score = (w * -rank(close['15:00'] / close['13:30'] - 1.)
+             + (1 - w) * -rank(market.Close.pct_change(fill_method=None).iloc[-length:])
+             + spx_w * rank(spx.PercentChange.iloc[idx])) / (1 + spx_w)
+
+    prior = dict(state.account.values)
+    target, age = prior['target'], prior['age']
+    if target not in (0, 1) or not 0 <= age <= params['max_days']:
+        raise ValueError('S011 信号状态超出约定范围')
+    reason = 'CASH'
+    if target:
+        age += 1
+        reason = 'HOLD'
+        if score <= params['exit'] or age >= params['max_days']:
+            target, reason = 0, 'PRESSURE_RELEASED' if score <= params['exit'] else 'SIGNAL_EXPIRED'
+    elif score >= params['entry']:
+        target, age, reason = 1, 0, 'PRESSURE_ENTRY'
+    decision = explain(target, reason, score, age, params)
+    return AccountStepResult(decision, StateRecord((('target', target), ('age', age))), StateRecord())
