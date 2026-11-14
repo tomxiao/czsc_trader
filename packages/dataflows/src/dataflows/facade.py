@@ -1049,6 +1049,22 @@ def _selection_contains(stored: Mapping[str, Any], requested: Mapping[str, Any])
             return False
         left = {**left, "parameters": {}}
         right = {**right, "parameters": {}}
+    if left["dataset"] == right["dataset"] == Dataset.STRATEGY_FEATURE_EVIDENCE:
+        # A verified package copy has a different root but the same declared
+        # immutable file. The preparation still pins the original bytes.
+        left = {**left, "parameters": {k: v for k, v in left["parameters"].items() if k != "repository_root"}}
+        right = {**right, "parameters": {k: v for k, v in right["parameters"].items() if k != "repository_root"}}
+    if left["dataset"] == right["dataset"] == Dataset.EQUITY_BARS:
+        lparams, rparams = left["parameters"], right["parameters"]
+        lquery, rquery = lparams["query"], rparams["query"]
+        cutoff = lquery.get("completed_through")
+        if cutoff is not None:
+            request_end = rquery.get("completed_through") or requested["end"]
+            if pd.Timestamp(request_end) > pd.Timestamp(cutoff):
+                return False
+        bounds = {"start", "end", "completed_through"}
+        left = {**left, "parameters": {**lparams, "query": {k: v for k, v in lquery.items() if k not in bounds}}}
+        right = {**right, "parameters": {**rparams, "query": {k: v for k, v in rquery.items() if k not in bounds}}}
     return left == right
 
 
@@ -1369,6 +1385,11 @@ class Dataflows:
                 numerical = pd.DataFrame(stored.dataframe, copy=False)
                 dates = pd.to_datetime(numerical["Date"], errors="raise")
                 selected = dates.between(pd.Timestamp(request.start), _end_timestamp(request.end))
+                if request.dataset is Dataset.EQUITY_BARS and request.parameters.query.completed_through is not None:
+                    cutoff = request.parameters.query.completed_through
+                    if not dates.eq(cutoff).any():
+                        raise IncompleteDataError("partial-session cutoff has no completed calendar bar")
+                    selected &= dates.le(cutoff)
                 if isinstance(request.parameters, MoneyflowParameters):
                     selected &= dates.dt.strftime("%Y-%m-%d").isin(request.parameters.trading_dates)
                 frame = numerical.loc[selected].copy().reset_index(drop=True)

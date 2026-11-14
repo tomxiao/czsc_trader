@@ -166,7 +166,9 @@ class AccountDecisionEngine:
                  else self.candidate.bind_replay(performance=self._performance))
         data_cutoff = point.decision_at if self._data_cutoff is None else min(point.decision_at, self._data_cutoff)
         data = StepData(definition.step_data_inputs, as_of=data_cutoff,
-                        observed_through=point.observed_through, load=self._step_data_load)
+                        observed_through=point.observed_through, load=self._step_data_load,
+                        source_root=self.candidate.source_root,
+                        equity_latency_seconds=spec.data_latency_seconds)
         try:
             with scope:
                 context = AccountStepContext(point, portfolio, account, position, definition.parameters,

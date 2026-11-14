@@ -576,7 +576,6 @@ class EquityStrategyDefinition:
             raise ValueError('V4 requires a supported channel execution policy')
         if not self.account_replay and (self.observation_inputs or self.execution_policy is not None):
             raise ValueError('dataset observations and execution policy require V4')
-        self.frozen_assets
         if type(self.contract_version) is not int or self.contract_version not in (2, 4, STEP_DATA_CONTRACT) or type(self.execution_spec) is not ResearchExecutionSpec:
             raise ValueError("unsupported equity definition contract")
         if self.account_replay:
@@ -690,6 +689,7 @@ class EquityStrategyDefinition:
             raise TypeError('step data requires typed declarations')
         if len({item.name for item in self.step_data_inputs}) != len(self.step_data_inputs):
             raise ValueError('duplicate step data input')
+        self.frozen_assets
         if self.contract_version == STEP_DATA_CONTRACT:
             if (self.computation is not StrategyComputation.STATEFUL_STEP or self.observation_inputs
                     or self.auxiliary_inputs or self.market_features or self.feature_graph.nodes
@@ -738,7 +738,7 @@ class EquityStrategyDefinition:
     def frozen_assets(self):
         assets = {}
         paths = {}
-        for item in self.observation_inputs:
+        for item in (*self.observation_inputs, *self.step_data_inputs):
             if item.asset is None:
                 continue
             previous_path = paths.setdefault(item.asset.relative_path.casefold(), item.asset.relative_path)
@@ -765,7 +765,9 @@ class EquityStrategyDefinition:
                 return type(value)(record(item) for item in value)
             return value
         result = {"runtime_kind": "ACCOUNT_REPLAY" if self.account_replay else "US_EQUITY", **record(self)}
-        if not self.step_data_inputs:
+        if self.step_data_inputs:
+            result['step_data_inputs'] = tuple(item.to_dict() for item in self.step_data_inputs)
+        else:
             result.pop('step_data_inputs')
         if self.observation_inputs:
             result['observation_inputs'] = [item.to_dict() for item in self.observation_inputs]

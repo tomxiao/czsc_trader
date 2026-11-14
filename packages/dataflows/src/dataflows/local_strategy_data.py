@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from hashlib import sha256
+from io import BytesIO
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -30,14 +31,15 @@ def fetch_strategy_feature_evidence(
         raise DataContractError("strategy evidence source escapes repository root") from exc
     if not source.is_file():
         raise DataContractError("strategy evidence source is missing", path=str(source))
-    actual_sha256 = sha256(source.read_bytes()).hexdigest()
+    content = source.read_bytes()
+    actual_sha256 = sha256(content).hexdigest()
     if actual_sha256 != expected_sha256:
         raise DataContractError(
             "strategy evidence source hash differs",
             expected_sha256=expected_sha256,
             actual_sha256=actual_sha256,
         )
-    frame = pd.read_csv(source)
+    frame = pd.read_csv(BytesIO(content))
     date_column = "date" if "date" in frame else "Date" if "Date" in frame else None
     if date_column is None:
         raise DataContractError("strategy evidence source has no date column")

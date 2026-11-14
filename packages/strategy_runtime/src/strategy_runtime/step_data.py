@@ -3,53 +3,111 @@
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, timedelta
+from pathlib import Path
 import re
 from zoneinfo import ZoneInfo
 from uuid import UUID
 
-from dataflows import DataRequest, Dataset, PreparedDataRef, canonical_frame_sha256
+from dataflows import (
+    AssetClass, BarFrequency, DataRequest, Dataset, EquityDataRequest, EquityProduct,
+    EquityQuery, InstrumentId, MarketId, PreparedDataRef, PriceAdjustment, SourceRef,
+    canonical_frame_sha256,
+)
+from dataflows.contract import EvidenceParameters
 
-from .dataset_observations import ObservationAvailability
+from .dataset_observations import FrozenDataAsset, ObservationAvailability
 
 
 STEP_DATA_CONTRACT = 5
 _HFQ = frozenset({Dataset.ETF_OHLCV, Dataset.STOCK_OHLCV})
 _PRODUCTS = _HFQ | {
     Dataset.TRADING_CALENDAR, Dataset.DOMESTIC_INDEX_CLOSE_TURNOVER_DAILY,
-    Dataset.GLOBAL_INDEX_DAILY,
+    Dataset.GLOBAL_INDEX_DAILY, Dataset.SHIBOR_DAILY, Dataset.INDEX_DAILY_BASIC,
+    Dataset.ETF_SHARE_SIZE, Dataset.STRATEGY_FEATURE_EVIDENCE, Dataset.EQUITY_BARS,
 }
+_HFQ_PRODUCTS = _HFQ | {Dataset.EQUITY_BARS}
 
 
 @dataclass(frozen=True, slots=True)
 class StepDataInput:
     name: str
     dataset: Dataset
-    symbol: str
+    symbol: str | None
     frequency: str
     max_calendar_days: int
     availability: ObservationAvailability
+    asset: FrozenDataAsset | None = None
+    instrument: InstrumentId | None = None
+    source: SourceRef | None = None
 
     def __post_init__(self):
         if not isinstance(self.name, str) or not re.fullmatch(r'[A-Za-z][A-Za-z0-9_]*', self.name):
             raise ValueError('strategy data input requires a stable name')
         if type(self.dataset) is not Dataset or self.dataset not in _PRODUCTS:
             raise ValueError('unsupported strategy data product')
-        if not isinstance(self.symbol, str) or not self.symbol.strip():
+        if self.dataset is Dataset.SHIBOR_DAILY:
+            if self.symbol is not None:
+                raise ValueError('Shibor is a fixed series and requires no symbol')
+        elif type(self.symbol) is not str or not self.symbol.strip():
             raise ValueError('strategy data input requires a symbol or exchange')
         if type(self.max_calendar_days) is not int or self.max_calendar_days < 1:
             raise ValueError('strategy data input requires a positive maximum range')
         if type(self.availability) is not ObservationAvailability:
             raise TypeError('strategy data input requires declared availability')
-        self.request(StepDataWindow(self.name, date(2000, 1, 1), date(2000, 1, 1)))
+        if self.dataset is Dataset.STRATEGY_FEATURE_EVIDENCE:
+            if type(self.asset) is not FrozenDataAsset:
+                raise ValueError('strategy feature evidence requires a frozen asset')
+        elif self.asset is not None:
+            raise ValueError('only strategy feature evidence accepts a frozen asset')
+        if self.dataset is Dataset.EQUITY_BARS:
+            if (type(self.instrument) is not InstrumentId or type(self.source) is not SourceRef
+                    or self.instrument.symbol != self.symbol
+                    or self.instrument.timezone != self.availability.timezone):
+                raise ValueError('equity bars require matching instrument, calendar timezone and explicit source')
+        elif self.instrument is not None or self.source is not None:
+            raise ValueError('only typed equity bars accept instrument and source')
+        self.request(StepDataWindow(self.name, date(2000, 1, 1), date(2000, 1, 1)),
+                     source_root=Path.cwd())
 
-    def request(self, window):
+    def request(self, window, *, source_root=None, observed_through=None):
         if type(window) is not StepDataWindow or window.name != self.name:
             raise ValueError('strategy window does not match the declared input')
+        if self.dataset is Dataset.EQUITY_BARS:
+            frequency = BarFrequency(self.frequency)
+            cutoff = None
+            if frequency is BarFrequency.M30 and observed_through is not None:
+                if type(observed_through) is not datetime or observed_through.utcoffset() is None:
+                    raise ValueError('completed bar selection requires an aware observation time')
+                local = observed_through.astimezone(ZoneInfo(self.instrument.timezone))
+                if local.date() == window.end:
+                    cutoff = observed_through
+            return EquityDataRequest(self.instrument, self.source, EquityQuery(
+                EquityProduct.BARS, window.start, window.end, frequency, PriceAdjustment.BACKWARD,
+                completed_through=cutoff))
+        if self.asset is not None:
+            if source_root is None:
+                raise ValueError('strategy feature evidence requires the host-owned source root')
+            parameters = EvidenceParameters(Path(source_root).resolve(), self.asset.relative_path, self.asset.sha256)
+            return DataRequest(self.dataset, self.symbol, window.start.isoformat(),
+                               window.end.isoformat(), None, self.frequency, parameters)
         return DataRequest(self.dataset, self.symbol, window.start.isoformat(),
                            window.end.isoformat(), None, self.frequency)
 
+    def to_dict(self):
+        return {key: value for key, value in asdict(self).items() if
+                key not in {'asset', 'instrument', 'source'} or value is not None}
+
     @classmethod
     def from_dict(cls, value):
+        value = dict(value)
+        if value.get('asset') is not None:
+            value['asset'] = FrozenDataAsset(**value['asset'])
+        if value.get('instrument') is not None:
+            instrument = value['instrument']
+            value['instrument'] = InstrumentId(MarketId(instrument['market']),
+                                               AssetClass(instrument['asset_class']), instrument['symbol'])
+        if value.get('source') is not None:
+            value['source'] = SourceRef(**value['source'])
         return cls(**{**value, 'dataset': Dataset(value['dataset']),
                       'availability': ObservationAvailability(**value['availability'])})
 
@@ -101,15 +159,20 @@ class StepDataRead:
 class StepData:
     """A read-only capability that expires when the current step returns."""
 
-    def __init__(self, inputs, *, as_of, observed_through, load: Callable | None):
+    def __init__(self, inputs, *, as_of, observed_through, load: Callable | None, source_root=None,
+                 equity_latency_seconds=0):
         if any(type(value) is not datetime or value.utcoffset() is None for value in (as_of, observed_through)):
             raise ValueError('strategy data scope requires aware decision and observation times')
         if observed_through > as_of:
             raise ValueError('strategy observation time exceeds the data cutoff')
+        if type(equity_latency_seconds) is not int or equity_latency_seconds < 0:
+            raise ValueError('equity observation latency requires nonnegative seconds')
         self._inputs = {item.name: item for item in inputs}
         self._as_of = as_of
         self._observed_through = observed_through
         self._load = load
+        self._source_root = source_root
+        self._equity_latency_seconds = equity_latency_seconds
         self._cache = {}
         self._reads = []
         self._failed = False
@@ -127,14 +190,18 @@ class StepData:
                     or window.start <= latest - timedelta(days=item.max_calendar_days)):
                 raise ValueError('strategy data window exceeds the observation boundary or maximum lookback')
             if window not in self._cache:
-                request = item.request(window)
+                request = item.request(window, source_root=self._source_root, observed_through=self._observed_through)
                 reference, result = self._load(window, request)
                 if type(reference) is not PreparedDataRef:
                     raise TypeError('strategy read requires a prepared DFLS reference')
                 if not result.ready:
                     raise ValueError(f'STRATEGY_DATA_UNAVAILABLE {window.name}: {result.error}')
-                if item.dataset in _HFQ and result.identity.metadata.get('adjustment') != 'hfq':
+                if item.dataset in _HFQ_PRODUCTS and result.identity.metadata.get('adjustment') != 'hfq':
                     raise ValueError('strategy quotation requires HFQ')
+                if item.asset is not None and (
+                        result.identity.metadata.get('source_sha256') != item.asset.sha256
+                        or result.identity.metadata.get('source_path') != item.asset.relative_path):
+                    raise ValueError('strategy feature evidence differs from the frozen asset')
                 visible = self._visible(result, item, zone)
                 if visible.empty:
                     raise ValueError('STRATEGY_DATA_UNAVAILABLE: no visible rows')
@@ -159,6 +226,8 @@ class StepData:
         def localize(values):
             return values.dt.tz_localize(zone) if values.dt.tz is None else values.dt.tz_convert(zone)
         source, available = localize(source), localize(available)
+        if item.dataset is Dataset.EQUITY_BARS:
+            available += pd.Timedelta(seconds=self._equity_latency_seconds)
         # Calculate the declared wall-clock floor before timezone localization across DST.
         clock = datetime.strptime(item.availability.available_time, '%H:%M').time()
         floor = (source.dt.tz_localize(None).dt.normalize() + pd.Timedelta(

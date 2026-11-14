@@ -126,7 +126,8 @@ class EquityEvaluationRequest:
     def preparation_requests(self, specification):
         declarations = {item.name: item for item in self.candidate.definition.step_data_inputs}
         return self.requests(specification) + tuple(
-            declarations[window.name].request(window) for window in self.step_data_windows)
+            declarations[window.name].request(window, source_root=self.candidate.source_root)
+            for window in self.step_data_windows)
 
     def request_items(self, specification):
         """Stable product keys; auxiliary products never replace the traded asset."""

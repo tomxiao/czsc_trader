@@ -192,7 +192,8 @@ def _copy_inputs(flows, replay, workspace, candidate):
     requests = {source_selection(q): name for name, q in replay.input_binding.bind_requests(replay.requests)}
     requests[source_selection(replay.execution_reference.request)] = 'execution_reference'
     declarations = {item.name: item for item in candidate.definition.step_data_inputs}
-    step_requests = tuple(declarations[window.name].request(window) for window in replay.step_data_windows)
+    step_requests = tuple(declarations[window.name].request(window, source_root=candidate.source_root)
+                          for window in replay.step_data_windows)
     for window, query in zip(replay.step_data_windows, step_requests, strict=True):
         result = flows.fetch(query, prepared=replay.input_binding.prepared)
         if not result.ready:

@@ -201,3 +201,16 @@ def test_partial_session_publishes_completed_grid_without_filling_missing_bars(t
     assert len(flows.fetch(full, prepared=result.reference).dataframe) == 7
     incomplete = gap_flows(tmp_path / 'missing', GappedQuotes(), None)
     assert not incomplete.prepare((partial,), policy=PreparePolicy.REUSE).ready
+
+    full_only = flows.prepare((full,), policy=PreparePolicy.REUSE)
+    sliced = flows.fetch(partial, prepared=full_only.reference)
+    assert sliced.ready, sliced.error
+    pd.testing.assert_frame_equal(sliced.dataframe, partial_frame)
+    partial_only = flows.prepare((partial,), policy=PreparePolicy.REUSE)
+    assert flows.fetch(full, prepared=partial_only.reference).error.code == 'REQUEST_NOT_PREPARED'
+    later_cutoff = datetime(2026, 11, 27, 16, tzinfo=timezone.utc)
+    later = EquityDataRequest(p.instrument, p.source, replace(p.query, completed_through=later_cutoff))
+    assert flows.fetch(later, prepared=partial_only.reference).error.code == 'REQUEST_NOT_PREPARED'
+    wrong_slot = EquityDataRequest(p.instrument, p.source, replace(p.query,
+        completed_through=datetime(2026, 11, 27, 15, 15, tzinfo=timezone.utc)))
+    assert not flows.fetch(wrong_slot, prepared=full_only.reference).ready
