@@ -1,15 +1,63 @@
 # 策略运行时（Strategy Runtime，SRT）
 
+## V5 策略编写与逐轮取数
+
+当前 TDR 账户回放、隔离技术检验和正式 PTE 使用 `EquityStrategyDefinition(contract_version=5)`，
+运行身份为 `ACCOUNT_REPLAY`。定义声明 `StrategyComputation.STATEFUL_STEP`、空
+`FeatureGraph((), ())`、状态结构、执行政策和 `step_data_inputs`。
+`step(ctx, state) -> AccountStepResult` 计算目标比例、结构化信号解释和续算状态。已有 V4
+策略迁移时，把 `ctx.history`、`ctx.auxiliary_histories`、观察表和 `market_feature` 的
+实际依赖改为按轮请求，并用同一可见数据和确认账户反馈核对行为等价。
+
+每个 `StepDataInput` 指定逻辑名、DFLS 产品、标的、频率、最长日历跨度和
+`ObservationAvailability`（时区、可用时刻、日期偏移）。美股等类型化 `Dataset.EQUITY_BARS`
+还要指定 `InstrumentId` 和 `SourceRef`。在策略内按分支取当轮信号所需的最小窗口：
+
+```python
+from strategy_runtime import StepDataWindow
+
+# ctx 由 TDR 或 PTE 通过 SRT 提供
+prices = ctx.dfls.fetch(StepDataWindow("mu_daily", first_day, last_day))
+```
+
+`first_day` 和 `last_day` 是含端点的市场本地日期。按交易日确定实际样本数，且截止日受
+`ctx.point.observed_through` 限制。SRT 按数据时间和可用时间裁剪可见行；类型化 30 分钟行情的
+当日请求同时绑定最后完结时刻。取数回执保存请求窗口、准备引用和可见数据指纹。预热不足或数据
+不可用时明确处理，信号年龄、上一目标等跨轮信息优先存入声明的状态。参见
+[DFLS 的 V5 数据读取规则](../dataflows/README.md#v5-策略逐轮取数)。
+
+`SignalExplanationSnapshot` 由策略生成。把直接决定结果的条件及数值放在第一条
+`basis` 中，供嵌入图展示；`explanation` 写完整依据，`next_watch` 写下一时点关注项。
+区分策略判断、目标比例、委托计划和确认成交。
+
+### 策略侧执行说明
+
+需要展示计划和执行结果的业务含义时，在冻结定义声明
+`execution_explainer="execution_text:explain_execution"`，并把 `execution_text.py`
+加入 `source_files`。入口为源码闭包中的顶层函数，从 `strategy_runtime.execution_explanation`
+导入类型。接收 `ExecutionPlanContext` 或 `ExecutionResultContext`，返回纯文本
+`ExecutionExplanation(summary, detail)`。摘要和详情上限分别为 240、1200 字符。
+
+- 计划上下文提供策略判断、目标比例、决策时持仓、委托方向和股数、规划状态、限制，以及适用时规划引用的上轮事实。
+- 结果上下文提供原计划、执行状态及原因、已记录的委托和确认成交。用传入的记录区分过期未提交、已提交未成交、结果待确认和部分成交。
+
+说明函数由 PTE 后台调用，只读取传入快照。成交回报发生在策略决策之后，由独立的说明入口处理。
+图表展示策略原文，计划、订单与账本由渠道事实确定。参见
+[PTE 的事实来源及展示验收](../paper_trading_engine/README.md#前瞻事实怎样产生)。
+
 ## 冻结来源与当前运行候选
 
 新同版本升级包的 `release_manifest.json` 使用 schema 2，显式记录严格 `C####` 格式的
 `runtime_candidate_id`；该字段进入 `package_hash`。版本元数据的 `source_candidate` 与 manifest
 的 `source_candidate_id` 仍保留原历史来源，可包含 `S002-C001` 等旧标识，不能拿它构造当前候选。
-`VerifiedReleasePackage` 与 `StrategyDeployment` 返回认证后的运行候选 ID，PTE 依此加载原生 V4。
+`VerifiedReleasePackage` 与 `StrategyDeployment` 返回认证后的运行候选 ID，PTE 依此加载原生 V5。
 旧 schema 1 的字段集、来源解释和包字节不变；普通首次冻结仍采用 schema 1。缺字段、非法运行 ID
 或指纹不一致明确拒绝，不替换历史来源，不放宽候选键格式。
 
 ## V4 数据表观察与目标仓位
+
+本节及后文的 V4 数据表、辅助窗口和批量入口说明保留供旧证据审阅。当前策略的行情与特征取数使用
+`step_data_inputs` 和 `ctx.dfls.fetch()`。
 
 `EquityStrategyDefinition.observation_inputs` 声明 `DatasetObservationInput`，用于现有 DFLS 周线、
 指数、成分权重、资金流、宏观、ETF份额及冻结种子产品。它与 `auxiliary_inputs` 行情及
@@ -80,7 +128,7 @@ S003 的严格前日快照、SPX 对齐及既有填充规则仍由策略表达�
 
 ## 跨市场账户研究 V4
 
-新账户定义使用 `EquityStrategyDefinition(contract_version=4)`，运行身份为 `ACCOUNT_REPLAY`。
+历史 V4 账户定义使用 `EquityStrategyDefinition(contract_version=4)`，运行身份为 `ACCOUNT_REPLAY`。
 CN/US共用策略计算、回放内核与计划契约；市场差异由 `ResearchExecutionSpec`、独立交易日历和
 逐执行区间约束表达。既有A股 `StrategyCandidate` 与已有美股V2冻结包不自动转换，原有价格单位和身份保持原契约。V1回调与V3研究定义不再接纳。
 
@@ -117,8 +165,7 @@ V4的 `feedback_mode`固定为 `CONFIRMED_EXECUTION`；旧V2闭合周期模式�
 该产品只供执行器读取，独立绑定行情和会话哈希，不进入特征或辅助历史；不从日线OHLC推测盘中成交。
 同一物理产品可以通过明确逻辑角色共享。普通订单仍按主决策柱的价格区间执行。
 V4研究回放沿用一次装载、不可变可见历史、内存复用和完整证据闭包。
-正式PTE从已部署的精确冻结包加载V4定义，并要求对应发布身份具有模拟或实盘准入资格；
-不能直接把研究候选目录作为运行源码。部署、账户启用和生产变更仍分别按授权执行。
+正式 PTE 从已部署的精确冻结包加载 V5 定义，并校验该发布身份的资格。部署、账户启用和生产变更分别按授权执行。
 
 ## 可见特征与显式状态
 
@@ -684,11 +731,11 @@ TDR技术检验可以在隔离空间验证拟冻结发布包，检验通过不�
 `ResearchExecutionSpec`、`EquityCandidate` 和 `EquityStrategyInstance` 提供显式市场与时间合同的研究规划。
 原 A 股策略及冻结运行时不变。输入、支持范围及因果时序见[TDR美股研究接口](../../src/czsc_trader/README.md#us-equity-research)。
 
-以下仅说明既有V2冻结／PTE的运行合同；新研究统一使用上文V4，不能据此重建旧研究入口。
+以下说明既有 V2 冻结／PTE 的历史合同。新账户研究使用 V5。
 
 ### 冻结V2定义与加载
 
-本节仅说明旧包的只读解析格式；当前TDR/PTE账户执行要求显式迁移到V4，不能按旧RAW合同运行。旧定义使用
+本节说明旧包的只读解析格式；当前 TDR/PTE 账户执行要求显式迁移到 V5。旧定义使用
 `EquityStrategyDefinition`：标的、执行合同、预热、`module:function` 入口、相对源码清单、
 `equity_source_hash` 源码闭包哈希、有限 JSON 参数及精确 `ImplementationDependency`。
 `definition.to_dict()/from_dict()` 可序列化；`definition.content_identity` 不依赖机器路径和候选名称。

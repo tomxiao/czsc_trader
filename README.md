@@ -25,6 +25,10 @@ CZSC Trader 是面向 A 股、美股的量化策略研究与模拟交易平台�
 
 模块 README 面向模块使用者和开发者，说明职责、公共契约及使用方式。
 
+RSCH 编写 V5 策略时，先看 [SRT 策略与说明入口](packages/strategy_runtime/README.md#v5-策略编写与逐轮取数)，
+再用 [TDR 回放示例](src/czsc_trader/README.md#us-equity-api)准备输入、执行回放并发布证据。
+交付前参照 [PTE 前瞻图验收](packages/paper_trading_engine/README.md#前瞻事实怎样产生)核对信号和事件。
+
 | 模块入口 | 主要内容 |
 | --- | --- |
 | [TDR · src/czsc_trader/](src/czsc_trader/README.md) | 研究编排、历史评价、证据交付及冻结升级 |

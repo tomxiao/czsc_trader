@@ -8,7 +8,9 @@ SE按显式协议提供指标、协议校验、比较、帕累托分层、PBO、
 
 账户会计分解使用`diagnose_account_replays`纯计算入口，输入为认证后的`ReplayEvidence`、评价身份、诊断起止日期及可选对照；返回`AccountDiagnosisCalculation`。它不读取文件、不执行策略，也不寻找分类或解释金融机制。RSCH使用TDR的`diagnose_accounts`完成正式证据认证及人群覆盖适配；金额、单位、首版支持范围及发布示例见[TDR账户诊断](../../src/czsc_trader/README.md#账户损益与路径诊断)。账本差异等价性仍使用`compare_ledgers`，不被路径诊断替代。
 
-研究员通过TDR受管评价API取得SRT/EC账户事实，再组合SE公共函数。SE不获取行情、不加载策略、不写治理状态。旧资格裁定、冻结健康政策、自动冻结建议及对应报告入口已删除。
+研究员通过 TDR 取得 V5 策略产生的账户事实，再组合 SE 公共函数。收益、回撤和交易统计使用
+订单、确认成交及账户估值。逐轮 DFLS 回执用于追溯输入，前瞻图的策略文案用于解释判断和执行。
+账户事实的准备与读取见[TDR 账户评价入口](../../src/czsc_trader/README.md#账户评价与执行会话)。
 
 `audit_replay`对`signal_cash_fraction / entry_cycle`额外执行`ENTRY_CYCLE_ALLOCATION`检查，独立核对信号比例、
 开仓现金预算、整手目标、周期内不变性、后续补买数量与剩余预算、成交含费累计和退出后的状态释放。

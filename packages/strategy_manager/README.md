@@ -133,6 +133,12 @@ TDR核对原发布身份、快照新源码与载荷、记录授权和可选验�
 发布身份随新内容变化，旧包按原发布哈希保存于`strategies/revisions/`。运行资格绑定精确发布哈希，
 新身份为`RESEARCH`，不继承旧身份的`PAPER_READY`；资格授予、PTE账户改绑和生产生效分别处理。
 
+原地升级后由 RSCH 提供决策等价性、隔离执行及前瞻图验收证据。DEV 核对回执中的发布哈希、
+包哈希和证据身份。用户批准后，DEV 调用
+`approve_paper_trading(PaperTradingApproval(strategy_id, version, expected_release_hash, actor, reason))`
+登记 `PAPER_APPROVED`。以 `current_qualification` 回读 `PAPER_READY`，用
+`lifecycle_events` 核对事件绑定的版本与发布哈希。
+
 ## 不可变存储与权限
 
 | 路径（相对仓库） | 内容 |

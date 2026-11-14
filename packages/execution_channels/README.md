@@ -99,6 +99,12 @@ EC对合法目标采用尽力执行语义。`AccountExecutionPlan.planning_resul
 及渠道账户、状态快照；历史股票二元目标由 `planning.frozen_equity.plan_frozen_equity`
 处理。历史与在线调用同一个规划实现，不在宿主重复资金和数量算法。
 
+日频与盘中重试分别用适用的交易日或交易区间识别上一轮计划。`PREVIOUS_ZERO_FILL`
+表示上轮计划已终结且确认成交量为零。是否提交应查上轮委托和渠道状态。PTE 在采纳新计划时
+可保存当时引用的上轮决策及委托事实，供策略说明重试原因。计划、渠道受理、终结和确认成交
+各自以 EC 记录为准，策略借这些事实撰写说明。见
+[PTE 的前瞻事实来源](../paper_trading_engine/README.md#前瞻事实怎样产生)。
+
 ## 历史回放渠道
 
 `historical.HistoricalReplayChannel` 仅接受已经准备好的 HFQ 行情与执行约束。

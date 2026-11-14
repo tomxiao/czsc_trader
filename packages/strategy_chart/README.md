@@ -37,7 +37,15 @@ view.destroy();
 旧观察保留原始序列、状态及声明口径，并显示“该记录未提供解释”，不利用当前策略反推历史文案。
 观察不可用和日期无观察分别显示；非交易日仍显示所选日期的事件，不沿用前一交易日的判断。
 
-PTE 提供 `window.forward_observation_start` 划分前瞻区间。`PAPER` 模式按 `signal_date` 归档决策，保留生成时刻与生效日，读取决策自带的 `explanation` 展示已保存的判断。嵌入模式按固定布局展示事件与解释摘要，由宿主按内容尺寸调整 iframe。独立大图可用 `#YYYY-MM-DD` 定位并查看完整内容。`BACKTEST` 继续使用回测时间口径。
+PTE 提供 `window.forward_observation_start` 划分前瞻区间。`PAPER` 模式按 `signal_date` 归档决策，
+保留生成时刻与生效日，信号区显示该日最新有效决策的 `explanation`。嵌入图展示第一条
+`basis`，可用「解释」查看完整依据。独立大图可用 `#YYYY-MM-DD` 定位。`BACKTEST` 使用回测时间口径。
+
+PTE 事件区逐笔展示策略判断、目标比例、委托计划和确认执行结果。计划与结果说明分别来自
+`plan_explanation`、`result_explanation` 的 `summary`（嵌入图）或 `detail`（独立图）。
+委托份额、渠道状态、成交量和币种按事实格式化。缺少策略说明时标注「策略说明未记录」。
+同日多笔事件可在事件区滚动查看。数据来源见
+[PTE 前瞻事实契约](../paper_trading_engine/README.md#前瞻事实怎样产生)。
 
 两种宿主共用同一资源，不复制策略文案、不依赖 PTE 服务生成回测图。历史文件保持原样。
 策略负责声明解释事实，SRT负责解析并固化快照，宿主负责投影，SC只按合同渲染；升级静态资源不会

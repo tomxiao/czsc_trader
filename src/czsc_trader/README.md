@@ -6,7 +6,7 @@ TDR 为研究员提供批次上下文、研究概览、账户评价与诊断、�
 研究目标、授权、候选选择和冻结批准见 [RSCH 契约](../../research/RSCH_AGENT.md)。
 用户 CLI 提供 `backtest run`；Python API 与 CLI 的结果保存行为分别说明如下。
 
-A股、美股的新账户研究统一使用显式会话内的V4接口，详细类型与完整示例见[第10节](#us-equity-research)。
+A 股、美股的新账户研究使用 V5 策略和显式研究会话，完整示例见[跨市场账户研究接口](#us-equity-research)。
 旧普通评价、发布和候选登记链已删除；历史材料仅用于明确的读取、诊断及技术检查，不能恢复为新研究计算入口。
 研究判断分别参阅[通用指南](../../research/RSCH_AGENT.md)、[A股补充](../../research/guides/CN_RESEARCH.md)和
 [美股补充](../../research/guides/US_RESEARCH.md)；本文维护平台契约，不代替研究政策。
@@ -20,7 +20,7 @@ A股、美股的新账户研究统一使用显式会话内的V4接口，详细�
 | 立项与意图 | `create_research_batch`、`update_research_intent` | 研究族、立项凭据及 `ResearchBatchRef` |
 | 批次能力与实验分配 | `create_research_context`、`create_experiment` | `ResearchContext`、`ExperimentRef` |
 | 账户评价 | `research.evaluation.prepare/evaluate_many` | 绑定输入、计算各窗口／成本场景及逐项结果 |
-| 完整回测 | `run_backtest` | 既有契约返回`BacktestEvaluation`；V4权益研究使用显式会话的`prepare/evaluate_many`，见第10节 |
+| 完整回测 | `run_backtest` | 既有契约返回`BacktestEvaluation`；当前权益研究使用显式会话的`prepare/evaluate_many` |
 | 结果留证 | `publish_evidence`、`publish_evidence_many` | 单项 `EvidenceRef`；批量逐项 `PublicationOutcome` |
 | 候选登记与读取 | `register_candidate`、`load_candidate` | 保存候选载荷、源码快照及支撑证据，读取已登记实体 |
 | 五阶段交付 | `assemble_delivery`、`validate_delivery` | 结论、选定证据快照和不可变修订 |
@@ -172,7 +172,7 @@ check = validate_experiment(repository, ExperimentValidationRequest(
 
 ### 账户评价与执行会话
 
-A股、美股统一使用`EquityStrategyCandidate`、`EquityEvaluationRequest`和V4执行规格。
+A 股、美股统一使用 V5 `EquityStrategyCandidate`、`EquityEvaluationRequest` 和显式执行规格。
 调用顺序是显式打开会话、准备请求、批量计算、按需投影或发布；单个账户也使用单元素元组。
 
 ```python
@@ -189,10 +189,10 @@ with ResearchExecutionSession(research, experiment=experiment) as execution:
         EvaluationEvidenceWrite(experiment, "account", prepared, result), execution=execution)
 ```
 
-`prepare`只接受V4请求；`evaluate_many`只接受当前会话持有的`PreparedAccountEvaluation`。
+`prepare` 接受 V5 候选的账户请求；`evaluate_many` 接受当前会话持有的 `PreparedAccountEvaluation`。
 已删除`evaluation.evaluate`、旧`EvaluationRequest/Result/Run`公共导出、旧账户准备和发布分支，
 不提供自动转换、兼容别名或失败后的旧引擎兜底。原始请求不能跳过准备直接提交计算。
-历史数据模型由显式技术检查内部读取，不作为新的研究接口。旧research_backtest模块及其vectorbt计算后独立账本复算链已删除；历史S001/S002脚本如需重做研究，须迁移至V4，而不是重新启用旧入口。
+历史数据模型由显式技术检查内部读取。重做旧账户研究时，将策略及输入声明迁移到 V5。
 
 会话按输入与配置身份共享准备后的行情、特征及精确买持基准；首个账户显式建立基准后可复用。
 请求身份、会话归属、执行规格及结果对象对应关系属于调用契约；默认计算不独立审计账本、重算既有指标或认证上游研究结论。
@@ -201,7 +201,7 @@ with ResearchExecutionSession(research, experiment=experiment) as execution:
 
 ### 资源与显式恢复
 
-V4 回放由会话自动安排并发，RSCH 直接调用 `prepare` 和 `evaluate_many`。
+账户回放由会话自动安排并发，RSCH 直接调用 `prepare` 和 `evaluate_many`。
 准备、共享基准、账户计算和发布采用同一会话生命周期。工作进程按需启动并跨批复用。
 已有脚本可移除手工指定的回放进程数和外层账户进程池，调度规则见[下文](#一次准备共享基准与可审计事实)。
 同批重复使用的只读账户输入在父进程编码一次，通过会话持有的共享内存传递引用；工作进程首次读取后有界复用，
@@ -223,7 +223,7 @@ pandas、NumPy等负责批量数据处理。研究员选择方法并控制计算
 每批提议数由 RSCH 按实际资源上限、内存、剩余预算和反馈频率设定。可用八核且预算允许时，一批八个独立账户可并发回放。
 同一批的提议在本批结果回填前生成。减小批宽可以更早让采样器使用新结果。按固定 trial 顺序回填，并保持恢复时的批次边界。
 
-下例复用[第10节](#us-equity-api)的 V4 请求构造。`build_request` 用 trial 参数构造同口径账户请求，
+下例复用[第10节](#us-equity-api)的 V5 请求构造。`build_request` 用 trial 参数构造同口径账户请求，
 `score` 从成功结果提取已确认的搜索目标。示例用单目标最大化，RSCH 按研究问题选择采样器，按研究契约设定目标方向和约束，并逐项核对候选是否达标。
 `save_proposals` 和 `save_feedback` 由实验脚本实现，按批持久保存记录；已有记录时先核对内容，再继续执行。
 
@@ -273,7 +273,7 @@ def run_search(research, experiment, run_id, *, sampler, distributions,
 
 ### 策略性能验收
 
-V4 `prepare` 校验策略声明和源码，逐步决策与批量观察统一使用有界输入。
+V5 `prepare` 校验策略声明、源码和授权取数区间。
 自定义行情计算须声明窗口及参数，迁移方式见 [SRT 可见特征契约](../../packages/strategy_runtime/README.md#可见特征与显式状态)。
 
 从 `strategy_runtime` 导入 `StrategyPerformanceBudget`，使用
@@ -318,7 +318,7 @@ print(backtest.manifest["audit"]["status"], backtest.metrics)
 
 `run_backtest(research, strategy, request) -> BacktestEvaluation` 仅接受已认证的冻结`StrategyVersion`，
 返回账户、基准、指标与审计，不自动保存 CSV、报告或图表。`lot_size` 必填正整数，并须与策略执行合同一致。
-该冻结回测是显式技术检查，输入价格、时间、成交及费用通过SRT/EC计算，包含SE账户审计；完整回测包含BuyHold、MA5/MA20基准。普通候选回测旁路已删除，候选研究须使用V4会话。
+该冻结回测是显式技术检查，输入价格、时间、成交及费用通过 SRT/EC 计算，包含 SE 账户审计；完整回测包含 BuyHold、MA5/MA20 基准。候选研究使用 V5 会话。
 回测 manifest 为 schema 5，研究指标语义版本为 `candidate-srt-txe-v4-explicit-benchmark`。
 
 基准估值与图表投影使用独立的数值容器，避免在 pandas 派生操作中反复深复制行情的质量元数据。
@@ -339,7 +339,7 @@ SRT独立规划策略预热，完整回测的MA5/MA20基准另需20个先前交�
 原`entry_cycle`资金模式仍仅接受0/1目标。计算规则见[SRT执行计划](../../packages/strategy_runtime/README.md#执行计划)。
 公开账户归因诊断的全仓/现金、单周期单次买入等限制不因新增仓位能力而扩大。
 
-用户CLI已删除`--candidate-id`；候选研究使用V4会话。CLI从仓库根目录执行，`--strategy-version`必填，仅接受已登记冻结版本；对应研究族须已登记。CLI 明确创建实验并保存报告证据，
+候选研究使用 V5 会话。冻结回测 CLI 从仓库根目录执行，`--strategy-version` 必填，接受已登记冻结版本；对应研究族须已登记。CLI 明确创建实验并保存报告证据，
 JSON 输出的 `artifacts` 给出内容寻址文件路径，报告内图表链接保持可用。
 
 ```powershell
@@ -388,7 +388,7 @@ V4账户事实通过显式投影供SE分析，不自动转换为历史诊断格�
 
 ### 账户与材料证据
 
-`EvaluationEvidenceWrite(experiment, name, prepared, result)`只接受当前会话持有的V4准备句柄和结果。
+`EvaluationEvidenceWrite(experiment, name, prepared, result)` 接受当前会话持有的准备句柄和结果。
 `publish_evidence(..., execution=execution)`保存现成字节及其依赖，生成`equity_research` schema 4引用；
 `publish_evidence_many(..., execution=execution)`按输入顺序返回逐项`PublicationOutcome`，共享依赖每批处理一次。
 旧`account_evaluation` schema 7/8不再支持新计算、发布或发布检查点恢复，历史原件不改写。
@@ -440,7 +440,7 @@ report_ref = publish_evidence(research, ExperimentReportWrite(
 ## 6. 候选登记与自检
 
 候选键为策略ID和`C`加四位数字。实现、参数或执行规则变化时使用新身份；评价不会自动登记。
-新登记只接受`EquityStrategyCandidate` V4，覆盖A股、美股；旧`StrategyCandidate`登记入口已删除。
+新登记接受 V5 `EquityStrategyCandidate`，覆盖 A 股和美股。
 
 ```python
 from czsc_trader.application import CandidateRegistrationRequest, register_candidate, load_candidate
@@ -453,7 +453,7 @@ loaded = load_candidate(repository, candidate.key)
 登记消费已发布的账户证据，`evidence`可为空或引用`equity_research`第4、5版。
 同键同内容幂等，冲突拒绝。登记只表示声明与实现已保存，不表示策略达标或获得交付资格。
 
-`load_candidate`明确返回可执行V4候选，进行一次源码、环境依赖和导入契约检查；不认证历史研究账户。
+`load_candidate` 返回经源码、环境依赖和导入契约检查的 V5 候选。
 普通交付通过登记元数据检查交接身份，不调用可执行加载。历史候选加载仅供内部显式技术检查与冻结使用。
 源码留存于`assets/candidates/<候选>/`；原实验源码变化不会影响已登记快照。
 SM普通登记检查自身载荷和源码，来源附件保留为声明；显式完整读取仍可核验附件。
@@ -502,7 +502,7 @@ if design.is_applicable:
 声明集合仅要求对应的实际子候选，不准备未选来源点。计划保留中心、实际点、参数载荷及执行上下文，原点编号不重新编号。
 `bind_point(reference, index, prepared, execution=...)`按内存计划和原点ID绑定同会话子句柄，不读取计划文件或要求已事前发布；
 旧的仅返回绑定、再手工追加谱系并重新`prepare`的运行方式已移除。`prepare`拒绝已经携带参数点绑定的请求。
-是否事前发布由RSCH协议安排。显式`read_parameter_plan`只读取并核对所指定计划字节，不认证映射、可行性等上游材料；计划新建只接受V4会话句柄。
+是否事前发布由 RSCH 协议安排。显式 `read_parameter_plan` 读取并核对所指定计划的字节；新建计划接受当前研究会话的准备句柄。
 点ID、内容身份和参数映射须满足强类型契约；工具不替RSCH证明参数识别充分或检验方法合理。
 
 中心和邻点共享相同的实际输入与公共执行会话；收益、回撤和必要观测从账户事实计算一次。
@@ -535,7 +535,7 @@ SE输出的`calculation_details`保存滚动窗口及集中性分子、分母；
 返回值包含`receipt: DeliveryReceipt`和`validation: DeliveryValidation`，函数签名及访问方式不变。
 阶段三、四返回实际发布完整性检查的`INTEGRITY PASS`：保存报告、请求、结果、指定证据及引用，检查直接存储事务，不签发`FULL PASS`。
 阶段三、四普通发布不认证账户、不递归展开前驱、不重算SE；同修订同内容幂等返回，冲突或缺失材料明确失败。
-阶段三新交付只接受V4账户，按结果头核对候选、实验、评价ID；交接只读取登记元数据。
+阶段三交付按结果头核对候选、实验和评价 ID，交接读取登记元数据。
 其它阶段的专门交付要求保持原有契约，冻结和生产发布不受普通研究接口精简影响。
 阶段三、四默认使用`INTEGRITY`，只检查本交付包，不递归展开历史。阶段三显式`FULL`才进行深入核验；
 阶段四`FULL`仍返回`UNSUPPORTED_SCOPE`。其余阶段默认`FULL`；显式指定`INTEGRITY`同样只检查所选交付包。
@@ -783,7 +783,7 @@ StrategyVersion和运行发布合同不变，不更改已冻结策略、SM状态
 
 目标A通过正常SRT/EC路径运行候选及发布实现，比较信号、决策、订单、成交、账户、交易与观察事实。只归一化纯运行身份；离散数量、状态、时点严格一致，明确金融浮点字段才适用容差。目标B使用正常PTE业务组件和独立的离线成交渠道；检查进入／持有／退出、无成交或部分成交、重复决定／回报、重启后与连续运行一致，以及适用故障。多档持仓调整按能力声明验证。测试许可、数据库及部署回执受隔离路径和包身份约束，普通PTE入口拒绝技术检验数据库。
 
-原生V4目标B复用正式`FormalV4AdviceClient → AccountEngine → ChannelExecution → PaperStore`，
+原生 V5 目标 B 复用正式 `FormalV4AdviceClient → AccountEngine → ChannelExecution → PaperStore`，
 只替换外部券商、时钟和隔离存储。待冻结包通过严格的`InspectionRuntimePermit`加载，
 不伪造正式安装或`PAPER_READY`资格。验收记录正式执行组件的拒单、未知回报、资金及账户健康行为；
 明确的业务未成交不能伪装为技术异常，真实不确定性和账户不一致仍须阻断。
@@ -815,7 +815,7 @@ TDR负责升级的可追溯、审计和发布事务完整性。是否沿用策�
 | 字段 | 类型及含义 |
 | --- | --- |
 | `original` | `FrozenVersionReference`；被替换版本的精确发布和包身份 |
-| `candidate` | `StrategyCandidate` 或原生 V4 `EquityStrategyCandidate`；同一策略族的新实现，不要求先登记研究候选；不接收旧 `US_EQUITY` 合同 |
+| `candidate` | `StrategyCandidate` 或原生 V5 `EquityStrategyCandidate`。同一策略族的新实现，可直接使用待验证源码 |
 | `confirmation` | `ResearchEvidenceRef`；真实升级授权的材料引用，调用方负责如实提交 |
 | `change_summary` | 非空字符串；修改目的、范围和影响声明，原样保存 |
 | `operator` | 非空字符串；调用方声明的执行者，用于审计，不表示平台完成身份认证 |
@@ -840,7 +840,7 @@ TDR负责升级的可追溯、审计和发布事务完整性。是否沿用策�
 旧升级写入流程。首次冻结和独立技术检验沿用各自契约。新发布身份的资格为`RESEARCH`，不自动
 继承旧身份资格；PTE账户改绑、资格授予和生产生效另行授权，升级接口不操作生产账户。
 已有本地 `strategies/deployments/` 安装描述随冻结包同步到新身份，这不授予新身份交易资格。
-原生 V4 首次冻结和升级共用材料构建；声明的数据资源与代码一起封包，资源进入安装清单，
+原生 V5 首次冻结和升级共用材料构建；声明的数据资源与代码一起封包，资源进入安装清单，
 `source_files/source_sha256` 仍只表示 Python 实现。原选型历史保持，新实现来源保存在升级审计链。
 既有专用迁移、观察源码校验器不参与此升级入口；调用方主动使用时，其结果属于相应诊断材料。
 
@@ -907,37 +907,33 @@ assert receipt.status.value == "COMMITTED"
 研究目标、决策频率的研究含义与证据判断见[美股研究补充](../../research/guides/US_RESEARCH.md)。
 接口计算通过不代表真实成交、研究达标或获准上线；以下限制按当前实现理解，不作为市场永久属性。
 
-### V4：相同计算能力、显式市场事实
+### V5：逐轮读取策略数据
 
-新跨市场账户使用 `EquityStrategyDefinition(contract_version=4)`，运行身份为 `ACCOUNT_REPLAY`。
-使用现有 `EquityEvaluationRequest`及下面的会话式 `prepare/evaluate_many`，不增加市场专属业务入口。
-CN和US共用策略计算、回放编排、账户记账、独立数值审计及证据发布；市场差异放在日历、时区、币种、
-价格与数量单位及逐区间规则中。旧`EvaluationRequest`普通研究链已退役，A股与美股统一使用V4；
-历史回放统一采用 HFQ 后复权模拟单位；旧 RAW 证据、冻结包及 PTE 账户须显式迁移，不自动混用。
+跨市场账户使用 `EquityStrategyDefinition(contract_version=5)`，运行身份为 `ACCOUNT_REPLAY`。
+CN 和 US 共用会话式 `prepare/evaluate_many`、回放编排、账户记账及证据发布。市场差异由
+日历、时区、币种、价格及数量单位和逐区间规则表达。历史回放采用 HFQ 后复权模拟单位。
 
-| 能力 | CN与US的V4契约 |
+| 能力 | CN 与 US 的 V5 契约 |
 | --- | --- |
-| 计算及频率 | 显式批量历史／逐步状态；日线／30分钟；均要求完整真实日历 |
+| 计算及频率 | 逐轮 `step(ctx, state)`；日线或 30 分钟；使用真实交易日历 |
 | 仓位及订单 | SRT 只输出 0 至 1 的目标仓位和解释；EC 按冻结执行政策生成报价、数量、依赖腿和周期预算 |
 | 盘中检查点 | 日线可声明独立M30执行报价，使用真实开盘、11:30等边界；不从日线OHLC猜价 |
 | 账户反馈 | 渠道确认的可用现金／可卖数量、成交周期及显式状态初值；模拟盘未知数量变化按对账事实反馈 |
 | 历史账本 | HFQ 报价、成交、成本及估值，数量为整数模拟单位；只记录交易及卖出交收，不处理拆股或派息事件 |
 | 研究闭环 | 参数计划、批量评价、评估事实、连续损益诊断、候选登记、发布及阶段交付校验 |
 
-定义必须显式声明 `computation=StrategyComputation.BATCH_HISTORY`或 `STATEFUL_STEP`；
-前者入口返回逐观察的 `AccountDecision`元组，后者返回 `AccountStepResult`。
-非空状态字段必须有与 schema 一致的 `initial_account: StateRecord`。策略只读取 HFQ 行情；
-不接收原价换算系数或公司行动事件。批量视图逐观察截断，研究仍须检验实现没有跨观察前视。
-完整类型与状态规则见[SRT V4](../../packages/strategy_runtime/README.md#跨市场账户研究-v4)。
+定义声明 `STATEFUL_STEP`，入口逐轮返回 `AccountStepResult`。非空账户状态字段须有与
+schema 一致的 `initial_account: StateRecord`。策略在 `step()` 内读取当次计算需要的 HFQ
+行情及其他已声明产品。完整类型与状态规则见
+[SRT 的 V5 策略编写契约](../../packages/strategy_runtime/README.md#v5-策略编写与逐轮取数)。
 
 日线盘中腿通过 `execution_input=ExecutionInput(instrument, source, BarFrequency.M30)`声明。
 准备增加 `execution:bars`和 `execution:sessions`两项绑定，只覆盖执行窗口，不把未来报价放进策略历史。
 细报价与主报价须为同一 HFQ 基准且边界一致；普通订单仍使用主柱区间。执行报价不会进入策略观察。
 细报价一次索引并按来源身份共享，候选使用其独立账本事实，买持基准不消费该执行专用产品。
 
-CN/US 均可通过 `auxiliary_inputs` 声明 `analysis_price="HFQ"` 的后复权研究观察，
-包括交易标的自身及另一标的；用 `ctx.auxiliary_histories[别名]` 读取。
-主行情及辅助行情均为 HFQ，历史报价、成交和账户处理保持相同尺度，买持基准只依赖主输入。
+CN/US 可通过 `step_data_inputs` 声明本标的或其他标的的观察数据，并通过
+`ctx.dfls.fetch(StepDataWindow(...))` 读取。历史报价、成交和账户处理使用相同 HFQ 尺度。
 DFLS 优先取得供应商后复权行情，供应商不支持时由 DFLS 计算。返回元数据
 `acquisition_method` 明确区分 `PROVIDER_ADJUSTED` 与 `DFLS_ADJUSTED`，供应商身份另行记录。
 PTE 独立准备 RAW 执行参考价，由 EC 结合富途账户和订单回报处理实际股数与资金。
@@ -950,31 +946,14 @@ PTE 独立准备 RAW 执行参考价，由 EC 结合富途账户和订单回报�
 `runtime_candidate_id` 并计入包指纹，认证与正式 PTE 使用该运行键。schema 1 旧包保持原读取协议，
 普通首次冻结不改 schema；升级不会修改原研究来源或历史参数以迁就运行加载。
 
-V4 的非行情及周线观察通过 `observation_inputs: tuple[DatasetObservationInput, ...]` 声明，
-使用既有 DFLS 产品，不将指数伪装成股票，也不将成分权重或资金流拼成 OHLCV。
-`EquityInputBinding.observation_bindings` 保存完整请求和内容身份，原行情 `request_bindings` 格式保持。
-`EquityEvaluationRequest.observation_requests` 可显式选择各观察输入独立的预热区间，
-例如主 HFQ 仅准备账户所需区间，而 ETF 信号表读取此前 300 个交易日；不改变策略定义或主 HFQ 起点。
-准备仍核对产品、覆盖要求、固定边界、真实资金流交易日及完整周线；动态截止不得超过评价结束日，
-已启用输入不能通过较早截止或空请求跳过。各显式选择进入会话缓存及输入身份，不能串用预热数据。
-固定冻结种子仍按已声明边界载入，并由原有可用时刻过滤规则控制早期可见性。
-`prepare(..., execution=session)` 解析资金流交易日历、准备数据表并构建可见时间索引；
-`evaluate_many`、技术检验与 PTE 使用相同只读表视图，策略通过 `ctx.observations[name]` 读取。
-日期型来源须声明 `ObservationAvailability` 的时区、可用时间和必要日偏移，不默认视为当天午夜可用；
-平台按可用时间裁剪，策略仍须保留严格前日快照、滞后和信号计时等金融规则。
+在 `EquityEvaluationRequest.step_data_windows` 中为本次评价可能读取的输入提供获准准备区间，
+含所需预热。准备区间从 `history_start` 起至评价区间结束的市场本地日期内。策略每轮可在
+该区间内按分支选更小的读取窗口，同时遵守定义的最长回看跨度和数据可见时点。
+TDR 固定准备引用，将实际请求和切片指纹保存在 `run.strategy_data_reads`。隔离 PTE 的
+`EquityInspectionReplay.step_data_windows` 使用同一方式绑定准备好的输入。复用旧包时，
+先核对取数时点、数据可用性、目标、状态与订单计划，再验收隔离前瞻图。
 
-种子期暂不启用的动态输入使用可选 `required_from`，与预热读取起点 `history_start` 分开；
-启用时刻包含 `ObservationAvailability` 的日期偏移和发布时间。全期早于启用日期时不请求该产品
-及其日历，绑定和审计记录显式 INACTIVE，无虚构数据身份；跨启用日仍读取完整预热区间，早期视图为空。
-启用后恢复既有严格覆盖检查，缺失明确失败；研究、隔离检验和 PTE 自动配方共用这一契约。
-未声明时不改变既有输入行为或定义身份。
-
-冻结种子用 `FrozenDataAsset(relative_path, sha256)` 声明，配合固定历史边界进入资源清单；
-准备层经 DFLS `STRATEGY_FEATURE_EVIDENCE` 读取已认证资源，策略不直接读取研究目录。
-有资源的候选注册快照按完整内容身份隔离，部署根目录不进入策略定义身份。静态种子不随前瞻日延长。
-请求按完整选择身份去重，表格身份进入输入快照、worker 与恢复依赖，买持仍只依赖主交易输入。
-
-V4 必须显式声明 `execution_policy`。`TARGET_POSITION` 声明仓位资金模式；
+V5 必须显式声明 `execution_policy`。`TARGET_POSITION` 声明仓位资金模式；
 `FROZEN_RULE` 和 `INTRADAY_OVERLAY` 保留冻结规则及盘中策略的订单语义，由 EC 统一规划。
 策略 `AccountDecision` 不再接受订单、依赖腿、资金模式或预算修改，`AccountDecisionProposal` 不再携带报价。
 原 `planning_context` 和价格换算系数已删除；执行状态锁由 EC 维护。
@@ -985,11 +964,10 @@ V4 必须显式声明 `execution_policy`。`TARGET_POSITION` 声明仓位资金�
 平台不判断除权除息事件，接受 T 日参考价在 T+1 日不合适的业务限制；成交与账户以渠道实际事实为准。
 来源能力见 [DFLS](../../packages/dataflows/README.md)，订单与账户规则见 [EC](../../packages/execution_channels/README.md)。
 
-V4结果为 `equity-research/v4`，发布引用为 `EvidenceRef(schema="equity_research", schema_version=4)`，
-沿用输入、候选、基准三项不可变依赖闭包及参数计划schema4。检查点严格匹配版本、请求、引擎和输入，
-恢复核对检查点请求及依赖字节；请求及账本显式记录 `price_basis=HFQ`、
-`quantity_basis=SIMULATED_INTEGER_UNITS`，不把旧 RAW 证据当作当前模型。准备对象固定当前V4时钟上下文。诊断、缺口日期和交易日聚合使用实际市场时区，
-缺失细报价单独留证。PTE部署、生产状态持久化、技术检验及冻结准入仍按原已支持版本处理，V4研究通过不自动取得这些能力。
+研究证据的 schema 由是否显式指定基准决定。带基准为 `equity-research/v4`，仅候选账户为
+`equity-research/v5`；策略运行版本另由定义声明。检查点匹配请求、平台实现及输入字节。
+账本记录 `price_basis=HFQ` 和 `quantity_basis=SIMULATED_INTEGER_UNITS`。
+技术检验、冻结和模拟交易资格沿各自流程办理。
 
 三阶段公共验收见[账户能力](../../tests/functional/test_account_parity_acceptance.py)及
 [独立交付闭包](../../tests/functional/test_account_v4_delivery.py)。合成验收证明软件契约，不替代真实标的研究复验。
@@ -1069,7 +1047,7 @@ TDR 的 `application.account_replay` 连接 SRT 的提案与 EC 的历史渠道�
 旧候选及账户数据仅供内部历史技术检查读取；新研究不提供`StrategyCandidate/EvaluationRequest`兼容计算路径。
 A股、美股新研究请求均须显式绑定执行合同；未指定execution_spec的历史上下文仅用于对应的冻结回测和技术检查。
 这是按业务能力选择确定的实现，不进行出错降级，也不会把美股请求转成 A 股请求。
-CN/US个股权益研究统一采用V4；既有A股日期模型仅服务其明确支持的历史技术检查、冻结回测及生产能力。
+CN/US 个股权益研究使用 V5。既有 A 股日期模型用于其支持的历史技术检查及冻结回测。
 
 ### 10.2 强类型契约
 
@@ -1085,8 +1063,9 @@ CN/US个股权益研究统一采用V4；既有A股日期模型仅服务其明确
 | `EquityEvaluationRequest` | 实验、候选、评价区间、历史起点、三类来源、资金、费率、精确基准、场景及统计口径；准备后绑定输入与审计材料哈希 |
 | `EquityEvaluationResult` | 固定请求哈希、不可变 JSON 字节及内容哈希；读取 `payload` 返回独立副本 |
 
-状态入口为 `step(context, state) -> AccountStepResult`，返回 `AccountDecision`与显式状态；
-批量入口返回逐观察决策元组。目标为0至1比例，详细契约见[SRT](../../packages/strategy_runtime/README.md)。
+状态入口为 `step(context, state) -> AccountStepResult`，返回目标比例、解释与显式状态。
+各账户可在研究会话中批量回放。详细契约见
+[SRT 逐轮策略入口](../../packages/strategy_runtime/README.md#v5-策略编写与逐轮取数)。
 多标的组合、卖空、杠杆、碎股及可变价位制度不在当前账户范围内。源码、参数或执行合同变化形成新内容身份。
 
 ### 10.3 数据产品
@@ -1166,18 +1145,24 @@ V4基准使用同一显式状态回放运行时，开盘权益事件先应用再
 调用方先准备市场明确的数据绑定和研究上下文。策略以当前强类型定义创建，不从旧研究请求自动转换：
 
 ```python
+from strategy_runtime import StepDataWindow
+
 definition = EquityStrategyDefinition(
     instrument=instrument, execution_spec=spec, warmup_bars=warmup,
     entrypoint="strategy:step", source_files=("strategy.py",),
     source_sha256=equity_source_hash(source_root, ("strategy.py",)),
-    contract_version=4, computation=StrategyComputation.STATEFUL_STEP,
+    contract_version=5, computation=StrategyComputation.STATEFUL_STEP,
     feature_graph=FeatureGraph((), ()), state_schema=StrategyStateSchema(),
+    execution_policy=policy, step_data_inputs=step_inputs,
 )
 candidate = EquityStrategyCandidate(batch.strategy_id, "C0001", definition, source_root)
 request = EquityEvaluationRequest(
     experiment, candidate, window, history_start, sources, 100000., .001,
     benchmark=None,  # 如需买持，传 EvaluationBenchmark(EquityBuyHold(spec))
     drawdown_basis="BAR_CLOSE", concentration_basis="MAX_SINGLE",
+    step_data_windows=tuple(
+        StepDataWindow(item.name, history_start, last_session_date) for item in step_inputs
+    ),
 )
 with ResearchExecutionSession(context, experiment=experiment,
         checkpoint=ExecutionCheckpointRequest("equity-study")) as execution:
@@ -1212,11 +1197,11 @@ with ResearchExecutionSession(context, experiment=experiment,
 
 ### 10.6 可审计事实、指标及证据
 
-仅接纳 `equity-research/v4`与 `EvidenceRef(schema="equity_research", schema_version=4)`。
+账户证据接受 `equity-research/v4` 或 `equity-research/v5` 及对应 schema 的 `EvidenceRef`。
 请求绑定TDR/SRT/EC/SE实际计算实现身份和运行环境；默认指标汇总消费序列化观察值，不装载策略，
 不再次推导成交和会计事件。SE既有显式审计能力保留，未被调用时不声称审计通过。
 `register_candidate/load_candidate`、`assemble_delivery/validate_delivery`及 `diagnose_accounts`
-沿当前V4契约处理候选、原型、评估和损益事实；交付复核不依赖原实验可变目录。
+候选、原型、评估和损益事实按已发布证据的 schema 读取，交付复核使用不可变引用。
 权益参数计划schema4与既有A股日期模型参数计划各按自身合同处理，不自动互转。
 
 原V1/V2/V3研究计算、读取、认证与转换分支已退役，旧原件不改写、不改签。

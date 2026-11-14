@@ -88,13 +88,13 @@ SRT 产生策略提案，EC 在采纳决策的同一事务中保存`EntryCycleSt
 
 ## 双市场隔离技术检验
 
-A 股与美股原生 V4 隔离检验使用独立数据库和显式许可，复用正式
+A 股与美股原生 V5 隔离检验使用独立数据库和显式许可，复用正式
 `FormalV4AdviceClient → AccountEngine → ChannelExecution → PaperStore` 链路。
 仅将外部券商、时钟和运行存储替换为受控环境；拒单、未知回报、资金释放及健康状态采用正式实现。
 `FormalV4AdviceClient` 的 `inspection_permit` 只允许加载指定隔离目录中身份匹配的待冻结包；
 普通入口仍要求正式安装记录和模拟交易资格，不为检验创建虚假的 `PAPER_READY` 资格。
 离线 `RecordedInspectionBroker` 按协议提供合成回报及撤单确认，仅验证平台处理能力，
-不代表连接真实富途完成交易验收。此入口只接受原生 V4，旧 RAW 合同在执行前拒绝。
+此入口使用 V5 策略和录制或模拟的渠道回报。正式接入按账户和渠道另行验证。
 `prepare_equity_decision` 认证 SRT 的 HFQ 行情、辅助行情及观察表；独立的
 `ExecutionReferenceBinding` 指定 DFLS RAW 行情请求、准备引用和内容指纹，生成
 `PreparedExecutionReference`。该 RAW 价格只进入 EC，不能放进 SRT 输入绑定或上下文。
@@ -128,23 +128,16 @@ schema 8 将历史记录归入 `futu-cn-default`，保留旧订单 ID。新渠�
 intent 转为 `EXPIRED`，记录该状态转换并计入过期能力覆盖。过去已经过期的 intent、拒单或未知
 提交状态不能提供这项覆盖，保存事实复核也核对转换及订单时间窗。
 
-已部署且精确发布身份具备 `PAPER_READY / LIVE_READY` 的原生 V4，可创建正式模拟账户。
-V4 可声明 `DatasetObservationInput` 观察表，使用 `EquityInputBinding.observation_bindings`
-保存完整 DFLS 请求与内容指纹。成分权重、资金流、宏观及指数数据保持表格复合主键，不伪造 OHLCV；
-技术检验、研究回放和正式决策复用同一可用时点裁剪。日期型发布必须显式声明时区、发布时间和日期偏移，
-市场开盘时间不能替代数据实际可用时间；严格前日快照、滞后及填充仍由冻结策略规则决定。
+正式模拟账户使用已部署、且该发布哈希具备 `PAPER_READY` 或 `LIVE_READY` 资格的 V5 冻结包。
+同版本升级后的资格按新哈希登记，账户改绑采用独立维护流程。PTE 与 TDR 共用
+[SRT V5 策略契约](../strategy_runtime/README.md#v5-策略编写与逐轮取数)。既有接口和记录如
+`FormalV4Inputs`、`advice.equity.v4` 的命名表达宿主数据契约；策略计算版本由冻结定义的
+`contract_version` 指定。
 
-PTE 的原生 V4 决策经共享 `AccountDecisionEngine` 使用有界策略输入。已声明的 `MarketFeature`
-从冻结包源码解析，只消费当前时点已可见的固定窗口。需要整段历史或观察表的旧策略应先迁移并重新进行技术检验。
-PTE 使用同一 [SRT 策略契约](../strategy_runtime/README.md#可见特征与显式状态)，研究批次 CPU 预算由 TDR 会话持有。
-
-`FormalV4Inputs` 使用 schema 3，独立保存 SRT 的 HFQ `binding` 与 PTE 的 RAW `execution_reference`。
-`strategy_requests` 仅交给 SRT；`requests` 包含两类独立请求，用于 DFLS 准备。自动配方按观察表自身的
-发布时点推进查询范围，资金流先用声明交易日历生成日期集合；冻结种子保持原固定区间，
-通过包内相对路径和指纹解析。新一轮准备只生成新的区间绑定，已采用区间复用原内容，重启不重新取数。
-缺数据、声明与绑定不符或资源内容漂移明确失败；观察数据不能替换 RAW 执行行情。旧输入配方明确拒绝，须显式迁移。
-后复权周线请求使用完整源交易周日历，只包含已经过该周最后开市日收盘的周；周中不把临时周线
-当作完整周，周五休市和整周长假按日历处理。研究与正式准备复用同一周界计算，发布时间声明仍同时生效。
+`FormalV4Inputs` 使用 schema 3，独立保存主行情和交易网格的 HFQ `binding` 与 PTE 的 RAW
+`execution_reference`。策略辅助输入在 `step()` 内按所声明的 DFLS 窗口读取。正式账户的
+`strategy_output.data_reads` 保存每轮读取回执，同区间复算用原准备引用和切片校验。
+缺数据、声明与绑定不符或资源内容漂移明确失败。
 
 动态观察的可选 `required_from` 明确种子覆盖期间尚未启用的增量输入。正式配方在其发布时间前
 保留 INACTIVE 绑定，不发送该观察的物理请求、不生成内容指纹；启用后从 `history_start` 读取预热
@@ -183,7 +176,7 @@ EC V4 账户文档使用 schema 2，`locked_quantity` 与周期预算由 EC 持�
 - `create-v4 --definition`：必填字段为 `account_id/strategy_id/strategy_version/release_hash/symbol/asset/fee_rate/initial_cash`。`name` 可省略，显式提供时必须为 `{发布版本}模拟账户`。A 股 `account create` 的 `--name` 使用相同规则，新账户暂停。
 - `normalize-account-name --channel-account-id <渠道账户> --account-id <策略账户>`：离线统一存量账户显示名。保留账户 ID、策略全名和交易账本，相同名称重复执行不新增审计事件。重绑时显示名随发布版本更新。
 - `bind-inputs --definition` 固定输入，或 `bind-recipe --definition` 注册连续日线准备；字段为 `account_id/release_hash/fee_rate/binding/execution_reference`，其中 `binding` 使用 `EquityInputBinding.to_dict()`，`execution_reference` 为独立 RAW 行情引用。
-- `prepare-data --account-id --interval-start --interval-end --as-of` 以带时区的时间戳准备当前 V4 配方的 DFLS 数据。按实际 `as_of` 和执行区间起点中较早的时点选择历史价格与观察输入。结果包含准备引用及逐请求状态，账户库以只读方式打开。准备引用可用于数据审计，正式执行区间仍由调度器独立采纳。
+- `prepare-data --account-id --interval-start --interval-end --as-of` 以带时区的时间戳准备当前账户配方的宿主数据。按实际 `as_of` 和执行区间起点中较早的时点选择输入。结果包含准备引用及逐请求状态，账户库以只读方式打开。策略在正式决策中另外记录逐轮取数回执。
 - `pause-account / resume-account --account-id` 仅改变指定策略账户运行状态；启用要求冻结绑定、已注册输入和现有账户健康检查通过。
 - `pause / resume` 仅改变渠道状态；恢复必须先完成富途对账。渠道恢复不连带启用策略账户。
 
@@ -215,7 +208,7 @@ EC 的 `AccountInputIdentity`；EC 不解析 PTE 配方字段或版本。更新�
 
 账户重绑时用新版输入配方显式绑定 `trading_facts`。生产来源缺失或请求不完整会导致数据准备失败。发布前需要逐市场核实真实动态来源及其覆盖范围。
 
-离线维护使用 `update_account_bindings(runtime_root, target_release_id, updates)`。原 `AccountBindingUpdate` 继续服务旧账户合同。原生 V4 请求使用 `V4AccountBindingUpdate`，显式携带当前与目标发布身份、渠道、账户事实指纹、生效区间、目标规则、`FormalV4Inputs` 和状态处理方式。用 `account_binding_facts_sha256` 取得已暂停账户的事实指纹。
+离线维护使用 `update_account_bindings(runtime_root, target_release_id, updates)`。旧账户合同使用 `AccountBindingUpdate`。原生账户使用 `V4AccountBindingUpdate`，显式携带当前与目标发布身份、渠道、账户事实指纹、生效区间、目标规则、`FormalV4Inputs` 和状态处理方式。用 `account_binding_facts_sha256` 取得已暂停账户的事实指纹。
 
 - 首次迁入 V4 使用 `V4StateMigration`。已确认的仓位周期取自真实成交及账本，策略私有字段和证据由调用者提供。迁移边界前已结清的公司行动随原账本保留，跨边界待支付的股息需要先核对。
 - 旧 EC 周期预算仅在目标 `signal_cash_fraction` 执行政策仍使用它时延续。迁入 `TARGET_POSITION` 或不使用周期预算的 `FROZEN_RULE` 时，在换绑事务内结束旧预算，将原预算及空 pending 映射完整记入绑定审计；确认持仓、策略周期及历史账本不变。非空 pending 私有状态不能自动丢弃，须先明确映射。预算迁移验收须继续完成新版本在线决策，不能只验证换绑成功。
@@ -388,8 +381,8 @@ PTE订单处理和SQLite记账代码；外部渠道使用`RECORDED_FILLS_V1`受�
 
 ## 前瞻事实怎样产生
 
-每个账户绑定一个不可变策略版本、标的和Futu模拟渠道。SRT根据该版本声明准备策略数据，
-生成目标仓位及执行计划；PTE按账户保存决策、订单意图、Futu订单、成交回报和账本。渠道
+每个账户绑定一个不可变策略发布、标的和 Futu 模拟渠道。策略通过 SRT 计算目标和信号解释，
+EC 生成执行计划；PTE 按账户保存决策、订单意图、Futu 订单、成交回报和账本。渠道
 受理委托不等于成交，只有明确的累计成交增量才能改变现金与持仓。未知订单结果或账户对账
 异常时必须阻止新单，不能把部分成功汇总为成功。
 
@@ -399,7 +392,19 @@ PTE前瞻观察图由三类事实组成：SRT随决策记录的观察快照、PT
 
 账户快照 `account.forward_observation_start` 与图表状态 `forward_observation_start` 返回账户最早的正式决策信号日，包含无需下单的决策。尚无决策时返回 `null`。重绑保留账户已有信号历史。`selection_data_cutoff` 仍表示选型截止，`metrics.observation_start/end` 仍表示日终估值窗口。
 
-图表载荷 `pte_forward_chart.v4` 按信号日归档决策，保留生成时间和生效日。成交按市场实际成交日归档，价格、金额和费用使用绑定渠道的币种。V4 已保存的 `strategy_output.explanation` 投影为决策解释，可在没有数值观察时展示。嵌入图展示摘要且不出现局部滚动条，展开大图定位到当前选中日期。版本升级后后台按新契约重建图表缓存。
+图表载荷 `pte_forward_chart.v6` 按信号日归档决策，保留生成时间和生效日。成交按市场实际成交日归档，
+价格、金额和费用使用绑定渠道的币种。PTE 读取已保存的 `strategy_output.explanation`；同一信号日
+有多轮时，信号区展示最新有效判断，事件区逐笔展示。嵌入图显示摘要并可展开信号解释，
+独立大图定位到所选日期并展示事件详情。
+
+后台使用原决策的发布哈希加载已声明的策略说明入口。计划说明使用采纳时的事实，包括当时引用的上轮委托；
+结果说明随确认回报更新。说明文本及输入快照保存在账户库旁的 `execution-explanations.sqlite3`，
+以账户、决策、阶段、发布哈希和事实指纹识别同一记录。图表缓存可重建，说明快照可按原输入追溯。
+没有策略说明时，页面仍展示结构化执行事实并标注「策略说明未记录」。说明生成失败由后台记录。
+
+RSCH 用待交付发布包的隔离前瞻图核对信号日、依据和阈值，再逐笔比对目标、委托和成交。
+按策略抽取入场、等待、持有、退出及适用的过期、拒单、部分成交等样例。保存发布哈希、决策身份、
+实际展示文字和结论。样例来源与缺失覆盖写入验收报告。
 
 账户页首行展示总资产、可用现金、冻结资金、持仓、累计收益率。冻结资金和累计收益率分别取自快照 `account.frozen_cash` 和 `metrics.current_total_return`。累计收益率为当前总资产除以初始资金减一，退役后以已回收资金作为期末资产。
 独立行情只用于展示，不能反向改变策略计算。
@@ -422,8 +427,8 @@ PTE前瞻观察图由三类事实组成：SRT随决策记录的观察快照、PT
 
 PTE环境配置`shared/config/pte.json`使用schema 1，其中`data_space`声明相对于
 `shared/data`的DFLS数据空间，例如`"data_space": "market"`。它必须是非空相对路径，
-不能包含`..`或越出数据根目录。空间独立于发布目录，同一环境的日历、策略准备和图表
-共用宿主创建的DFLS实例；不同环境使用各自的数据根目录。
+不能包含`..`或越出数据根目录。空间独立于发布目录。同一环境的宿主准备及图表读取环境 DFLS，
+策略逐轮请求通过 PTE 管理的账户 DFLS 子空间读取；不同环境使用各自的数据根目录。
 
 WDG使用独立的schema 1配置`shared/config/watchdog.json`，只管理生产根目录及健康检查地址。
 每次启动时，WDG核验活动发布身份，调用该发布的`pte serve-runtime`；PTE自行读取`pte.json`，
