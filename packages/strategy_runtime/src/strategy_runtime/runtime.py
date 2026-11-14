@@ -133,6 +133,9 @@ class StrategyRuntime:
 
     def create(self, request: StrategyInit | EquityStrategyCandidate) -> StrategyInstance | EquityStrategyInstance:
         if type(request) is EquityStrategyCandidate:
+            from .step_data import STEP_DATA_CONTRACT
+            if request.definition.contract_version != STEP_DATA_CONTRACT:
+                raise ValueError('equity execution requires the V5 DFLS step contract')
             if self.execution_spec is None:
                 raise ValueError("equity candidate requires an explicitly bound runtime")
             return EquityStrategyInstance(request, self.execution_spec)

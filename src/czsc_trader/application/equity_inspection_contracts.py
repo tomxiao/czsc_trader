@@ -2,7 +2,7 @@
 from dataclasses import dataclass, field
 import math
 from dataflows import DataRequest, TimeInterval
-from strategy_runtime import EquityInputBinding
+from strategy_runtime import EquityInputBinding, StepDataWindow
 from strategy_manager import freeze_contracts as f
 from paper_trading_engine.execution_reference import ExecutionReferenceBinding
 from ..research_tools.delivery import EvaluationEvidenceRef
@@ -18,6 +18,7 @@ class EquityInspectionReplay:
     one_way_cost: float
     execution_reference: ExecutionReferenceBinding = field(kw_only=True)
     baseline: EvaluationEvidenceRef | None = None
+    step_data_windows: tuple[StepDataWindow, ...] = field(default=(), kw_only=True)
 
     def __post_init__(self):
         if (type(self.execution_reference) is not ExecutionReferenceBinding or
@@ -39,6 +40,10 @@ class EquityInspectionReplay:
             raise ValueError('invalid equity inspection account values')
         if self.baseline is not None and type(self.baseline) is not EvaluationEvidenceRef:
             raise TypeError('baseline requires EvaluationEvidenceRef')
+        if type(self.step_data_windows) is not tuple or any(type(x) is not StepDataWindow for x in self.step_data_windows):
+            raise TypeError('inspection requires typed strategy data grants')
+        if len({window.name for window in self.step_data_windows}) != len(self.step_data_windows):
+            raise ValueError('inspection strategy data grants must be unique')
 
 
 @dataclass(frozen=True)

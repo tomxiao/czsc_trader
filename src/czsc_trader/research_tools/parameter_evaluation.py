@@ -15,7 +15,7 @@ from strategy_evaluator.parameter_neighborhood import (
     DeclaredParameterPointSet, ParameterNeighborhoodDesign, ParameterNeighborhoodBinding,
 )
 from dataflows import Dataflows
-from strategy_runtime import canonical_sha256, StrategyInputBinding
+from strategy_runtime import canonical_sha256, StrategyInputBinding, STEP_DATA_CONTRACT
 
 from ._records import _Record, _hash, _unique
 from .evidence import EvidenceRef
@@ -266,8 +266,8 @@ def _parameter_payload(payload):
 def equity_planned_identity(payload):
     from strategy_runtime.equity_definition import EquityStrategyDefinition
     definition = EquityStrategyDefinition.from_dict(payload["equity_definition"])
-    if definition.contract_version != 4:
-        raise ValueError('equity parameter plans require account contract 4')
+    if definition.contract_version != STEP_DATA_CONTRACT:
+        raise ValueError('equity parameter plans require the V5 DFLS step contract')
     expected = {"kind": "ACCOUNT_REPLAY", "contract_version": definition.contract_version,
                 "source_files": list(definition.source_files), "source_sha256": definition.source_sha256}
     if set(payload) != {"runtime", "equity_definition"} or _payload_json(payload["runtime"]) != _payload_json(expected):

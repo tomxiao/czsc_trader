@@ -17,7 +17,8 @@ from pathlib import Path
 from weakref import WeakValueDictionary, ref
 from typing import TYPE_CHECKING
 
-from dataflows import EquityDataRequest, EquityProduct, PreparePolicy, TimeInterval
+from dataflows import Dataflows, DataSpaceBinding, EquityDataRequest, EquityProduct, PreparedDataRef, PreparePolicy, ProviderConfig, TimeInterval
+from strategy_runtime import STEP_DATA_CONTRACT, StepDataWindow
 from strategy_runtime.equity import ResearchExecutionSpec, equity_hash
 from strategy_runtime.equity_definition import EquityAuxiliaryBinding, EquityInputBinding, EquityStrategyCandidate, ExecutionInputBinding
 from strategy_runtime.strategy_performance import StrategyPerformanceBudget, StrategyPerformanceExceeded
@@ -134,6 +135,7 @@ def _benchmark_candidate(request):
 def _query_identity(request, specification):
     ref = request.prepared
     return equity_hash(_json_value({"requests": [(role, asdict(query)) for role, query in request.request_items(specification)],
+        "preparation": [asdict(query) for query in request.preparation_requests(specification)],
         "prepared": None if ref is None else {"space_id": str(ref.space_id),
             "preparation_id": str(ref.preparation_id), "manifest_sha256": ref.manifest_sha256}}))
 
@@ -144,7 +146,7 @@ def _primary_input_sha256(snapshot):
 
 def prepare_equity(access, request, *, execution):
     """Fetch/authenticate each exact input selection once in the owning session."""
-    if type(request) is not EquityEvaluationRequest or request.candidate.definition.contract_version != 4:
+    if type(request) is not EquityEvaluationRequest or request.candidate.definition.contract_version != STEP_DATA_CONTRACT:
         raise TypeError("equity preparation requires an explicit equity strategy request")
     if request.lineage is not None and request.lineage.parameter_binding is not None:
         raise ValueError("prepare an unbound child, then use ParameterEvaluationPlan.bind_point")
@@ -205,7 +207,7 @@ def prepare_equity(access, request, *, execution):
         cached = state.snapshots.get(query_identity)
         if cached is None:
             if request.prepared is None:
-                data = access.data.prepare(request.requests(spec), policy=PreparePolicy.REUSE)
+                data = access.data.prepare(request.preparation_requests(spec), policy=PreparePolicy.REUSE)
                 if not data.ready:
                     raise ValueError("equity preparation failed: " + "; ".join(str(x.error) for x in data.items if not x.ready))
                 request = replace(request, prepared=data.reference)
@@ -309,6 +311,20 @@ class _ReplayAccountRequest:
     initial_cash: float
     fee_rate: float
     performance_budget: StrategyPerformanceBudget | None = None
+    space: DataSpaceBinding | None = None
+    step_data_reference: PreparedDataRef | None = None
+    step_data_windows: tuple[StepDataWindow, ...] = ()
+
+
+def pinned_step_data(dataflows, reference, windows):
+    """A research worker can only read its task's fixed assets and grants."""
+    grants = {window.name: window for window in windows}
+    def load(window, request):
+        allowed = grants.get(window.name)
+        if allowed is None or not allowed.start <= window.start <= window.end <= allowed.end:
+            raise ValueError('strategy data request exceeds the authorized research window')
+        return reference, dataflows.fetch(request, prepared=reference)
+    return load
 
 
 @dataclass(frozen=True, slots=True)
@@ -329,10 +345,17 @@ def _compute_account(replay, candidate, request, owner, execution_bars, output):
     executor = PortfolioHistoricalExecutor(specification=execution_spec(candidate.definition.execution_spec),
         initial_cash=request.initial_cash, fee_rate=request.fee_rate,
         price_basis="HFQ", execution_bars=execution_bars)
+    load = None
+    if request.space is not None:
+        dataflows = Dataflows(base_dir=request.space.base_dir, space=request.space.space,
+                              providers=ProviderConfig(bindings={}))
+        if dataflows.binding != request.space:
+            raise ValueError('research worker reopened a different DFLS space')
+        load = pinned_step_data(dataflows, request.step_data_reference, request.step_data_windows)
     try:
         outcome = run_replay(replay, candidate, executor, start=request.window.start,
             end=request.window.end, fee_rate=request.fee_rate, owner=owner, constraints=output.constraints,
-            performance_budget=request.performance_budget)
+            step_data_load=load, performance_budget=request.performance_budget)
     except ReplayFailure as exc:
         # A failed research account publishes no partial state. Transfer its
         # message without serializing a strategy module's exception or state.
@@ -349,6 +372,8 @@ def _compute_account(replay, candidate, request, owner, execution_bars, output):
     run.update(metrics=asdict(metrics), data_quality=_data_quality(
         output.bars, run, suppressed_signals=suppressed,
         timezone=candidate.instrument.timezone, execution_bars=output.execution_bars))
+    if outcome.data_reads:
+        run["strategy_data_reads"] = outcome.data_reads
     artifact = EquityArtifact("equity_account", _account_document(run, account, output))
     return artifact, outcome.statistics
 
@@ -508,7 +533,10 @@ def evaluate_many_equity(access, requests, *, execution):
                     candidate, replay = _replay(state, prepared, benchmark=benchmark)
                 owner = _account_owner(prepared, benchmark=benchmark)
                 contract = _ReplayAccountRequest(prepared.request.window, prepared.request.initial_cash,
-                    prepared.request.fee_rate, None if benchmark else budget)
+                     prepared.request.fee_rate, None if benchmark else budget,
+                     access.data.binding if candidate.definition.step_data_inputs else None,
+                     prepared.request.prepared if candidate.definition.step_data_inputs else None,
+                     prepared.request.step_data_windows if candidate.definition.step_data_inputs else ())
                 quotes = None
                 if candidate.definition.execution_input is not None:
                     from execution_channels.historical import PreparedExecutionQuotes
@@ -662,8 +690,8 @@ def validate_result_structure(payload, artifacts=()):
             or schema not in EQUITY_EVIDENCE_SCHEMAS
             or schema != f"equity-research/v{version}" or request.get("schema") != schema):
         raise ValueError("equity result schema differs")
-    if request.get("candidate_definition", {}).get("contract_version") != 4:
-        raise ValueError("account evidence requires the V4 strategy contract")
+    if request.get("candidate_definition", {}).get("contract_version") not in (4, STEP_DATA_CONTRACT):
+        raise ValueError("account evidence requires an account strategy contract")
     if version == 5 and any(value is not None for value in
             (request["benchmark"], request["benchmark_sha256"], payload["benchmark_ref"], payload["benchmark_identity"])):
         raise ValueError("strategy-only equity evidence requires null benchmark fields")

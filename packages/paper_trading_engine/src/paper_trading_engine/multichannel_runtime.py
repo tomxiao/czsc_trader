@@ -229,7 +229,7 @@ class MultiChannelRuntime:
                     self.market_data_resources.close()
 
 
-def build_multichannel_runtime(args, store, dataflows, *, gateway_factory=FutuGateway):
+def build_multichannel_runtime(args, store, dataflows, *, gateway_factory=FutuGateway, account_dataflows=None):
     services_by_id = {}
     console = None
     try:
@@ -240,7 +240,8 @@ def build_multichannel_runtime(args, store, dataflows, *, gateway_factory=FutuGa
             legacy = SrtAdviceClient(repo_root=args.repo_root, data_dir=args.data_dir,
                                      asset=args.asset, audit=audit, dataflows=dataflows)
             formal = FormalV4AdviceClient(repo_root=args.repo_root, store=scoped,
-                                         dataflows=dataflows, data_dir=args.data_dir)
+                                          dataflows=dataflows, data_dir=args.data_dir,
+                                          account_dataflows=account_dataflows)
             for account in scoped.strategy_virtual_accounts():
                 if account['run_state'] in {'PAUSED', 'RETIRING', 'RETIRED'}:
                     continue

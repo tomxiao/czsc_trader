@@ -94,10 +94,8 @@ class _FutuQuotes:
         return self._call('request_history_kline', *args, **kwargs)
 
 
-def create_dataflows(*, data_dir: Path, space: DataSpace, config_root: Path,
-                     opend_host: str = '127.0.0.1', opend_port: int = 11111,
-                     resources: ExitStack | None = None) -> Dataflows:
-    """Bind a relative data space to the environment's stable shared data root."""
+def dataflow_providers(*, config_root: Path, opend_host: str = '127.0.0.1',
+                       opend_port: int = 11111, resources: ExitStack | None = None) -> ProviderConfig:
     env_file = config_root / '.env'
     equity = {}
     quotes = _FutuQuotes(opend_host, opend_port, resources)
@@ -121,8 +119,33 @@ def create_dataflows(*, data_dir: Path, space: DataSpace, config_root: Path,
             raise ValueError('dynamic equity facts calendar source is not registered')
         equity.update(dynamic_equity_bindings(source=item.source, market=item.market, endpoint=item.endpoint,
             calendar_source=item.calendar_source, calendar_binding=calendar))
-    return Dataflows(
-        base_dir=data_dir,
-        space=space,
-        providers=ProviderConfig(env_file=env_file, equity_bindings=equity),
-    )
+    return ProviderConfig(env_file=env_file, equity_bindings=equity)
+
+
+def create_dataflows(*, data_dir: Path, space: DataSpace, config_root: Path,
+                     opend_host: str = '127.0.0.1', opend_port: int = 11111,
+                     resources: ExitStack | None = None) -> Dataflows:
+    """Bind a relative data space to the environment's stable shared data root."""
+    providers = dataflow_providers(config_root=config_root, opend_host=opend_host,
+                                  opend_port=opend_port, resources=resources)
+    return Dataflows(base_dir=data_dir, space=space, providers=providers)
+
+
+class AccountDataflows:
+    """PTE-owned instances with one shared provider configuration and quote connection."""
+
+    def __init__(self, data_dir: Path, space: DataSpace, providers: ProviderConfig):
+        self._data_dir, self._space, self._providers = data_dir, space, providers
+        self._accounts = {}
+        self._lock = Lock()
+
+    def for_account(self, account_id: str) -> Dataflows:
+        from hashlib import sha256
+        if type(account_id) is not str or not account_id:
+            raise ValueError('DFLS account space requires a virtual account ID')
+        with self._lock:
+            if account_id not in self._accounts:
+                key = sha256(account_id.encode()).hexdigest()
+                self._accounts[account_id] = Dataflows(base_dir=self._data_dir,
+                    space=DataSpace(self._space.path / 'strategy-accounts' / key), providers=self._providers)
+            return self._accounts[account_id]

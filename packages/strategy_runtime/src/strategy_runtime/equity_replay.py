@@ -597,6 +597,7 @@ class ReplayOutcome(Generic[ResultT]):
     execution_result: ResultT
     state: StrategyState
     statistics: ReplayStatistics
+    data_reads: tuple[dict, ...] = ()
 
 
 class ReplayFailure(RuntimeError):

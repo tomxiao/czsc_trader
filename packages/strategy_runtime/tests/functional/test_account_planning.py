@@ -17,10 +17,29 @@ from strategy_runtime import (
     PreparedObservations,
     RecognizedAccountEvent,
     RecognizedEventKind,
+    STEP_DATA_CONTRACT,
+    FeatureGraph,
     equity_source_hash,
-    check_account_batch_consistency,
 )
-from packages.strategy_runtime.tests.v4_fixture_support import setup
+from packages.strategy_runtime.tests.v4_fixture_support import setup as archive_fixture
+
+
+def setup(root, market, frequency, computation, *, with_executor=False):
+    candidate, _, executor, bars, constraints, sessions, session_frame = archive_fixture(
+        root, market, frequency, computation, with_executor=with_executor)
+    source = """from strategy_runtime import AccountDecision, AccountStepResult, StateRecord
+def step(ctx, state):
+    return AccountStepResult(AccountDecision.from_facts(.25, 'target', facts={'target': .25}, next_watch='next'),
+                             state.account, StateRecord())
+"""
+    (root / 'strategy.py').write_text(source, encoding='utf-8')
+    graph = FeatureGraph((), ())
+    definition = replace(candidate.definition, contract_version=STEP_DATA_CONTRACT, feature_graph=graph,
+                         source_sha256=equity_source_hash(root, ('strategy.py',)))
+    candidate = replace(candidate, definition=definition)
+    prepared = PreparedObservations.from_frames(bars, graph, frequency=frequency,
+        timezone=candidate.instrument.timezone, sessions=session_frame, trading_sessions=sessions)
+    return candidate, prepared, executor, bars, constraints, sessions, session_frame
 
 
 def facts(candidate, prepared, index=1):
@@ -46,7 +65,7 @@ def facts(candidate, prepared, index=1):
     ("return context.market_feature('missing')", 'undeclared market feature'),
 ])
 def test_V4_rejects_undeclared_decision_window_before_replay(tmp_path, line, message):
-    candidate, *_ = setup(tmp_path, MarketId.US, BarFrequency.DAILY, StrategyComputation.STATEFUL_STEP,
+    candidate, *_ = archive_fixture(tmp_path, MarketId.US, BarFrequency.DAILY, StrategyComputation.STATEFUL_STEP,
                           with_executor=False)
     (tmp_path / 'strategy.py').write_text('def step(context, state):\n    ' + line + '\n', encoding='utf-8')
     definition = replace(candidate.definition, source_sha256=equity_source_hash(tmp_path, ('strategy.py',)))
@@ -54,24 +73,20 @@ def test_V4_rejects_undeclared_decision_window_before_replay(tmp_path, line, mes
         replace(candidate, definition=definition)
 
 
-def test_V4_decision_alias_exposes_only_recent_rows(tmp_path):
-    candidate, prepared, *_ = setup(tmp_path, MarketId.US, BarFrequency.DAILY,
-                                    StrategyComputation.STATEFUL_STEP, with_executor=False)
-    (tmp_path / 'strategy.py').write_text('def step(ctx, state):\n    view = ctx.history\n    return view.to_frame()\n',
-                                         encoding='utf-8')
-    candidate = replace(candidate, definition=replace(candidate.definition,
-        source_sha256=equity_source_hash(tmp_path, ('strategy.py',))))
-    interval, portfolio, account = facts(candidate, prepared)
-    with pytest.raises(AttributeError, match='DecisionHistory.*to_frame'):
-        AccountDecisionEngine(candidate, prepared).propose(interval, portfolio, account, AccountStrategyState(),
-            PositionFeedback(), owner='durable-account', fee_rate=.001)
+@pytest.mark.parametrize('computation', [StrategyComputation.STATEFUL_STEP, StrategyComputation.BATCH_HISTORY])
+def test_archived_v4_definition_is_readable_but_rejected_at_execution(tmp_path, computation):
+    candidate, prepared, *_ = archive_fixture(tmp_path, MarketId.US, BarFrequency.DAILY,
+                                               computation, with_executor=False)
+    assert candidate.definition.to_dict()['contract_version'] == 4
+    with pytest.raises(ValueError, match='V5 DFLS step contract'):
+        AccountDecisionEngine(candidate, prepared)
 
 
 @pytest.mark.parametrize(
     "market,frequency,computation",
     [
         (MarketId.CN, BarFrequency.DAILY, StrategyComputation.STATEFUL_STEP),
-        (MarketId.US, BarFrequency.M30, StrategyComputation.BATCH_HISTORY),
+        (MarketId.US, BarFrequency.M30, StrategyComputation.STATEFUL_STEP),
     ],
     ids=["SRT-23-C01", "SRT-23-C02"],
 )
@@ -105,7 +120,7 @@ def test_independent_decision_calls_preserve_targets_and_caller_state(
             engine.state_binding("durable-account", 0.001),
             result.next_event_cursor,
         )
-    assert actual == [(0.25, 0.5, 0.25, 0.0)[int(value - 10) % 4] for value in bars.Close.iloc[:-1]]
+    assert actual == [0.25] * (len(bars) - 1)
 
 
 @pytest.mark.parametrize(
@@ -228,75 +243,6 @@ def test_SRT_22_C07_propose_does_not_commit_caller_owned_state(tmp_path):
     assert proposal.proposal.decision.target == 0.25
     assert state.to_dict() == before and state.binding is None
     assert account.quantity == 0 and portfolio.quantity == 0
-
-
-def test_SRT_23_C03_batch_requires_one_decision_per_observation(tmp_path):
-    c, p, *_ = setup(
-        tmp_path,
-        MarketId.US,
-        BarFrequency.M30,
-        StrategyComputation.BATCH_HISTORY,
-        with_executor=False,
-    )
-    (tmp_path / "strategy.py").write_text("def calculate(ctx):\n    return ()\n", encoding="utf-8")
-    c = replace(
-        c,
-        definition=replace(
-            c.definition, source_sha256=equity_source_hash(tmp_path, ("strategy.py",))
-        ),
-    )
-    interval, portfolio, account = facts(c, p)
-    with pytest.raises(TypeError, match="one AccountDecision per observation"):
-        AccountDecisionEngine(c, p).propose(
-            interval,
-            portfolio,
-            account,
-            AccountStrategyState(),
-            PositionFeedback(),
-            owner="account",
-            fee_rate=0.001,
-        )
-
-
-@pytest.mark.parametrize(
-    "cross_observation",
-    [
-        True,
-    ],
-    ids=["SRT-23-C04"],
-)
-def test_batch_consistency_reports_exact_differing_points(tmp_path, cross_observation):
-    c, p, _, bars, _, _, _ = setup(
-        tmp_path,
-        MarketId.US,
-        BarFrequency.M30,
-        StrategyComputation.BATCH_HISTORY,
-        with_executor=False,
-    )
-    if cross_observation:
-        (tmp_path / "strategy.py").write_text(
-            """from strategy_runtime import AccountDecision
-def calculate(ctx):
-    return tuple(AccountDecision.from_facts(float(index%2),"sequence-dependent",
-        facts={"index":index},next_watch="next") for index,row in enumerate(ctx.observations))
-""",
-            encoding="utf-8",
-        )
-        c = replace(
-            c,
-            definition=replace(
-                c.definition, source_sha256=equity_source_hash(tmp_path, ("strategy.py",))
-            ),
-        )
-    result = check_account_batch_consistency(
-        c, p, start=bars.BarStart.iloc[1].to_pydatetime(), end=bars.Date.iloc[-1].to_pydatetime()
-    )
-    assert result.checked_points == len(bars) - 1
-    assert result.consistent is (not cross_observation)
-    if cross_observation:
-        assert result.differing_points == tuple(
-            stamp.to_pydatetime() for stamp in bars.BarStart.iloc[2:]
-        )
 
 
 def test_SRT_22_C02_nonempty_account_schema_requires_initial_values(tmp_path):

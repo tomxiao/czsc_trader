@@ -13,7 +13,7 @@ def run_frozen_equity(instance, bars, constraints, executor, *, start, end, fee_
                       auxiliary_histories=None, sessions=None, trading_sessions=()):
     """Use causal SRT targets and the channel's sole sizing and execution path."""
     candidate = instance.candidate
-    if candidate.definition.contract_version == 4:
+    if candidate.definition.account_replay:
         raise ValueError('V4 requires the stateful account channel')
     candidate.verify()
     specification = execution_spec(instance.specification)

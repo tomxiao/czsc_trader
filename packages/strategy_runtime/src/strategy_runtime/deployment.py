@@ -190,17 +190,20 @@ def validate_release_package(strategy_root: Path, release_id: str) -> VerifiedRe
     equity = runtime_kind in {"US_EQUITY", "ACCOUNT_REPLAY"}
     if equity:
         from .equity_definition import EquityStrategyCandidate, EquityStrategyDefinition
+        from .step_data import STEP_DATA_CONTRACT
         definition = EquityStrategyDefinition.from_dict(dict(release.payload["equity_definition"]))
         if not {asset.relative_path for asset in definition.frozen_assets}.issubset(binding.spec.install_files):
             raise RuntimeCompatibilityError('strategy install files omit frozen data resources')
-        expected_version = 4 if runtime_kind == "ACCOUNT_REPLAY" else 2
-        if definition.contract_version != expected_version or descriptor.get("contract_version") != expected_version:
+        expected_version = definition.contract_version
+        if definition.account_replay != (runtime_kind == "ACCOUNT_REPLAY") or descriptor.get("contract_version") != expected_version:
             raise RuntimeCompatibilityError('equity runtime kind differs from its definition contract')
+        if expected_version != STEP_DATA_CONTRACT:
+            raise RuntimeCompatibilityError('equity execution requires the V5 DFLS step contract')
         candidate = EquityStrategyCandidate(release.strategy_family_id, runtime_candidate_id, definition, source_root)
         candidate.verify()
         if canonical_sha256(candidate.payload) != canonical_sha256(dict(release.payload)):
             raise RuntimeCompatibilityError('equity runtime payload differs from its definition')
-        contract = "equity-account-v4" if expected_version == 4 else "equity-decision-v2"
+        contract = f"equity-account-v{expected_version}" if definition.account_replay else "equity-decision-v2"
         if canonical_sha256({"contract": contract, "definition": definition.to_dict()}) != binding.spec.observation_sha256:
             raise RuntimeCompatibilityError("equity runtime binding differs from decision definition")
     return VerifiedReleasePackage(release, package.package_sha256, binding, source_root, runtime_candidate_id)

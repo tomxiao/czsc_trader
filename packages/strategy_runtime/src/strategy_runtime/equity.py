@@ -268,7 +268,7 @@ class EquityStrategyInstance:
 
     def propose(self, history: pd.DataFrame, interval: TimeInterval, portfolio: EquityPortfolio,
              *, auxiliary_histories=None, sessions=None, trading_sessions=()) -> EquityIntent:
-        if self.candidate.definition.contract_version == 4:
+        if self.candidate.definition.account_replay:
             raise ValueError('V4 strategy requires AccountDecisionEngine.propose')
         if "BarStatus" in history:
             if not history.BarStatus.isin(("OBSERVED", "MISSING", "ZERO_VOLUME")).all():

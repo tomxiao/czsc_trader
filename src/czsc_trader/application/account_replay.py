@@ -5,10 +5,9 @@ from datetime import datetime
 import math
 
 from dataflows import TimeInterval
-from strategy_runtime import AccountDecisionEngine, AccountStrategyState, StateRecord
+from strategy_runtime import AccountDecisionEngine, AccountStrategyState, StateRecord, STEP_DATA_CONTRACT
 from strategy_runtime.equity_replay import PreparedObservations, ReplayOutcome, ReplayStatistics, ReplayFailure
 from strategy_runtime.equity import equity_hash
-from strategy_runtime.replay_contracts import StrategyComputation
 from strategy_runtime.strategy_performance import (StrategyPerformanceBudget, StrategyPerformanceExceeded,
                                                     _StrategyPerformanceProbe)
 from execution_channels.historical import HistoricalReplayChannel, HistoricalDecision, AdoptionStatus
@@ -22,10 +21,10 @@ from .ec_boundary import (execution_instrument, execution_plan, strategy_budget,
 
 
 def run_replay(prepared, candidate, executor, *, constraints, start, end, fee_rate, initial_state=None, owner=None,
-               performance_budget: StrategyPerformanceBudget | None = None):
+               step_data_load=None, performance_budget: StrategyPerformanceBudget | None = None):
     """Execute a supplied historical window with exactly the online strategy entry."""
-    if type(prepared) is not PreparedObservations or candidate.definition.contract_version != 4:
-        raise TypeError('historical account requires prepared V4 observations')
+    if type(prepared) is not PreparedObservations or candidate.definition.contract_version != STEP_DATA_CONTRACT:
+        raise TypeError('historical account requires the V5 DFLS step contract')
     if any(type(t) is not datetime or t.utcoffset() is None for t in (start, end)) or start >= end:
         raise ValueError('historical window requires aware positive bounds')
     definition = candidate.definition
@@ -59,10 +58,7 @@ def run_replay(prepared, candidate, executor, *, constraints, start, end, fee_ra
     if performance_budget is not None and type(performance_budget) is not StrategyPerformanceBudget:
         raise TypeError('replay performance requires StrategyPerformanceBudget')
     performance = None if performance_budget is None else _StrategyPerformanceProbe(performance_budget, len(ticks))
-    engine = AccountDecisionEngine(candidate, prepared, performance=performance)
-    # The stateful strategy validates its returned records inside account_step.
-    # Batch proposals synthesize their state and need the schema check here.
-    batch = definition.computation is StrategyComputation.BATCH_HISTORY
+    engine = AccountDecisionEngine(candidate, prepared, step_data_load=step_data_load, performance=performance)
     trigger = definition.execution_policy.settings.get('execution_trigger')
     target_trigger = trigger in TARGET_TRIGGERS
     cycles = {(cycle.window.start, cycle.window.end): cycle for cycle in execution_intervals(
@@ -74,6 +70,7 @@ def run_replay(prepared, candidate, executor, *, constraints, start, end, fee_ra
         bar_ready = dict(zip(data.ends, data.ready_at, strict=True))
     projected_channel_state = None
     decisions = 0
+    data_reads = []
     started = perf_counter()
     with candidate.bind_replay(performance=performance) as scope:
         for a, b in ticks:
@@ -103,10 +100,6 @@ def run_replay(prepared, candidate, executor, *, constraints, start, end, fee_ra
                     strategy_feedback(snapshot.position), owner=owner, fee_rate=fee_rate,
                     budget=strategy_budget(snapshot.budget), events=strategy_events(snapshot.events),
                     next_event_cursor=snapshot.next_event_cursor, binding=binding, decision_at=decision_at)
-                if batch and not result.suppressed:
-                    definition.state_schema.validate_record(result.proposal.account, scope='account')
-                    if result.proposal.cycle_values is not None:
-                        definition.state_schema.validate_record(result.proposal.cycle_values, scope='cycle')
                 previous_execution = None
                 if target_trigger:
                     previous_window = cycle.previous_window
@@ -115,7 +108,7 @@ def run_replay(prepared, candidate, executor, *, constraints, start, end, fee_ra
                 plan = execution_plan(result, account, definition.execution_spec, owner=owner,
                     implementation=implementation, fee_rate=fee_rate,
                     sell_remainder_policy=constraint['SellRemainderPolicy'],
-                    reference_price=float(observation[2].last()['Close']),
+                    reference_price=observation[1],
                     execution_policy=definition.execution_policy, cycle_budget=snapshot.budget,
                     locked_quantity=snapshot.locked_quantity,
                     previous_daily_execution=previous_execution, execution_interval=cycle)
@@ -126,6 +119,9 @@ def run_replay(prepared, candidate, executor, *, constraints, start, end, fee_ra
                 adopted = channel.adopt(owner, proposal)
                 if adopted is not AdoptionStatus.ADOPTED:
                     raise ValueError('historical decision was not adopted: ' + adopted.value)
+                if definition.step_data_inputs:
+                    data_reads.append({'decision_at': decision_at.isoformat(), 'decision_id': plan.plan_identity,
+                                       'reads': [read.to_dict() for read in result.data_reads]})
                 channel.advance(b)
                 projected_channel_state = channel.state
                 state = AccountStrategyState.from_dict(projected_channel_state.to_dict())
@@ -141,4 +137,4 @@ def run_replay(prepared, candidate, executor, *, constraints, start, end, fee_ra
         account_result = channel.finish()
     stats = ReplayStatistics(0., perf_counter()-started, len(ticks), decisions, strategy_performance=profile)
     stats = replace(stats, source_checks=scope.checks, source_bytes_read=scope.bytes_read, module_loads=scope.loads)
-    return ReplayOutcome(account_result, state, stats)
+    return ReplayOutcome(account_result, state, stats, tuple(data_reads))

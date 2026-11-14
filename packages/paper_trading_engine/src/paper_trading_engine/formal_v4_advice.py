@@ -21,7 +21,8 @@ from execution_channels.daily_execution import DailyExecutionOutcome, INTERVAL_T
 from execution_channels.execution_intervals import execution_intervals
 from execution_channels.instruments import TimeInterval as ChannelInterval
 from strategy_manager import Qualification, StrategyRegistry
-from strategy_runtime import StrategyRelease, canonical_sha256
+from strategy_runtime import StrategyRelease, canonical_sha256, STEP_DATA_CONTRACT
+from strategy_runtime.step_data import StepDataRead
 from strategy_runtime.deployment import load_strategy_deployment
 from strategy_runtime.equity_definition import EquityInputBinding, EquityStrategyCandidate, EquityStrategyDefinition, InputBindingScope
 from strategy_runtime.equity_definition import EquityAuxiliaryBinding
@@ -98,10 +99,14 @@ class _CalendarPreparationError(ValueError):
 
 class FormalV4AdviceClient:
     def __init__(self, *, repo_root: Path | str, store, dataflows: Dataflows | None, data_dir: Path | str,
-                 inspection_permit=None):
+                 inspection_permit=None, account_dataflows=None, inspection_data_windows=()):
         self.repo_root = Path(repo_root).resolve()
         self.store, self.dataflows = store, dataflows
         self.data_dir = Path(data_dir).resolve()
+        self.account_dataflows = account_dataflows
+        if inspection_data_windows and inspection_permit is None:
+            raise ValueError('fixed inspection strategy data requires an isolated permit')
+        self._inspection_data_windows = {window.name: window for window in inspection_data_windows}
         if inspection_permit is not None:
             from strategy_runtime.inspection import InspectionRuntimePermit
             if type(inspection_permit) is not InspectionRuntimePermit:
@@ -113,6 +118,9 @@ class FormalV4AdviceClient:
             from .ec_boundary import execution_permit
             if getattr(store, '_inspection_permit', None) != execution_permit(inspection_permit):
                 raise ValueError('V4 inspection store differs from permit')
+            if dataflows is not None:
+                binding = dataflows.binding
+                inspection_permit.validate_path(binding.base_dir / binding.space.path)
         self.inspection_permit = inspection_permit
         self._lock = RLock()
         self._calendars = {}
@@ -142,8 +150,8 @@ class FormalV4AdviceClient:
         identity = _strategy_identity(self.repo_root, release, self.inspection_permit)
         definition = EquityStrategyDefinition.from_dict(dict(release.payload['equity_definition']))
         candidate = EquityStrategyCandidate(strategy_id, deployment.runtime_candidate_id, definition, deployment.source_root)
-        if definition.contract_version != 4:
-            raise ValueError('formal V4 requires the account contract')
+        if definition.contract_version != STEP_DATA_CONTRACT:
+            raise ValueError('PTE equity runtime requires the V5 DFLS step contract')
         return release, candidate, identity
 
     def validate_account_binding(self, *, strategy_id: str, strategy_version: str,
@@ -382,12 +390,20 @@ class FormalV4AdviceClient:
         if not calendar.ready:
             raise ValueError('live execution calendar is unavailable')
         context = resolve_live_context(candidate, interval, calendar.dataframe, calendar.identity.metadata)
+        existing_reads = None if prior_decision is None else prior_decision['strategy_output']['data_reads']
+        read_cutoffs = {datetime.fromisoformat(read['as_of']) for read in (existing_reads or ())}
+        if len(read_cutoffs) > 1:
+            raise ValueError('adopted strategy reads have inconsistent timestamps')
         prepared = prepare_equity_decision(self.dataflows, candidate, inputs.binding, inputs.strategy_requests,
                                        interval, fee_rate=inputs.fee_rate, live=True, execution_interval=task.execution_interval,
                                        execution_reference=inputs.execution_reference.fetch(self.dataflows, interval,
                                            latency_seconds=candidate.definition.execution_spec.data_latency_seconds,
                                            as_of=cutoff),
-                                       execution_context=context, as_of=cutoff)
+                                       execution_context=context, as_of=cutoff,
+                                       step_data_cutoff=next(iter(read_cutoffs), None),
+                                       expected_step_reads=None if existing_reads is None else tuple(existing_reads),
+                                       step_data_load=self._step_loader(
+                                           account_id, candidate, existing_reads, inputs.binding.prepared))
         if (candidate.definition.execution_spec.decision_clock.value == BarFrequency.DAILY.value
                 and prepared.history.Date.iloc[-1] != task.decision_at - DAILY_CLOSE_DELAY):
             raise ValueError('daily decision requires complete preceding trading-session data')
@@ -406,6 +422,37 @@ class FormalV4AdviceClient:
                 elif existing != inputs:
                     raise ValueError('concurrent interval preparation differs from pinned inputs')
         return prepared
+
+    def _step_loader(self, account_id, candidate, previous_reads, inspection_reference):
+        if not candidate.definition.step_data_inputs:
+            return None
+        if self.inspection_permit is None and self.account_dataflows is None:
+            raise ValueError('PTE strategy requires an account DFLS data space')
+        flows = self.dataflows if self.inspection_permit is not None else self.account_dataflows.for_account(account_id)
+        pinned = None if previous_reads is None else {
+            read.window: read for read in map(StepDataRead.from_dict, previous_reads)}
+
+        def load(window, request):
+            if self.inspection_permit is not None:
+                allowed = self._inspection_data_windows.get(window.name)
+                if allowed is None or not allowed.start <= window.start <= window.end <= allowed.end:
+                    raise ValueError('strategy data request exceeds the isolated inspection window')
+            if pinned is not None:
+                if window not in pinned:
+                    raise ValueError('rerun requested data outside the adopted strategy reads')
+                reference = pinned[window].prepared
+            elif self.inspection_permit is not None:
+                reference = inspection_reference
+            else:
+                prepared = flows.prepare((request,), policy=PreparePolicy.REUSE)
+                if not prepared.ready:
+                    raise ValueError(f'STRATEGY_DATA_UNAVAILABLE {window.name}: {prepared.items[0].error}')
+                reference = prepared.reference
+            result = flows.fetch(request, prepared=reference)
+            if pinned is not None and result.ready and result.identity.content_sha256 != pinned[window].prepared_slice_sha256:
+                raise ValueError('rerun strategy slice differs from adopted evidence')
+            return reference, result
+        return load
 
     def _require_running(self, account_id):
         if self.store.virtual_account(account_id)['run_state'] != 'RUNNING':

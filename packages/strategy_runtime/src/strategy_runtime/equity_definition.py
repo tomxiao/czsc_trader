@@ -26,6 +26,7 @@ from dataflows.equity_contracts import EquityParameters
 from .identity import CandidateContentIdentity, ImplementationDependency
 from .models import canonical_sha256, ExecutionPolicy
 from .dataset_observations import DatasetObservationInput, DatasetObservationBinding
+from .step_data import STEP_DATA_CONTRACT, StepDataInput
 from .market_features import MarketFeature, _parameter_key
 from .signal_explanation import SignalExplanationSnapshot, SignalBasisSnapshot
 from .equity import (ResearchExecutionSpec, UsEquitySpec, CnEquitySpec, AccountPolicy,
@@ -559,6 +560,7 @@ class EquityStrategyDefinition:
     observation_inputs: tuple[DatasetObservationInput, ...] = ()
     execution_policy: ExecutionPolicy | None = None
     market_features: tuple[MarketFeature, ...] = ()
+    step_data_inputs: tuple[StepDataInput, ...] = ()
 
     def __post_init__(self):
         import re
@@ -567,17 +569,17 @@ class EquityStrategyDefinition:
         if len({x.name for x in self.observation_inputs}) != len(self.observation_inputs):
             raise ValueError('duplicate observation alias')
         from .models import ExecutionPolicy
-        if self.contract_version == 4 and type(self.execution_policy) is not ExecutionPolicy:
+        if self.account_replay and type(self.execution_policy) is not ExecutionPolicy:
             raise TypeError('V4 requires an explicit execution policy')
-        if self.contract_version == 4 and self.execution_policy.policy_type not in {
+        if self.account_replay and self.execution_policy.policy_type not in {
                 'TARGET_POSITION', 'FROZEN_RULE', 'INTRADAY_OVERLAY'}:
             raise ValueError('V4 requires a supported channel execution policy')
-        if self.contract_version != 4 and (self.observation_inputs or self.execution_policy is not None):
+        if not self.account_replay and (self.observation_inputs or self.execution_policy is not None):
             raise ValueError('dataset observations and execution policy require V4')
         self.frozen_assets
-        if type(self.contract_version) is not int or self.contract_version not in (2, 4) or type(self.execution_spec) is not ResearchExecutionSpec:
+        if type(self.contract_version) is not int or self.contract_version not in (2, 4, STEP_DATA_CONTRACT) or type(self.execution_spec) is not ResearchExecutionSpec:
             raise ValueError("unsupported equity definition contract")
-        if self.contract_version == 4:
+        if self.account_replay:
             from .equity_features import FeatureGraph
             from .equity_replay import StrategyStateSchema
             if (self.execution_policy.settings.get('execution_trigger') == 'daily_target_change_or_zero_fill'
@@ -591,7 +593,7 @@ class EquityStrategyDefinition:
             raise ValueError('equity V2 cannot declare account replay features or state')
         from .replay_contracts import StrategyComputation
         from dataflows import BarFrequency
-        if self.contract_version == 4:
+        if self.account_replay:
             if type(self.computation) is not StrategyComputation:
                 raise TypeError('V4 requires explicit strategy computation')
             if self.execution_spec.decision_clock not in (BarFrequency.DAILY, BarFrequency.M30):
@@ -606,17 +608,17 @@ class EquityStrategyDefinition:
         elif self.computation is not None or self.initial_account is not None:
             raise ValueError('legacy definitions cannot declare V4 computation or state')
         if self.execution_input is not None:
-            if self.contract_version!=4 or type(self.execution_input) is not ExecutionInput:
+            if not self.account_replay or type(self.execution_input) is not ExecutionInput:
                 raise TypeError('execution input requires V4 and ExecutionInput')
             if self.execution_input.instrument!=self.instrument or self.execution_spec.decision_clock is not BarFrequency.DAILY:
                 raise ValueError('finer execution input requires same instrument DAILY strategy')
             if any(x.analysis_price == 'RAW' and (x.instrument,x.source,x.frequency)==(self.execution_input.instrument,self.execution_input.source,self.execution_input.frequency) for x in self.auxiliary_inputs):
                 raise ValueError('execution quotation request duplicates an auxiliary role')
-        if self.contract_version!=4 and any(x.instrument.market is not MarketId.US for x in self.auxiliary_inputs):
+        if not self.account_replay and any(x.instrument.market is not MarketId.US for x in self.auxiliary_inputs):
             raise ValueError('legacy auxiliary input contract supports US only')
-        if self.contract_version == 4 and any(x.analysis_price != 'HFQ' for x in self.auxiliary_inputs):
+        if self.account_replay and any(x.analysis_price != 'HFQ' for x in self.auxiliary_inputs):
             raise ValueError('V4 auxiliary inputs require HFQ prices')
-        if self.contract_version != 4 and any(x.analysis_price != 'RAW' for x in self.auxiliary_inputs):
+        if not self.account_replay and any(x.analysis_price != 'RAW' for x in self.auxiliary_inputs):
             raise ValueError('adjusted observations require V4')
 
         self.execution_spec.require_instrument(self.instrument)
@@ -624,7 +626,7 @@ class EquityStrategyDefinition:
             raise TypeError('session_context requires bool')
         if type(self.auxiliary_inputs) is not tuple or any(type(x) is not EquityAuxiliaryInput for x in self.auxiliary_inputs):
             raise TypeError('typed auxiliary inputs required')
-        if self.contract_version != 4 and (self.auxiliary_inputs or self.session_context) and self.instrument.market is not MarketId.US:
+        if not self.account_replay and (self.auxiliary_inputs or self.session_context) and self.instrument.market is not MarketId.US:
             raise ValueError('auxiliary and session context currently require US market')
         if len({x.name for x in self.auxiliary_inputs}) != len(self.auxiliary_inputs):
             raise ValueError('duplicate auxiliary alias')
@@ -672,7 +674,7 @@ class EquityStrategyDefinition:
             if 'enum' in rule and (type(rule['enum']) is not list or value not in rule['enum']):
                 raise ValueError(f'parameter outside declared choices: {key}')
         object.__setattr__(self, 'parameter_schema_json', json.dumps(schema, sort_keys=True, separators=(',', ':'), allow_nan=False))
-        if self.feedback_mode not in {'MARKET_INTENT', 'CONFIRMED_EXECUTION', 'CONFIRMED_CLOSED_CYCLE_V1'} or self.analysis_price != ('HFQ' if self.contract_version == 4 else 'RAW'):
+        if self.feedback_mode not in {'MARKET_INTENT', 'CONFIRMED_EXECUTION', 'CONFIRMED_CLOSED_CYCLE_V1'} or self.analysis_price != ('HFQ' if self.account_replay else 'RAW'):
             raise ValueError('unsupported equity feedback or analysis price contract')
         if tuple(self.explanation_cases) != ('flat', 'long'):
             raise ValueError('equity explanations must declare both target branches')
@@ -684,6 +686,21 @@ class EquityStrategyDefinition:
         object.__setattr__(self, 'dependencies', tuple(sorted(self.dependencies)))
         object.__setattr__(self, 'source_files', tuple(sorted(self.source_files)))
         self._validate_market_features()
+        if type(self.step_data_inputs) is not tuple or any(type(item) is not StepDataInput for item in self.step_data_inputs):
+            raise TypeError('step data requires typed declarations')
+        if len({item.name for item in self.step_data_inputs}) != len(self.step_data_inputs):
+            raise ValueError('duplicate step data input')
+        if self.contract_version == STEP_DATA_CONTRACT:
+            if (self.computation is not StrategyComputation.STATEFUL_STEP or self.observation_inputs
+                    or self.auxiliary_inputs or self.market_features or self.feature_graph.nodes
+                    or self.feature_graph.outputs):
+                raise ValueError('V5 requires step computation with explicit DFLS reads')
+        elif self.step_data_inputs:
+            raise ValueError('step data declarations require V5')
+
+    @property
+    def account_replay(self):
+        return self.contract_version in (4, STEP_DATA_CONTRACT)
 
     def _validate_market_features(self):
         features = self.market_features
@@ -747,14 +764,16 @@ class EquityStrategyDefinition:
             if isinstance(value, (tuple, list)):
                 return type(value)(record(item) for item in value)
             return value
-        result = {"runtime_kind": "ACCOUNT_REPLAY" if self.contract_version == 4 else "US_EQUITY", **record(self)}
+        result = {"runtime_kind": "ACCOUNT_REPLAY" if self.account_replay else "US_EQUITY", **record(self)}
+        if not self.step_data_inputs:
+            result.pop('step_data_inputs')
         if self.observation_inputs:
             result['observation_inputs'] = [item.to_dict() for item in self.observation_inputs]
         else:
             result.pop('observation_inputs')
         if self.execution_policy is None:
             result.pop('execution_policy')
-        if self.contract_version != 4:
+        if not self.account_replay:
             result.pop("computation")
         else:
             result["computation"] = self.computation.value
@@ -781,7 +800,8 @@ class EquityStrategyDefinition:
     @classmethod
     def from_dict(cls, value):
         value = dict(value)
-        if value.pop('runtime_kind') != ('ACCOUNT_REPLAY' if value.get('contract_version') == 4 else 'US_EQUITY'):
+        account_replay = value.get('contract_version') in (4, STEP_DATA_CONTRACT)
+        if value.pop('runtime_kind') != ('ACCOUNT_REPLAY' if account_replay else 'US_EQUITY'):
             raise ValueError('wrong runtime kind')
         instrument = dict(value['instrument'])
         instrument['market'] = MarketId(instrument['market'])
@@ -796,7 +816,8 @@ class EquityStrategyDefinition:
         value['auxiliary_inputs'] = tuple(EquityAuxiliaryInput.from_dict(x) for x in value.get('auxiliary_inputs', ()))
         value['observation_inputs'] = tuple(DatasetObservationInput.from_dict(x) for x in value.get('observation_inputs', ()))
         value['market_features'] = tuple(MarketFeature.from_dict(x) for x in value.get('market_features', ()))
-        if value.get('contract_version', 2) == 4:
+        value['step_data_inputs'] = tuple(StepDataInput.from_dict(x) for x in value.get('step_data_inputs', ()))
+        if account_replay:
             from .equity_features import FeatureGraph
             from .equity_replay import StrategyStateSchema
             value['feature_graph'] = FeatureGraph.from_dict(value['feature_graph'])
@@ -815,7 +836,7 @@ class EquityStrategyDefinition:
                     return [json_containers(val) for val in item]
                 return item
             value['initial_account'] = StateRecord.from_dict(json_containers(value['initial_account']))
-        if value.get('contract_version') == 4:
+        if account_replay:
             from .replay_contracts import StrategyComputation
             value['computation'] = StrategyComputation(value['computation'])
         return cls(**value)
@@ -867,7 +888,7 @@ class EquityStrategyCandidate:
 
     @property
     def payload(self):
-        return {'runtime': {'kind': 'ACCOUNT_REPLAY' if self.definition.contract_version == 4 else 'US_EQUITY', 'contract_version': self.definition.contract_version,
+        return {'runtime': {'kind': 'ACCOUNT_REPLAY' if self.definition.account_replay else 'US_EQUITY', 'contract_version': self.definition.contract_version,
                             'source_files': self.definition.source_files, 'source_sha256': self.definition.source_sha256},
                 'equity_definition': self.definition.to_dict()}
 
@@ -959,9 +980,9 @@ class EquityStrategyCandidate:
     def account_step(self, context, state):
         from .account_strategy import AccountStepContext, AccountStepResult, AccountStrategyState
         from .replay_contracts import StrategyComputation
-        if (self.definition.contract_version != 4 or self.definition.computation is not StrategyComputation.STATEFUL_STEP
+        if (self.definition.contract_version != STEP_DATA_CONTRACT or self.definition.computation is not StrategyComputation.STATEFUL_STEP
                 or type(context) is not AccountStepContext or type(state) is not AccountStrategyState):
-            raise TypeError('V4 stateful implementation requires typed context and state')
+            raise TypeError('account execution requires the V5 DFLS step contract')
         from .equity_source_runtime import active_invocation
         bound = active_invocation(self)
         if bound is None:
@@ -974,26 +995,10 @@ class EquityStrategyCandidate:
             self.definition.state_schema.validate_record(result.cycle_values, scope='cycle')
         return result
 
-    def calculate_account_batch(self, context):
-        from .account_strategy import BatchAccountContext, AccountDecision
-        from .replay_contracts import StrategyComputation
-        if (self.definition.contract_version != 4 or self.definition.computation is not StrategyComputation.BATCH_HISTORY
-                or type(context) is not BatchAccountContext):
-            raise TypeError('V4 batch implementation requires typed observations')
-        from .equity_source_runtime import active_invocation
-        bound = active_invocation(self)
-        if bound is None:
-            raise RuntimeError('batch strategy requires its loaded replay scope')
-        result = bound.invoke(context)
-        if (type(result) is not tuple or len(result) != len(context.observations)
-                or any(type(item) is not AccountDecision for item in result)):
-            raise TypeError('batch strategy must return one AccountDecision per observation')
-        return result
-
     def bind_replay(self, *, performance=None):
         from .equity_source_runtime import BoundEquityInvocation
-        if self.definition.contract_version != 4:
-            raise TypeError('bound strategy module scopes require explicit replay definitions')
+        if self.definition.contract_version != STEP_DATA_CONTRACT:
+            raise TypeError('account execution requires the V5 DFLS step contract')
         return BoundEquityInvocation(self, performance=performance)
 
     def _invoke(self, context):

@@ -66,7 +66,8 @@ class PreparedAccountEvaluation:
         from .equity_replay import EquityInputSnapshot, _bytes, _read
         if type(self.request) is not EquityEvaluationRequest:
             raise TypeError('prepared account requires an EquityEvaluationRequest')
-        if (self.request.candidate.definition.contract_version != 4
+        from strategy_runtime import STEP_DATA_CONTRACT
+        if (self.request.candidate.definition.contract_version != STEP_DATA_CONTRACT
                 or self.request.prepared is None or self.request.input_binding is None
                 or type(self.snapshot) is not EquityInputSnapshot):
             raise TypeError('prepared equity evaluation requires a bound V4 request')

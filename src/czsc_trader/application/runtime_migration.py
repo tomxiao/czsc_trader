@@ -383,8 +383,10 @@ class FrozenRuntimeUpgradeRequest:
                 raise TypeError(f"{name} requires {kind.__name__}")
         if not isinstance(self.candidate, (StrategyCandidate, EquityStrategyCandidate)):
             raise TypeError('candidate requires StrategyCandidate or native EquityStrategyCandidate')
-        if isinstance(self.candidate, EquityStrategyCandidate) and self.candidate.definition.contract_version != 4:
-            raise ValueError('equity runtime upgrades require native account contract 4')
+        from strategy_runtime import STEP_DATA_CONTRACT
+        if (isinstance(self.candidate, EquityStrategyCandidate)
+                and self.candidate.definition.contract_version != STEP_DATA_CONTRACT):
+            raise ValueError('equity runtime upgrades require the V5 DFLS step contract')
         if self.original.strategy_id != self.candidate.strategy_family_id:
             raise ValueError("upgrade source and candidate family differ")
         for name in ("change_summary", "operator"):

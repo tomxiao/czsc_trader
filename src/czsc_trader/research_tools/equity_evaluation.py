@@ -9,12 +9,14 @@ import json
 import inspect
 from pathlib import Path
 from hashlib import sha256
+from zoneinfo import ZoneInfo
 import platform
 
 import pandas as pd
 from dataflows import (DataRequest, EquityDataRequest, EquityProduct, EquityQuery, PreparedDataRef, SourceRef, TimeInterval, PriceAdjustment)
 from strategy_runtime.equity import equity_hash
 from strategy_runtime.runtime import StrategyRuntime
+from strategy_runtime.step_data import STEP_DATA_CONTRACT, StepDataWindow
 from strategy_runtime.equity_definition import EquityStrategyCandidate, EquityInputBinding
 from execution_channels.historical.portfolio import PortfolioHistoricalExecutor
 from execution_channels.historical.fills import resolve_fill
@@ -60,6 +62,7 @@ class EquityEvaluationRequest:
     input_binding: EquityInputBinding | None = field(default=None, kw_only=True)
     audit_inputs_sha256: str | None = field(default=None, kw_only=True)
     observation_requests: tuple[DataRequest | None, ...] = field(default=(), kw_only=True)
+    step_data_windows: tuple[StepDataWindow, ...] = field(default=(), kw_only=True)
 
     def __post_init__(self):
         import math
@@ -67,8 +70,17 @@ class EquityEvaluationRequest:
                                 (self.window, TimeInterval), (self.sources, EquitySources), (self.history_start, date)):
             if type(value) is not expected:
                 raise TypeError(f"equity evaluation requires {expected.__name__}")
-        if type(self.candidate) is not EquityStrategyCandidate or self.candidate.definition.contract_version != 4:
-            raise TypeError("equity evaluation requires an explicit contract_version=4 candidate")
+        if type(self.candidate) is not EquityStrategyCandidate or self.candidate.definition.contract_version != STEP_DATA_CONTRACT:
+            raise TypeError("equity evaluation requires the V5 DFLS step contract")
+        if type(self.step_data_windows) is not tuple or any(type(x) is not StepDataWindow for x in self.step_data_windows):
+            raise TypeError("equity evaluation requires typed step data grants")
+        names = [window.name for window in self.step_data_windows]
+        declared = {item.name for item in self.candidate.definition.step_data_inputs}
+        if len(set(names)) != len(names) or not set(names).issubset(declared):
+            raise ValueError("equity evaluation grants must name distinct declared step inputs")
+        end = self.window.end.astimezone(ZoneInfo(self.candidate.instrument.timezone)).date()
+        if any(window.start < self.history_start or window.end > end for window in self.step_data_windows):
+            raise ValueError("step data grant exceeds the authorized evaluation history")
         from .evaluation import EvaluationCost, EvaluationLineage
         EvaluationCost(self.scenario_id, self.fee_rate, self.measurement_tier)
         if type(self.window_id) is not str or not self.window_id.strip():
@@ -111,6 +123,11 @@ class EquityEvaluationRequest:
     def requests(self, specification):
         return tuple(query for _, query in self.request_items(specification))
 
+    def preparation_requests(self, specification):
+        declarations = {item.name: item for item in self.candidate.definition.step_data_inputs}
+        return self.requests(specification) + tuple(
+            declarations[window.name].request(window) for window in self.step_data_windows)
+
     def request_items(self, specification):
         """Stable product keys; auxiliary products never replace the traded asset."""
         end = pd.Timestamp(self.window.end).tz_convert(self.candidate.instrument.timezone).date()
@@ -148,12 +165,13 @@ class EquityEvaluationRequest:
         from execution_channels.market_rules import constraints as rule_constraints
         from execution_channels.historical import market, input_facts
         from strategy_runtime import data_preparation, market_features, strategy_performance
+        from strategy_runtime import step_data
         engine_sources = {item.__module__: sha256(Path(inspect.getsourcefile(item)).read_bytes()).hexdigest()
             for item in (EquityEvaluationRequest, EquityStrategyCandidate, StrategyRuntime,
                 PortfolioHistoricalExecutor, resolve_fill, summarize_equity_ledger)}
         for module in (equity_features, srt_replay, equity_buy_hold_v4, equity_source_runtime,
                 replay_contracts, account_strategy, account_replay, dataset_observations,
-                observation_preparation, account_planning, market_features, strategy_performance, se_assessment,
+                observation_preparation, account_planning, step_data, market_features, strategy_performance, se_assessment,
                 equity_replay, equity_assessment, parameter_evaluation, account_preparation, accounting,
                 portfolio, account_ledger, channel, contracts, policy, state, serialization,
                 entry_cycle, planning, intent, session_rules, planning_result, market_rules, rule_constraints,
@@ -186,7 +204,8 @@ class EquityEvaluationRequest:
                         measurement_tier=self.measurement_tier, drawdown_basis=self.drawdown_basis,
                         concentration_basis=self.concentration_basis, frequency_window_days=self.frequency_window_days,
                         input_binding=None if self.input_binding is None else self.input_binding.to_dict(),
-                        audit_inputs_sha256=self.audit_inputs_sha256,
+                         audit_inputs_sha256=self.audit_inputs_sha256,
+                         step_data_windows=[item.to_dict() for item in self.step_data_windows],
                         lineage=None if self.lineage is None else {
                             "derivation": self.lineage.derivation.to_dict(),
                             "parameter_binding": None if self.lineage.parameter_binding is None else self.lineage.parameter_binding.to_dict()})

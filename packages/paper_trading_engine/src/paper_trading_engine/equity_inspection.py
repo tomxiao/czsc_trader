@@ -175,12 +175,14 @@ def _inspect_forward_chart(store, facts, market_data, cache_dir):
             "decision_count": len(rows), "html": html}
 
 
-def inspect_equity_release(*, candidate, dataflows, binding, requests, execution_reference, initial_cash, fee_rate, permit, protocol, control=None):
+def inspect_equity_release(*, candidate, dataflows, binding, requests, execution_reference, initial_cash, fee_rate, permit, protocol,
+                           control=None, step_data_windows=()):
     """Consume explicit channel facts; never infer fills from a historical price bar."""
     if type(protocol) is not EquityPteInspectionProtocol:
         raise TypeError("equity inspection requires explicit channel protocol")
-    if candidate.definition.contract_version != 4:
-        raise ValueError('legacy RAW inspection requires explicit migration to HFQ V4')
+    from strategy_runtime import STEP_DATA_CONTRACT
+    if candidate.definition.contract_version != STEP_DATA_CONTRACT:
+        raise ValueError('account inspection requires the V5 DFLS step contract')
     market_data = _InspectionChartMarketData(dataflows, binding, dict(binding.bind_requests(requests))["bars"])
     candidate.verify()
     from strategy_runtime.deployment import validate_release_package
@@ -232,7 +234,8 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, execution
             orders, reports = [], set()
             def advice_client():
                 client = FormalV4AdviceClient(repo_root=permit.isolated_repository, store=store,
-                    dataflows=dataflows, data_dir=path.parent, inspection_permit=permit)
+                    dataflows=dataflows, data_dir=path.parent, inspection_permit=permit,
+                    inspection_data_windows=step_data_windows)
                 client.register_inputs('equity', binding, expected_release_hash=permit.release_sha256,
                     fee_rate=fee_rate, execution_reference=execution_reference)
                 return client

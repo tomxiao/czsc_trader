@@ -10,7 +10,7 @@ from uuid import uuid4
 import pandas as pd
 from dataflows import Dataflows, DataSpace, ProviderConfig, ProviderKey, ProviderBinding, PreparePolicy
 from dataflows.equity_contracts import EquityParameters
-from strategy_runtime import EquityStrategyCandidate, EquityStrategyDefinition, canonical_sha256
+from strategy_runtime import EquityStrategyCandidate, EquityStrategyDefinition, canonical_sha256, STEP_DATA_CONTRACT
 from strategy_runtime.inspection import InspectionRuntimePermit, InspectionStage
 from strategy_runtime.deployment import validate_release_package
 from strategy_manager import StrategyRegistry, freeze_contracts as f
@@ -35,7 +35,9 @@ def replay_identity(replay, runtime_kind='US_EQUITY'):
         'one_way_cost': replay.one_way_cost, 'income_policy': TRADING_INCOME_POLICY,
         'price_basis': 'HFQ', 'quantity_basis': 'SIMULATED_INTEGER_UNITS',
         'execution_reference': replay.execution_reference.to_dict(),
-        'baseline': None if replay.baseline is None else replay.baseline.to_dict()}
+         'baseline': None if replay.baseline is None else replay.baseline.to_dict(),
+         **({'step_data_windows': [item.to_dict() for item in replay.step_data_windows]}
+            if replay.step_data_windows else {})}
 
 
 def _products(flows, replay):
@@ -66,13 +68,13 @@ def replay_account(candidate, flows, replay):
     from .execution_inputs import execution_constraints
     products["constraints"], identities["constraints"] = execution_constraints(
         candidate.definition, products, {k: v["metadata"] for k, v in identities.items()})
-    if candidate.definition.contract_version == 4:
-        return _replay_account_v4(candidate, replay, products, identities)
-    raise ValueError('legacy RAW technical replay requires explicit migration to HFQ V4')
+    if candidate.definition.contract_version != STEP_DATA_CONTRACT:
+        raise ValueError('technical account replay requires the V5 DFLS step contract')
+    return _replay_account_v5(candidate, flows, replay, products, identities)
 
 
-def _replay_account_v4(candidate, replay, products, identities):
-    """Explicit technical replay uses the same authoritative V4 runtime and EC."""
+def _replay_account_v5(candidate, flows, replay, products, identities):
+    """Technical replay uses the same step and market execution as TDR."""
     from strategy_runtime.data_preparation import prepare_observations
     from .account_replay import run_replay
     from .ec_boundary import execution_spec
@@ -81,19 +83,13 @@ def _replay_account_v4(candidate, replay, products, identities):
     spec = definition.execution_spec
     prepared = prepare_observations(definition, products, identities,
         bindings=replay.input_binding.observation_bindings)
-    from strategy_runtime import StrategyComputation, check_account_batch_consistency
-    batch_consistency = {'status': 'NOT_APPLICABLE'}
-    if definition.computation is StrategyComputation.BATCH_HISTORY:
-        checked = check_account_batch_consistency(candidate, prepared, start=replay.window.start, end=replay.window.end)
-        if not checked.consistent:
-            raise ValueError('batch decisions differ between historical and online contexts at: ' +
-                             ', '.join(point.isoformat() for point in checked.differing_points))
-        batch_consistency = {'status': 'PASS', 'checked_points': checked.checked_points}
+    from ..research_tools.equity_replay import pinned_step_data
+    load = pinned_step_data(flows, replay.input_binding.prepared, replay.step_data_windows)
     executor = PortfolioHistoricalExecutor(specification=execution_spec(spec), initial_cash=replay.initial_cash,
         fee_rate=replay.one_way_cost, price_basis='HFQ',
         execution_bars=None if definition.execution_input is None else products['execution:bars'])
     outcome = run_replay(prepared, candidate, executor, start=replay.window.start, end=replay.window.end,
-        fee_rate=replay.one_way_cost, constraints=products['constraints'],
+         fee_rate=replay.one_way_cost, constraints=products['constraints'], step_data_load=load,
         owner=f'candidate:{candidate.strategy_id}:{candidate.candidate_id}:{candidate.content_identity.content_sha256}')
     account = outcome.execution_result
     facts = {name: _records(getattr(account, attr)) for name, attr in (
@@ -104,7 +100,8 @@ def _replay_account_v4(candidate, replay, products, identities):
         'cycle': None if state.cycle is None else {'cycle_id': state.cycle.cycle_id,
             'entry_at': state.cycle.entry_at.isoformat(), 'values': state.cycle.values.to_dict()},
         'binding': state.binding, 'event_cursor': state.event_cursor}
-    return _json({'facts': facts, 'final_state': final_state, 'batch_consistency': batch_consistency,
+    return _json({'facts': facts, 'final_state': final_state, 'batch_consistency': {'status': 'NOT_APPLICABLE'},
+         'strategy_data_reads': outcome.data_reads,
         'source': {name: _records(frame) for name, frame in products.items()}, 'data': identities,
         'definition': definition.to_dict(), 'content_sha256': candidate.content_identity.content_sha256,
         'input': replay_identity(replay, 'ACCOUNT_REPLAY')})
@@ -130,7 +127,8 @@ def _pte_compute(connection, payload):
         flows = Dataflows(base_dir=binding.base_dir, space=binding.space, providers=ProviderConfig(bindings={}))
         result = inspect_equity_release(candidate=candidate, dataflows=flows, binding=replay.input_binding,
             requests=replay.requests, initial_cash=replay.initial_cash, fee_rate=replay.one_way_cost,
-            permit=permit, protocol=protocol, execution_reference=replay.execution_reference)
+            permit=permit, protocol=protocol, execution_reference=replay.execution_reference,
+            step_data_windows=replay.step_data_windows)
         connection.send((True, result))
     except BaseException as exc:
         connection.send((False, {'type': type(exc).__name__, 'message': str(exc)}))
@@ -179,7 +177,7 @@ def _baseline_matches(payload, replay, account, content_hash, candidate_key):
     return all(payload['runs']['candidate'][k] == account['facts'][k] for k in account['facts'])
 
 
-def _copy_inputs(flows, replay, workspace):
+def _copy_inputs(flows, replay, workspace, candidate):
     def source_selection(query):
         # DFLS strips consumer coverage/cutoff before calling the provider.
         return (query.dataset, query.symbol, query.start, query.end, query.frequency, query.parameters)
@@ -193,7 +191,17 @@ def _copy_inputs(flows, replay, workspace):
     # EquityParameters retains the complete instrument/source/bounded query.
     requests = {source_selection(q): name for name, q in replay.input_binding.bind_requests(replay.requests)}
     requests[source_selection(replay.execution_reference.request)] = 'execution_reference'
-    all_requests = replay.requests + (replay.execution_reference.request,)
+    declarations = {item.name: item for item in candidate.definition.step_data_inputs}
+    step_requests = tuple(declarations[window.name].request(window) for window in replay.step_data_windows)
+    for window, query in zip(replay.step_data_windows, step_requests, strict=True):
+        result = flows.fetch(query, prepared=replay.input_binding.prepared)
+        if not result.ready:
+            raise ValueError(f'inspection step input unavailable {window.name}: {result.error}')
+        key = 'step:' + window.name
+        requests[source_selection(query)] = key
+        products[key] = result.dataframe
+        identities[key] = {'metadata': dict(result.identity.metadata)}
+    all_requests = replay.requests + (replay.execution_reference.request,) + step_requests
     def fetch(request):
         key = source_selection(request)
         if key not in requests:
@@ -203,7 +211,7 @@ def _copy_inputs(flows, replay, workspace):
     bindings = {ProviderKey(q.parameters.query.product, q.parameters.instrument.market, q.parameters.source):
                 ProviderBinding(q.parameters.source.provider, q.parameters.source.revision, fetch) for q in all_requests
                 if type(q.parameters) is EquityParameters}
-    observations = {q.dataset: ProviderBinding('inspection', 'v1', fetch) for q in replay.requests
+    observations = {q.dataset: ProviderBinding('inspection', 'v1', fetch) for q in all_requests
                     if type(q.parameters) is not EquityParameters}
     target = Dataflows(base_dir=workspace, space=DataSpace(Path('inputs/equity/data')),
                       providers=ProviderConfig(equity_bindings=bindings, bindings=observations))
@@ -249,13 +257,15 @@ def inspect_equity_candidate(context, request, control, registration, selection)
         if candidate.payload['runtime']['kind'] != runtime_kind:
             raise ValueError('equity inspection protocol differs from candidate contract')
         for replay in request.replays:
-            if candidate.definition.contract_version == 4 and replay.baseline is not None:
+            if candidate.definition.contract_version == STEP_DATA_CONTRACT and replay.baseline is not None:
                 raise ValueError('V4 technical equivalence compares candidate and package; legacy evaluation baseline is unsupported')
             if pd.Timestamp(replay.window.end).tz_convert(candidate.instrument.timezone).date() > request.target.selection_data_cutoff:
                 raise ValueError('equity replay exceeds selection cutoff')
             if any((q.parameters.query.end if type(q.parameters) is EquityParameters else pd.Timestamp(q.end).date())
                    > request.target.selection_data_cutoff for q in replay.requests):
                 raise ValueError('equity technical inputs exceed selection cutoff')
+            if any(window.end > request.target.selection_data_cutoff for window in replay.step_data_windows):
+                raise ValueError('equity strategy data grant exceeds selection cutoff')
             _products(request.research.data, replay)
         plan = _copy_plan(context, request, registration, store, origin)
         release, verified = _package(context, plan, store, workspace / 'repository', selection.subject)
@@ -279,7 +289,7 @@ def inspect_equity_candidate(context, request, control, registration, selection)
             raise jobs.interruption
         controller.stage = InspectionStage.PTE
         controller.tick(force=True)
-        flows, replay = _copy_inputs(request.research.data, request.replays[0], workspace)
+        flows, replay = _copy_inputs(request.research.data, request.replays[0], workspace, candidate)
         frozen = EquityStrategyCandidate(candidate.strategy_id, candidate.candidate_id,
             EquityStrategyDefinition.from_dict(dict(verified.release.payload['equity_definition'])), verified.source_root)
         permit = InspectionRuntimePermit(run_id, verified.release.release_id, release.release_sha256,
@@ -353,7 +363,7 @@ def validate_pass_facts(root, report, normalized, protocol):
         if definition.content_identity.content_sha256 != report.origin.content_sha256 or left['content_sha256'] != report.origin.content_sha256:
             raise ValueError('equity replay content differs')
         ledger, source = left['facts'], left['source']
-        if definition.contract_version == 4:
+        if definition.account_replay:
             if (normalized['runtime_kind'] != 'ACCOUNT_REPLAY' or facts.get('runtime_kind') != 'ACCOUNT_REPLAY'
                     or 'final_state' not in left or left['final_state']['revision'] != len(ledger['account_points'])):
                 raise ValueError('V4 account state or contract coverage differs')

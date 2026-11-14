@@ -58,13 +58,17 @@ def account_decision(store, prepared, account, actual_quantity, available_cash, 
         Decimal(str(available_cash)), candidate.instrument)
     if snapshot.quantity != actual_quantity:
         raise ValueError("strategy request quantity differs from confirmed channel account")
-    engine = AccountDecisionEngine(candidate, prepared.v4_replay)
+    engine = AccountDecisionEngine(candidate, prepared.v4_replay, step_data_load=prepared.step_data_load,
+                                   data_cutoff=prepared.step_data_cutoff or prepared.as_of)
     events, cursor = recognized_events(store, account["account_id"], state.event_cursor,
                                        point, through_cursor=through_cursor)
     owner = account["account_id"] + ":" + account["release_hash"]
     result = engine.propose(prepared.interval, portfolio, snapshot, state, feedback, owner=owner,
         fee_rate=prepared.fee_rate, events=strategy_events(events), next_event_cursor=cursor,
         decision_at=prepared.as_of if trigger == INTERVAL_TARGET_TRIGGER else None)
+    data_reads = [item.to_dict() for item in result.data_reads]
+    if prepared.expected_step_reads is not None and tuple(data_reads) != prepared.expected_step_reads:
+        raise ValueError('rerun strategy reads differ from adopted evidence')
     proposal = result.proposal
     previous_execution = None
     if trigger in TARGET_TRIGGERS:
@@ -106,6 +110,7 @@ def account_decision(store, prepared, account, actual_quantity, available_cash, 
         estimated_order_cost=estimate, unallocated_cash=effects.unallocated_cash,
         capital_mode=plan.capital_mode, runtime_sha256=candidate.implementation_hash, plan_mode="V4" if legs else "NONE", plan_legs=legs,
         strategy_output={"explanation": proposal.decision.explanation.to_dict(),
+             "data_reads": data_reads,
             "execution_plan": execution_output,
                          "market_rule": {"version": prepared.v4_constraint["MarketRuleVersion"],
                                          "sha256": prepared.v4_constraint["MarketRuleHash"]}},

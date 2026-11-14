@@ -350,10 +350,10 @@ def freeze_candidate(context: RepositoryContext, request: f.FreezeCandidateReque
         raise ValueError("same-version migration requires the explicit runtime upgrade API")
     candidate = _load_inspection_candidate(context, plan.origin.candidate)
     descriptor = candidate.payload["runtime"]
-    from strategy_runtime import EquityStrategyCandidate
+    from strategy_runtime import EquityStrategyCandidate, STEP_DATA_CONTRACT
     if descriptor.get("contract_version") != 2 and not (
             type(candidate) is EquityStrategyCandidate and descriptor.get("kind") == "ACCOUNT_REPLAY"
-            and candidate.definition.contract_version == 4):
+            and candidate.definition.contract_version == STEP_DATA_CONTRACT):
         raise ValueError("freeze requires implementation contract version 2 or native account contract 4")
     if (descriptor.get("kind") not in {"US_EQUITY", "ACCOUNT_REPLAY"}
             and candidate.payload.get("decision_feedback", "UNDECLARED") == "UNDECLARED"):

@@ -7,12 +7,12 @@ from datetime import datetime
 from types import MappingProxyType
 from typing import TYPE_CHECKING
 
-from dataflows import TimeInterval, EquityProduct, TradingSession
+from dataflows import TimeInterval, TradingSession
 from dataflows.equity_data import sessions_from_metadata
 from execution_channels.daily_execution import INTERVAL_TARGET_TRIGGER
 from execution_channels.execution_intervals import ExecutionInterval, execution_intervals
 from execution_channels.instruments import TimeInterval as ChannelInterval
-from strategy_runtime import TradableWindow
+from strategy_runtime import TradableWindow, STEP_DATA_CONTRACT
 from strategy_runtime.equity_definition import EquityStrategyCandidate, EquityInputBinding
 from .execution_reference import PreparedExecutionReference
 
@@ -21,7 +21,8 @@ if TYPE_CHECKING:
 
 
 def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *, fee_rate, live=False,
-                            execution_reference, execution_context=None, as_of=None, execution_interval=None):
+                            execution_reference, execution_context=None, as_of=None, execution_interval=None,
+                            step_data_load=None, step_data_cutoff=None, expected_step_reads=None):
     """Read pinned products and authenticate their identities before a normal PTE decision."""
     import pandas as pd
     from strategy_runtime.data_preparation import (
@@ -32,8 +33,8 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
     cutoff = interval.start if as_of is None else as_of
     if type(cutoff) is not datetime or cutoff.utcoffset() is None or cutoff > interval.start:
         raise ValueError('equity observation cutoff must be aware and no later than execution start')
-    if candidate.definition.contract_version != 4:
-        raise ValueError('PTE equity runtime requires V4; migrate the frozen strategy and account explicitly')
+    if candidate.definition.contract_version != STEP_DATA_CONTRACT:
+        raise ValueError('PTE equity runtime requires the V5 DFLS step contract')
     if (binding.instrument != candidate.instrument or binding.specification_hash != candidate.execution_spec_hash
             or binding.warmup_bars != candidate.warmup_bars
             or tuple(x.input for x in binding.auxiliary_inputs) != candidate.definition.auxiliary_inputs
@@ -54,8 +55,6 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
             if (cycle.window.start, cycle.window.end) == (interval.start, interval.end)), None)
         if execution_interval is None:
             raise ValueError('decision has no execution interval in the prepared calendar')
-    if live and candidate.definition.contract_version != 4:
-        raise ValueError('live interval preparation requires native V4')
     if not live and len(bars.loc[(bars.BarStart == interval.start) & (bars.Date == interval.end)]) != 1:
         raise ValueError("decision interval absent from prepared market calendar")
     history = causal_history(bars, cutoff,
@@ -77,11 +76,6 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
         last = SimpleNamespace(**resolve_live_context(candidate, interval, products['sessions'], metadata['sessions']))
     if int(last.QuantityStep) != candidate.definition.execution_spec.quantity_step or float(last.PriceTick) != candidate.definition.execution_spec.price_tick:
         raise ValueError("prepared equity trading units differ from account rules")
-    auxiliary = {}
-    for item in candidate.definition.auxiliary_inputs:
-        frame = products[item.data_key(EquityProduct.BARS)]
-        auxiliary[item.name] = causal_history(frame, cutoff,
-            latency_seconds=candidate.definition.execution_spec.data_latency_seconds)
     sessions, trading_sessions = None, ()
     if candidate.definition.session_context:
         frame = products['sessions']
@@ -89,45 +83,26 @@ def prepare_equity_decision(dataflows, candidate, binding, requests, interval, *
         known_days = set(sessions.SessionDate)
         trading_sessions = tuple(s for s in sessions_from_metadata(metadata['sessions'])
                                  if s.session_date.isoformat() in known_days)
-    replay, unlock, v4_constraint = None, None, None
-    if candidate.definition.contract_version == 4:
-        visible_products = products
-        if live:
-            # SRT's logical decision point remains the execution interval start.
-            # Cap every market observation at the actual preparation time so
-            # next-morning availability cannot leak into an overnight decision.
-            visible_products = dict(products, bars=history)
-            for item in candidate.definition.auxiliary_inputs:
-                visible_products[item.data_key(EquityProduct.BARS)] = auxiliary[item.name]
-            from strategy_runtime.observation_preparation import prepare_observation_tables
-            from strategy_runtime.dataset_observations import InactiveObservationTable
-            tables = prepare_observation_tables(candidate.definition.observation_inputs,
-                products, fetched.identities, bindings=binding.observation_bindings)
-            for item in candidate.definition.observation_inputs:
-                table = tables[item.name]
-                if type(table) is InactiveObservationTable:
-                    continue
-                frame = table.view(cutoff).to_frame()
-                if frame.empty:
-                    raise ValueError('OBSERVATION_WARMUP_INSUFFICIENT: ' + item.name)
-                visible_products[item.data_key()] = frame
-        replay = prepare_observations(candidate.definition, visible_products, fetched.identities,
-            bindings=binding.observation_bindings, as_of=cutoff if live else None)
-        v4_constraint = {"MarketRuleVersion": str(last.MarketRuleVersion),
-            "MarketRuleHash": str(last.MarketRuleHash), "SellRemainderPolicy": str(last.SellRemainderPolicy),
-            "PriceLimitPolicy": str(last.PriceLimitPolicy),
-            "PriceLimitLower": None if pd.isna(last.PriceLimitLower) else float(last.PriceLimitLower),
-            "PriceLimitUpper": None if pd.isna(last.PriceLimitUpper) else float(last.PriceLimitUpper)}
-        if live:
-            v4_constraint.update(Date=interval.start.isoformat(),
-                AvailableDate=last.AvailableDate.isoformat(),
-                QuantityStep=int(last.QuantityStep), PriceTick=float(last.PriceTick))
-        unlock = last.BuySellableAt.to_pydatetime() if hasattr(last.BuySellableAt, 'to_pydatetime') else last.BuySellableAt
-        if type(unlock) is not datetime or unlock.utcoffset() is None or unlock < interval.start:
-            raise ValueError('V4 prepared constraint lacks a valid BuySellableAt')
+    visible_products = dict(products, bars=history) if live else products
+    replay = prepare_observations(candidate.definition, visible_products, fetched.identities)
+    v4_constraint = {"MarketRuleVersion": str(last.MarketRuleVersion),
+        "MarketRuleHash": str(last.MarketRuleHash), "SellRemainderPolicy": str(last.SellRemainderPolicy),
+        "PriceLimitPolicy": str(last.PriceLimitPolicy),
+        "PriceLimitLower": None if pd.isna(last.PriceLimitLower) else float(last.PriceLimitLower),
+        "PriceLimitUpper": None if pd.isna(last.PriceLimitUpper) else float(last.PriceLimitUpper)}
+    if live:
+        v4_constraint.update(Date=interval.start.isoformat(),
+            AvailableDate=last.AvailableDate.isoformat(),
+            QuantityStep=int(last.QuantityStep), PriceTick=float(last.PriceTick))
+    unlock = last.BuySellableAt.to_pydatetime() if hasattr(last.BuySellableAt, 'to_pydatetime') else last.BuySellableAt
+    if type(unlock) is not datetime or unlock.utcoffset() is None or unlock < interval.start:
+        raise ValueError('prepared constraint lacks a valid BuySellableAt')
     return PreparedEquityDecision(candidate, binding, history, interval, fee_rate, execution_reference,
-                                  auxiliary, sessions, trading_sessions, v4_replay=replay, buy_sellable_at=unlock,
-                                  v4_constraint=v4_constraint, live_interval=live, as_of=cutoff, execution_interval=execution_interval)
+                                  sessions=sessions, trading_sessions=trading_sessions,
+                                  v4_replay=replay, buy_sellable_at=unlock,
+                                  v4_constraint=v4_constraint, live_interval=live, as_of=cutoff,
+                                  execution_interval=execution_interval, step_data_load=step_data_load,
+                                  step_data_cutoff=step_data_cutoff, expected_step_reads=expected_step_reads)
 
 
 @dataclass(frozen=True)
@@ -147,6 +122,9 @@ class PreparedEquityDecision:
     live_interval: bool = False
     as_of: datetime | None = None
     execution_interval: ExecutionInterval | None = None
+    step_data_load: object = field(default=None, repr=False, compare=False)
+    step_data_cutoff: datetime | None = None
+    expected_step_reads: tuple[dict, ...] | None = field(default=None, repr=False)
     history_sha256: str = field(init=False)
     decision_inputs_sha256: str = field(init=False)
 
@@ -155,6 +133,9 @@ class PreparedEquityDecision:
             object.__setattr__(self, 'as_of', self.interval.start)
         if type(self.as_of) is not datetime or self.as_of.utcoffset() is None or self.as_of > self.interval.start:
             raise ValueError('equity observation cutoff must be aware and no later than execution start')
+        if self.step_data_cutoff is not None and (type(self.step_data_cutoff) is not datetime
+                or self.step_data_cutoff.utcoffset() is None or self.step_data_cutoff > self.as_of):
+            raise ValueError('strategy data cutoff must be aware and no later than account preparation')
         if self.execution_interval is not None and (
             type(self.execution_interval) is not ExecutionInterval
             or (self.execution_interval.window.start, self.execution_interval.window.end)
@@ -217,7 +198,7 @@ class PreparedEquityDecision:
                           'segments': [(s.start.isoformat(), s.end.isoformat()) for s in x.segments]}
                          for x in self.trading_sessions],
         }
-        if self.candidate.definition.contract_version == 4:
+        if self.candidate.definition.account_replay:
             value.update(
                 v4_constraint=None if self.v4_constraint is None else dict(self.v4_constraint),
                 v4_replay=None if self.v4_replay is None else self.v4_replay.identity,
@@ -303,8 +284,8 @@ class EquityAdviceClient:
         if (rules is None or rules.to_dict() != execution_rules(candidate.instrument, candidate.definition.execution_spec).to_dict()
                 or strategy_id != candidate.strategy_id or symbol != candidate.instrument.symbol or asset != candidate.instrument.asset_class.value.lower()):
             raise ValueError("equity candidate differs from account market binding")
-        if candidate.definition.contract_version != 4:
-            raise ValueError('PTE equity runtime requires V4; migrate the frozen strategy and account explicitly')
+        if candidate.definition.contract_version != STEP_DATA_CONTRACT:
+            raise ValueError('PTE equity runtime requires the V5 DFLS step contract')
         from .equity_v4_advice import account_decision
         return account_decision(self.store, prepared, account, actual_quantity, available_cash,
             trading_date, portfolio_revision, state_revision,

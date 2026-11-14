@@ -21,11 +21,11 @@ from urllib.request import Request, urlopen
 from uuid import uuid4
 
 from dotenv import load_dotenv
-from dataflows import DataSpace
+from dataflows import DataSpace, Dataflows
 
 from execution_channels.futu.audit import AuditRecorder
 from .srt_advice_client import SrtAdviceClient
-from .data_space import create_dataflows
+from .data_space import AccountDataflows, create_dataflows, dataflow_providers
 from .account_binding import AccountStrategyBinding, paper_account_name
 from execution_channels.futu.account_retirement import AccountRetirementRequest, AccountRetirementStatus
 from .account_data_preparer import AccountDataPreparer
@@ -234,17 +234,17 @@ def _build_engine(args: argparse.Namespace, resources: ExitStack):
     store = PaperStore(args.database)
     audit = AuditRecorder(store)
     try:
-        dataflows = create_dataflows(
-            data_dir=args.data_dir, space=args.data_space, config_root=args.config_root,
-            opend_host=args.opend_host, opend_port=args.opend_port, resources=resources,
-        )
+        providers = dataflow_providers(config_root=args.config_root, opend_host=args.opend_host,
+                                       opend_port=args.opend_port, resources=resources)
+        dataflows = Dataflows(base_dir=args.data_dir, space=args.data_space, providers=providers)
+        account_dataflows = AccountDataflows(args.data_dir, args.data_space, providers)
     except BaseException:
         store.close()
         raise
     if any(row["config_json"] is not None for row in store.channel_accounts()):
         from .multichannel_runtime import build_multichannel_runtime
         try:
-            return build_multichannel_runtime(args, store, dataflows)
+            return build_multichannel_runtime(args, store, dataflows, account_dataflows=account_dataflows)
         except BaseException:
             store.close()
             raise

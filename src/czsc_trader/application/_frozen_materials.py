@@ -17,7 +17,7 @@ def candidate_binding_spec(candidate, install_files=None):
     source_files = tuple(candidate.payload['runtime']['source_files'])
     installed = candidate_install_files(candidate) if install_files is None else tuple(install_files)
     if isinstance(candidate, EquityStrategyCandidate):
-        contract = 'equity-account-v4' if definition.contract_version == 4 else 'equity-decision-v2'
+        contract = f'equity-account-v{definition.contract_version}' if definition.account_replay else 'equity-decision-v2'
         return RuntimeBindingSpec(source_files, definition.source_sha256, installed,
             canonical_sha256({'contract': contract, 'definition': definition.to_dict()}))
     return RuntimeBindingSpec(source_files, definition.implementation.source_sha256, installed,

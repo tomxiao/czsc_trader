@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 from strategy_runtime import ImplementationDependency
-from strategy_runtime import EquityStrategyCandidate, EquityStrategyDefinition
+from strategy_runtime import EquityStrategyCandidate, EquityStrategyDefinition, STEP_DATA_CONTRACT
 from strategy_manager import (
     CandidateKey, CandidateEvidence, CandidateRegistrationOrigin,
     CandidateRegistration, CandidateDerivation, StrategyRegistry,
@@ -29,8 +29,8 @@ class CandidateRegistrationRequest:
     def __post_init__(self):
         if type(self.candidate) is not EquityStrategyCandidate or not isinstance(self.experiment, ExperimentRef):
             raise TypeError("registration requires an EquityStrategyCandidate and ExperimentRef")
-        if self.candidate.definition.contract_version != 4:
-            raise ValueError("new candidate registration requires account contract 4")
+        if self.candidate.definition.contract_version != STEP_DATA_CONTRACT:
+            raise ValueError("new candidate registration requires the V5 DFLS step contract")
         if self.candidate.strategy_family_id != self.experiment.strategy_id:
             raise ValueError("candidate experiment family differs")
         if not isinstance(self.evidence, tuple) or not all(isinstance(item, EvidenceRef) for item in self.evidence):
@@ -62,16 +62,16 @@ def _registered_root(context, record):
 
 
 def load_candidate(context: RepositoryContext, key: CandidateKey) -> EquityStrategyCandidate:
-    """Load a retained V4 implementation and admit it for execution once."""
+    """Load a retained equity implementation and admit it for V5 execution."""
     record = StrategyRegistry(context.research_registry_root).get_candidate_registration(key)
     root = _registered_root(context, record)
     _, data = record.payload._read_verified(root)
     payload = json.loads(data)
     if payload.get("runtime", {}).get("kind") != "ACCOUNT_REPLAY":
-        raise ValueError("research candidate loading requires account contract 4")
+        raise ValueError("research candidate loading requires the V5 DFLS step contract")
     definition = EquityStrategyDefinition.from_dict(payload['equity_definition'])
-    if definition.contract_version != 4:
-        raise ValueError("research candidate loading requires account contract 4")
+    if definition.contract_version != STEP_DATA_CONTRACT:
+        raise ValueError("research candidate loading requires the V5 DFLS step contract")
     install_files = (*definition.source_files, *(asset.relative_path for asset in definition.frozen_assets))
     expected_sources = {f"{record.source_root}/{name}" for name in install_files}
     if {ref.path for ref in record.source_files} != expected_sources:
@@ -88,12 +88,12 @@ def load_candidate(context: RepositoryContext, key: CandidateKey) -> EquityStrat
 
 
 def register_candidate(context: RepositoryContext, request: CandidateRegistrationRequest) -> CandidateRegistration:
-    """Retain a V4 implementation and its declared evidence, without result auditing."""
+    """Retain a V5 implementation and its declared evidence."""
     if type(context) is not RepositoryContext or type(request) is not CandidateRegistrationRequest:
         raise TypeError("register_candidate requires RepositoryContext and CandidateRegistrationRequest")
     candidate = request.candidate
-    if candidate.definition.contract_version != 4:
-        raise ValueError('new equity registration requires account contract 4')
+    if candidate.definition.contract_version != STEP_DATA_CONTRACT:
+        raise ValueError('new equity registration requires the V5 DFLS step contract')
     if not candidate.source_root.is_relative_to(context.root.resolve()):
         raise ValueError("registration requires sources inside repository")
     if tuple(sorted(request.dependencies)) != tuple(sorted(candidate.definition.dependencies)):

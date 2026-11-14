@@ -12,6 +12,7 @@ from .equity import EquityPortfolio, DecisionPoint
 from .equity_replay import StateRecord, StrategyState
 from .equity_features import FeatureView, HistoryView
 from .dataset_observations import TableHistoryView, TableObservationStatus
+from .step_data import StepData
 
 
 class RecognizedEventKind(StrEnum):
@@ -226,26 +227,20 @@ class _MarketFeatureInput:
 
 
 @dataclass(frozen=True, slots=True)
-class AccountStepContext(_MarketFeatureInput):
+class AccountStepContext:
     point: DecisionPoint
     portfolio: EquityPortfolio
     account: AccountSnapshot
     position: PositionFeedback
     parameters: Mapping
-    features: FeatureView
-    history: DecisionHistory
+    dfls: StepData
     budget: CycleBudget | None = None
     events: tuple[RecognizedAccountEvent,...] = ()
-    auxiliary_histories: Mapping = field(default_factory=dict)
     session: TradingSession | None = None
     session_available_at: datetime | None = None
-    observations: Mapping[str, DecisionTable] = field(default_factory=dict)
-    _market_feature_provider: object = field(default=None, repr=False, compare=False)
 
     def __post_init__(self):
         from .equity_definition import _freeze
-        from types import MappingProxyType
-        object.__setattr__(self, 'observations', _observation_views(self.observations, self.point.decision_at))
         if type(self.point) is not DecisionPoint or type(self.portfolio) is not EquityPortfolio:
             raise TypeError('account step requires confirmed portfolio and point')
         if type(self.account) is not AccountSnapshot or type(self.position) is not PositionFeedback:
@@ -264,19 +259,14 @@ class AccountStepContext(_MarketFeatureInput):
         if any(event.effective_at>self.point.decision_at for event in self.events):
             raise ValueError('recognized event feedback contains future facts')
 
-        if type(self.features) is not FeatureView or type(self.history) is not DecisionHistory:
-            raise TypeError('account step requires immutable visible inputs')
-        if self.features.as_of != self.point.decision_at or self.history.as_of != self.point.decision_at:
-            raise ValueError('account views differ from decision time')
-        if any(type(view) is not DecisionHistory or view.as_of!=self.point.decision_at for view in self.auxiliary_histories.values()):
-            raise ValueError('auxiliary observations must belong to the current decision')
+        if type(self.dfls) is not StepData:
+            raise TypeError('account step requires a scoped DFLS reader')
         if (self.session is None)!=(self.session_available_at is None):
             raise ValueError('session context requires calendar and availability together')
         if self.session is not None and (type(self.session) is not TradingSession or type(self.session_available_at) is not datetime
                 or self.session_available_at.tzinfo is None or self.session_available_at>self.point.decision_at):
             raise ValueError('session context must already be available')
         object.__setattr__(self, 'parameters', _freeze(dict(self.parameters)))
-        object.__setattr__(self, 'auxiliary_histories', MappingProxyType(dict(self.auxiliary_histories)))
 
 
 @dataclass(frozen=True, slots=True)
