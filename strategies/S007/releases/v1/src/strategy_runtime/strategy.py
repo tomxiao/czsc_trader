@@ -84,7 +84,13 @@ def explain(target, base, confirmation, action, score):
     confirmation_text = f'{confirmation:.6g}' if np.isfinite(confirmation) else '不可用'
     conditions = (f'主评分 {base_text}，入场线 {entry:.6g}，退出线 {exit_:.6g}。'
                   f'确认评分 {confirmation_text}，确认线 {confirm:.6g}。')
-    basis = (SignalBasisSnapshot('summary', summary), SignalBasisSnapshot('conditions', conditions))
+    if action == 'ENTER' or (not target and np.isfinite(base) and base >= entry):
+        check = f'主评分 {base_text} / 入场线 {entry:.6g}；确认评分 {confirmation_text} / 确认线 {confirm:.6g}。'
+    elif target or action == 'EXIT':
+        check = f'主评分 {base_text} / 退出线 {exit_:.6g}。'
+    else:
+        check = f'主评分 {base_text} / 入场线 {entry:.6g}。'
+    basis = (SignalBasisSnapshot('summary', f'{summary} {check}'), SignalBasisSnapshot('conditions', conditions))
     return AccountDecision(float(target), SignalExplanationSnapshot(
         'target', 'long' if target else 'flat', judgment, basis,
         '下一交易日收盘后复核主评分与确认评分。', f'{summary} {conditions}'))

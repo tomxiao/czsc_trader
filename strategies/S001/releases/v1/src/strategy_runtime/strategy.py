@@ -108,7 +108,10 @@ def explain(target, previous, score, regime, rule):
     details = (f'{regime}档评分 {score:.6g}，入场线 {entry:.6g}，退出线 {exit_:.6g}。'
                f'入场须连续 {rule["confirm_days"]} 日达标；退出须满足最短持有 '
                f'{rule["min_hold_days"]} 日，并连续 {rule["exit_confirm_days"]} 日确认。周线因子使用已完成周线。')
-    basis = (SignalBasisSnapshot('summary', summary), SignalBasisSnapshot('conditions', details))
+    threshold = exit_ if previous else entry
+    role = '退出线' if previous else '入场线'
+    short = f'{summary} {regime}档评分 {score:.6g}，{role} {threshold:.6g}。'
+    basis = (SignalBasisSnapshot('summary', short), SignalBasisSnapshot('conditions', details))
     return AccountDecision(float(target), SignalExplanationSnapshot(
         'target', 'long' if target else 'flat', judgment, basis,
         '下一交易日收盘后复核综合评分及确认条件。', f'{summary} {details}'))

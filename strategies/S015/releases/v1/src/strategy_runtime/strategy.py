@@ -88,11 +88,18 @@ def decide(values, prior, params):
                 summary = "收盘价未低于当前中心。"
             else:
                 summary = "回到当前中心的空间低于入场门槛。"
-        conditions = (f"中心变化 {gain:.6g}（对数价格），回到当前中心的空间 {space:.4%}，"
-                      f"入场门槛 {minimum:.4%}。")
+        center_change = float(np.expm1(gain))
+        direction = ("中心上移" if gain > 0 else "中心下移") if gain else "中心未变"
+        distance = (f"从收盘价到当前中心有 {space:.4%} 的回升空间" if space > 0 else
+                    f"从收盘价回到当前中心需下跌 {-space:.4%}" if space < 0 else "收盘价等于当前中心")
+        conditions = f"{direction} {abs(center_change):.4%}，{distance}。入场所需回升空间为 {minimum:.4%}。"
         if active or judgment == "目标清仓":
-            conditions += (f" 后复权收盘 {exp(p):.6f}，修复目标 {exp(repair_target):.6f}，"
-                           f"当前中心 {exp(m):.6f}，失效线 {exp(invalidation_origin):.6f}。")
+            conditions += (f" 后复权收盘 {exp(p):.6f}，入场锁定的修复目标 {exp(repair_target):.6f}，"
+                           f"当前中心 {exp(m):.6f}，入场锁定的中心失效线 {exp(invalidation_origin):.6f}。")
+            summary += (f" 收盘 {exp(p):.4f} / 修复目标 {exp(repair_target):.4f}；"
+                        f"中心 {exp(m):.4f} / 失效线 {exp(invalidation_origin):.4f}。")
+        else:
+            summary += f" {direction} {abs(center_change):.4%}，{distance}。"
     target = params["allocation"] if active else 0.0
     basis = (SignalBasisSnapshot("summary", summary), SignalBasisSnapshot("conditions", conditions))
     explanation = SignalExplanationSnapshot("target", "long" if active else "flat", judgment, basis,

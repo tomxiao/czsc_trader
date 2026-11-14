@@ -30,13 +30,19 @@ def explain(target, reason, score, age, params):
         'PRESSURE_RELEASED': ('目标清仓', '压力评分降至退出线或以下，触发退出。'),
         'SIGNAL_EXPIRED': ('目标清仓', '压力评分尚未触发退出，但持有信号已到期。'),
     }[reason]
-    details = (f'压力评分 {score:.6g}，入场线 {params["entry"]:.6g}，退出线 {params["exit"]:.6g}。'
-               f'信号已持续 {age} 个交易日，有效期上限 {params["max_days"]} 个交易日。')
-    weight = '本轮以开仓周期锁定的股数为准。' if target else '目标空仓。'
-    basis = (SignalBasisSnapshot('summary', summary), SignalBasisSnapshot('conditions', details),
-             SignalBasisSnapshot('target_weight', weight))
+    threshold = params['entry'] if reason in ('PRESSURE_ENTRY', 'CASH') else params['exit']
+    threshold_name = '入场线' if reason in ('PRESSURE_ENTRY', 'CASH') else '退出线'
+    summary = f'{summary} 压力评分 {score:.6g}，{threshold_name} {threshold:.6g}。'
+    details = f'入场线 {params["entry"]:.6g}，退出线 {params["exit"]:.6g}。'
+    if reason == 'PRESSURE_ENTRY':
+        details += f'今日首次触发本轮信号，有效期上限 {params["max_days"]} 个交易日。'
+    elif reason != 'CASH':
+        details += f'本轮信号已持续 {age} 个交易日，有效期上限 {params["max_days"]} 个交易日。'
+    watch = '下一交易日复核压力评分' + ('和信号有效期。' if target else '与入场线。')
+    basis = (SignalBasisSnapshot('summary', summary), SignalBasisSnapshot('conditions', details))
     return AccountDecision(target, SignalExplanationSnapshot('target', 'long' if target else 'flat',
-        judgment, basis, '下一交易日复核压力评分和信号有效期。', ' '.join((summary, details, weight))))
+        judgment, basis, watch, f'{summary} {details}'))
+
 
 
 def step(ctx, state):

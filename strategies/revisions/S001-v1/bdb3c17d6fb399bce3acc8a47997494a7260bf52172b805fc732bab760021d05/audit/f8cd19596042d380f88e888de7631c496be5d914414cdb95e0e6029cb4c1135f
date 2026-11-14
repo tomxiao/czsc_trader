@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "release_hash": "aa3090c1fa220fc175971ae224e681929e82ef06d0bc84155c5896811fbff48f",
+  "samples": 20,
+  "start": "2026-08-04",
+  "end": "2026-08-31",
+  "equivalence": [
+    "judgment",
+    "target",
+    "data query windows and visible input digests",
+    "account strategy state",
+    "plan",
+    "account balances and fills"
+  ],
+  "event_cases": {
+    "PLAN_GENERATED": "等待执行结果，暂无确认成交。",
+    "EXECUTION_EXPIRED": "委托超过提交时限，未提交、未成交。",
+    "NO_ORDER": "本轮无需下单，无成交。"
+  },
+  "chart": ".tmp/cn-step-v5-review/s001-v1-pte-5b5b0b5d92/forward-chart.html",
+  "account": {
+    "cash": "828.9280",
+    "frozen_cash": "99171.0720",
+    "receivable": "0.0000",
+    "quantity": 0,
+    "realized_pnl": "0.0000"
+  },
+  "state_comparison": "CZSC 快照恢复后比较末根柱、时间、价格与信号；其余账户状态逐字段比较。"
+}
