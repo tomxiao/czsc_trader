@@ -6,18 +6,19 @@ Execution prices, cash, quantities and orders are exclusively channel-owned.
 import numpy as np
 import pandas as pd
 
-from strategy_runtime import SignalBasisSnapshot, SignalExplanationSnapshot
+from strategy_runtime import DecisionCalculationSnapshot, SignalBasisSnapshot, SignalExplanationSnapshot
 from strategy_runtime.account_strategy import AccountDecision, AccountStepResult
 from strategy_runtime.equity_replay import StateRecord
 
 
-def _decision(target, judgment, summary, next_watch, details):
+def _decision(target, judgment, summary, next_watch, details, expression, inputs):
     basis = (SignalBasisSnapshot('summary', summary),
              *(SignalBasisSnapshot(key, text) for key, text in details),
              SignalBasisSnapshot('target_weight', f'累计投入目标为首次入场可用现金的 {target * 100:.6g}%。' if target else '目标空仓。'))
     return AccountDecision(float(target), SignalExplanationSnapshot(
         'target', 'long' if target else 'flat', judgment, basis, next_watch,
-        ' '.join(item.text for item in basis)))
+        ' '.join(item.text for item in basis),
+        calculation=DecisionCalculationSnapshot(expression, inputs, f'{target:.2%}', summary)))
 
 
 def _entry_explanation(closes, dates, n, enter, group, common, total, p, allocation, target):
@@ -26,13 +27,21 @@ def _entry_explanation(closes, dates, n, enter, group, common, total, p, allocat
     path = ' → '.join(f'{stamp.month} 月 {stamp.day} 日 {price:,.2f}'
                      for stamp, price in zip(stamps, closes, strict=True))
     basis = [('adjusted_closes', f'MU 后复权收盘价：{path}。')]
+    decline = '全部相邻收盘价依次下降'
+    inputs = tuple((f'{stamp:%m-%d} MU 后复权收盘', float(price))
+                   for stamp, price in zip(stamps, closes, strict=True))
     if enter:
+        expression = (f'{decline}成立；板块估计贡献 < 分类门槛时用板块主导档，否则用其他档；'
+                      '累计投入目标 = 配置比例 × 首次投入比例')
+        inputs += (('板块估计贡献', f'{common:.4%}'), ('分类门槛', f'{p["common_share"] * total:.4%}'),
+                   ('配置档', '板块主导' if group else '其他'), ('配置比例', f'{allocation:.2%}'),
+                   ('首次投入比例', f'{p["initial_fraction"]:.2%}'))
         summary = f'MU 连续{span}收跌，首次累计投入目标为入场资金的 {target:.2%}。'
         basis.append(('entry_allocation',
                       f'按板块贡献判定，采用 {"板块主导" if group else "其他"} 档配置。'
                       f'板块估计贡献 {common:.4%}，分类门槛 {p["common_share"] * total:.4%}（对数收益）。'
                       f'本轮配置 {allocation:.2%}，首次采用其中的 {p["initial_fraction"]:.2%}。'))
-        return _decision(target, '触发入场', summary, '关注渠道成交回报和下一交易日收盘。', basis)
+        return _decision(target, '触发入场', summary, '关注渠道成交回报和下一交易日收盘。', basis, expression, inputs)
     if closes[-1] > closes[-2]:
         reason = 'MU 当日收盘反弹'
     elif closes[-1] == closes[-2]:
@@ -41,7 +50,8 @@ def _entry_explanation(closes, dates, n, enter, group, common, total, p, allocat
         reason = 'MU 此前的收盘走势中断了连续下跌'
     summary = f'{reason}，未满足连续{span}收跌的买入条件。'
     return _decision(target, '继续空仓', f'{summary} MU 后复权收盘价 {path}。',
-                     '等下一交易日收盘，再检查买入条件。', basis)
+                     '等下一交易日收盘，再检查买入条件。', basis,
+                     f'{decline}不成立 → 累计投入目标 = 0%', inputs)
 
 
 def _confirmation_basis(mode, price, sector_price, anchor, sector_anchor, p):
@@ -144,6 +154,9 @@ def step(ctx, state):
         exiting = exit_signal
         held_basis = ('held_sessions', f'已持有 {held} 个交易日。第 {p["review_after"]} 日起检查价格退出，'
                        f'最长持有 {p["max_hold"]} 个交易日。')
+        exit_expression = '已达最长持有期，或已到复核日且 MU 收盘 ≤ 退出线'
+        exit_inputs = (('已持有交易日', held), ('最早复核日', p['review_after']),
+                       ('最长持有期', p['max_hold']), ('MU 后复权收盘', price), ('退出线', float(exit_line)))
         if exiting:
             target = 0.
             if was_exiting:
@@ -154,7 +167,8 @@ def step(ctx, state):
                 summary = '已到复核期，MU 收盘未超过退出线，目标清仓。'
             decision = _decision(target, '目标清仓', summary, '关注渠道成交回报，确认是否完成清仓。',
                                  (held_basis, ('exit_check',
-                                    f'MU 后复权收盘 {price:,.4f}，价格退出线 {exit_line:,.4f}。')))
+                                    f'MU 后复权收盘 {price:,.4f}，价格退出线 {exit_line:,.4f}。')),
+                                 f'{exit_expression} → 累计投入目标 = 0%', exit_inputs)
         else:
             lift = bool(active.buy_fills == 1 and p['initial_fraction'] < 1 and
                         held >= p['earliest_add'] and confirmation)
@@ -175,8 +189,18 @@ def step(ctx, state):
             confirmation_basis = _confirmation_basis(mode, price, sector_price, anchor, sector_anchor, p)
             details = (held_basis, ('exit_check', f'MU 后复权收盘 {price:,.4f}，价格退出线 {exit_line:,.4f}。'),
                        ('confirmation', confirmation_basis))
+            check = ('买入成交次数 = 1、首次投入比例 < 100%、已到最早加仓日，'
+                     '且 MU 收盘 > MU 加仓线、SOXX 收盘 > SOXX 加仓线')
+            expression = (f'退出条件未触发；满足加仓条件（{check}）或此前已确认加仓，'
+                          '累计投入目标 = 配置比例；否则 = 配置比例 × 首次投入比例')
+            inputs = exit_inputs + (
+                ('买入成交次数', active.buy_fills), ('最早加仓日', p['earliest_add']),
+                ('MU 加仓线', float(anchor * (1 + p['add_mu_margin']))),
+                ('SOXX 后复权收盘', sector_price), ('SOXX 加仓线', float(sector_anchor * (1 + p['add_sector_margin']))),
+                ('此前已确认加仓', confirmed_add), ('配置比例', f'{allocation:.2%}'),
+                ('首次投入比例', f'{p["initial_fraction"]:.2%}'))
             decision = _decision(target, '提高目标仓位' if lift else '延续目标仓位', summary,
-                                 '下一交易日收盘后，复核持有和退出条件。', details)
+                                 '下一交易日收盘后，复核持有和退出条件。', details, expression, inputs)
     values = StateRecord((('anchor', anchor), ('sector_anchor', sector_anchor),
                           ('allocation', allocation), ('promoted', promoted), ('exiting', exiting)))
     return AccountStepResult(decision, cycle_values=values if active is not None or target else None)

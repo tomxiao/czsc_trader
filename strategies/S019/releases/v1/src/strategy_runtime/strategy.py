@@ -2,7 +2,7 @@
 from zoneinfo import ZoneInfo
 from bisect import bisect_left
 import numpy as np
-from strategy_runtime import SignalBasisSnapshot, SignalExplanationSnapshot
+from strategy_runtime import DecisionCalculationSnapshot, SignalBasisSnapshot, SignalExplanationSnapshot
 from strategy_runtime.account_strategy import AccountDecision, AccountStepResult
 from strategy_runtime.equity_replay import StateRecord
 
@@ -140,6 +140,7 @@ def step(ctx, state):
         touched = price <= trail_price
         breach_count = int(old.get("breach_count")) + 1 if touched else 0
         risk_fraction = float(old.get("risk_fraction"))
+        prior_risk = risk_fraction
         if policy == "none":
             stopped = False
         elif policy == "confirm":
@@ -164,7 +165,8 @@ def step(ctx, state):
             reason = "峰值回落进入风险区间，保留较低仓位"
         if policy == "ramp_rebuild" and old.get("exiting") and held < p["hold_days"]:
             reason = "已触发退出，继续完成清仓"
-        facts.update(anchor=anchor, held=held, recovered=recovered, high_water=high_water,
+        facts.update(allocation=allocation, prior_risk=prior_risk, previously_exiting=bool(old.get("exiting")),
+                     anchor=anchor, held=held, recovered=recovered, high_water=high_water,
             entry_atr=entry_atr, risk_atr=risk_atr, trail_price=trail_price, stopped=stopped,
             touched=touched, exit_policy=policy, risk_fraction=risk_fraction, breach_count=breach_count)
     elif slot == 1:
@@ -259,6 +261,44 @@ def describe(target, reason, facts, holding, p):
         summary = f"{reason}。"
         detail = "入场只在开盘首根 30 分钟线完成后评估。"
         watch = "等待下一次首半小时入场检查。"
+    calculation = decision_calculation(target, summary, facts, holding, p)
     return SignalExplanationSnapshot("target", "long" if target else "flat", judged,
         (SignalBasisSnapshot("summary", summary), SignalBasisSnapshot("conditions", detail)),
-        watch, f"{summary} {detail}")
+        watch, f"{summary} {detail}", calculation=calculation)
+
+
+
+def decision_calculation(target, summary, facts, holding, p):
+    percent = lambda value: f"{value:.2%}"
+    if holding:
+        if target > 0 and facts["risk_fraction"] < 1 and facts["risk_fraction"] == facts["prior_risk"]:
+            summary = (f"风险系数沿用此前的 {percent(facts['risk_fraction'])}，"
+                       f"目标仓位 {percent(target)}。")
+        expression = (
+            "回落倍数 = (持仓后峰值 − MU 收盘) ÷ 日均真实波幅；"
+            "本次系数 = 将 (基准 + 带宽 ÷ 2 − 回落倍数) ÷ 带宽 限制在 0 至 1；风险系数 = min(此前风险系数, 本次系数)；"
+            "已触发退出、已到持有期限或风险系数归零 → 目标仓位 0%；否则 = 入场配置 × 风险系数")
+        inputs = (("MU 后复权收盘", facts["price"]), ("持仓后峰值", facts["high_water"]),
+                  ("日均真实波幅", facts["risk_atr"]), ("基准", p["trail_atr"]), ("带宽", p["exit_width"]),
+                  ("此前风险系数", percent(facts["prior_risk"])), ("本次风险系数", percent(facts["risk_fraction"])),
+                  ("此前已触发退出", facts["previously_exiting"]), ("已持有交易日", facts["held"]),
+                  ("持有期限", p["hold_days"]), ("入场配置", percent(facts["allocation"])))
+    elif "anchor" in facts:
+        predicate = "最近日线下跌且首半小时收涨且收盘 < 入场参考价"
+        inputs = (("最近日线下跌", facts["down2"]), ("首半小时涨跌", percent(facts["mu_return"])),
+                  ("首半小时后复权收盘", facts["price"]), ("入场参考价", facts["anchor"]))
+        if target:
+            expression = (f"{predicate} → 目标仓位 = 强弱档位 × max(首半小时量能系数, 前一日量能系数)；"
+                          "63 日相对强弱 > 0 用 100%，否则用弱势档位")
+            inputs += (("63 日相对强弱", percent(facts["relative63"])), ("弱势档位", percent(p["weak_fraction"])),
+                       ("首半小时量比", f"{facts['participation']:.4f}"),
+                       ("前一日量比", f"{facts['prior_participation']:.4f}"),
+                       ("量比参考线", f"{p['participation_threshold']:.4f}"),
+                       ("首半小时量能系数", percent(facts["opening_factor"])),
+                       ("前一日量能系数", percent(facts["prior_factor"])))
+        else:
+            expression = f"（{predicate}）不成立 → 目标仓位 = 0%"
+    else:
+        expression = "空仓且当前区间序号 ≠ 1 → 目标仓位 = 0%"
+        inputs = (("区间序号（开盘区间为 0）", facts["slot"]),)
+    return DecisionCalculationSnapshot(expression, inputs, percent(target), summary)
