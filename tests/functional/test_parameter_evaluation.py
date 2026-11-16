@@ -69,7 +69,7 @@ def test_TDR_14_C09_binding_reuses_preparation_and_preserves_exact_execution_con
         raise AssertionError("binding repeated expensive preparation")
 
     monkeypatch.setattr(type(child.candidate), "verify", unexpected)
-    monkeypatch.setattr(equity_replay, "_fetch_products", unexpected)
+    monkeypatch.setattr(context.data, "fetch", unexpected)
     monkeypatch.setattr(context.data, "prepare", unexpected)
     bound = plan.bind_point(reference, 0, child, execution=execution)
     assert bound.snapshot is child.snapshot

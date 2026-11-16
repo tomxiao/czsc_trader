@@ -5,7 +5,7 @@ import {runInNewContext} from 'node:vm';
 import {decisionDetailsMarkup} from '../../src/paper_trading_engine/static/app.js';
 import {recordPage, ACCOUNT_REFRESH_SECTIONS, ScopedLoader, accountMarkup, accountOperatingStatus, actionLabel, actionsForRoute, auditCategoryLabel, auditEventLabel, auditOutcomeLabel, auditQuery, auditScopeLabel, auditSeverityLabel, auditSummary, channelMarkup, channelOrderAccountLabel, chartIsPending, chartShouldReload, chooseAccountId, comparisonQuery, decisionExecutionLabel, displayFillId, formatBeijingTime, formatPrice, formatQuantity, navigationOptions, orderPriceLabel, parseRoute, qualificationLabel, releaseVersionLabel, sideLabel, snapshotFingerprint, sortVirtualAccounts, statusLabel, systemAlertCount, systemEventLabel} from '../../src/paper_trading_engine/static/app.js';
 
-test('forward chart keeps signal series, only fill markers on candles, and business details without IDs', () => {
+test('forward chart separates historical decisions and market-day fills without exposing IDs', () => {
   class Element {
     constructor(name){this.name=name;this.attributes={};this.children=[];this.style={};this.listeners={};this.dataset={};this.classList={add(){}};this.clientWidth=1000;}
     setAttribute(key,value){this.attributes[key]=value;}
@@ -23,7 +23,7 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
   const observation=value=>({status:'READY',series:[{key:'score',label:'策略得分',value,guides:[{key:'threshold',label:'入场阈值',value:.2}]}],facts:[]});
   const context={
     mode:'PAPER',
-    strategy:{release_id:'S003-v1',name:'测试策略',symbol:'510500.SH',account_id:'s003-v1',release_hash:'current',currency:'CNY'},
+    strategy:{release_id:'S003-v1',name:'测试策略',symbol:'510500.SH',account_id:'s003-v1',release_hash:'current',currency:'CNY',market_timezone:'Asia/Shanghai'},
     window:{selection_data_cutoff:'2026-09-02',forward_observation_start:'2026-09-02'},
     market_data:{as_of:'2026-09-04',bars:['2026-09-02','2026-09-03','2026-09-04'].map(date=>({date,open:1,high:1.1,low:.9,close:1}))},
     observations:[
@@ -37,13 +37,14 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
         {decision_id:'TIMELINE',signal_date:'2026-09-03',valid_session:'2026-09-04',generated_at:'2026-09-04T09:00:00+08:00',action:'WAIT',status:'COMPLETED',target_quantity:0},
         {decision_id:'OLD',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-02T12:30:00Z',action:'ROTATE',status:'SUPERSEDED',target_quantity:1000,explanation:{basis:[],judgment:'日内轮换'}},
         {decision_id:'NEW',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-02T17:30:00Z',action:'HOLD',status:'PENDING',target_quantity:0},
-        {decision_id:'LEGACY',signal_date:'2026-09-03',valid_session:'2026-09-04',generated_at:'2026-09-03T13:00:00Z',action:'WAIT',status:'COMPLETED',state_reason:'NO_ORDER',state_changed_at:'2026-09-03T13:00:00Z',target_quantity:0},
+        {decision_id:'LEGACY',signal_date:'2026-09-03',valid_session:'2026-09-04',generated_at:'2026-09-03T13:00:00Z',action:'WAIT',status:'COMPLETED',state_reason:'NO_ORDER',state_changed_at:'2026-09-03T13:00:00Z',target_quantity:0,
+          historical_explanation:true,explanation:{judgment:'继续空仓',basis:[{text:'历史依据 <img>'}]}},
         {decision_id:'VOID',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-03T14:00:00Z',action:'BUY',status:'CANCELLED',state_reason:'CANCELLED',state_changed_at:'2026-09-03T14:00:00Z',target_quantity:5000},
         {decision_id:'WEEKEND',signal_date:'2026-09-04',valid_session:'2026-09-07',generated_at:'2026-09-05T03:00:00Z',action:'HOLD',status:'COMPLETED',state_reason:'NO_ORDER',state_changed_at:'2026-09-05T03:00:00Z',target_quantity:0,explanation:{basis:[],judgment:'持有'},target_position:.5,execution_plan:{orders:[]},plan_explanation:{summary:'延续目标',detail:'策略延续原目标仓位'},result_explanation:{summary:'本轮无需委托',detail:'策略本轮无需委托'}},
       ],
       fills:[
-        {fill_id:'<img>',channel_order_id:'O2',decision_id:'NEW',side:'SELL',quantity:400,price:1.2,fee:1,occurred_at:'2026-09-04T03:00:00Z'},
-        {fill_id:'F1',channel_order_id:'O1',decision_id:'LEGACY',side:'BUY',quantity:100,price:1.2345,fee:.12,occurred_at:'2026-09-03T18:30:00Z'},
+        {fill_id:'<img>',session:'2026-09-04',channel_order_id:'O2',decision_id:'NEW',side:'SELL',quantity:400,price:1.2,fee:1,occurred_at:'2026-09-04T03:00:00Z'},
+        {fill_id:'F1',session:'2026-09-04',channel_order_id:'O1',decision_id:'LEGACY',side:'BUY',quantity:100,price:1.2345,fee:.12,occurred_at:'2026-09-03T18:30:00Z'},
       ],snapshots:[],
     },
   };
@@ -57,57 +58,30 @@ test('forward chart keeps signal series, only fill markers on candles, and busin
   });
   window.mountStrategyChart(nodes['pte-forward-chart'],context);
   const svg=nodes['forward-svg'];
-  const points=()=>svg.children.filter(node=>node.attributes['data-series-key']==='score');
-  assert.equal(points().length,2);
-  assert.match(points()[0].attributes['aria-label'],/2026-09-02 策略得分 1.900/);
-  assert.equal(svg.children.filter(node=>node.attributes['data-guide-key']==='threshold').length,2);
-  assert.match(svg.textContent,/事件/);
-  assert.match(svg.textContent,/2026-09-04 · 决策 1 笔 · 成交 2 笔/);
-  assert.match(svg.textContent,/2026-09-04 02:30:00 · 成交：买入/);
-  assert.match(svg.textContent,/记录 2026-09-05 11:00:00 · 信号日 2026-09-04 · 生效日 2026-09-07\n策略判断：持有\n目标仓位：50%/);
-  assert.match(svg.textContent,/执行计划：无委托\n计划说明：策略延续原目标仓位/);
-  assert.match(svg.textContent,/2026-09-04 11:00:00 · 成交：卖出/);
-  assert.ok(svg.textContent.indexOf('2026-09-04 11:00:00 · 成交')<svg.textContent.indexOf('记录 2026-09-05 11:00:00'));
-  assert.ok(!svg.textContent.includes('已失效'));
-  assert.ok(!svg.textContent.includes('目标 5,000 股'));
-  for(const text of ['买入 100 股','卖出 400 股','123.45 元','费用 0.12 元','2026-09-04 02:30:00'])assert.ok(svg.textContent.includes(text),text);
-  assert.ok(svg.textContent.indexOf('买入 100 股')<svg.textContent.indexOf('卖出 400 股'));
+  const renderDay=()=>svg.children.filter(node=>node.name==='foreignObject').map(node=>node.textContent);
+  const [decisions,fills]=renderDay();
+  assert.match(decisions,/历史补录.*继续空仓.*历史依据 <img>/);
+  assert.doesNotMatch(decisions,/日内轮换|买入 100 股|卖出 400 股/);
+  assert.match(fills,/2026-09-04 · 成交 2 笔/);
+  assert.match(fills,/2026-09-04 02:30:00（Asia\/Shanghai） · 买入 100 股.*123.45 元.*费用 0.12 元/);
+  assert.match(fills,/2026-09-04 11:00:00（Asia\/Shanghai） · 卖出 400 股/);
+  assert.ok(fills.indexOf('买入 100 股')<fills.indexOf('卖出 400 股'));
+  for(const id of ['LEGACY','F1','O1','O2','<img>'])assert.ok(!fills.includes(id),id);
   assert.equal(svg.children.filter(node=>node.attributes['data-fill-id']).length,2);
   assert.equal(svg.children.filter(node=>node.attributes['data-decision-id']).length,0);
-  assert.equal(svg.children.filter(node=>node.attributes.class==='event-label').length,0);
-  assert.equal(svg.children.filter(node=>node.name==='circle'&&!node.attributes['data-series-key']&&!node.attributes['data-guide-key']).length,2);
+  assert.equal(svg.children.filter(node=>node.attributes['data-series-key']).length,0);
   const tooltip=nodes['forward-tooltip'];
-  for(const text of ['OLD','NEW','LEGACY','VOID','F1','O1','O2','<img>','&lt;img&gt;','已失效','5,000 股'])assert.ok(!tooltip.innerHTML.includes(text),text);
-  for(const text of ['行情（后复权）','开 / 高','低 / 收','2026-09-04'])assert.ok(tooltip.innerHTML.includes(text),text);
-  for(const text of ['目标持仓','未记录','决策','成交','买入','卖出','费用'])assert.ok(!tooltip.innerHTML.includes(text),text);
-  const overlay=svg.children.at(-1);
-  overlay.listeners.pointermove({clientX:68,clientY:60});
-  assert.match(svg.textContent,/2026-09-02 · 决策 3 笔/);
-  assert.match(svg.textContent,/日内轮换/);
-  assert.match(svg.textContent,/已替代/);
-  assert.match(svg.textContent,/待执行/);
-  assert.match(svg.textContent,/信号日 2026-09-02 · 生效日 2026-09-04/);
-  assert.ok(svg.textContent.indexOf('记录 2026-09-02 20:30:00')<svg.textContent.indexOf('记录 2026-09-03 01:30:00'));
-  assert.doesNotMatch(svg.textContent,/决策 0 笔|成交 0 笔/);
-  assert.doesNotMatch(tooltip.innerHTML,/目标持仓|未记录|决策|成交/);
-  overlay.listeners.pointermove({clientX:498,clientY:60});
-  assert.match(svg.textContent,/2026-09-03 · 决策 2 笔/);
-  assert.match(svg.textContent,/目标仓位：未记录/);
-  assert.match(svg.textContent,/记录 2026-09-04 09:00:00 · 信号日 2026-09-03/);
-  assert.ok(svg.textContent.indexOf('记录 2026-09-03 21:00:00')<svg.textContent.indexOf('记录 2026-09-04 09:00:00'));
-  assert.doesNotMatch(svg.textContent,/已替代|已失效/);
+  assert.match(tooltip.innerHTML,/行情（后复权）/);
+  assert.doesNotMatch(tooltip.innerHTML,/决策|成交|费用|<img>/);
   const candleCount=svg.children.filter(node=>node.name==='rect'&&node.attributes.stroke).length;
   let prevented=false;svg.listeners.keydown({key:'End',preventDefault(){prevented=true;}});assert.equal(prevented,true);
-  assert.match(svg.textContent,/2026-09-04 · 决策 1 笔 · 成交 2 笔/);
-  assert.match(svg.textContent,/执行结果：无需下单\n结果说明：策略本轮无需委托/);
+  assert.match(renderDay()[0],/持有/);
+  assert.match(renderDay()[1],/当日无成交/);
   assert.equal(svg.children.filter(node=>node.name==='rect'&&node.attributes.stroke).length,candleCount);
   assert.equal(tooltip.hidden,true);
-  svg.children.at(-1).listeners.pointermove({clientX:928,clientY:60});
+  svg.listeners.keydown({key:'ArrowLeft',preventDefault(){}});
   nodes['forward-stage'].clientWidth=360;window.listeners.resize();
-  assert.equal(points().length,2);
-  assert.match(svg.textContent,/2026-09-04 · 决策 1 笔 · 成交 2 笔/);
-  assert.equal(svg.children.filter(node=>node.attributes['data-fill-id']).length,2);
-  assert.equal(svg.children.filter(node=>node.attributes['data-decision-id']).length,0);
+  assert.deepEqual(renderDay(),[decisions,fills]);
 });
 
 test('FT-PTEJS01 console state preserves scope, stable polling and Chinese presentation', () => {
