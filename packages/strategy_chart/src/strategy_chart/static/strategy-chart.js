@@ -99,7 +99,7 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
       const narrative=item.explanation||observationById.get(item.decision_id)?.signal_panel?.explanation;
       const calculation=narrative?.calculation;
       const row=node('article','decision-row');row.dataset.decisionId=item.decision_id;
-      row.append(node('div','event-heading',`${item.valid_session} · ${timing}`));
+      row.append(node('div','event-heading',`${item.valid_session} · ${timing}${item.historical_explanation?' · 历史补录':''}`));
       const details=node('div','event-details');row.appendChild(details);
       if(calculation){
         const inputs=Object.entries(calculation.inputs).map(([label,value])=>`${label} = ${valueText(value)}`).join('；');

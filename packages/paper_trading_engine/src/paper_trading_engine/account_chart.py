@@ -20,6 +20,7 @@ from execution_channels.futu.audit import AuditRecorder
 from execution_channels.futu.channel import channel_profile
 from execution_channels.futu.execution_adoptions import adoption_window
 from strategy_runtime.signal_explanation import SignalExplanationSnapshot
+from .chart_history import decision_source_hash, original_calculation
 from .chart_market_data import AccountChartDataError, LEGACY_CHART_UPDATE_TIME
 from .file_publication import replace_published_file
 from .forward_chart import ChartObservation, FORWARD_CHART_CONTRACT_VERSION, render_forward_chart_html
@@ -29,7 +30,7 @@ from execution_channels.futu.trading_window import SHANGHAI
 ACCOUNT_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 INPUT_LIMIT = 5 * 1024 * 1024
 OUTPUT_LIMIT = 20 * 1024 * 1024
-CACHE_RENDER_REVISION = "pte-forward-chart-v19"
+CACHE_RENDER_REVISION = "pte-forward-chart-v20"
 
 
 def _path_comparison_key(path: Path) -> str:
@@ -345,6 +346,11 @@ class AccountChartService:
         start, end = adoption_window(payload)
         strategy_output = payload.get("strategy_output") or {}
         raw = strategy_output.get("explanation")
+        archive = row.get("chart_history")
+        historical = (archive is not None and original_calculation(payload) is None
+                      and archive["source_sha256"] == decision_source_hash(payload))
+        if historical:
+            raw = archive["explanation"]
         explanation = SignalExplanationSnapshot.from_dict(raw).to_dict() if raw is not None else None
         return {
             "account_id": row["account_id"], "decision_id": row["decision_id"],
@@ -354,6 +360,7 @@ class AccountChartService:
             "state_reason": row["state_reason"], "state_changed_at": row["state_changed_at"],
             "action": payload.get("action"), "target_quantity": payload.get("target_quantity"),
             "explanation": explanation,
+            **({"historical_explanation": True} if historical else {}),
         }
 
     def _request(self, account: dict[str, Any], *, refresh_source: bool = False) -> dict[str, Any]:

@@ -61,6 +61,39 @@ def test_mu_no_order_decision_drives_chart_start_and_saved_explanation(tmp_path)
         _inspect_forward_chart(store, {"decisions": [row]}, market_data, tmp_path)
 
 
+def test_imported_chart_history_renders_only_for_its_original_decision():
+    from paper_trading_engine.account_chart import AccountChartService
+    from paper_trading_engine.chart_history import decision_source_hash, import_history
+
+    payload = {"target_quantity": 0}
+    row = {"account_id": "account", "decision_id": "decision", "status": "COMPLETED",
+           "signal_date": "2026-11-06", "valid_session": "2026-11-09", "generated_at": "2026-11-06T21:00:00Z",
+           "state_reason": "NO_ORDER", "state_changed_at": None, "payload": payload}
+    explanation = {"state_key": "target", "case_key": "flat", "judgment": "继续空仓",
+                   "basis": [{"key": "summary", "text": "未达到入场条件。"}],
+                   "next_watch": "下一交易日复核。", "explanation": "未达到入场条件。"}
+    manifest = {"schema": "pte_chart_history.v1", "entries": [
+        {"account_id": "account", "decision_id": "decision", "source_sha256": decision_source_hash(payload),
+         "explanation": explanation}]}
+    from contextlib import nullcontext
+
+    saved = {}
+    store = SimpleNamespace(account_decision=lambda *_: row, atomic_decision_update=nullcontext,
+                            chart_decision_history=lambda _: saved.copy(),
+                            save_chart_decision_history=lambda _, entries: saved.update(entries))
+    assert import_history(store, manifest)["new_entries"] == 1
+    assert not saved
+    assert import_history(store, manifest, apply=True)["new_entries"] == 1
+    assert import_history(store, manifest, apply=True)["new_entries"] == 0
+    row["chart_history"] = saved["decision"]
+    event = AccountChartService._decision_event(row)
+    assert event["historical_explanation"] is True and event["explanation"] == explanation
+    payload["target_quantity"] = 100
+    assert AccountChartService._decision_event(row)["explanation"] is None
+    with pytest.raises(ValueError, match="saved PTE decision changed"):
+        import_history(store, manifest, apply=True)
+
+
 @pytest.mark.parametrize(
     'signal_date,target,judgment,trigger,order,planning,status,reason',
     [

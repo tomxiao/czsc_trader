@@ -2906,11 +2906,29 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
             if owns_snapshot:
                 self._connection.execute("BEGIN")
             try:
-                return (self.account_decisions(account_id), self.account_fills(account_id),
-                        self.account_snapshots(account_id))
+                decisions = self.account_decisions(account_id)
+                archive = self.chart_decision_history(account_id)
+                for decision in decisions:
+                    if (entry := archive.get(decision["decision_id"])) is not None:
+                        decision["chart_history"] = entry
+                return decisions, self.account_fills(account_id), self.account_snapshots(account_id)
             finally:
                 if owns_snapshot:
                     self._connection.rollback()
+
+    def chart_decision_history(self, account_id: str) -> dict[str, Any]:
+        self._check_owned("account", account_id)
+        with self._lock:
+            row = self._connection.execute("SELECT value FROM settings WHERE key=?",
+                                           (f"chart_decision_history:{account_id}",)).fetchone()
+        return {} if row is None else json.loads(row[0])
+
+    def save_chart_decision_history(self, account_id: str, entries: dict[str, Any]) -> None:
+        # The account IDs are global, including for chart reads through scoped stores.
+        if self.channel_account_id is not None:
+            raise ValueError("chart history import requires the root store")
+        self.virtual_account(account_id)
+        self.set_setting(f"chart_decision_history:{account_id}", json.dumps(entries, ensure_ascii=False, sort_keys=True))
 
     def expire_unsubmitted_decisions(self, moment: datetime) -> None:
         """Close elapsed observation plans without backfilling historical orders."""
