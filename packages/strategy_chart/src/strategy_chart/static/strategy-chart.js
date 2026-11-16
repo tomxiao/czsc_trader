@@ -25,7 +25,6 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   const observations=context.observations.filter(item=>!isPaper||!superseded.has(item.decision_id));
   const fills=[...context.execution.fills].sort((a,b)=>Date.parse(a.occurred_at)-Date.parse(b.occurred_at));
   const snapshots=context.execution.snapshots;
-  const observationStart=isPaper?decisions.filter(item=>item.status!=='SUPERSEDED').map(item=>item.valid_session).sort()[0]:context.window.forward_observation_start;
   const byDate=new Map([...observations].sort((a,b)=>String(a.generated_at||a.signal_date).localeCompare(String(b.generated_at||b.signal_date))).map(item=>[item.signal_date,item]));
   const observationById=new Map(context.observations.filter(item=>item.observation.status==='READY').map(item=>[item.decision_id,item.observation]));
   const snapshotByDate=new Map(snapshots.map(item=>[item.session,item]));
@@ -55,7 +54,8 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   const quantity=value=>value==null?'未记录':`${Number(value).toLocaleString('zh-CN')} 股`;
   const fillCurrency=isPaper&&context.strategy.currency==='USD'?'美元':'元';
   const money=value=>value==null?'未记录':`${Number(value).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})} ${fillCurrency}`;
-  const decisionDate=item=>isPaper?item.valid_session:localTime(item.generated_at).slice(0,10);
+  const decisionDate=item=>isPaper?item.decision_date:localTime(item.generated_at).slice(0,10);
+  const observationStart=isPaper?decisions.filter(item=>item.status!=='SUPERSEDED').map(decisionDate).sort()[0]:context.window.forward_observation_start;
   const dayDecisions=date=>decisions.filter(item=>decisionDate(item)===date&&(!isPaper||item.status!=='SUPERSEDED'));
   const dayFills=date=>fills.filter(item=>fillDate(item)===date);
   function fillSummary(item){
@@ -99,7 +99,8 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
       const narrative=item.explanation||observationById.get(item.decision_id)?.signal_panel?.explanation;
       const calculation=narrative?.calculation;
       const row=node('article','decision-row');row.dataset.decisionId=item.decision_id;
-      row.append(node('div','event-heading',`${item.valid_session} · ${timing}${item.historical_explanation?' · 历史补录':''}`));
+      const validity=date===item.valid_session?'':` · 生效日 ${item.valid_session}`;
+      row.append(node('div','event-heading',`${date}${validity} · ${timing}${item.historical_explanation?' · 历史补录':''}`));
       const details=node('div','event-details');row.appendChild(details);
       if(calculation){
         const inputs=Object.entries(calculation.inputs).map(([label,value])=>`${label} = ${valueText(value)}`).join('；');

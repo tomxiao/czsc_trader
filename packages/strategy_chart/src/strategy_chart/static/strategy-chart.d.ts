@@ -64,6 +64,8 @@ interface StrategyChartContext {
   execution: {
     decisions: Array<{
       decision_id: string; generated_at: string; signal_date: string; valid_session: string;
+      /** Required in PAPER mode. The session under which PTE displays the decision. */
+      decision_date?: string;
       execution_interval?: {start: string; end: string} | null;
       action: string; target_quantity: number; status: string;
       state_reason?: string; state_changed_at?: string;

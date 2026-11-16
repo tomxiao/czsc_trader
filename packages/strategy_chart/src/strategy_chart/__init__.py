@@ -24,7 +24,10 @@ def chart_body(*, paper_decisions: bool = False) -> str:
     signal_label = "策略决策" if paper_decisions else "策略信号"
     fill_label = "成交标记" if paper_decisions else "成交事件"
     dates = "有决策或成交的日期" if paper_decisions else "非交易日事件"
-    date_basis = "决策按执行区间 · 成交按市场交易日" if paper_decisions else "信号按信号日 · 成交按记录日期"
+    date_basis = (
+        "日线决策按信号日 · 日内决策按执行区间 · 成交按市场交易日"
+        if paper_decisions else "信号按信号日 · 成交按记录日期"
+    )
     return f'''<div class="forward-toolbar">
   <div class="forward-controls" aria-label="观察窗口">
     <button type="button" data-range="20" aria-pressed="false">20日</button>

@@ -41,7 +41,7 @@ test('forward chart separates historical decisions and market-day fills without 
           historical_explanation:true,explanation:{judgment:'继续空仓',basis:[{text:'历史依据 <img>'}]}},
         {decision_id:'VOID',signal_date:'2026-09-02',valid_session:'2026-09-04',generated_at:'2026-09-03T14:00:00Z',action:'BUY',status:'CANCELLED',state_reason:'CANCELLED',state_changed_at:'2026-09-03T14:00:00Z',target_quantity:5000},
         {decision_id:'WEEKEND',signal_date:'2026-09-04',valid_session:'2026-09-07',generated_at:'2026-09-05T03:00:00Z',action:'HOLD',status:'COMPLETED',state_reason:'NO_ORDER',state_changed_at:'2026-09-05T03:00:00Z',target_quantity:0,explanation:{basis:[],judgment:'持有'},target_position:.5,execution_plan:{orders:[]},plan_explanation:{summary:'延续目标',detail:'策略延续原目标仓位'},result_explanation:{summary:'本轮无需委托',detail:'策略本轮无需委托'}},
-      ],
+      ].map(decision=>({...decision,decision_date:decision.valid_session})),
       fills:[
         {fill_id:'<img>',session:'2026-09-04',channel_order_id:'O2',decision_id:'NEW',side:'SELL',quantity:400,price:1.2,fee:1,occurred_at:'2026-09-04T03:00:00Z'},
         {fill_id:'F1',session:'2026-09-04',channel_order_id:'O1',decision_id:'LEGACY',side:'BUY',quantity:100,price:1.2345,fee:.12,occurred_at:'2026-09-03T18:30:00Z'},

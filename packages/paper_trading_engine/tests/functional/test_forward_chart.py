@@ -5,30 +5,44 @@ from types import SimpleNamespace
 import pandas as pd
 import pytest
 
+from execution_channels.instruments import BarFrequency
 from paper_trading_engine.forward_chart import FORWARD_CHART_CONTRACT_VERSION, render_forward_chart_html
 
 
-def test_mu_no_order_decision_drives_chart_start_and_saved_explanation(tmp_path):
+@pytest.mark.parametrize(
+    "clock, expected_date",
+    [(BarFrequency.DAILY, "2026-11-06"), (BarFrequency.M30, "2026-11-09")],
+    ids=["daily-signal-date", "intraday-opening-session"],
+)
+def test_mu_no_order_decision_drives_chart_start_and_saved_explanation(tmp_path, clock, expected_date):
     from paper_trading_engine.account_chart import AccountChartService
     from paper_trading_engine.equity_inspection import _inspect_forward_chart
 
     explanation = {"state_key": "decision", "case_key": "wait", "judgment": "no opportunity",
                    "basis": [{"key": "target", "text": "target_weight: 0"}],
                    "next_watch": "next completed daily bar", "explanation": "wait"}
+    end_time = "21:00:00" if clock == BarFrequency.DAILY else "15:00:00"
     row = {"account_id": "s018-v1", "decision_id": "mu-first", "signal_date": "2026-11-06",
            "valid_session": "2026-11-09", "generated_at": "2026-11-08T13:36:43+00:00",
            "status": "COMPLETED", "state_reason": "NO_ORDER", "state_changed_at": None,
            "state_events": [], "payload": {"action": "WAIT", "target_quantity": 0, "observation": None,
                                            "equity_execution_interval": {"start": "2026-11-09T14:30:00Z",
-                                                                         "end": "2026-11-09T21:00:00Z"},
+                                                                         "end": f"2026-11-09T{end_time}Z"},
                                            "strategy_output": {"explanation": explanation}}}
     account = {"account_id": "s018-v1", "symbol": "MU", "asset_type": "stock", "strategy_id": "S018",
                "strategy_version": "v1", "strategy_name_snapshot": "MU", "release_hash": "a" * 64,
-               "selection_data_cutoff": "2026-10-30", "channel_id": "futu_US_sim_channel"}
+               "selection_data_cutoff": "2026-10-30", "channel_id": "futu_US_sim_channel",
+               "channel_account_id": "futu-us-default",
+               "equity_rules_json": "{}"}
     fill = {"account_id": "s018-v1", "fill_id": "historical-fill", "occurred_at": "2026-11-07T03:30:00+08:00",
             "side": "BUY", "quantity": 2, "price": 100, "fee": 0.2}
+    rules = SimpleNamespace(execution=SimpleNamespace(decision_clock=clock))
+    def scope(channel_account_id):
+        assert channel_account_id == "futu-us-default"
+        return SimpleNamespace(equity_account_rules=lambda _: rules)
+
     store = SimpleNamespace(account_chart_facts=lambda _: ([row], [fill], []),
-                            virtual_account=lambda _: account)
+                            virtual_account=lambda _: account, scope=scope)
     bars = pd.DataFrame([{"Date": day, "Open": 1, "High": 2, "Low": 1, "Close": 2}
                          for day in ("2026-11-05", "2026-11-06")])
     market_data = SimpleNamespace(history=lambda **_: ("data", bars))
@@ -41,10 +55,11 @@ def test_mu_no_order_decision_drives_chart_start_and_saved_explanation(tmp_path)
         assert result["strategy"]["market_timezone"] == "America/New_York"
         assert result["observations"] == []
         decision, = result["execution"]["decisions"]
+        assert decision["decision_date"] == expected_date
         assert decision["explanation"] == explanation
         assert decision["state_reason"] == "NO_ORDER"
         assert decision["execution_interval"] == {"start": "2026-11-09T14:30:00.000000+00:00",
-                                                  "end": "2026-11-09T21:00:00.000000+00:00"}
+                                                  "end": f"2026-11-09T{end_time}.000000+00:00"}
         actual_fill, = result["execution"]["fills"]
         assert (actual_fill["session"], actual_fill["time_precision"]) == ("2026-11-06", "TIMESTAMP")
         assert 'no opportunity' in render_forward_chart_html(result)
@@ -178,6 +193,7 @@ def _context() -> dict[str, object]:
         "execution": {
             "decisions": [{
                 "account_id": "s007-v1", "decision_id": "DEC-1",
+                "decision_date": "2026-09-03",
                 "signal_date": "2026-09-03", "valid_session": "2026-09-04",
                 "generated_at": "2026-09-03T12:00:00+00:00",
                 "action": "BUY", "target_quantity": 1000, "status": "ACTIVE",
@@ -213,7 +229,7 @@ def test_intraday_observation_uses_its_recorded_market_interval():
     for record in (decision, observation):
         record['valid_session'] = record['signal_date']
     decision['execution_interval'] = {'start': '2026-09-03T10:00:00+08:00', 'end': '2026-09-03T10:30:00+08:00'}
-    assert '决策按执行区间 · 成交按市场交易日' in render_forward_chart_html(context)
+    assert '日线决策按信号日 · 日内决策按执行区间 · 成交按市场交易日' in render_forward_chart_html(context)
     decision['execution_interval']['start'] = '2026-09-02T10:00:00+08:00'
     with pytest.raises(ValueError, match='differs from the market session'):
         render_forward_chart_html(context)

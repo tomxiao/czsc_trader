@@ -63,10 +63,10 @@ test('paper fill price, amount and fees all use the bound channel currency',()=>
 });
 test('paper shows effective-day decisions by interval and fills by market session',()=>{
  const f=fixture(),c=context();
- c.mode='PAPER';c.contract_version='pte_forward_chart.v7';
+ c.mode='PAPER';c.contract_version='pte_forward_chart.v8';
  c.strategy={symbol:'MU',account_id:'s019-v1',release_id:'S019-v1',currency:'USD',market_timezone:'America/New_York'};
  c.market_data.bars=['2026-11-06','2026-11-09','2026-11-10'].map(date=>({date,open:10,high:11,low:9,close:10}));
- const first={decision_id:'first',signal_date:'2026-11-06',valid_session:'2026-11-09',generated_at:'2026-11-08T13:36:43Z',status:'COMPLETED',
+ const first={decision_id:'first',decision_date:'2026-11-09',signal_date:'2026-11-06',valid_session:'2026-11-09',generated_at:'2026-11-08T13:36:43Z',status:'COMPLETED',
   execution_interval:{start:'2026-11-09T14:30:00Z',end:'2026-11-09T15:00:00Z'},
   explanation:{judgment:'继续空仓',basis:[{text:'未满足入场条件'}]}};
  const second={...first,decision_id:'second',signal_date:'2026-11-09',generated_at:'2026-11-09T15:00:00Z',
@@ -95,6 +95,29 @@ test('paper shows effective-day decisions by interval and fills by market sessio
  assert.equal(lines.length,2);
  assert.match(lines[0],/2026-11-10 14:30:00（America\/New_York） · 买入 2 股 · 成交价 .* · 成交金额 20.00 美元 · 费用 0.02 美元/);
  assert.match(lines[1],/买入 3 股/);
+});
+test('paper shows a daily decision on its signal date before the next session',()=>{
+ const f=fixture(),c=context();
+ c.mode='PAPER';
+ c.strategy={symbol:'588080.SH',account_id:'s001-v2',release_id:'S001-v2',currency:'CNY',market_timezone:'Asia/Shanghai'};
+ c.market_data.bars=['2026-11-13','2026-11-16'].map(date=>({date,open:10,high:11,low:9,close:10}));
+ c.execution.fills=[];
+ c.execution.decisions=[
+  {decision_id:'hold',decision_date:'2026-11-13',signal_date:'2026-11-13',valid_session:'2026-11-16',
+   generated_at:'2026-11-14T15:48:00Z',status:'COMPLETED',historical_explanation:true,
+   explanation:{judgment:'延续目标仓位',basis:[{text:'评分仍高于退出线。'}]}},
+  {decision_id:'exit',decision_date:'2026-11-16',signal_date:'2026-11-16',valid_session:'2026-11-17',
+   generated_at:'2026-11-16T12:00:00Z',status:'PENDING',
+   execution_interval:{start:'2026-11-17T09:30:00+08:00',end:'2026-11-17T15:00:00+08:00'},
+   explanation:{calculation:{expression:'评分 ≤ 退出线',inputs:{},result:'0%',summary:'目标清仓'}}},
+ ];
+ f.window.location={hash:'#2026-11-16'};f.mount(f.root,c);
+ const reading=f.root.querySelector('.decision-reading');
+ assert.deepEqual(reading.querySelectorAll('.decision-row').map(row=>row.dataset.decisionId),['exit']);
+ assert.match(reading.textContent,/2026-11-16 · 生效日 2026-11-17 · 09:30:00.*目标清仓/);
+ f.svg.fire('keydown',{key:'ArrowLeft'});
+ assert.deepEqual(reading.querySelectorAll('.decision-row').map(row=>row.dataset.decisionId),['hold']);
+ assert.match(reading.textContent,/历史补录.*延续目标仓位/);
 });
 test('paper decision and fill panels use the same labeled layout with or without market bars',()=>{
  for(const width of [1440,600])for(const empty of [false,true]){

@@ -25,12 +25,13 @@ from .chart_market_data import AccountChartDataError, LEGACY_CHART_UPDATE_TIME
 from .file_publication import replace_published_file
 from .forward_chart import ChartObservation, FORWARD_CHART_CONTRACT_VERSION, render_forward_chart_html
 from execution_channels.futu.trading_window import SHANGHAI
+from execution_channels.instruments import BarFrequency
 
 
 ACCOUNT_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 INPUT_LIMIT = 5 * 1024 * 1024
 OUTPUT_LIMIT = 20 * 1024 * 1024
-CACHE_RENDER_REVISION = "pte-forward-chart-v20"
+CACHE_RENDER_REVISION = "pte-forward-chart-v21"
 
 
 def _path_comparison_key(path: Path) -> str:
@@ -399,7 +400,16 @@ class AccountChartService:
             for row in fill_rows
             if (session := self._fact_date(row, ("occurred_at", "session"), market_zone)) is not None
         ]
-        events = [self._decision_event(row) for row in decision_rows]
+        rules = None
+        if account.get("equity_rules_json") is not None:
+            rules = self.store.scope(account["channel_account_id"]).equity_account_rules(account_id)
+        # Daily decisions belong to the signal session. Intraday opening decisions
+        # can use the prior close but still belong to the opening execution session.
+        date_field = "valid_session" if rules and rules.execution.decision_clock == BarFrequency.M30 else "signal_date"
+        events = [
+            {**self._decision_event(row), "decision_date": row[date_field]}
+            for row in decision_rows
+        ]
         snapshots = [
             {
                 "account_id": row.get("account_id"),

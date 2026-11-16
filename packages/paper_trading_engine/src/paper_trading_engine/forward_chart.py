@@ -16,7 +16,7 @@ from strategy_runtime import (
 )
 
 
-FORWARD_CHART_CONTRACT_VERSION = "pte_forward_chart.v7"
+FORWARD_CHART_CONTRACT_VERSION = "pte_forward_chart.v8"
 
 
 @dataclass(frozen=True, slots=True)
@@ -143,6 +143,8 @@ def render_forward_chart_html(value: object, *, inline_assets: bool = False) -> 
     for row in events:
         if row['account_id'] != strategy['account_id']:
             raise ValueError('forward decision event differs from account identity')
+        if row.get('decision_date') not in (row['signal_date'], row['valid_session']):
+            raise ValueError('forward decision date must be its signal or execution session')
         raw = row.get('execution_interval')
         if raw is not None:
             if type(raw) is not dict or set(raw) != {'start', 'end'}:
