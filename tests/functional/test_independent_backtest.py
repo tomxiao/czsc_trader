@@ -9,7 +9,7 @@ import re
 
 import pandas as pd
 import pytest
-from dataflows import DataSpace, MarketId
+from dataflows import DataSpace, EquityProduct, MarketId, ProviderBinding, ProviderKey
 
 from czsc_trader.application import BacktestRequest, run_backtest
 from czsc_trader.cli.main import main
@@ -30,6 +30,15 @@ def _arguments(selector):
 def _research_files(root):
     return {path.relative_to(root).as_posix(): sha256(path.read_bytes()).hexdigest()
             for path in (root / "research").rglob("*") if path.is_file()}
+
+
+REPORT_FILES = {
+    "account_daily.csv", "audit.json", "buyhold_account_daily.csv", "chart.html",
+    "decisions.csv", "fills.csv", "ma_account_daily.csv", "ma_chart.html", "ma_orders.csv",
+    "ma_signals.csv", "ma_trades.csv", "manifest.json", "metrics.json", "observations.json",
+    "orders.csv", "report.md", "trades.csv",
+    "buyhold_attempts.csv", "buyhold_fills.csv", "ma_attempts.csv", "ma_fills.csv",
+}
 
 
 def assert_v5_cli_backtest(context, request, package, monkeypatch, capsys):
@@ -58,7 +67,8 @@ def assert_v5_cli_backtest(context, request, package, monkeypatch, capsys):
             "--symbol", symbol, "--asset", "stock",
             "--start", request.window.start.date().isoformat(), "--end", request.window.end.date().isoformat(),
             "--init-cash", str(request.initial_cash), "--lot-size", str(context.execution_spec.quantity_step),
-            "--equity-inputs", str(config_path)]
+            "--input-binding", str(config_path), "--data-space", context.data.binding.space.path.as_posix(),
+            "--fee-rate", str(request.fee_rate)]
     code = main(args)
     response = json.loads(capsys.readouterr().out)
     assert code == 0 and response["status"] == "PASS", response
@@ -67,7 +77,7 @@ def assert_v5_cli_backtest(context, request, package, monkeypatch, capsys):
     manifest = json.loads(artifacts["manifest.json"].read_bytes())
     assert manifest["release_hash"] == package.release.release_hash
     assert manifest["package_sha256"] == package.package_sha256
-    assert manifest["strategy"] == "S999-v1"
+    assert manifest["strategy"]["reference"] == "S999-v1"
     assert manifest["prepared"]["manifest_sha256"] == request.prepared.manifest_sha256
     for name, reference in manifest["artifacts"].items():
         assert sha256(artifacts[name].read_bytes()).hexdigest() == reference["sha256"]
@@ -75,7 +85,12 @@ def assert_v5_cli_backtest(context, request, package, monkeypatch, capsys):
     assert account["decisions"] and account["fills"]
     assert account["account_daily"][0]["session"][:10] == request.window.start.date().isoformat()
     assert account["account_daily"][-1]["session"][:10] == request.window.end.date().isoformat()
-    assert account["metrics"] == response["result"]["metrics"]
+    assert set(response["result"]["metrics"]["benchmarks"]) == {"buyhold", "ma5_ma20"}
+    assert response["result"]["metrics"]["strategy"]["metrics"]["return"] == account["metrics"]["total_return"]
+    assert json.loads(artifacts["audit.json"].read_bytes())["status"] == "PASS"
+    assert set(artifacts) == REPORT_FILES | {"account.json", "inputs.json"}
+    assert pd.read_csv(artifacts["account_daily.csv"]).equity.tolist() == pytest.approx(
+        [row["equity"] for row in account["account_daily"]])
     reads = [read for decision in account["strategy_data_reads"] for read in decision["reads"]]
     assert reads and all(read["window"]["name"] == "seed" and read["rows"] == 2 for read in reads)
     assert "S999-v1" in artifacts["report.md"].read_text(encoding="utf-8")
@@ -89,6 +104,17 @@ def assert_v5_cli_backtest(context, request, package, monkeypatch, capsys):
     failure = json.loads(capsys.readouterr().out)
     assert failure["error"]["code"] == "backtest_failed" and failure["artifacts"] == {}
     assert list((root / "outputs").iterdir()) == before
+    if instrument.market is MarketId.CN:
+        def synthetic_catalog(*, source, env_file):
+            return {ProviderKey(product, instrument.market, source): ProviderBinding(source.provider, source.revision,
+                context.data._equity_providers[ProviderKey(product, instrument.market, getattr(request.sources, product.name.lower()))].fetch)
+                    for product in EquityProduct}
+
+        monkeypatch.setattr("czsc_trader.cli.equity_backtest.tushare_historical_equity_bindings", synthetic_catalog)
+        assert main(args[:-6] + ["--fee-rate", str(request.fee_rate)]) == 0
+        automatic = json.loads(capsys.readouterr().out)
+        assert set(automatic["artifacts"]) == set(artifacts)
+        assert automatic["result"]["metrics"] == response["result"]["metrics"]
 
 
 def test_cli_accounts_match_research_api_and_keep_historical_output_layout(
@@ -110,14 +136,7 @@ def test_cli_accounts_match_research_api_and_keep_historical_output_layout(
     output = repository.root / result["result"]["output_dir"]
     assert output.name == f"{day}_10_{reference}"
     assert result["status"] == "PASS" and "experiment" not in result["result"]
-    expected_files = {
-        "account_daily.csv", "audit.json", "buyhold_account_daily.csv", "chart.html",
-        "decisions.csv", "fills.csv", "ma_account_daily.csv", "ma_chart.html", "ma_orders.csv",
-        "ma_signals.csv", "ma_trades.csv", "manifest.json", "metrics.json", "observations.json",
-        "orders.csv", "report.md", "trades.csv",
-        "buyhold_attempts.csv", "buyhold_fills.csv", "ma_attempts.csv", "ma_fills.csv",
-    }
-    assert set(result["artifacts"]) == {path.name for path in output.iterdir()} == expected_files
+    assert set(result["artifacts"]) == {path.name for path in output.iterdir()} == REPORT_FILES
     assert all((repository.root / path).is_file() for path in result["artifacts"].values())
     links = re.findall(r"\]\(([^)]+\.html)\)", (output / "report.md").read_text(encoding="utf-8"))
     assert links == ["chart.html", "ma_chart.html"]

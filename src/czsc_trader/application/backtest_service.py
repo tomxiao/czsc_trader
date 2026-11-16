@@ -62,7 +62,7 @@ def _run_authenticated_backtest(
             raise ValueError("backtest version differs from the frozen registry record")
         if stored.strategy_payload.get("runtime", {}).get("kind") == "ACCOUNT_REPLAY":
             raise ValueError(
-                "BacktestRequest does not support V5 account replay. Use backtest run with --equity-inputs "
+                "BacktestRequest does not support V5 account replay. Use backtest run with V5 inputs "
                 "or ResearchExecutionSession with EquityEvaluationRequest."
             )
         snapshot = resolve_registered_strategy(repository, strategy.strategy_id, strategy.version)

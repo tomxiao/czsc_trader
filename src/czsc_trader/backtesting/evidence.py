@@ -19,10 +19,12 @@ def build_manifest(
     metrics: dict[str, object],
     audit: dict[str, object],
     application: dict[str, str],
+    engine: str = "TDR_BACKTEST_V4_DAILY_RANGE",
+    execution_facts: dict[str, object] | None = None,
 ) -> dict[str, object]:
     manifest = {
         "schema_version": 8,
-        "engine": "TDR_BACKTEST_V4_DAILY_RANGE",
+        "engine": engine,
         "strategy": {
             "kind": snapshot.identity.kind,
             "reference": snapshot.identity.reference,
@@ -31,7 +33,7 @@ def build_manifest(
             "snapshot_hash": snapshot.content_hash,
         },
         "application": application,
-        "execution_data": {
+        "execution_data": execution_facts if execution_facts is not None else {
             "market_security": data.market_security.value,
             "fingerprint": data.fingerprint,
             "cutoff": data.cutoff.isoformat(),

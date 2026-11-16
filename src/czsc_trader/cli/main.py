@@ -58,17 +58,17 @@ def _backtest_run(args: argparse.Namespace):
     if strategy.strategy_payload.get("runtime", {}).get("kind") == "ACCOUNT_REPLAY":
         from .equity_backtest import EquityBacktestRequest, run_equity_backtest
 
-        if args.equity_inputs is None:
-            raise ValidationError("backtest_request_invalid", "V5 backtest requires --equity-inputs")
-        request = EquityBacktestRequest.from_file(
-            context.root / args.equity_inputs, symbol=args.symbol, asset_type=args.asset,
+        request = EquityBacktestRequest.from_cli(
+            None if args.input_binding is None else context.root / args.input_binding,
+            data_space=args.data_space, fee_rate=args.fee_rate,
+            symbol=args.symbol, asset_type=args.asset,
             start=args.start, end=args.end, initial_cash=args.init_cash,
             lot_size=args.lot_size, price_basis=ExecutionPriceBasis(args.price_basis),
         )
         files, metrics = run_equity_backtest(context, strategy, request)
         return save_backtest_result(context, output_root, strategy.release_id, files, metrics)
-    if args.equity_inputs is not None:
-        raise ValidationError("backtest_request_invalid", "--equity-inputs requires a V5 account replay release")
+    if any(value is not None for value in (args.input_binding, args.data_space, args.fee_rate)):
+        raise ValidationError("backtest_request_invalid", "prepared equity inputs and model fee require a V5 account replay release")
     try:
         request = BacktestRequest(symbol=args.symbol, asset_type=args.asset, start=args.start, end=args.end,
                                   initial_cash=args.init_cash, lot_size=args.lot_size, price_basis=ExecutionPriceBasis(args.price_basis))
@@ -96,10 +96,9 @@ def build_parser() -> argparse.ArgumentParser:
     backtest_run.add_argument("--init-cash", required=True, type=float)
     backtest_run.add_argument("--price-basis", choices=("UNADJUSTED", "HFQ_RESEARCH"), default="HFQ_RESEARCH")
     backtest_run.add_argument("--lot-size", required=True, type=_positive_integer)
-    backtest_run.add_argument("--equity-inputs", type=Path, metavar="JSON", help=(
-        "V5 input binding: data_space, prepared (space_id, preparation_id, manifest_sha256), "
-        "history_start, fee_rate, sources (bars, sessions, trading_facts; each provider and revision), "
-        "step_data_windows (name, start, end)"))
+    backtest_run.add_argument("--input-binding", type=Path, help="prepared DFLS input binding JSON")
+    backtest_run.add_argument("--data-space", type=Path, help="repository-relative DFLS space for --input-binding")
+    backtest_run.add_argument("--fee-rate", type=float, help="model fee when absent from the frozen execution policy")
     _add_output_options(backtest_run)
     backtest_run.set_defaults(
         command_handler=_backtest_run,

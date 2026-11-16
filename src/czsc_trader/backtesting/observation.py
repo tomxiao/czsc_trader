@@ -43,7 +43,7 @@ class UnavailablePlanObservation:
                for value in (self.definition_sha256, self.signal_identity, self.plan_identity)):
             raise ValueError("unavailable plan observation requires SHA-256 identities")
         if (type(self.signal_date) is not date or type(self.valid_session) is not date
-                or self.signal_date >= self.valid_session):
+                or self.signal_date > self.valid_session):
             raise ValueError("unavailable plan observation requires ordered session dates")
         if type(self.action) is not str or not self.action.strip():
             raise ValueError("unavailable plan observation requires an action")

@@ -1,15 +1,17 @@
 """Replay a verified frozen V5 account against an explicit DFLS preparation."""
 
-from dataclasses import asdict, dataclass
-from datetime import date
+from dataclasses import asdict, dataclass, replace
+from datetime import date, timedelta
 from math import isfinite
 from pathlib import Path
 from uuid import UUID
 
-from dataflows import Dataflows, DataSpace, MarketId, PreparedDataRef, ProviderConfig, SourceRef, TimeInterval
+from dataflows import (BarFrequency, Dataflows, DataSpace, EquityDataRequest, EquityProduct, EquityQuery,
+                       MarketId, PreparedDataRef, PreparePolicy, PriceAdjustment, ProviderConfig, SourceRef, TimeInterval)
 from dataflows.asset_store import StoreError
 from dataflows.equity_data import sessions_from_metadata
-from strategy_manager import StrategyVersion
+from dataflows.tushare_equity import tushare_historical_equity_bindings
+from strategy_manager import StrategyRegistry, StrategyVersion
 from strategy_runtime import EquityStrategyCandidate, EquityStrategyDefinition, ExecutionPriceBasis, StepDataWindow
 from strategy_runtime.data_preparation import prepare_observations
 from strategy_runtime.deployment import validate_release_package
@@ -17,12 +19,17 @@ from strategy_runtime.errors import StrategyRuntimeError
 
 from czsc_trader.application.context import RepositoryContext
 from czsc_trader.application.errors import ExecutionError, ValidationError
+from czsc_trader.backtesting.equity_report import equity_report
+from czsc_trader.backtesting.service import _backtest_report_files
+from czsc_trader.backtesting.strategy_source import registered_snapshot
 from czsc_trader.research_tools.equity_evaluation import (
     EquityArtifact, EquitySources, equity_product_requests, fetch_equity_products, _records,
 )
 from czsc_trader.research_tools.equity_replay import (
     _AccountOutputContext, _ReplayAccountRequest, _bytes, _compute_account, _read,
 )
+
+CN_SOURCE = SourceRef("tushare-cn-market", "v1")
 
 
 @dataclass(frozen=True, slots=True)
@@ -35,9 +42,9 @@ class EquityBacktestRequest:
     lot_size: int
     price_basis: ExecutionPriceBasis
     space: DataSpace
-    prepared: PreparedDataRef
+    prepared: PreparedDataRef | None
     history_start: date
-    fee_rate: float
+    fee_rate: float | None
     sources: EquitySources
     step_data_windows: tuple[StepDataWindow, ...]
 
@@ -46,7 +53,8 @@ class EquityBacktestRequest:
             raise ValueError("V5 history_start, start and end must be ordered")
         if not isfinite(self.initial_cash) or self.initial_cash <= 0:
             raise ValueError("initial_cash must be positive and finite")
-        if type(self.fee_rate) not in (int, float) or not isfinite(self.fee_rate) or not 0 <= self.fee_rate < 1:
+        if self.fee_rate is not None and (type(self.fee_rate) not in (int, float)
+                or not isfinite(self.fee_rate) or not 0 <= self.fee_rate < 1):
             raise ValueError("fee_rate must be finite and in [0, 1)")
         if self.price_basis is not ExecutionPriceBasis.HFQ_RESEARCH:
             raise ValueError("V5 historical accounts require HFQ_RESEARCH")
@@ -55,13 +63,22 @@ class EquityBacktestRequest:
             raise ValueError("V5 step windows must have distinct names and end within the backtest")
 
     @classmethod
-    def from_file(cls, path: Path, *, symbol: str, asset_type: str, start: date, end: date,
-                  initial_cash: float, lot_size: int, price_basis: ExecutionPriceBasis) -> "EquityBacktestRequest":
+    def from_cli(cls, path: Path | None, *, data_space: Path | None, fee_rate: float | None, symbol: str,
+                  asset_type: str, start: date, end: date, initial_cash: float, lot_size: int,
+                  price_basis: ExecutionPriceBasis) -> "EquityBacktestRequest":
         try:
+            if (path is None) != (data_space is None):
+                raise ValueError("--input-binding and --data-space must be supplied together")
+            if path is None:
+                return cls(symbol, asset_type, start, end, initial_cash, lot_size, price_basis,
+                           DataSpace(Path("data/backtest")), None, start, fee_rate,
+                           EquitySources(CN_SOURCE, CN_SOURCE, CN_SOURCE), ())
             value = _read(path.read_bytes())
-            fields = {"data_space", "prepared", "history_start", "fee_rate", "sources", "step_data_windows"}
-            if type(value) is not dict or set(value) != fields:
+            fields = {"prepared", "history_start", "sources", "step_data_windows"}
+            if type(value) is not dict or not fields <= value.keys() or value.keys() - fields - {"data_space", "fee_rate"}:
                 raise ValueError("V5 equity inputs require: " + ", ".join(sorted(fields)))
+            if "data_space" in value and Path(value["data_space"]) != data_space:
+                raise ValueError("--data-space differs from the prepared input binding")
             prep = value["prepared"]
             if type(prep) is not dict or set(prep) != {"space_id", "preparation_id", "manifest_sha256"}:
                 raise ValueError("prepared must identify one DFLS space, preparation and manifest hash")
@@ -74,8 +91,9 @@ class EquityBacktestRequest:
                                                 for window in windows):
                 raise ValueError("step_data_windows must be a list of name, start and end objects")
             return cls(symbol, asset_type, start, end, initial_cash, lot_size, price_basis,
-                       DataSpace(Path(value["data_space"])), reference, date.fromisoformat(value["history_start"]),
-                       value["fee_rate"], sources, tuple(StepDataWindow.from_dict(window) for window in windows))
+                       DataSpace(data_space), reference, date.fromisoformat(value["history_start"]),
+                       value.get("fee_rate") if fee_rate is None else fee_rate,
+                       sources, tuple(StepDataWindow.from_dict(window) for window in windows))
         except (OSError, TypeError, ValueError, AttributeError) as exc:
             raise ValidationError("backtest_request_invalid", str(exc)) from exc
 
@@ -101,15 +119,47 @@ def run_equity_backtest(repository: RepositoryContext, strategy: StrategyVersion
         raise ValidationError("backtest_request_invalid", "lot_size must match the frozen V5 quantity step")
     if {window.name for window in request.step_data_windows} - {item.name for item in definition.step_data_inputs}:
         raise ValidationError("backtest_request_invalid", "step windows must reference declared V5 inputs")
+    if request.prepared is None and (instrument.market is not MarketId.CN or any(
+            item.source not in (None, CN_SOURCE) for item in definition.step_data_inputs)
+            or (definition.execution_input is not None and definition.execution_input.source != CN_SOURCE)):
+        raise ValidationError("backtest_request_invalid", "this frozen source requires --input-binding and --data-space")
+    if request.fee_rate is None:
+        settings = definition.execution_policy.settings
+        fee = settings.get("capital", {}).get("fee_rate", settings.get("one_way_cost"))
+        if fee is None:
+            raise ValidationError("backtest_request_invalid", "--fee-rate is required when the frozen policy has no model fee")
+        request = replace(request, fee_rate=fee)
 
     candidate = EquityStrategyCandidate(strategy.strategy_id, package.runtime_candidate_id, definition, package.source_root)
     try:
-        space_root = (repository.root / request.space.path).resolve()
-        if not space_root.is_relative_to(repository.root) or not (space_root / "assets.sqlite3").is_file():
-            raise ValueError("data_space must locate an existing DFLS space inside the repository")
-        flows = Dataflows(base_dir=repository.root, space=request.space, providers=ProviderConfig(bindings={}))
+        policy = ProviderConfig(bindings={})
+        if request.prepared is None:
+            env_file = repository.root / ".env"
+            policy = ProviderConfig(env_file=env_file,
+                equity_bindings=tushare_historical_equity_bindings(source=CN_SOURCE, env_file=env_file))
+            request = replace(request,
+                history_start=request.start - timedelta(days=max(90, definition.warmup_bars * 3)),
+                step_data_windows=tuple(StepDataWindow(item.name,
+                    request.start - timedelta(days=item.max_calendar_days), request.end)
+                    for item in definition.step_data_inputs))
+        else:
+            space_root = (repository.root / request.space.path).resolve()
+            if not space_root.is_relative_to(repository.root) or not (space_root / "assets.sqlite3").is_file():
+                raise ValueError("data_space must locate an existing DFLS space inside the repository")
+        flows = Dataflows(base_dir=repository.root, space=request.space, providers=policy)
         items = equity_product_requests(definition, request.sources, request.history_start, request.start, request.end,
                                         specification=spec)
+        if spec.decision_clock is not BarFrequency.DAILY:
+            items += (("benchmark:bars", EquityDataRequest(instrument, request.sources.bars,
+                EquityQuery(EquityProduct.BARS, request.history_start, request.end, BarFrequency.DAILY,
+                            PriceAdjustment.BACKWARD))),)
+        if request.prepared is None:
+            requests = [query for _, query in items] + [item.request(grant, source_root=package.source_root)
+                for item, grant in zip(definition.step_data_inputs, request.step_data_windows, strict=True)]
+            result = flows.prepare(tuple(dict.fromkeys(requests)), policy=PreparePolicy.REUSE)
+            if not result.ready:
+                raise ValueError("V5 input preparation failed: " + "; ".join(str(item.error) for item in result.items if not item.ready))
+            request = replace(request, prepared=result.reference)
         products, identities = fetch_equity_products(flows, definition, items, request.prepared)
         sessions = [session for session in sessions_from_metadata(identities["sessions"]["metadata"])
                     if request.start <= session.session_date <= request.end]
@@ -126,27 +176,18 @@ def run_equity_backtest(repository: RepositoryContext, strategy: StrategyVersion
         output = _AccountOutputContext(inputs.sha256, _bytes(owner), tuple(_records(products["bars"])),
             None if quotes is None else tuple(_records(quotes)), tuple(products["constraints"].to_dict("records")))
         account, _ = _compute_account(replay, candidate, account_request, reference, quotes, output)
-        metrics = _read(account.content)["run"]["metrics"]
+        snapshot = registered_snapshot(repository, StrategyRegistry(repository.strategy_root), strategy, package.source_root)
+        report = equity_report(snapshot, request, candidate, _read(account.content)["run"], products, identities,
+                               request.prepared)
     except (OSError, RuntimeError, StoreError, StrategyRuntimeError, ValueError) as exc:
         raise ExecutionError("backtest_failed", str(exc), context={"strategy": reference}) from exc
 
-    manifest = {"schema": "tdr-frozen-backtest/v5", "strategy": reference,
-        "release_hash": strategy.release_hash, "package_sha256": package.package_sha256,
-        "instrument": asdict(instrument), "window": asdict(window), "history_start": request.history_start,
-        "requested_dates": {"start": request.start, "end": request.end},
-        "execution_spec": definition.to_dict()["execution_spec"], "price_basis": "HFQ",
-        "quantity_basis": "SIMULATED_INTEGER_UNITS", "initial_cash": request.initial_cash,
-        "fee_rate": request.fee_rate, "sources": asdict(request.sources), "data_space": request.space.path.as_posix(),
+    report.manifest.update({"release_hash": strategy.release_hash, "package_sha256": package.package_sha256,
+        "execution_window": {"start": window.start.isoformat(), "end": window.end.isoformat()},
+        "sources": asdict(request.sources), "data_space": request.space.path.as_posix(),
         "prepared": {key: str(value) for key, value in asdict(request.prepared).items()},
         "step_data_windows": [item.to_dict() for item in request.step_data_windows],
-        "artifacts": {"inputs.json": inputs.reference(), "account.json": account.reference()}}
-    report = (
-        f"# {reference} 回测\n\n{instrument.symbol} · {request.start} 至 {request.end}\n\n"
-        "| 指标 | 结果 |\n| --- | --- |\n"
-        f"| 累计收益 | {metrics['total_return']:.2%} |\n"
-        f"| 日末最大回撤 | {metrics['daily_max_drawdown']:.2%} |\n"
-        f"| 交易日 | {metrics['sessions']} |\n| 闭合交易 | {metrics['closed_cycles']} |\n\n"
-        "[完整指标](metrics.json) · [账户与 DFLS 取数凭证](account.json) · [输入身份](manifest.json)\n"
-    )
-    return {"manifest.json": _bytes(manifest), "inputs.json": inputs.content, "account.json": account.content,
-            "metrics.json": _bytes(metrics), "report.md": report.encode("utf-8")}, metrics
+        "artifacts": {"inputs.json": inputs.reference(), "account.json": account.reference()}})
+    files = _backtest_report_files(report, content_addressed_links=False)
+    files.update({"inputs.json": inputs.content, "account.json": account.content})
+    return files, report.metrics

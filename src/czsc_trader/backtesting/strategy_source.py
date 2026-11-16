@@ -29,10 +29,16 @@ def resolve_registered_strategy(
 ) -> StrategySnapshot:
     registry = StrategyRegistry(context.strategy_root)
     release = registry.get_version(strategy_id, version)
+    deployment = load_strategy_deployment(context.strategy_root, release.release_id)
+    return registered_snapshot(context, registry, release, deployment.source_root)
+
+
+def registered_snapshot(context, registry, release, source_root) -> StrategySnapshot:
+    """Describe an authenticated frozen package for reporting."""
     source_hash = release.release_hash or canonical_sha256(release.release_payload())
     research_evidence = [
         item
-        for item in registry.evidence(strategy_id, version)
+        for item in registry.evidence(release.strategy_id, release.version)
         if item.phase.value == "RESEARCH_BACKTEST" and item.release_hash == source_hash
     ]
     research_window = (
@@ -44,7 +50,6 @@ def resolve_registered_strategy(
         else None
     )
     strategy_payload = dict(release.strategy_payload)
-    deployment = load_strategy_deployment(context.strategy_root, release.release_id)
     return StrategySnapshot(
         identity=StrategyIdentity(
             "REGISTERED", release.release_id, str(context.strategy_root)
@@ -54,7 +59,7 @@ def resolve_registered_strategy(
         strategy_payload=strategy_payload,
         research_start=None if research_window is None else research_window[0],
         research_end=None if research_window is None else research_window[1],
-        runtime_root=deployment.source_root,
+        runtime_root=source_root,
     )
 
 

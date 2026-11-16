@@ -272,6 +272,7 @@ def audit_account_v4(
     cycle_cost = cycle_income = 0.0
     cycle_entry = None
     budget, spent = None, Decimal(0)
+    previous_evaluated = None
     expected_trades = []
     values, daily = [], {}
     mark, mark_at = None, None
@@ -530,9 +531,37 @@ def audit_account_v4(
             _same(decision["reference_price"], reference, "v4 decision reference")
         if decision.get("target") != evidence.get("target"):
             raise ValueError("v4 decision target summary differs from plan evidence")
+        target = evidence.get("target")
+        execution_policy = evidence.get("execution_policy", {}).get("settings", {})
+        if execution_policy.get("execution_trigger") in {
+            "daily_target_change_or_zero_fill", "interval_target_change_or_zero_fill",
+        }:
+            if expected_signal == "SUPPRESSED_UNOBSERVED_BAR":
+                trigger = None
+            elif previous_evaluated is None:
+                trigger = "INITIAL_TARGET"
+            elif target != previous_evaluated[1]:
+                trigger = "TARGET_CHANGED"
+            elif previous_evaluated[0] == revision - 1 and previous_evaluated[2] and not previous_evaluated[3]:
+                trigger = "PREVIOUS_ZERO_FILL"
+            else:
+                trigger = "UNCHANGED_TARGET"
+            if evidence.get("execution_trigger") != trigger or (trigger == "UNCHANGED_TARGET" and sequence):
+                raise ValueError("v4 daily execution differs from the confirmed previous outcome")
         mode = plan["capital_mode"]
-        if mode not in {"target_equity_fraction", "full_available_cash", "signal_cash_fraction"}:
+        if mode not in {"target_equity_fraction", "full_available_cash", "signal_cash_fraction", "entry_cash_fraction"}:
             raise ValueError("v4 unsupported capital mode")
+        entry_cash = None
+        if mode == "entry_cash_fraction":
+            if execution_policy.get("capital_mode") != mode:
+                raise ValueError("v4 entry cash allocation lacks its declared policy")
+            if quantity:
+                entry_cash = None if previous_evaluated is None else previous_evaluated[4]
+            elif target and expected_signal != "SUPPRESSED_UNOBSERVED_BAR":
+                entry_cash = Decimal(str(cash))
+            reported = evidence.get("entry_cash")
+            if (None if reported is None else Decimal(reported)) != entry_cash:
+                raise ValueError("v4 entry cash differs from the original allocation")
         after_budget = _budget(plan["cycle_after"])
         if mode == "signal_cash_fraction":
             if _budget(plan["cycle_before"]) != budget:
@@ -566,7 +595,6 @@ def audit_account_v4(
         elif plan["cycle_before"] is not None or after_budget is not None:
             raise ValueError("v4 non-cycle mode carries a cycle budget")
         if sizing == "TARGET_FRACTION":
-            target = evidence.get("target")
             if (
                 type(target) not in (int, float)
                 or not math.isfinite(target)
@@ -600,6 +628,18 @@ def audit_account_v4(
                 if budget is None:
                     raise ValueError("v4 automatic cycle sizing lacks budget")
                 desired = budget["target_quantity"] if target else 0
+            if mode == "entry_cash_fraction" and target:
+                desired = quantity
+                prior_target = 0 if previous_evaluated is None else previous_evaluated[1]
+                if not quantity or target >= prior_target:
+                    if entry_cash is None:
+                        raise ValueError("v4 staged target requires its entry cash baseline")
+                    price = (Decimal(str(reference)) * (1 + Decimal(str(specification["buy_premium"])))
+                             / Decimal(str(tick))).to_integral_value(rounding=ROUND_FLOOR) * Decimal(str(tick))
+                    used = Decimal(str(cycle_cost)) if quantity else Decimal(0)
+                    remaining = max(Decimal(0), entry_cash * Decimal(str(target)) - used)
+                    if price > 0:
+                        desired += int(remaining / (price * (1 + Decimal(str(fee_rate)))) / step) * step
             expected = []
             if desired > quantity:
                 limit = float(
@@ -820,6 +860,9 @@ def audit_account_v4(
                 expected_trades.append((cycle, cycle_entry, end, cycle_cost, cycle_income))
                 cycle, budget = None, None
             consumed[volume_key] = consumed.get(volume_key, 0) + instruction["quantity"]
+        if expected_signal == "EVALUATED":
+            any_fill = bool(set(statuses.values()) & {"FILLED_ALL", "PARTIAL_FILLED"})
+            previous_evaluated = (revision, target, bool(sequence), any_fill, entry_cash)
         payments(end, revision)
         stale = status != "OBSERVED"
         if not stale:

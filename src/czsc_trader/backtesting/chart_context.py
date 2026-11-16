@@ -155,7 +155,7 @@ class BacktestChartContext:
             if type(signal.signal_date) is not date or type(signal.valid_session) is not date:
                 raise TypeError("chart signals require session dates")
             if (not signal.decision_id or not signal.action or signal.valid_session not in sessions
-                    or signal.signal_date >= signal.valid_session
+                    or signal.signal_date > signal.valid_session
                     or not 0 <= _number(signal.target_position, "target_position") <= 1):
                 raise ValueError("chart signal identity, timing or target is invalid")
             if type(signal.series) is not tuple or not all(isinstance(x, ObservedSeries) for x in signal.series):
@@ -238,22 +238,23 @@ def build_backtest_chart_context(
     prices = prices.loc[pd.Timestamp(start):pd.Timestamp(end)]
     bars = tuple(ChartBar(_session(day), *(_number(row[key], key) for key in ("open", "high", "low", "close")))
                  for day, row in prices.iterrows())
-    observations = {(x.signal_date, x.valid_session): x for x in result.observations}
+    observations = {'DEC-' + x.plan_identity[:20].upper(): x for x in result.observations}
     if len(observations) != len(result.observations):
-        raise ValueError("duplicate recorded observation sessions")
+        raise ValueError("duplicate recorded observation plans")
     signal_rows = []
     for row in result.decisions.to_dict('records'):
-        key = (_session(row['signal_date']), _session(row['valid_session']))
-        if key not in observations:
+        decision_id = str(row['decision_id'])
+        if decision_id not in observations:
             raise ValueError('chart decision has no recorded observation')
-        observation = observations[key]
+        observation = observations[decision_id]
+        key = (_session(row['signal_date']), _session(row['valid_session']))
         expected = (result.identity.reference, signal_replay.snapshot.source_hash,
-                    execution_data.symbol, str(row['decision_id']), row['target_position'])
+                    execution_data.symbol, decision_id, row['target_position'], *key)
         actual = (observation.strategy.reference_id, observation.strategy.release_hash,
                   observation.strategy.symbol, 'DEC-' + observation.plan_identity[:20].upper(),
-                  observation.target_position)
+                  observation.target_position, observation.signal_date, observation.valid_session)
         if actual != expected:
-            fields = ('reference', 'release_hash', 'symbol', 'decision_id', 'target_position')
+            fields = ('reference', 'release_hash', 'symbol', 'decision_id', 'target_position', 'signal_date', 'valid_session')
             raise ValueError('chart observation differs from executed decision: ' +
                              ', '.join(k for k,a,b in zip(fields,actual,expected) if a != b))
         signal_rows.append(ChartSignal(str(row['decision_id']), *key, observation.target_position,

@@ -7,7 +7,7 @@ import pandas as pd
 
 from . import tushare_etf, tushare_stock
 from .bar_utils import adjustment_factor_sha256, apply_hfq_adjustment, with_scheduled_hfq_availability
-from .contract import EquityDataRequest, ProviderBinding
+from .contract import DataRequest, Dataset, EquityDataRequest, ProviderBinding
 from .equity_contracts import (AssetClass, BarFrequency, EquityProduct, MarketId,
                                PriceAdjustment, ProviderKey, SourceRef, TimeInterval, TradingSession)
 from .equity_data import equity_metadata, validate_equity_frame
@@ -51,6 +51,71 @@ def tushare_equity_bindings(*, source: SourceRef,
     host must separately bind dynamic trading facts.
     """
     return _bindings(source=source, env_file=env_file, raw=True)
+
+
+def tushare_historical_equity_bindings(*, source: SourceRef, env_file: Path):
+    """Expose dated CN limits and trading status in the same HFQ basis as bars."""
+    from .security_price_limits import fetch_security_price_limits
+    from .trading_status import fetch_trading_status
+
+    providers = tushare_equity_bindings(source=source, env_file=env_file)
+    bars = providers[ProviderKey(EquityProduct.BARS, MarketId.CN, source)].fetch
+    calendar = providers[ProviderKey(EquityProduct.SESSIONS, MarketId.CN, source)].fetch
+
+    def trading_facts(request):
+        from dataclasses import replace
+        from .equity_data import session_record, sessions_from_metadata
+
+        p = request.parameters
+        q = p.query
+        if q.product is not EquityProduct.TRADING_FACTS or q.adjustment is not PriceAdjustment.BACKWARD:
+            raise DataContractError('historical trading facts require HFQ')
+        symbol, first, last = p.instrument.symbol, q.start.isoformat(), q.end.isoformat()
+        limits, limit_evidence = fetch_security_price_limits(
+            DataRequest(Dataset.SECURITY_PRICE_LIMITS, symbol, first, last, None), env_file=env_file)
+        if p.instrument.asset_class is AssetClass.STOCK:
+            status, _ = fetch_trading_status(DataRequest(Dataset.SECURITY_TRADING_STATUS, symbol, first, last, None),
+                                             env_file=env_file)
+            suspended = set(status.loc[status.Status.eq('SUSPENDED'), 'Date'])
+        else:
+            suspended = set()
+        daily = replace(q, product=EquityProduct.BARS, frequency=BarFrequency.DAILY)
+        hfq, hfq_evidence = bars(EquityDataRequest(p.instrument, p.source, daily))
+        raw, raw_evidence = bars(EquityDataRequest(p.instrument, p.source, replace(daily, adjustment=PriceAdjustment.NONE)))
+        if not raw.Date.equals(hfq.Date):
+            raise DataContractError('RAW/HFQ observations differ in session dates')
+        factors = dict(zip(hfq.Date.dt.tz_convert(p.instrument.timezone).dt.strftime('%Y-%m-%d'),
+                           hfq.Close / raw.Close, strict=True))
+        bounds = limits.set_index('Date')
+        calendar_query = replace(q, product=EquityProduct.SESSIONS, adjustment=PriceAdjustment.NONE,
+                                 end=q.end + timedelta(days=14))
+        _, calendar_evidence = calendar(EquityDataRequest(p.instrument, p.source, calendar_query))
+        all_sessions = sessions_from_metadata(calendar_evidence)
+        sessions = tuple(session for session in all_sessions if session.session_date <= q.end)
+        rows = []
+        for session in sessions:
+            day = session.session_date.isoformat()
+            tradable = day not in suspended
+            if tradable and (day not in bounds.index or day not in factors or not factors[day] > 0):
+                raise IncompleteDataError(f'no authenticated limits and adjustment for {day}')
+            for interval in session.bars(q.frequency):
+                rows.append({'Date': interval.start, 'AvailableDate': session.segments[0].start,
+                    'Tradable': tradable, 'PriceLimitLower': bounds.at[day, 'DownLimit'] * factors[day] if tradable else None,
+                    'PriceLimitUpper': bounds.at[day, 'UpLimit'] * factors[day] if tradable else None})
+        frame = pd.DataFrame(rows)
+        metadata = equity_metadata(request, sessions, availability_basis='VENDOR_PREOPEN_SCHEDULE_ASSUMPTION')
+        metadata.update(limit_source=limit_evidence['vendor_interface'],
+                        raw_source=raw_evidence['price_basis_id'], hfq_source=hfq_evidence['price_basis_id'],
+                        publication_time_verified=False)
+        following = next((session for session in all_sessions if session.session_date > q.end), None)
+        if following is not None:
+            metadata['following_session'] = session_record(following)
+        validate_equity_frame(frame, request, metadata)
+        return frame, metadata
+
+    providers[ProviderKey(EquityProduct.TRADING_FACTS, MarketId.CN, source)] = ProviderBinding(
+        source.provider, source.revision, trading_facts)
+    return providers
 
 
 def _bindings(*, source, env_file, raw):

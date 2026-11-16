@@ -319,7 +319,7 @@ class StrategyObservation:
         _require(
             type(self.signal_date) is date
             and type(self.valid_session) is date
-            and self.signal_date < self.valid_session,
+            and self.signal_date <= self.valid_session,
             "invalid observation sessions",
         )
         _text(self.action)

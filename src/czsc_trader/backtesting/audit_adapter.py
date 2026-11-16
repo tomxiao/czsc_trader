@@ -181,24 +181,11 @@ def build_benchmark_evidence(
     *,
     lot_size: int,
 ) -> dict[str, BenchmarkEvidence]:
-    from .benchmarks import valuation_prices
+    from .benchmarks import _fee_rate, valuation_prices
 
     evaluation = valuation_prices(data, signals.evaluation_start, signals.evaluation_end).rename(columns={"dt": "date"})
     sessions = tuple(pd.to_datetime(evaluation["date"]).dt.date.astype(str))
-    support = signals.support_data or {}
-    policy = support.get("execution_policy")
-    if support.get("mode") == "srt_input_contract":
-        if not isinstance(policy, Mapping) or not isinstance(policy.get("settings"), Mapping):
-            raise ValueError("SRT benchmark evidence has no execution settings")
-        settings = policy["settings"]
-        if policy.get("policy_type") == "FROZEN_RULE":
-            fee_rate = float(settings["capital"]["fee_rate"])
-        elif policy.get("policy_type") == "INTRADAY_OVERLAY":
-            fee_rate = float(settings["one_way_cost"])
-        else:
-            raise ValueError("SRT benchmark evidence has unsupported execution policy")
-    else:
-        raise ValueError("benchmark audit requires SRT execution evidence")
+    fee_rate = _fee_rate(signals)
     empty_trades: tuple[dict[str, Any], ...] = ()
     prices = _records(evaluation, ("date", "valuation_source_date"))
     return {
