@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 import numpy as np
 import pandas as pd
 
+from strategy_runtime import DecisionCalculationSnapshot
 from strategy_runtime import (
     AccountDecision, AccountStepResult, SignalBasisSnapshot,
     SignalExplanationSnapshot, StateRecord, StepDataWindow,
@@ -101,9 +102,25 @@ def decide(values, prior, params):
         else:
             summary += f" {direction} {abs(center_change):.4%}，{distance}。"
     target = params["allocation"] if active else 0.0
+    if values is None:
+        expression = "价格中心未完成预热 → 目标投入 0%"
+        inputs = (("价格中心已可计算", False),)
+    elif prior["active"]:
+        expression = ("收盘价 ≥ 修复目标，或当前中心 ≤ 失效线，则目标清仓；"
+                      "否则延续信号日可用现金的配置比例")
+        inputs = (("后复权收盘价", f"{exp(p):.6f}"), ("修复目标", f"{exp(repair_target):.6f}"),
+                  ("当前中心", f"{exp(m):.6f}"), ("失效线", f"{exp(invalidation_origin):.6f}"),
+                  ("配置比例", f"{params['allocation']:.2%}"))
+    else:
+        expression = ("中心上移且收盘价低于当前中心，且回升空间（当前中心 ÷ 收盘价 − 1）≥ 入场门槛，"
+                      "则按信号日可用现金配置；否则目标空仓")
+        inputs = (("中心较回看日变化", f"{center_change:.4%}"), ("后复权收盘价", f"{exp(p):.6f}"),
+                  ("当前中心", f"{exp(m):.6f}"), ("回升空间", f"{space:.4%}"),
+                  ("入场门槛", f"{minimum:.4%}"), ("配置比例", f"{params['allocation']:.2%}"))
+    calculation = DecisionCalculationSnapshot(expression, inputs, f"{target:.2%}", summary)
     basis = (SignalBasisSnapshot("summary", summary), SignalBasisSnapshot("conditions", conditions))
     explanation = SignalExplanationSnapshot("target", "long" if active else "flat", judgment, basis,
-        "下一交易日复核价格中心、修复目标和失效条件。", f"{summary} {conditions}")
+        "下一交易日复核价格中心、修复目标和失效条件。", f"{summary} {conditions}", calculation=calculation)
     return AccountStepResult(AccountDecision(target, explanation), StateRecord((
         ("active", active), ("repair_target", repair_target), ("invalidation_origin", invalidation_origin),
     )), StateRecord())

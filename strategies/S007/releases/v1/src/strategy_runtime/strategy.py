@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 import numpy as np
 import pandas as pd
 
+from strategy_runtime import DecisionCalculationSnapshot
 from strategy_runtime import AccountDecision, AccountStepResult, SignalBasisSnapshot, SignalExplanationSnapshot, StateRecord, StepDataWindow
 from .signals import _FROZEN_HISTORY_START, _FROZEN_HISTORY_END, calculate_scores, materialize_s007_features
 
@@ -91,9 +92,16 @@ def explain(target, base, confirmation, action, score):
     else:
         check = f'主评分 {base_text} / 入场线 {entry:.6g}。'
     basis = (SignalBasisSnapshot('summary', f'{summary} {check}'), SignalBasisSnapshot('conditions', conditions))
+    if target and action == 'HOLD_POSITION' or action == 'EXIT':
+        expression = '主评分 ≤ 退出线则目标清仓；退出条件未触发则延续配置'
+        inputs = (('主评分', base_text), ('退出线', exit_))
+    else:
+        expression = '主评分 ≥ 入场线且确认评分 ≥ 确认线则目标配置；条件未满足则目标空仓'
+        inputs = (('主评分', base_text), ('入场线', entry), ('确认评分', confirmation_text), ('确认线', confirm))
+    calculation = DecisionCalculationSnapshot(expression, inputs, f'{target:.0%}', f'{summary} {check}')
     return AccountDecision(float(target), SignalExplanationSnapshot(
         'target', 'long' if target else 'flat', judgment, basis,
-        '下一交易日收盘后复核主评分与确认评分。', f'{summary} {conditions}'))
+        '下一交易日收盘后复核主评分与确认评分。', f'{summary} {conditions}', calculation=calculation))
 
 
 def step(ctx, state):

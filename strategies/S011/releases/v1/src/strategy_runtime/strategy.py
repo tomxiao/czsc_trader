@@ -5,6 +5,7 @@ from math import isfinite
 from zoneinfo import ZoneInfo
 
 import pandas as pd
+from strategy_runtime import DecisionCalculationSnapshot
 from strategy_runtime import (AccountDecision, AccountStepResult, SignalBasisSnapshot,
                               SignalExplanationSnapshot, StateRecord, StepDataWindow)
 
@@ -40,8 +41,17 @@ def explain(target, reason, score, age, params):
         details += f'本轮信号已持续 {age} 个交易日，有效期上限 {params["max_days"]} 个交易日。'
     watch = '下一交易日复核压力评分' + ('和信号有效期。' if target else '与入场线。')
     basis = (SignalBasisSnapshot('summary', summary), SignalBasisSnapshot('conditions', details))
+    if reason in ('PRESSURE_ENTRY', 'CASH'):
+        expression = '压力评分 ≥ 入场线则目标配置，且本轮信号计龄清零；否则目标空仓'
+        inputs = (('压力评分', f'{score:.6g}'), ('入场线', params['entry']))
+    else:
+        expression = ('本轮信号计龄加 1；压力评分 ≤ 退出线，或信号计龄 ≥ 有效期，'
+                      '则目标清仓；否则延续配置')
+        inputs = (('压力评分', f'{score:.6g}'), ('退出线', params['exit']),
+                  ('本轮信号计龄', age), ('有效期（交易日）', params['max_days']))
+    calculation = DecisionCalculationSnapshot(expression, inputs, f'{target:.0%}', summary)
     return AccountDecision(target, SignalExplanationSnapshot('target', 'long' if target else 'flat',
-        judgment, basis, watch, f'{summary} {details}'))
+        judgment, basis, watch, f'{summary} {details}', calculation=calculation))
 
 
 

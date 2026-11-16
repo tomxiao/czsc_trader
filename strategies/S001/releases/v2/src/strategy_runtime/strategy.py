@@ -9,6 +9,7 @@ from zoneinfo import ZoneInfo
 import czsc
 import pandas as pd
 
+from strategy_runtime import DecisionCalculationSnapshot
 from strategy_runtime import AccountDecision, AccountStepResult, SignalBasisSnapshot, SignalExplanationSnapshot, StateRecord, StepDataWindow
 from .signal_math import (_DAILY_CONFIG, _FALLBACK_WEIGHTS, _INTRADAY_CONFIG,
     _WEEKLY_CONFIG, _config_label, _ohlcv, _regimes, _score, _signal_score)
@@ -90,7 +91,8 @@ def signal_step(prior, score, rule):
     return dict(target=active, enter_count=enter, exit_count=exits, holding_days=held)
 
 
-def explain(target, previous, score, regime, rule):
+def explain(target, prior, score, regime, rule):
+    previous = prior["target"]
     entry, exit_ = float(rule['entry_threshold']), float(rule['exit_threshold'])
     regime = {'trend': '趋势', 'range': '震荡', 'warmup': '预热'}[regime]
     if target and not previous:
@@ -112,9 +114,21 @@ def explain(target, previous, score, regime, rule):
     role = '退出线' if previous else '入场线'
     short = f'{summary} {regime}档评分 {score:.6g}，{role} {threshold:.6g}。'
     basis = (SignalBasisSnapshot('summary', short), SignalBasisSnapshot('conditions', details))
+    if previous:
+        expression = ('已持有日数 ≥ 最短持有日且评分 ≤ 退出线时，退出确认加 1，否则清零；'
+                      '退出确认 ≥ 所需日数则目标清仓，否则延续配置')
+        inputs = (('档位', regime), ('综合评分', f'{score:.6g}'), ('退出线', exit_),
+                  ('已持有日数', prior['holding_days']), ('最短持有日', rule['min_hold_days']),
+                  ('上轮退出确认', prior['exit_count']), ('所需退出确认日数', rule['exit_confirm_days']))
+    else:
+        expression = ('评分 ≥ 入场线时，入场确认加 1，否则清零；'
+                      '入场确认 ≥ 所需日数则目标配置，否则目标空仓')
+        inputs = (('档位', regime), ('综合评分', f'{score:.6g}'), ('入场线', entry),
+                  ('上轮入场确认', prior['enter_count']), ('所需入场确认日数', rule['confirm_days']))
+    calculation = DecisionCalculationSnapshot(expression, inputs, f'{target:.0%}', short)
     return AccountDecision(float(target), SignalExplanationSnapshot(
         'target', 'long' if target else 'flat', judgment, basis,
-        '下一交易日收盘后复核综合评分及确认条件。', f'{summary} {details}'))
+        '下一交易日收盘后复核综合评分及确认条件。', f'{summary} {details}', calculation=calculation))
 
 
 def step(ctx, state):
@@ -167,5 +181,5 @@ def step(ctx, state):
     following.update(signal_step(prior,score,rule))
     following['recent_closes'] = json.dumps(closes[-rule['er_lookback']-1:], separators=(',', ':'))
     following['last_signal_date'] = day.isoformat()
-    return AccountStepResult(explain(following['target'],prior['target'],score,regime,rule),
+    return AccountStepResult(explain(following['target'],prior,score,regime,rule),
                              StateRecord(tuple(following.items())),StateRecord())
