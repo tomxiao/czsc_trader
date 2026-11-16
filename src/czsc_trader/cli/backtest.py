@@ -56,6 +56,15 @@ def run_independent_backtest(
     reference = evaluation.snapshot.identity.reference
     try:
         files = _backtest_report_files(evaluation, content_addressed_links=False)
+    except (OSError, ValueError, StrategyManagerError) as exc:
+        raise ExecutionError("backtest_output_failed", str(exc),
+                             context={"strategy": reference, "output_root": str(output_root)}) from exc
+    return save_backtest_result(repository, output_root, reference, files, evaluation.metrics)
+
+
+def save_backtest_result(repository: RepositoryContext, output_root: Path, reference: str,
+                         files: dict[str, bytes], metrics: dict[str, object]) -> CommandResult:
+    try:
         destination = _save_reports(repository, output_root, reference, files)
     except (OSError, ValueError, StrategyManagerError) as exc:
         raise ExecutionError("backtest_output_failed", str(exc),
@@ -65,5 +74,5 @@ def run_independent_backtest(
         return path.relative_to(repository.root).as_posix() if path.is_relative_to(repository.root) else str(path)
 
     return CommandResult("PASS", "backtest.run",
-                         {"strategy": reference, "output_dir": location(destination), "metrics": evaluation.metrics},
+                         {"strategy": reference, "output_dir": location(destination), "metrics": metrics},
                          artifacts={name: location(destination / name) for name in files})

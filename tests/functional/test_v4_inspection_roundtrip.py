@@ -188,7 +188,7 @@ def freeze_native_inspection(repository, inspection, source, *, version='v1'):
 
 
 @pytest.mark.parametrize('market', [MarketId.CN, MarketId.US])
-def test_native_dual_market_inspection_freezes_exact_v5_package(tmp_path, market):
+def test_native_dual_market_inspection_freezes_exact_v5_package(tmp_path, market, monkeypatch, capsys):
     context, request, products, replay = native_fixture(tmp_path, market, initial_state=True)
     repository = context.repository
     inspection, source = native_inspection_request(tmp_path, context, request, products, replay)
@@ -220,6 +220,8 @@ def test_native_dual_market_inspection_freezes_exact_v5_package(tmp_path, market
     assert json.loads((package.source_root.parent.parent/'runtime_binding.json').read_text())['observation_sha256']
     if market is MarketId.US:
         assert_frozen_us_delivery(context, request, report, operation, receipt, inspection.selection)
+    from test_independent_backtest import assert_v5_cli_backtest
+    assert_v5_cli_backtest(context, request, package, monkeypatch, capsys)
 
 
 @pytest.mark.parametrize('boundary', ['repository', 'data_dir', 'store'],

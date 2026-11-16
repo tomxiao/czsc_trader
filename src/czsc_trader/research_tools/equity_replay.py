@@ -25,7 +25,7 @@ from strategy_evaluator.equity_metrics import summarize_equity_ledger
 
 from .equity_evaluation import (EQUITY_EVIDENCE_SCHEMAS, EQUITY_EVIDENCE_VERSIONS,
     EquityArtifact, EquityEvaluationRequest, EquityEvaluationResult,
-    _audit_inputs, _data_quality, _fetch_products, _json_value, _records, _records_json)
+    _audit_inputs, _data_quality, fetch_equity_products, _json_value, _records, _records_json)
 from .execution import ExecutionPhase, ResearchExecutionSession
 from .account_preparation import PreparedAccountEvaluation, BenchmarkRunIdentity
 from .equity_assessment import AssessmentProjection
@@ -168,7 +168,8 @@ def prepare_equity(access, request, *, execution):
                 if not data.ready:
                     raise ValueError("equity preparation failed: " + "; ".join(str(x.error) for x in data.items if not x.ready))
                 request = replace(request, prepared=data.reference)
-            products, identities = _fetch_products(access, request)
+            products, identities = fetch_equity_products(
+                access.data, definition, request.request_items(spec), request.prepared)
             artifact = EquityArtifact("equity_input", _bytes({"schema": "equity-input/v2",
                 "products": {key: _records(frame) for key, frame in products.items()}, "data": identities}))
             snapshot = EquityInputSnapshot(artifact)

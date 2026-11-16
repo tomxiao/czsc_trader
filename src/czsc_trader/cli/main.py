@@ -45,14 +45,9 @@ def _backtest_run(args: argparse.Namespace):
     from strategy_runtime import ExecutionPriceBasis
     from czsc_trader.application import BacktestRequest
     from czsc_trader.application.errors import ValidationError
-    from .backtest import run_independent_backtest
+    from .backtest import run_independent_backtest, save_backtest_result
 
     context = _context(args)
-    try:
-        request = BacktestRequest(symbol=args.symbol, asset_type=args.asset, start=args.start, end=args.end,
-                                  initial_cash=args.init_cash, lot_size=args.lot_size, price_basis=ExecutionPriceBasis(args.price_basis))
-    except (TypeError, ValueError) as exc:
-        raise ValidationError("backtest_request_invalid", str(exc)) from exc
     try:
         strategy = StrategyRegistry(context.strategy_root).get_version(args.strategy, args.strategy_version)
     except (StrategyManagerError, ValueError, OSError) as exc:
@@ -60,6 +55,25 @@ def _backtest_run(args: argparse.Namespace):
     output_root = Path(args.outputs_root)
     if not output_root.is_absolute():
         output_root = context.root / output_root
+    if strategy.strategy_payload.get("runtime", {}).get("kind") == "ACCOUNT_REPLAY":
+        from .equity_backtest import EquityBacktestRequest, run_equity_backtest
+
+        if args.equity_inputs is None:
+            raise ValidationError("backtest_request_invalid", "V5 backtest requires --equity-inputs")
+        request = EquityBacktestRequest.from_file(
+            context.root / args.equity_inputs, symbol=args.symbol, asset_type=args.asset,
+            start=args.start, end=args.end, initial_cash=args.init_cash,
+            lot_size=args.lot_size, price_basis=ExecutionPriceBasis(args.price_basis),
+        )
+        files, metrics = run_equity_backtest(context, strategy, request)
+        return save_backtest_result(context, output_root, strategy.release_id, files, metrics)
+    if args.equity_inputs is not None:
+        raise ValidationError("backtest_request_invalid", "--equity-inputs requires a V5 account replay release")
+    try:
+        request = BacktestRequest(symbol=args.symbol, asset_type=args.asset, start=args.start, end=args.end,
+                                  initial_cash=args.init_cash, lot_size=args.lot_size, price_basis=ExecutionPriceBasis(args.price_basis))
+    except (TypeError, ValueError) as exc:
+        raise ValidationError("backtest_request_invalid", str(exc)) from exc
     return run_independent_backtest(context, strategy, request, output_root)
 
 
@@ -82,6 +96,10 @@ def build_parser() -> argparse.ArgumentParser:
     backtest_run.add_argument("--init-cash", required=True, type=float)
     backtest_run.add_argument("--price-basis", choices=("UNADJUSTED", "HFQ_RESEARCH"), default="HFQ_RESEARCH")
     backtest_run.add_argument("--lot-size", required=True, type=_positive_integer)
+    backtest_run.add_argument("--equity-inputs", type=Path, metavar="JSON", help=(
+        "V5 input binding: data_space, prepared (space_id, preparation_id, manifest_sha256), "
+        "history_start, fee_rate, sources (bars, sessions, trading_facts; each provider and revision), "
+        "step_data_windows (name, start, end)"))
     _add_output_options(backtest_run)
     backtest_run.set_defaults(
         command_handler=_backtest_run,

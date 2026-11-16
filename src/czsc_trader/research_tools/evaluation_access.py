@@ -80,7 +80,7 @@ class EvaluationAccess:
     def prepare(self, request: EquityEvaluationRequest, *,
                 execution: ResearchExecutionSession | None = None) -> PreparedAccountEvaluation:
         if type(request) is not EquityEvaluationRequest:
-            raise TypeError("account preparation requires EquityEvaluationRequest contract V4")
+            raise TypeError("account preparation requires a V5 EquityEvaluationRequest")
         from .equity_replay import prepare_equity
         return prepare_equity(self, request, execution=execution)
 

@@ -17,7 +17,8 @@ from dataflows import (EquityDataRequest, EquityProduct, EquityQuery, PreparedDa
 from strategy_runtime.equity import equity_hash
 from strategy_runtime.runtime import StrategyRuntime
 from strategy_runtime.step_data import STEP_DATA_CONTRACT, StepDataWindow
-from strategy_runtime.equity_definition import EquityStrategyCandidate, EquityInputBinding
+from strategy_runtime.equity_definition import EquityStrategyCandidate, EquityInputBinding, EquityStrategyDefinition
+from strategy_runtime.equity import ResearchExecutionSpec
 from execution_channels.historical.portfolio import PortfolioHistoricalExecutor
 from execution_channels.historical.fills import resolve_fill
 from strategy_evaluator.equity_metrics import summarize_equity_ledger
@@ -39,6 +40,21 @@ class EquitySources:
     def __post_init__(self):
         if any(type(value) is not SourceRef for value in (self.bars, self.sessions, self.trading_facts)):
             raise TypeError("each equity product requires an explicit versioned source")
+
+
+def equity_product_requests(definition: EquityStrategyDefinition, sources: EquitySources,
+                            history_start: date, start: date, end: date, *,
+                            specification: ResearchExecutionSpec) -> tuple[tuple[str, EquityDataRequest], ...]:
+    primary = tuple((product.name.lower(), EquityDataRequest(
+        definition.instrument, getattr(sources, product.name.lower()),
+        EquityQuery(product, history_start, end, specification.decision_clock,
+                    PriceAdjustment.NONE if product is EquityProduct.SESSIONS else PriceAdjustment.BACKWARD),
+    )) for product in EquityProduct)
+    if definition.execution_input is None:
+        return primary
+    execution = definition.execution_input
+    return primary + tuple((execution.data_key(query.parameters.query.product), query)
+                           for query in execution.requests(start, end))
 
 
 @dataclass(frozen=True, slots=True)
@@ -120,15 +136,9 @@ class EquityEvaluationRequest:
     def request_items(self, specification):
         """Host products for valuation, trading sessions and execution."""
         end = pd.Timestamp(self.window.end).tz_convert(self.candidate.instrument.timezone).date()
-        primary = tuple((product.name.lower(), EquityDataRequest(
-            self.candidate.instrument, getattr(self.sources, product.name.lower()),
-            EquityQuery(product, self.history_start, end, specification.decision_clock, PriceAdjustment.NONE if product is EquityProduct.SESSIONS else PriceAdjustment.BACKWARD))) for product in EquityProduct)
-        execution = ()
-        if self.candidate.definition.execution_input is not None:
-            item = self.candidate.definition.execution_input
-            execution = tuple((item.data_key(query.parameters.query.product), query)
-                for query in item.requests(pd.Timestamp(self.window.start).tz_convert(self.candidate.instrument.timezone).date(), end))
-        return primary + execution
+        start = pd.Timestamp(self.window.start).tz_convert(self.candidate.instrument.timezone).date()
+        return equity_product_requests(self.candidate.definition, self.sources, self.history_start,
+                                       start, end, specification=specification)
 
     def identity(self, specification):
         from strategy_runtime import (equity_features, equity_replay as srt_replay, equity_account_benchmark,
@@ -256,14 +266,13 @@ class EquityEvaluationResult:
         return self._result_sha256
 
 
-def _fetch_products(access, request):
+def fetch_equity_products(dataflows, definition, items, reference):
     from strategy_runtime.data_preparation import fetch_prepared_products
-    prepared = fetch_prepared_products(access.data, request.request_items(access.execution_spec),
-                                      prepared=request.prepared)
+    prepared = fetch_prepared_products(dataflows, items, prepared=reference)
     products, identities = prepared.products, prepared.identities
     from czsc_trader.application.execution_inputs import execution_constraints
     products["constraints"], identities["constraints"] = execution_constraints(
-        request.candidate.definition, products, {k: v["metadata"] for k, v in identities.items()})
+        definition, products, {k: v["metadata"] for k, v in identities.items()})
     return products, identities
 
 

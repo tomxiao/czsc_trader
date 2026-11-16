@@ -138,7 +138,7 @@ class EquityAccountTiming:
 
 @dataclass(frozen=True, slots=True)
 class EquityExecutionStatistics:
-    """Detached V4 session statistics, including completed but rejected accounts.
+    """Detached V5 session statistics, including completed but rejected accounts.
 
     Run counts include only replays that returned successfully, even when their
     subsequent result construction failed. Restored results do not count as
@@ -263,7 +263,7 @@ class ResearchExecutionSession:
 
     @property
     def equity_statistics(self) -> EquityExecutionStatistics | None:
-        """A frozen statistics snapshot; None means this session has no V4 work."""
+        """A frozen statistics snapshot; None means this session has no V5 work."""
         state = getattr(self, "_equity_account", None)
         if state is None:
             return None

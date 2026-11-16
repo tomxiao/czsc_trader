@@ -9,7 +9,7 @@ import re
 
 import pandas as pd
 import pytest
-from dataflows import DataSpace
+from dataflows import DataSpace, MarketId
 
 from czsc_trader.application import BacktestRequest, run_backtest
 from czsc_trader.cli.main import main
@@ -30,6 +30,65 @@ def _arguments(selector):
 def _research_files(root):
     return {path.relative_to(root).as_posix(): sha256(path.read_bytes()).hexdigest()
             for path in (root / "research").rglob("*") if path.is_file()}
+
+
+def assert_v5_cli_backtest(context, request, package, monkeypatch, capsys):
+    root = context.repository.root
+    (root / "src/czsc_trader").mkdir(parents=True, exist_ok=True)
+    (root / "pyproject.toml").touch()
+    config_path = root / "inputs.json"
+    config_path.write_text(json.dumps({
+        "data_space": context.data.binding.space.path.as_posix(),
+        "prepared": {"space_id": str(request.prepared.space_id),
+                     "preparation_id": str(request.prepared.preparation_id),
+                     "manifest_sha256": request.prepared.manifest_sha256},
+        "history_start": request.history_start.isoformat(),
+        "fee_rate": request.fee_rate,
+        "sources": {role: {"provider": source.provider, "revision": source.revision}
+                    for role in ("bars", "sessions", "trading_facts")
+                    for source in (getattr(request.sources, role),)},
+        "step_data_windows": [grant.to_dict() for grant in request.step_data_windows],
+    }), encoding="utf-8")
+    instrument = request.candidate.instrument
+    monkeypatch.chdir(root)
+    research_before = _research_files(root)
+    capsys.readouterr()
+    symbol = instrument.symbol + ".US" if instrument.market is MarketId.US else instrument.symbol
+    args = ["backtest", "run", "--strategy", "S999", "--strategy-version", "v1",
+            "--symbol", symbol, "--asset", "stock",
+            "--start", request.window.start.date().isoformat(), "--end", request.window.end.date().isoformat(),
+            "--init-cash", str(request.initial_cash), "--lot-size", str(context.execution_spec.quantity_step),
+            "--equity-inputs", str(config_path)]
+    code = main(args)
+    response = json.loads(capsys.readouterr().out)
+    assert code == 0 and response["status"] == "PASS", response
+    artifacts = {name: root / path for name, path in response["artifacts"].items()}
+    assert all(path.is_file() for path in artifacts.values())
+    manifest = json.loads(artifacts["manifest.json"].read_bytes())
+    assert manifest["release_hash"] == package.release.release_hash
+    assert manifest["package_sha256"] == package.package_sha256
+    assert manifest["strategy"] == "S999-v1"
+    assert manifest["prepared"]["manifest_sha256"] == request.prepared.manifest_sha256
+    for name, reference in manifest["artifacts"].items():
+        assert sha256(artifacts[name].read_bytes()).hexdigest() == reference["sha256"]
+    account = json.loads(artifacts["account.json"].read_bytes())["run"]
+    assert account["decisions"] and account["fills"]
+    assert account["account_daily"][0]["session"][:10] == request.window.start.date().isoformat()
+    assert account["account_daily"][-1]["session"][:10] == request.window.end.date().isoformat()
+    assert account["metrics"] == response["result"]["metrics"]
+    reads = [read for decision in account["strategy_data_reads"] for read in decision["reads"]]
+    assert reads and all(read["window"]["name"] == "seed" and read["rows"] == 2 for read in reads)
+    assert "S999-v1" in artifacts["report.md"].read_text(encoding="utf-8")
+    assert _research_files(root) == research_before
+
+    before = list((root / "outputs").iterdir())
+    invalid = json.loads(config_path.read_bytes())
+    invalid["prepared"]["manifest_sha256"] = "0" * 64
+    config_path.write_text(json.dumps(invalid), encoding="utf-8")
+    assert main(args) == 5
+    failure = json.loads(capsys.readouterr().out)
+    assert failure["error"]["code"] == "backtest_failed" and failure["artifacts"] == {}
+    assert list((root / "outputs").iterdir()) == before
 
 
 def test_cli_accounts_match_research_api_and_keep_historical_output_layout(
