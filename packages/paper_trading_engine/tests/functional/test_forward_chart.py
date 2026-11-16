@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
-import sqlite3
 
 import pandas as pd
 import pytest
@@ -20,12 +19,15 @@ def test_mu_no_order_decision_drives_chart_start_and_saved_explanation(tmp_path)
            "valid_session": "2026-11-09", "generated_at": "2026-11-08T13:36:43+00:00",
            "status": "COMPLETED", "state_reason": "NO_ORDER", "state_changed_at": None,
            "state_events": [], "payload": {"action": "WAIT", "target_quantity": 0, "observation": None,
+                                           "equity_execution_interval": {"start": "2026-11-09T14:30:00Z",
+                                                                         "end": "2026-11-09T21:00:00Z"},
                                            "strategy_output": {"explanation": explanation}}}
     account = {"account_id": "s018-v1", "symbol": "MU", "asset_type": "stock", "strategy_id": "S018",
                "strategy_version": "v1", "strategy_name_snapshot": "MU", "release_hash": "a" * 64,
                "selection_data_cutoff": "2026-10-30", "channel_id": "futu_US_sim_channel"}
-    store = SimpleNamespace(account_decisions=lambda _: [row], account_intents=lambda _: [],
-                            account_fills=lambda _: [], account_snapshots=lambda _: [],
+    fill = {"account_id": "s018-v1", "fill_id": "historical-fill", "occurred_at": "2026-11-07T03:30:00+08:00",
+            "side": "BUY", "quantity": 2, "price": 100, "fee": 0.2}
+    store = SimpleNamespace(account_chart_facts=lambda _: ([row], [fill], []),
                             virtual_account=lambda _: account)
     bars = pd.DataFrame([{"Date": day, "Open": 1, "High": 2, "Low": 1, "Close": 2}
                          for day in ("2026-11-05", "2026-11-06")])
@@ -36,10 +38,15 @@ def test_mu_no_order_decision_drives_chart_start_and_saved_explanation(tmp_path)
         assert result["window"]["forward_observation_start"] == "2026-11-06"
         assert result["window"]["selection_data_cutoff"] == "2026-10-30"
         assert result["strategy"]["currency"] == "USD"
+        assert result["strategy"]["market_timezone"] == "America/New_York"
         assert result["observations"] == []
         decision, = result["execution"]["decisions"]
         assert decision["explanation"] == explanation
         assert decision["state_reason"] == "NO_ORDER"
+        assert decision["execution_interval"] == {"start": "2026-11-09T14:30:00.000000+00:00",
+                                                  "end": "2026-11-09T21:00:00.000000+00:00"}
+        actual_fill, = result["execution"]["fills"]
+        assert (actual_fill["session"], actual_fill["time_precision"]) == ("2026-11-06", "TIMESTAMP")
         assert 'no opportunity' in render_forward_chart_html(result)
     finally:
         service.close()
@@ -66,7 +73,7 @@ def test_mu_no_order_decision_drives_chart_start_and_saved_explanation(tmp_path)
     ],
     ids=['s011-renewed-buy-expired', 's011-zero-target-already-flat'],
 )
-def test_s011_decision_projection_keeps_strategy_and_execution_facts(
+def test_s011_decision_projection_omits_order_details(
     signal_date, target, judgment, trigger, order, planning, status, reason,
 ):
     from paper_trading_engine.account_chart import AccountChartService
@@ -85,74 +92,9 @@ def test_s011_decision_projection_keeps_strategy_and_execution_facts(
                     }}},
     })
     assert event['explanation']['judgment'] == judgment
-    assert (event['target_position'], event['position_at_decision']) == (target, 0)
-    assert event['execution_plan'] == {'orders': orders, 'trigger': trigger, 'planning_result': planning}
+    assert 'execution_plan' not in event
+    assert event['target_quantity'] == planning['planned_quantity']
     assert (event['status'], event['state_reason']) == (status, reason)
-
-
-def test_execution_explanation_reuses_exact_facts_and_retains_prior_results(tmp_path, monkeypatch):
-    from paper_trading_engine import execution_explanations as module
-    from strategy_runtime.execution_explanation import ExecutionExplanation, ExecutionResultContext
-
-    calls = []
-    release_hash = 'a' * 64
-
-    def authored(context):
-        calls.append(context)
-        count = sum(fill.quantity for fill in context.fills) if isinstance(context, ExecutionResultContext) else 0
-        return ExecutionExplanation(f'策略记录 {count}', f'策略详情 {count}')
-
-    class Invocation:
-        def __init__(self, candidate, *, execution_only):
-            assert candidate == 'fixture' and execution_only
-            self.execution_explainer = authored
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, *exc):
-            pass
-
-    def load(root, release_id, digest):
-        assert (root, release_id, digest) == (tmp_path, 'S011-v1', release_hash)
-        return 'fixture'
-
-    monkeypatch.setattr(module, '_candidate', load)
-    monkeypatch.setattr(module, 'BoundEquityInvocation', Invocation)
-    path = tmp_path / 'explanations.sqlite3'
-    row = {'decision_id': 'D1', 'payload': {'strategy': {
-        'strategy_id': 'S011', 'version': 'v1', 'release_hash': release_hash,
-    }, 'strategy_output': {'execution_plan': {}}}}
-    base = {
-        'decision_id': 'D1', 'signal_date': '2026-03-04', 'valid_session': '2026-03-05',
-        'generated_at': '2026-03-04T12:00:00+00:00',
-        'status': 'EXECUTING', 'state_reason': 'CHANNEL_EXECUTION', 'state_changed_at': None,
-        'target_position': 1, 'position_at_decision': 0, 'explanation': {'judgment': '延续'},
-        'execution_plan': {'trigger': 'TARGET_CHANGED', 'orders': [{'side': 'BUY', 'quantity': 100}],
-            'planning_result': {'status': 'READY', 'reasons': [], 'planned_quantity': 100, 'desired_quantity': 100}},
-    }
-
-    def project(fills):
-        event = dict(base)
-        def on_error(_row, _hash, exc):
-            raise exc
-        module.ExecutionExplanationStore(path, tmp_path).project(
-            'acct', [row], [event], {}, {'D1': fills}, on_error)
-        return event
-
-    first = project([])
-    assert len(calls) == 2
-    assert project([]) == first
-    assert len(calls) == 2
-    updated = project([{'fill_id': 'F1', 'side': 'BUY', 'quantity': 40,
-                        'occurred_at': '2026-03-05T02:00:00+00:00'}])
-    assert len(calls) == 3
-    assert updated['plan_explanation'] == first['plan_explanation']
-    assert updated['result_explanation']['summary'] == '策略记录 40'
-    assert project([]) == first
-    assert len(calls) == 3
-    with sqlite3.connect(path) as connection:
-        assert connection.execute('SELECT count(*) FROM execution_explanations').fetchone() == (3,)
 
 
 def _context() -> dict[str, object]:
@@ -167,6 +109,7 @@ def _context() -> dict[str, object]:
             "name": "多源机会风险门控",
             "symbol": "588080.SH",
             "currency": "CNY",
+            "market_timezone": "Asia/Shanghai",
         },
         "window": {"selection_data_cutoff": "2026-09-02", "context_sessions": 60,
                    "forward_observation_start": "2026-09-03"},
@@ -227,6 +170,19 @@ def test_forward_chart_requires_channel_currency():
     assert '"currency":"CNY"' in render_forward_chart_html(context)
     del context["strategy"]["currency"]
     with pytest.raises(ValueError, match="explicit channel currency"):
+        render_forward_chart_html(context)
+
+
+def test_intraday_observation_uses_its_recorded_market_interval():
+    context = _context()
+    decision, = context['execution']['decisions']
+    observation, = context['observations']
+    for record in (decision, observation):
+        record['valid_session'] = record['signal_date']
+    decision['execution_interval'] = {'start': '2026-09-03T10:00:00+08:00', 'end': '2026-09-03T10:30:00+08:00'}
+    assert '决策按执行区间 · 成交按市场交易日' in render_forward_chart_html(context)
+    decision['execution_interval']['start'] = '2026-09-02T10:00:00+08:00'
+    with pytest.raises(ValueError, match='differs from the market session'):
         render_forward_chart_html(context)
 
 

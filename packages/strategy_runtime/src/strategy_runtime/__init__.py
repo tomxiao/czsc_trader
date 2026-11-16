@@ -33,7 +33,7 @@ from .observation import (
 )
 from .signal_explanation import (
     SeriesValueRef, GuideValueRef, StateValueRef, SignalText, SignalBasisDefinition,
-    SignalExplanationCase, SignalExplanationDefinition, SignalBasisSnapshot, SignalExplanationSnapshot,
+    DecisionCalculationSnapshot, SignalExplanationCase, SignalExplanationDefinition, SignalBasisSnapshot, SignalExplanationSnapshot,
 )
 from .signal_panel import (
     SignalAvailability, SignalRender, SignalGroup, SignalSeriesDefinition,
@@ -157,7 +157,7 @@ __all__ = [
     "SignalPanelDefinition",
     "OBSERVATION_EXPLANATION_CONTRACT_VERSION",
     "SeriesValueRef", "GuideValueRef", "StateValueRef", "SignalText", "SignalBasisDefinition",
-    "SignalExplanationCase", "SignalExplanationDefinition", "SignalBasisSnapshot", "SignalExplanationSnapshot",
+    "DecisionCalculationSnapshot", "SignalExplanationCase", "SignalExplanationDefinition", "SignalBasisSnapshot", "SignalExplanationSnapshot",
     "ObservedSignalSeries",
     "ObservedSignalState",
     "SignalPanelSnapshot",

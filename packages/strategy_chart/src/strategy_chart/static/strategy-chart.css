@@ -45,3 +45,9 @@ html:has(.paper-embedded){overflow:hidden;scrollbar-gutter:auto!important}
 .strategy-chart.paper-embedded .signal-legacy-notice{overflow:clip}
 .strategy-chart.paper-embedded .reading-row{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere}
 @container(max-width:700px){.strategy-chart.paper-embedded .signal-reading{padding-inline:14px}}
+.strategy-chart .decision-reading{display:block;overflow-y:auto;overscroll-behavior-y:contain;scrollbar-gutter:stable}
+.strategy-chart .decision-reading:focus-visible{outline:1px solid var(--position);outline-offset:-1px}
+.strategy-chart .decision-row{padding-block:4px;overflow-wrap:anywhere}
+.strategy-chart .decision-row+.decision-row{border-top:1px solid var(--line);margin-top:5px;padding-top:8px}
+.strategy-chart .decision-expression,.strategy-chart .decision-summary{white-space:pre-wrap}
+.strategy-chart .decision-result{font-weight:600}

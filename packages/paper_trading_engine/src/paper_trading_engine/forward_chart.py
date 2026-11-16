@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
-from datetime import date
+from datetime import date, datetime
 from html import escape
 import json
 from typing import Mapping
+from zoneinfo import ZoneInfo
+from dataflows import TimeInterval
 from strategy_chart import chart_body, get_chart_assets
 from strategy_runtime import (
     ConstantGuide, ObservedFact, ObservedSeries, ObservationFormat, ObservationValueType,
@@ -14,7 +16,7 @@ from strategy_runtime import (
 )
 
 
-FORWARD_CHART_CONTRACT_VERSION = "pte_forward_chart.v6"
+FORWARD_CHART_CONTRACT_VERSION = "pte_forward_chart.v7"
 
 
 @dataclass(frozen=True, slots=True)
@@ -129,21 +131,35 @@ def render_forward_chart_html(value: object, *, inline_assets: bool = False) -> 
         raise ValueError("PTE forward chart strategy title is incomplete")
     if strategy.get("currency") not in ("CNY", "USD"):
         raise ValueError("PTE forward chart requires an explicit channel currency")
+    if strategy.get("market_timezone") not in ("Asia/Shanghai", "America/New_York"):
+        raise ValueError("PTE forward chart requires an explicit market timezone")
+    market_zone = ZoneInfo(strategy["market_timezone"])
     window = context["window"]
     start = window["forward_observation_start"]
     events = context["execution"]["decisions"]
     if start != min((row["signal_date"] for row in events), default=None):
         raise ValueError("forward start differs from the first decision signal date")
+    interval_decisions = {}
+    for row in events:
+        if row['account_id'] != strategy['account_id']:
+            raise ValueError('forward decision event differs from account identity')
+        raw = row.get('execution_interval')
+        if raw is not None:
+            if type(raw) is not dict or set(raw) != {'start', 'end'}:
+                raise ValueError('invalid chart execution interval')
+            interval = TimeInterval(datetime.fromisoformat(raw['start']), datetime.fromisoformat(raw['end']))
+            if any(moment.astimezone(market_zone).date().isoformat() != row['valid_session']
+                   for moment in (interval.start, interval.end)):
+                raise ValueError('chart execution interval differs from the market session')
+            interval_decisions[row['decision_id']] = row['valid_session']
     for row in context['observations']:
         ChartObservation.from_dict(row['observation'])
         if (row['account_id'] != strategy['account_id'] or
             row['symbol'] != strategy['symbol']):
             raise ValueError('forward observation differs from account or symbol')
-        if date.fromisoformat(row['signal_date']) >= date.fromisoformat(row['valid_session']):
+        signal, valid = date.fromisoformat(row['signal_date']), date.fromisoformat(row['valid_session'])
+        if signal > valid or (signal == valid and interval_decisions.get(row['decision_id']) != row['valid_session']):
             raise ValueError('invalid chart observation sessions')
-    for row in events:
-        if row['account_id'] != strategy['account_id']:
-            raise ValueError('forward decision event differs from account identity')
     context["mode"] = "PAPER"
     encoded = json.dumps(
         context,
@@ -175,7 +191,7 @@ def render_forward_chart_html(value: object, *, inline_assets: bool = False) -> 
       <div class="forward-brand"><span class="forward-logo" aria-hidden="true">P</span><div><h1 id="forward-title"></h1><p id="forward-subtitle"></p></div></div>
       <div class="forward-status"><span></span><b id="forward-asof"></b></div>
     </header>
-    {chart_body()}
+    {chart_body(paper_decisions=True)}
 
   </main>
   <script id="forward-context" type="application/json">{encoded}</script>

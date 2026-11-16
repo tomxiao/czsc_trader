@@ -1,6 +1,7 @@
 window.mountStrategyChart=function mountStrategyChart(root,context){
   if(!(root instanceof HTMLElement)||!context||!['BACKTEST','PAPER'].includes(context.mode)||!context.strategy||!context.window||!context.market_data||!context.execution||![context.market_data.bars,context.observations,context.execution.decisions,context.execution.fills,context.execution.snapshots].every(Array.isArray))throw new TypeError('strategy chart requires a container and typed chart context');
   if(context.mode==='PAPER'&&!['CNY','USD'].includes(context.strategy.currency))throw new TypeError('PTE chart requires an explicit channel currency');
+  if(context.mode==='PAPER'&&!['Asia/Shanghai','America/New_York'].includes(context.strategy.market_timezone))throw new TypeError('PTE chart requires an explicit market timezone');
   if(root.dataset.strategyChartMounted)throw new Error('strategy chart is already mounted');
   root.dataset.strategyChartMounted='true';root.classList.add('strategy-chart');
   const lifecycle=new AbortController();let destroyed=false;
@@ -12,6 +13,7 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   const embedded=window.parent!==window;
   if(embedded)root.classList.add('embedded');
   const isPaper=context.mode==='PAPER',compactEmbed=isPaper&&embedded;
+  const marketZone=context.strategy.market_timezone;
   if(compactEmbed)root.classList.add('paper-embedded');
   const NS='http://www.w3.org/2000/svg';
   const colors=new Map();
@@ -22,18 +24,8 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   const superseded=new Set(decisions.filter(item=>item.status==='SUPERSEDED').map(item=>item.decision_id));
   const observations=context.observations.filter(item=>!isPaper||!superseded.has(item.decision_id));
   const fills=[...context.execution.fills].sort((a,b)=>Date.parse(a.occurred_at)-Date.parse(b.occurred_at));
-  const byDecision=items=>{
-    const index=new Map();
-    for(const item of items)if(item.decision_id){
-      if(!index.has(item.decision_id))index.set(item.decision_id,[]);
-      index.get(item.decision_id).push(item);
-    }
-    return index;
-  };
-  const intentsByDecision=byDecision(context.execution.intents||[]);
-  const fillsByDecision=byDecision(fills);
   const snapshots=context.execution.snapshots;
-  const observationStart=context.window.forward_observation_start;
+  const observationStart=isPaper?decisions.filter(item=>item.status!=='SUPERSEDED').map(item=>item.valid_session).sort()[0]:context.window.forward_observation_start;
   const byDate=new Map([...observations].sort((a,b)=>String(a.generated_at||a.signal_date).localeCompare(String(b.generated_at||b.signal_date))).map(item=>[item.signal_date,item]));
   const observationById=new Map(context.observations.filter(item=>item.observation.status==='READY').map(item=>[item.decision_id,item.observation]));
   const snapshotByDate=new Map(snapshots.map(item=>[item.session,item]));
@@ -51,21 +43,29 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   const extent=values=>[Math.min(...values),Math.max(...values)];
   const scale=(domainMin,domainMax,rangeMin,rangeMax)=>value=>rangeMin+(Number(value)-domainMin)/(domainMax-domainMin||1)*(rangeMax-rangeMin);
   const safe=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-  const localTime=value=>{
+  const localTime=(value,zone='Asia/Shanghai')=>{
     if(!value)return '时间未记录';
     const time=new Date(value);if(Number.isNaN(time.getTime()))return '时间格式异常';
-    return new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).format(time);
+    return new Intl.DateTimeFormat('sv-SE',{timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).format(time);
   };
-  const fillDate=item=>item.session||localTime(item.occurred_at).slice(0,10);
+  const fillDate=item=>isPaper?item.session:(item.session||localTime(item.occurred_at).slice(0,10));
   const fillTime=item=>item.time_precision==='SESSION'||/^\d{4}-\d{2}-\d{2}$/.test(item.occurred_at||'')?`${fillDate(item)}（交易日，未记录时刻）`:localTime(item.occurred_at);
   const statusLabel=value=>({PENDING:'待执行',EXECUTING:'执行中',COMPLETED:'已完成',SUPERSEDED:'已替代',CANCELLED:'已取消',INCOMPLETE:'未完成'}[value]||value);
   const quantity=value=>value==null?'未记录':`${Number(value).toLocaleString('zh-CN')} 股`;
   const fillCurrency=isPaper&&context.strategy.currency==='USD'?'美元':'元';
   const money=value=>value==null?'未记录':`${Number(value).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})} ${fillCurrency}`;
-  const decisionDate=item=>isPaper?item.signal_date:localTime(item.generated_at).slice(0,10);
-  const dayDecisions=date=>decisions.filter(item=>decisionDate(item)===date);
+  const decisionDate=item=>isPaper?item.valid_session:localTime(item.generated_at).slice(0,10);
+  const dayDecisions=date=>decisions.filter(item=>decisionDate(item)===date&&(!isPaper||item.status!=='SUPERSEDED'));
   const dayFills=date=>fills.filter(item=>fillDate(item)===date);
-  const fillSummary=item=>`${fillTime(item)} · 成交：${String(item.side).toUpperCase()==='BUY'?'买入':'卖出'} ${quantity(item.quantity)}，价格 ${fmt(item.price)} ${fillCurrency}（不复权），金额 ${money(Number(item.quantity)*Number(item.price))}，费用 ${money(item.fee)}`;
+  function fillSummary(item){
+    const side=String(item.side).toUpperCase()==='BUY'?'买入':'卖出';
+    const amount=money(Number(item.quantity)*Number(item.price));
+    if(isPaper){
+      const stamp=item.time_precision==='SESSION'?`${item.session}（未记录时刻）`:`${localTime(item.occurred_at,marketZone)}（${marketZone}）`;
+      return `${stamp} · ${side} ${quantity(item.quantity)} · 成交价 ${fmt(item.price)} ${fillCurrency}（不复权） · 成交金额 ${amount} · 费用 ${money(item.fee)}`;
+    }
+    return `${fillTime(item)} · 成交：${side} ${quantity(item.quantity)}，价格 ${fmt(item.price)} ${fillCurrency}（不复权），金额 ${amount}，费用 ${money(item.fee)}`;
+  }
   const eventDates=[...new Set([...bars.map(item=>item.date),...decisions.map(decisionDate),...fills.map(fillDate)])].sort();
   const requestedDate=window.location?.hash?.slice(1);
   if(isPaper&&eventDates.includes(requestedDate))state.selected=requestedDate;
@@ -74,18 +74,49 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   const write=(selector,text)=>{const node=root.querySelector(selector);if(node)node.textContent=text;};
   const isBacktest=context.mode==='BACKTEST';
   write('#forward-title',`${context.strategy.release_id||context.strategy.reference_id} · ${context.strategy.name||context.strategy.symbol}`);
-  write('#forward-subtitle',isBacktest?`回测复盘 · ${context.strategy.symbol} · ${context.window.start} — ${context.window.end}`:`前瞻观察 · ${context.strategy.symbol} · ${context.strategy.account_id} · ${observationStart?`首个信号 ${observationStart}`:'等待首个信号'}`);
+  write('#forward-subtitle',isBacktest?`回测复盘 · ${context.strategy.symbol} · ${context.window.start} — ${context.window.end}`:`前瞻观察 · ${context.strategy.symbol} · ${context.strategy.account_id} · ${observationStart?`首轮决策 ${observationStart}`:'等待首轮决策'}`);
   write('#forward-asof',`${isBacktest?'回测完成':'运行正常'} · 数据截至 ${context.market_data.as_of}`);
 
 
-  const reading=document.createElement('section');reading.className='signal-reading';reading.setAttribute('aria-label','策略信号解释');stage.appendChild(reading);
+  const reading=document.createElement('section');reading.className=isPaper?'signal-reading decision-reading':'signal-reading';reading.setAttribute('aria-label',isPaper?'当日策略决策':'策略信号解释');stage.appendChild(reading);
+  if(isPaper)reading.setAttribute('tabindex','0');
   const legacyNotice=document.createElement('div');legacyNotice.className='signal-legacy-notice';legacyNotice.textContent='该记录未提供解释；保留原始信号值';signalFooter.appendChild(legacyNotice);
   let expanded=false,readingDate=null;
   const node=(tag,cls,text)=>{const element=document.createElement(tag);element.className=cls;if(text!=null)element.textContent=text;return element;};
+  function paintDecisions(date){
+    reading.hidden=!state.layers.signal;
+    if(readingDate===date)return;
+    readingDate=date;
+    const byInterval=dayDecisions(date).sort((a,b)=>
+      Date.parse(a.execution_interval?.start||a.generated_at)-Date.parse(b.execution_interval?.start||b.generated_at)
+      || Date.parse(a.generated_at)-Date.parse(b.generated_at));
+    const valueText=value=>value===true?'成立':value===false?'不成立':String(value);
+    const items=byInterval.map(item=>{
+      const interval=item.execution_interval;
+      const timing=interval?`${localTime(interval.start,marketZone).slice(11)} – ${localTime(interval.end,marketZone).slice(11)}（${marketZone}）`:'执行区间未记录';
+      const narrative=item.explanation||observationById.get(item.decision_id)?.signal_panel?.explanation;
+      const calculation=narrative?.calculation;
+      const row=node('article','decision-row');row.dataset.decisionId=item.decision_id;
+      row.append(node('div','reading-label',`${item.valid_session} · ${timing}`));
+      if(calculation){
+        const inputs=Object.entries(calculation.inputs).map(([label,value])=>`${label} = ${valueText(value)}`).join('；');
+        row.append(node('div','decision-expression',`表达式：${calculation.expression}`));
+        if(inputs)row.append(node('div','decision-inputs',`输入：${inputs}`));
+        row.append(node('div','decision-result',`结果：${valueText(calculation.result)}`),node('div','decision-summary',calculation.summary));
+      }else{
+        row.append(node('div','decision-expression','未记录计算表达式'));
+        if(narrative?.judgment)row.append(node('div','decision-result',narrative.judgment));
+        row.append(node('div','decision-summary',narrative?.basis?.[0]?.text||'未记录决策文案'));
+      }
+      return row;
+    });
+    reading.replaceChildren(...(items.length?items:[node('div','decision-empty','当日无决策记录')]));
+    reading.scrollTop=0;
+  }
   function paintReading(observation,date){
+    if(isPaper){paintDecisions(date);return;}
     if(readingDate!==date)expanded=false;readingDate=date;
-    const narrative=(isPaper?dayDecisions(date).findLast(item=>item.status!=='SUPERSEDED')?.explanation:null)
-      || (observation?.status==='READY'?observation.signal_panel?.explanation:null);
+    const narrative=observation?.status==='READY'?observation.signal_panel?.explanation:null;
     const legacy=observation?.status==='READY'&&!narrative;
     reading.hidden=legacy||!state.layers.signal;legacyNotice.hidden=!legacy||!state.layers.signal;
     signalControls.hidden=!legacy||!state.layers.signal||!signalSelect.options.length;
@@ -128,7 +159,6 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     const lines=events.flatMap(event=>{
       if(event.fill)return [fillSummary(event.fill)];
       const item=event.decision;
-      if(isPaper)return paperDecisionLines(item);
       const details=[`${localTime(item.generated_at)} · 决策：${actionLabel(item.action)}；目标 ${quantity(item.target_quantity)}；${statusLabel(item.status)}；生效 ${item.valid_session}；信号 ${item.signal_date}`];
       if(item.state_reason)details.push(`状态原因：${reasonLabel(item.state_reason)}；记录 ${localTime(item.state_changed_at)}`);
       const observation=observationById.get(item.decision_id);
@@ -142,59 +172,20 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     if(!lines.length)lines.push('当日无可展示的决策或成交事件');
     return lines.join('\n');
   }
-  function paperDecisionLines(item){
-    const details=[];
-    if(!compactEmbed)details.push(`记录 ${localTime(item.generated_at)} · 信号日 ${item.signal_date} · 生效日 ${item.valid_session}`);
-    const observation=observationById.get(item.decision_id);
-    const legacyJudgment=observation?.signal_panel?.explanation?.judgment;
-    details.push(`策略判断：${item.explanation?.judgment||legacyJudgment||'未记录'}`);
-    const weight=item.target_position==null?'未记录':`${(item.target_position*100).toLocaleString('zh-CN',{maximumFractionDigits:4})}%`;
-    details.push(`目标仓位：${weight}`);
-    const plan=item.execution_plan;
-    const planOrders=plan?.orders||[];
-    const planText=planOrders.length?planOrders.map(order=>`${order.side==='BUY'?'买入':'卖出'} ${quantity(order.quantity)}`).join('、')
-      :plan?'无委托':'未记录委托计划';
-    const explanation=value=>value?(compactEmbed?value.summary:value.detail):'策略说明未记录';
-    details.push(`执行计划：${planText}`);
-    details.push(`计划说明：${explanation(item.plan_explanation)}`);
-
-    const intents=intentsByDecision.get(item.decision_id)||[];
-    const confirmed=fillsByDecision.get(item.decision_id)||[];
-    let result=item.state_reason==='NO_ORDER'?'无需下单':statusLabel(item.status);
-    if(intents.length){
-      const labels={PENDING_SUBMIT:'待提交',EXPIRED:'已过期',SUBMITTING:'提交中',
-        SUBMITTED:'已提交',REJECTED:'已拒绝',SUBMISSION_FAILED:'提交失败',
-        SUBMISSION_UNCERTAIN:'提交状态待确认',CANCELLED_ALL:'已取消',CANCELLED_PART:'部分取消',
-        FILLED_PART:'部分成交',FILLED_ALL:'全部成交'};
-      result+=`；委托 ${[...new Set(intents.map(intent=>labels[intent.channel_status||intent.status]||intent.channel_status||intent.status))].join('、')}`;
-      if(!compactEmbed){
-        const submitted=[...new Set(intents.map(intent=>intent.submitted_at).filter(Boolean))];
-        if(submitted.length)result+=`；渠道记录 ${submitted.map(localTime).join('、')}`;
-      }
-    }
-    if(confirmed.length){
-      const quantityBySide=side=>confirmed.filter(fill=>fill.side===side).reduce((sum,fill)=>sum+Number(fill.quantity),0);
-      const bought=quantityBySide('BUY'),sold=quantityBySide('SELL');
-      result+=`；确认成交 ${[bought?`买入 ${quantity(bought)}`:null,sold?`卖出 ${quantity(sold)}`:null].filter(Boolean).join('、')}`;
-    }
-    details.push(`执行结果：${result}`);
-    details.push(`结果说明：${explanation(item.result_explanation)}`);
-    return details;
-  }
   const eventHeight=isPaper?168:128;
   function eventPanel(x,y,width){
     const frame=add(el('foreignObject',{x,y,width,height:eventHeight}));
-    const content=node('div','event-scroll');content.setAttribute('tabindex','0');content.setAttribute('aria-label',compactEmbed?'当日事件摘要':'当日事件，可滚动查看');
+    const content=node('div','event-scroll');content.setAttribute('tabindex','0');content.setAttribute('aria-label',isPaper?'当日成交，可滚动查看':compactEmbed?'当日事件摘要':'当日事件，可滚动查看');
     const main=node('div','event-heading'),details=node('div','event-details');content.append(main,details);frame.appendChild(content);
     return date=>{
       if(isPaper&&date&&root.dataset.selectedDate!==date){
         root.dataset.selectedDate=date;
         if(compactEmbed)root.dispatchEvent(new CustomEvent('pte-chart-date',{bubbles:true}));
       }
-      const selectedFills=dayFills(date),selectedDecisions=dayDecisions(date);
-      const summary=[selectedDecisions.length?`决策 ${selectedDecisions.length} 笔`:'',selectedFills.length?`成交 ${selectedFills.length} 笔`:''].filter(Boolean).join(' · ')||'当日无可展示事件';
-      const title=`${date} · ${summary}${tradingDates.has(date)?'':' · 非交易日，无行情K线'}`;
-      if(main.textContent!==title){main.textContent=title;details.textContent=eventLines(date);content.scrollTop=0;}
+      const selectedFills=dayFills(date),selectedDecisions=isPaper?[]:dayDecisions(date);
+      const summary=[selectedDecisions.length?`决策 ${selectedDecisions.length} 笔`:'',selectedFills.length?`成交 ${selectedFills.length} 笔`:''].filter(Boolean).join(' · ')||(isPaper?'当日无成交':'当日无可展示事件');
+      const title=`${date} · ${summary}${tradingDates.has(date)?'':isPaper?' · 无当日行情K线':' · 非交易日，无行情K线'}`;
+      if(main.textContent!==title){main.textContent=title;details.textContent=isPaper?selectedFills.map(fillSummary).join('\n'):eventLines(date);content.scrollTop=0;}
     };
   }
   function reasonLabel(value){
@@ -331,10 +322,10 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
       const width=Math.max(320,stage.clientWidth),date=state.selected||eventDates.at(-1)||context.window.end;
       const top=width>=1000?190:290,height=top+eventHeight+16;
       svg.replaceChildren();svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.style.height=`${height}px`;stage.style.minHeight=`${height}px`;
-      add(el('text',{x:18,y:25,class:'panel-label'},'没有可展示的行情；事件按原始记录展示'));
+      add(el('text',{x:18,y:25,class:'panel-label'},isPaper?'没有可展示的行情':'没有可展示的行情；事件按原始记录展示'));
       reading.style.top='42px';reading.style.height=`${top-55}px`;paintReading(byDate.get(date)?.observation,date||'');
       state.selected=date;
-      add(el('text',{x:12,y:top+15,class:'panel-label'},'事件'));
+      add(el('text',{x:12,y:top+15,class:'panel-label'},isPaper?'成交':'事件'));
       eventPanel(68,top,width-92)(date);
       return;
     }
@@ -354,10 +345,10 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     const x=index=>left+(rows.length===1?innerW/2:index/(rows.length-1)*innerW);
     const prices=rows.flatMap(row=>[Number(row.low),Number(row.high)]),[pmin,pmax]=extent(prices),pad=(pmax-pmin||pmax*.01)*.09;
     const yPrice=scale(pmin-pad,pmax+pad,priceTop+priceH,priceTop);
-    const rowObservations=rows.map(row=>byDate.get(row.date)?.observation).filter(item=>item?.status==='READY');
+    const rowObservations=isPaper?[]:rows.map(row=>byDate.get(row.date)?.observation).filter(item=>item?.status==='READY');
     const latestUnavailable=rows.map(row=>({date:row.date,observation:byDate.get(row.date)?.observation})).filter(item=>item.observation?.status==='UNAVAILABLE').at(-1);
     const selectedObservation=byDate.get(state.selected||rows.at(-1).date)?.observation;
-    const views=signalViews(rows).filter(view=>selectedObservation?.status!=='READY'||(view.kind==='legacy'?!selectedObservation.signal_panel:view.identity===selectedObservation.definition_sha256));
+    const views=isPaper?[]:signalViews(rows).filter(view=>selectedObservation?.status!=='READY'||(view.kind==='legacy'?!selectedObservation.signal_panel:view.identity===selectedObservation.definition_sha256));
     if(selectedObservation?.status!=='READY')state.signalView=null;
     if(!views.some(view=>view.key===state.signalView))state.signalView=(views.find(view=>view.kind==='group')||views.at(-1))?.key||null;
     const signalView=views.find(view=>view.key===state.signalView),enhanced=signalView&&signalView.kind!=='legacy';
@@ -375,19 +366,19 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     const priceTicks=5;for(let index=0;index<priceTicks;index++){const value=pmin-pad+(pmax-pmin+2*pad)*index/(priceTicks-1),y=yPrice(value);add(el('line',{x1:left,x2:left+innerW,y1:y,y2:y,class:'grid-line'}));add(el('text',{x:left+innerW+8,y:y+4,class:'axis'},fmt(value)));}
     const priceLabel=add(el('text',{x:8,y:priceTop+12,class:'panel-label','aria-label':'价格（后复权）'},'价格'));
     priceLabel.appendChild(el('tspan',{x:8,dy:15},'后复权'));
-    add(el('text',{x:12,y:signalTop+18,class:'panel-label'},'信号'));add(el('text',{x:12,y:positionTop+12,class:'panel-label'},'持仓'));add(el('text',{x:12,y:explainTop+15,class:'panel-label'},'事件'));
+    add(el('text',{x:12,y:signalTop+18,class:'panel-label'},isPaper?'决策':'信号'));add(el('text',{x:12,y:positionTop+12,class:'panel-label'},'持仓'));add(el('text',{x:12,y:explainTop+15,class:'panel-label'},isPaper?'成交':'事件'));
     const candleW=Math.max(3,Math.min(10,innerW/rows.length*.58));rows.forEach((row,index)=>{const rising=Number(row.close)>=Number(row.open),color=css(rising?'--up':'--down'),cx=x(index);add(el('line',{x1:cx,x2:cx,y1:yPrice(row.high),y2:yPrice(row.low),stroke:color,'stroke-width':1}));add(el('rect',{x:cx-candleW/2,y:yPrice(Math.max(row.open,row.close)),width:candleW,height:Math.max(1.5,Math.abs(yPrice(row.open)-yPrice(row.close))),fill:rising?color:css('--surface'),stroke:color,'stroke-width':1}));});
     const seriesKeys=[...new Set(allSeries.map(item=>item.key))];const seriesColors=['--signal','--position','--fill','--up'];
     if(state.layers.signal&&!enhanced)seriesKeys.forEach((key,seriesIndex)=>{const points=[];const guidePoints=new Map();rows.forEach((row,index)=>{const observation=byDate.get(row.date)?.observation;if(observation?.status!=='READY'||(views.length&&observation.signal_panel))return;const series=(observation.series||[]).find(item=>item.key===key);if(!series)return;points.push([x(index),ySignal(series.value),`${row.date} ${series.label} ${fmt(series.value)}`]);for(const guide of series.guides||[]){if(!guidePoints.has(guide.key))guidePoints.set(guide.key,{label:guide.label,points:[]});guidePoints.get(guide.key).points.push([x(index),ySignal(guide.value),`${row.date} ${guide.label} ${fmt(guide.value)}`]);}});const color=css(seriesColors[seriesIndex%seriesColors.length]);if(points.length>1)add(el('path',{d:linePath(points),fill:'none',stroke:color,'stroke-width':2}));points.forEach(point=>add(el('circle',{cx:point[0],cy:point[1],r:3,fill:color,'data-series-key':key,'aria-label':point[2]})));guidePoints.forEach((guide,guideKey)=>{if(guide.points.length>1)add(el('path',{d:linePath(guide.points),fill:'none',stroke:css('--fill'),'stroke-width':1,'stroke-dasharray':'4 4',opacity:.72}));guide.points.forEach(point=>add(el('circle',{cx:point[0],cy:point[1],r:2.5,fill:css('--fill'),'data-guide-key':guideKey,'aria-label':point[2]})));});});
     if(enhanced){if(state.layers.signal)drawSignalPanel(rows,signalView,{left,innerW,top:signalTop,height:signalH,x});}
-    else if(!allSeries.length){
+    else if(!isPaper&&!allSeries.length){
       const warning=latestUnavailable?`${latestUnavailable.date} 观察不可用：${latestUnavailable.observation.message}`:'暂无可信策略信号';
       const lines=wrapExplanation(warning,innerW-24,measure),maxLines=Math.max(1,Math.floor((signalH-16)/18));
       const node=add(el('text',{x:left+12,y:signalTop+20,class:'axis','data-signal-warning':latestUnavailable?'unavailable':'empty'},''));
       lines.slice(0,maxLines).forEach((line,index)=>node.appendChild(el('tspan',{x:left+12,dy:index?18:0},index===maxLines-1&&lines.length>maxLines?`${line.slice(0,-1)}…`:line)));
       node.appendChild(el('title',{},warning));
     }
-    else if(state.layers.signal){[smin0,smax0].forEach(value=>add(el('text',{x:left+innerW+8,y:ySignal(value)+4,class:'axis'},fmt(value))));if(!views.length)seriesKeys.forEach((key,index)=>{const series=allSeries.find(item=>item.key===key);add(el('text',{x:left+index*150,y:signalTop+12,fill:css(seriesColors[index%seriesColors.length]),class:'axis'},series.label));});else signalLegend.replaceChildren(...seriesKeys.map((key,index)=>{const label=document.createElement('span');label.textContent=allSeries.find(item=>item.key===key).label;label.style.color=css(seriesColors[index%seriesColors.length]);return label;}));}
+    else if(!isPaper&&state.layers.signal){[smin0,smax0].forEach(value=>add(el('text',{x:left+innerW+8,y:ySignal(value)+4,class:'axis'},fmt(value))));if(!views.length)seriesKeys.forEach((key,index)=>{const series=allSeries.find(item=>item.key===key);add(el('text',{x:left+index*150,y:signalTop+12,fill:css(seriesColors[index%seriesColors.length]),class:'axis'},series.label));});else signalLegend.replaceChildren(...seriesKeys.map((key,index)=>{const label=document.createElement('span');label.textContent=allSeries.find(item=>item.key===key).label;label.style.color=css(seriesColors[index%seriesColors.length]);return label;}));}
     fills.filter(item=>rows.some(row=>row.date===fillDate(item))).forEach(item=>{if(!state.layers.fill)return;const date=fillDate(item),index=rows.findIndex(row=>row.date===date),row=rows[index],buy=String(item.side).toUpperCase()==='BUY',cy=yPrice(buy?row.low:row.high)+(buy?-25:25),cx=x(index);add(el('path',{d:`M${cx},${cy} l-6,${buy?9:-9} h12 z`,fill:css('--fill'),'data-fill-id':item.fill_id}));});
     if(state.layers.position){const positionPoints=[];rows.forEach((row,index)=>{const snapshot=snapshotByDate.get(row.date);const quantity=snapshot?.quantity;if(quantity!=null)positionPoints.push([x(index),yPosition(quantity)]);});if(positionPoints.length){let d=`M${positionPoints[0][0]},${positionPoints[0][1]}`;for(let i=1;i<positionPoints.length;i++)d+=` H${positionPoints[i][0]} V${positionPoints[i][1]}`;add(el('path',{d,fill:'none',stroke:css('--position'),'stroke-width':2}));}[0,qmax].forEach(value=>add(el('text',{x:left+innerW+8,y:yPosition(value)+4,class:'axis'},value?Number(value).toLocaleString('zh-CN'):'0')));}
     [signalTop-10,positionTop-9,explainTop-9].forEach((y,index)=>{add(el('line',{x1:0,x2:width,y1:y,y2:y,class:'panel-rule'}));});add(el('rect',{x:left,y:explainTop,width:innerW,height:explainH,fill:css('--surface2')}));add(el('line',{x1:0,x2:width,y1:axisTop-4,y2:axisTop-4,class:'panel-rule'}));
@@ -405,7 +396,7 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
       showEvents(row.date);
       cross.style.display='';priceDot.style.display='';
       cross.setAttribute('x1',x(index));cross.setAttribute('x2',x(index));priceDot.setAttribute('cx',x(index));priceDot.setAttribute('cy',yPrice(row.close));
-      const first=!enhanced&&state.layers.signal&&observation?.status==='READY'&&(!views.length||!observation.signal_panel)?observation.series?.[0]:null;
+      const first=!isPaper&&!enhanced&&state.layers.signal&&observation?.status==='READY'&&(!views.length||!observation.signal_panel)?observation.series?.[0]:null;
       signalDot.style.display=first?'':'none';if(first){signalDot.setAttribute('cx',x(index));signalDot.setAttribute('cy',ySignal(first.value));}
       tooltip.innerHTML=`<div class="head">${safe(row.date)}</div><div class="head">行情（后复权）</div><div class="grid"><span>开 / 高</span><span>${fmt(row.open)} / ${fmt(row.high)}</span><span>低 / 收</span><span>${fmt(row.low)} / ${fmt(row.close)}</span></div>`;
       if(enhanced&&state.layers.signal){
@@ -413,7 +404,7 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
         signalLegend.replaceChildren(...(items.length?items.map((item,index)=>{const label=document.createElement('span');const value=item.status==='AVAILABLE'?(signalView.kind==='group'?signalValue(item.value,signalView.item):item.options.find(option=>option.key===item.value).label):availabilityLabel(item);label.textContent=`${item.label}：${value}${(item.guides||[]).map(guide=>` / ${guide.label} ${signalValue(guide.value,signalView.item)}`).join('')}`;label.title=[item.description,item.reason].filter(Boolean).join('；');label.style.color=css(stateColor(signalView.kind==='state'&&item.status==='AVAILABLE'?item.options.findIndex(option=>option.key===item.value):index));return label;}):[Object.assign(document.createElement('span'),{textContent:observation?.status==='UNAVAILABLE'?`观察不可用：${observation.message}`:'当日没有该声明的信号观察',title:observation?.message||''})]));
         if(pointer&&pointer[1]>=signalTop&&pointer[1]<=signalTop+signalH)tooltip.innerHTML=`<div class="head">${safe(row.date)}</div>${signalDetails(observation,signalView)}`;
       }
-      if(!enhanced&&state.layers.signal&&pointer&&pointer[1]>=signalTop&&pointer[1]<=signalTop+signalH){
+      if(!isPaper&&!enhanced&&state.layers.signal&&pointer&&pointer[1]>=signalTop&&pointer[1]<=signalTop+signalH){
         const failure=observation?.status==='UNAVAILABLE'?{date:row.date,observation}:!rowObservations.length?latestUnavailable:null;
         if(failure)tooltip.innerHTML=`<div class="head">${safe(failure.date)}</div>${signalDetails(failure.observation,null)}`;
       }

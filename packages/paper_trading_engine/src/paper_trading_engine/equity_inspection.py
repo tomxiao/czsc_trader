@@ -145,11 +145,11 @@ class _InspectionChartMarketData:
         return self.daily
 
 
-def _inspect_forward_chart(store, facts, market_data, cache_dir, *, strategy_root=None):
+def _inspect_forward_chart(store, facts, market_data, cache_dir):
     rows = facts["decisions"]
     # Use the same projection and renderer as the account console, with the
     # isolated HFQ product and saved account facts.
-    chart = AccountChartService(store, market_data=market_data, cache_dir=cache_dir, strategy_root=strategy_root)
+    chart = AccountChartService(store, market_data=market_data, cache_dir=cache_dir)
     try:
         context = chart._request(store.virtual_account("equity"))
     finally:
@@ -348,8 +348,7 @@ def inspect_equity_release(*, candidate, dataflows, binding, requests, execution
             coverage.update(local_coverage)
             if facts["decisions"]:
                 try:
-                    charts[scenario.case_id] = _inspect_forward_chart(store, facts, market_data, path.parent,
-                        strategy_root=permit.isolated_repository / 'strategies')
+                    charts[scenario.case_id] = _inspect_forward_chart(store, facts, market_data, path.parent)
                 except Exception as exc:
                     charts[scenario.case_id] = {"status": "FAIL", "error": f"{type(exc).__name__}: {exc}"}
         except Exception as exc:

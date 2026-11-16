@@ -47,15 +47,18 @@ def native_fixture(tmp_path, market, computation=StrategyComputation.STATEFUL_ST
         from strategy_runtime.equity_replay import StrategyStateSchema, StateField, StateValueType
         source = request.candidate.source_root / 'strategy.py'
         source.write_text(
+            "from dataclasses import replace\n"
             "from datetime import timedelta\n"
             "from zoneinfo import ZoneInfo\n"
-            "from strategy_runtime import AccountDecision, AccountStepResult, StateRecord, StepDataWindow\n"
+            "from strategy_runtime import AccountDecision, AccountStepResult, DecisionCalculationSnapshot, StateRecord, StepDataWindow\n"
             "def step(ctx, state):\n"
             f"    day = ctx.point.observed_through.astimezone(ZoneInfo({request.candidate.instrument.timezone!r})).date()\n"
             "    rows = ctx.dfls.fetch(StepDataWindow('seed', day - timedelta(days=1), day))\n"
             "    assert len(rows) == 2\n"
             "    row = rows.iloc[-1]\n"
             "    decision = AccountDecision.from_facts(1, 'hold', facts={'seed': row.score}, next_watch='next session')\n"
+            "    calculation = DecisionCalculationSnapshot('target = 1', (('seed', float(row.score)),), decision.target, 'fixture target')\n"
+            "    decision = replace(decision, explanation=replace(decision.explanation, calculation=calculation))\n"
             "    return AccountStepResult(decision, account=state.account, cycle_values=StateRecord())\n",
             encoding='utf-8')
         seed = b'Date,score\n2026-10-11,0\n2026-10-12,1\n2026-10-13,2\n2026-10-14,3\n'
@@ -208,6 +211,7 @@ def test_native_dual_market_inspection_freezes_exact_v5_package(tmp_path, market
     assert metadata['scenarios']['partial-duplicate-restart']['decision_count'] == 1
     assert 'reconciliation-blocked' not in metadata['scenarios']
     assert html_files and all('id="forward-context"' in path.read_text(encoding='utf-8') for path in html_files)
+    assert any('"expression":"target = 1"' in path.read_text(encoding='utf-8') for path in html_files)
     assert get_freeze_result(repository, operation.request_id) == receipt == freeze_candidate(repository, operation)
     package = validate_release_package(repository.strategy_root, 'S999-v1')
     assert package.package_sha256 == report.release.package_sha256

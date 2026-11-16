@@ -2899,15 +2899,14 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
             keys = [tuple(row) for row in self._connection.execute(sql, values).fetchall()]
         return [self.account_decision(str(account), str(decision)) for account, decision in keys]
 
-    def account_observation_facts(self, account_id: str) -> tuple[list[dict[str, Any]], ...]:
-        """Collect one committed view of the account for observation consumers."""
+    def account_chart_facts(self, account_id: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+        """Read decisions, fills and snapshots in one committed account view."""
         with self._lock:
             owns_snapshot = not self._connection.in_transaction
             if owns_snapshot:
                 self._connection.execute("BEGIN")
             try:
-                return (self.account_decisions(account_id), self.account_intents(account_id),
-                        self.account_orders(account_id), self.account_fills(account_id),
+                return (self.account_decisions(account_id), self.account_fills(account_id),
                         self.account_snapshots(account_id))
             finally:
                 if owns_snapshot:

@@ -43,64 +43,6 @@ function context(){
  const panel={groups:[],series:[],states:[{key:'state',label:'状态',description:'',options:[{key:'wait',label:'等待'}],value:'wait',status:'AVAILABLE',reason:null}],explanation:narrative};
  return {mode:'BACKTEST',strategy:{reference_id:'TEST',symbol:'TEST'},window:{start:'2026-01-05',end:'2026-01-07'},market_data:{as_of:'2026-01-07',bars:['2026-01-05','2026-01-06','2026-01-07'].map(date=>({date,open:1,high:1.1,low:.9,close:1}))},observations:[{signal_date:'2026-01-05',decision_id:'old',observation:{status:'READY',definition_sha256:'old',series:[],facts:[]}},{signal_date:'2026-01-06',decision_id:'failed',observation:{status:'UNAVAILABLE',message:'计算错误'}},{signal_date:'2026-01-07',decision_id:'current',observation:{status:'READY',definition_sha256:'current',series:[],facts:[],signal_panel:panel}}],execution:{decisions:[],fills:[{fill_id:'trade',session:'2026-01-10',occurred_at:'2026-01-10',time_precision:'SESSION',side:'BUY',quantity:100,price:1,fee:.1}],snapshots:[{session:'2026-01-07',quantity:100}]}};
 }
-test('MU first paper signal shows the recorded no-order decision and explanation on its signal date',()=>{
- const f=fixture(),c=context();
- c.mode='PAPER';c.strategy={symbol:'MU',account_id:'s018-v1',release_id:'S018-v1',currency:'USD'};
- c.window={selection_data_cutoff:'2026-10-30',forward_observation_start:'2026-11-06'};
- c.market_data.bars=['2026-11-05','2026-11-06','2026-11-09'].map(date=>({date,open:10,high:11,low:9,close:10}));
- c.observations=[];c.execution.fills=[];
- c.execution.decisions=[{decision_id:'MU-FIRST',signal_date:'2026-11-06',valid_session:'2026-11-09',generated_at:'2026-11-08T13:36:43Z',
-   action:'WAIT',status:'COMPLETED',state_reason:'NO_ORDER',target_quantity:0,
-   explanation:{judgment:'no opportunity',basis:[{key:'first',text:'已记录的入场判断'}],next_watch:'下一根日线',explanation:'未满足入场条件'}}];
- f.window.location={hash:'#2026-11-06'};f.mount(f.root,c);
- assert.equal(f.root.dataset.selectedDate,'2026-11-06');
- assert.match(f.root.querySelector('.event-heading').textContent,/2026-11-06 · 决策 1 笔/);
- assert.match(f.root.querySelector('.event-details').textContent,/2026-11-08 21:36:43 · 信号日 2026-11-06 · 生效日 2026-11-09/);
- assert.match(f.root.querySelector('.event-details').textContent,/策略判断：no opportunity/);
- assert.match(f.root.querySelector('.event-details').textContent,/执行结果：无需下单/);
- assert.match(f.root.querySelector('.signal-reading').textContent,/no opportunity.*已记录的入场判断/);
- f.svg.fire('keydown',{key:'ArrowRight'});
- assert.equal(f.root.dataset.selectedDate,'2026-11-09');
- assert.match(f.root.querySelector('.event-heading').textContent,/无可展示事件/);
- const current=fixture(),old=c.execution.decisions[0];
- c.execution.decisions=[{...old,decision_id:'MU-RERUN',explanation:{...old.explanation,judgment:'继续空仓 · 无需下单'}},
-   {...old,status:'SUPERSEDED',state_reason:'PLAN_REPLACED'}];
- current.window.location={hash:'#2026-11-06'};current.mount(current.root,c);
- assert.match(current.root.querySelector('.signal-reading').textContent,/继续空仓 · 无需下单/);
- assert.match(current.root.querySelector('.event-details').textContent,/已替代/);
-});
-test('S011 forward events distinguish a renewed buy plan from strategy entry, and flat exit from a sell',()=>{
- const graph=fixture(),chart=context();
- chart.mode='PAPER';chart.strategy.currency='CNY';chart.observations=[];chart.execution.fills=[];
- chart.market_data.bars=['2026-03-04','2026-03-05','2026-03-06'].map(date=>({date,open:1,high:1.1,low:.9,close:1}));
- const cases=[
-   {decision_id:'hold',signal_date:'2026-03-04',valid_session:'2026-03-05',generated_at:'2026-03-04T12:00:00Z',
-     explanation:{judgment:'延续目标仓位',basis:[{key:'conditions',text:'压力评分 0.0294872，退出线 0.025。'}]},
-     action:'BUY',target_position:1,position_at_decision:0,target_quantity:100300,status:'INCOMPLETE',state_reason:'EXECUTION_EXPIRED',
-     plan_explanation:{summary:'上轮过期。',detail:'上轮买入委托过期未提交，本轮按可用资金重建计划。'},
-     result_explanation:{summary:'本轮过期。',detail:'本轮买入委托过期未提交，账户仍为空仓。'},
-     execution_plan:{trigger:'PREVIOUS_ZERO_FILL',orders:[{side:'BUY',quantity:100300}],
-       planning_result:{status:'CONSTRAINED',reasons:['INSUFFICIENT_CASH']}}},
-   {decision_id:'exit',signal_date:'2026-03-05',valid_session:'2026-03-06',generated_at:'2026-03-05T12:00:00Z',
-     explanation:{judgment:'目标清仓',basis:[{key:'conditions',text:'信号已到期。'}]},
-     action:'WAIT',target_position:0,position_at_decision:0,target_quantity:0,status:'COMPLETED',state_reason:'NO_ORDER',
-     execution_plan:{trigger:'TARGET_CHANGED',orders:[],planning_result:{status:'NO_CHANGE',reasons:[]}}},
- ];
- chart.execution.decisions=cases;
- chart.execution.intents=[{decision_id:'hold',status:'EXPIRED',channel_order_id:null}];
- graph.window.location={hash:'#2026-03-04'};graph.mount(graph.root,chart);
- const events=()=>graph.root.querySelector('.event-details').textContent;
- assert.match(events(),/策略判断：延续目标仓位\n目标仓位：100%/);
- assert.match(events(),/执行计划：买入 100,300 股\n计划说明：上轮买入委托过期未提交，本轮按可用资金重建计划。/);
- assert.match(events(),/执行结果：未完成；委托 已过期\n结果说明：本轮买入委托过期未提交，账户仍为空仓。/);
- assert.doesNotMatch(events(),/上一交易日零成交/);
- assert.doesNotMatch(events(),/入场/);
- graph.svg.fire('keydown',{key:'ArrowRight'});
- assert.match(events(),/策略判断：目标清仓\n目标仓位：0%/);
- assert.match(events(),/执行计划：无委托\n计划说明：策略说明未记录/);
- assert.match(events(),/执行结果：无需下单\n结果说明：策略说明未记录/);
- assert.doesNotMatch(events(),/卖出|等待|已完成/);
-});
 test('snapshot interpretation is text only and explanation preserves judgment',()=>{
  const f=fixture();f.mount(f.root,context());const reading=f.root.querySelector('.signal-reading');
  assert.match(reading.textContent,/等待条件满足/);assert.match(reading.textContent,/<img src=x/);assert.equal(reading.querySelector('img'),null);
@@ -108,16 +50,50 @@ test('snapshot interpretation is text only and explanation preserves judgment',(
 });
 test('paper fill price, amount and fees all use the bound channel currency',()=>{
  for(const [currency,unit] of [['CNY','元'],['USD','美元']]){
-  const f=fixture(),c=context();c.mode='PAPER';c.strategy.currency=currency;
+  const f=fixture(),c=context();c.mode='PAPER';c.strategy.currency=currency;c.strategy.market_timezone=currency==='USD'?'America/New_York':'Asia/Shanghai';
   f.window.location={hash:'#2026-01-10'};f.mount(f.root,c);
   const rendered=f.svg.textContent;
-  assert.ok(rendered.includes('价格 1.000 '+unit+'（不复权）'));
+  assert.ok(rendered.includes('成交价 1.000 '+unit+'（不复权）'));
   assert.ok(rendered.includes('金额 100.00 '+unit));
   assert.ok(rendered.includes('费用 0.10 '+unit));
   if(currency==='USD')assert.doesNotMatch(rendered,/\d 元/);
  }
  const f=fixture(),c=context();c.mode='PAPER';
  assert.throws(()=>f.mount(f.root,c),/explicit channel currency/);
+});
+test('paper shows effective-day decisions by interval and fills by market session',()=>{
+ const f=fixture(),c=context();
+ c.mode='PAPER';c.contract_version='pte_forward_chart.v7';
+ c.strategy={symbol:'MU',account_id:'s019-v1',release_id:'S019-v1',currency:'USD',market_timezone:'America/New_York'};
+ c.market_data.bars=['2026-11-06','2026-11-09','2026-11-10'].map(date=>({date,open:10,high:11,low:9,close:10}));
+ const first={decision_id:'first',signal_date:'2026-11-06',valid_session:'2026-11-09',generated_at:'2026-11-08T13:36:43Z',status:'COMPLETED',
+  execution_interval:{start:'2026-11-09T14:30:00Z',end:'2026-11-09T15:00:00Z'},
+  explanation:{judgment:'继续空仓',basis:[{text:'未满足入场条件'}]}};
+ const second={...first,decision_id:'second',signal_date:'2026-11-09',generated_at:'2026-11-09T15:00:00Z',
+  execution_interval:{start:'2026-11-09T15:00:00Z',end:'2026-11-09T15:30:00Z'},
+  explanation:{calculation:{expression:'close < threshold',inputs:{close:98,threshold:100},result:true,summary:'记录的决策文案 <b>文本</b>'}}};
+ c.execution.decisions=[second,{...first,decision_id:'superseded',status:'SUPERSEDED'},first];
+ c.execution.fills=[
+  {fill_id:'one',decision_id:'second',occurred_at:'2026-11-11T03:30:00+08:00',session:'2026-11-10',time_precision:'TIMESTAMP',side:'BUY',quantity:2,price:10,fee:.02},
+  {fill_id:'two',decision_id:'second',occurred_at:'2026-11-11T03:31:00+08:00',session:'2026-11-10',time_precision:'TIMESTAMP',side:'BUY',quantity:3,price:10,fee:.03},
+ ];
+ f.window.location={hash:'#2026-11-06'};f.mount(f.root,c);
+ const reading=f.root.querySelector('.decision-reading');
+ assert.match(reading.textContent,/当日无决策记录/);
+ f.svg.fire('keydown',{key:'ArrowRight'});
+ assert.deepEqual(reading.querySelectorAll('.decision-row').map(row=>row.dataset.decisionId),['first','second']);
+ assert.match(reading.textContent,/09:30:00 – 10:00:00.*未记录计算表达式/);
+ assert.match(reading.textContent,/表达式：close < threshold输入：close = 98；threshold = 100结果：成立/);
+ assert.match(reading.textContent,/<b>文本<\/b>/);assert.equal(reading.querySelector('b'),null);
+ assert.match(f.root.querySelector('.event-heading').textContent,/当日无成交/);
+ assert.equal(f.root.querySelector('.event-details').textContent,'');
+ f.svg.fire('keydown',{key:'ArrowRight'});
+ assert.match(reading.textContent,/当日无决策记录/);
+ assert.match(f.root.querySelector('.event-heading').textContent,/2026-11-10 · 成交 2 笔/);
+ const lines=f.root.querySelector('.event-details').textContent.split('\n');
+ assert.equal(lines.length,2);
+ assert.match(lines[0],/2026-11-10 14:30:00（America\/New_York） · 买入 2 股 · 成交价 .* · 成交金额 20.00 美元 · 费用 0.02 美元/);
+ assert.match(lines[1],/买入 3 股/);
 });
 test('chart keyboard selection clears prior judgment and preserves non-trading event precision and fee',()=>{
  const f=fixture();f.mount(f.root,context());assert.equal(f.root.querySelector('#forward-event-date'),null);f.svg.fire('keydown',{key:'End'});

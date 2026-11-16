@@ -5,6 +5,7 @@ import json
 
 import pytest
 from strategy_runtime import (
+    DecisionCalculationSnapshot,
     EvidenceGuide,
     GuideValueRef,
     ObservationDefinition,
@@ -15,6 +16,7 @@ from strategy_runtime import (
     SignalBasisDefinition,
     SignalExplanationCase,
     SignalExplanationDefinition,
+    SignalExplanationSnapshot,
     SignalGroup,
     SignalPanelDefinition,
     SignalStateDefinition,
@@ -27,6 +29,20 @@ from strategy_runtime import (
     observe_execution_plan,
 )
 from packages.strategy_runtime.tests.observation_fixture_support import observed_plan
+
+
+def test_decision_calculation_roundtrips_optional_typed_facts():
+    old = {'state_key': 'target', 'case_key': 'flat', 'judgment': '继续空仓',
+           'basis': [{'key': 'reason', 'text': '当日价格低于门槛'}],
+           'next_watch': '下一交易日', 'explanation': '保留判断依据'}
+    snapshot = SignalExplanationSnapshot.from_dict(old)
+    assert snapshot.to_dict() == old
+    facts = DecisionCalculationSnapshot('close > threshold', (('收盘价', 98.0), ('门槛', 100)),
+                                        False, '收盘价低于门槛，继续空仓。')
+    recorded = replace(snapshot, calculation=facts)
+    assert SignalExplanationSnapshot.from_dict(recorded.to_dict()) == recorded
+    with pytest.raises(RuntimeContractError, match='finite numeric'):
+        replace(facts, result=float('inf'))
 
 
 def text(*parts):

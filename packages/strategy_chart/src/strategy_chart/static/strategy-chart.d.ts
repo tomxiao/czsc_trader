@@ -10,6 +10,8 @@ interface DecisionExplanation {
   state_key: string; case_key: string; judgment: string;
   basis: Array<{key: string; text: string}>;
   next_watch: string; explanation: string;
+  calculation?: {expression: string; inputs: Record<string, number | boolean | string>;
+    result: number | boolean | string; summary: string};
 }
 interface SignalPanel {
   groups: SignalGroup[];
@@ -41,12 +43,14 @@ type ChartObservation = (
   )
 ) | {status: 'UNAVAILABLE'; message: string};
 interface StrategyChartContext {
+  contract_version?: string;
   mode: 'BACKTEST' | 'PAPER';
   strategy: {
     symbol: string; release_id?: string; reference_id?: string;
     name?: string; account_id?: string;
     /** Required in PAPER mode and supplied by the bound execution channel. */
     currency?: 'CNY' | 'USD';
+    market_timezone?: 'Asia/Shanghai' | 'America/New_York';
   };
   window: {start?: string; end?: string; selection_data_cutoff?: string; forward_observation_start?: string | null};
   market_data: {
@@ -60,21 +64,11 @@ interface StrategyChartContext {
   execution: {
     decisions: Array<{
       decision_id: string; generated_at: string; signal_date: string; valid_session: string;
+      execution_interval?: {start: string; end: string} | null;
       action: string; target_quantity: number; status: string;
       state_reason?: string; state_changed_at?: string;
       explanation?: DecisionExplanation | null;
-      target_position?: number | null; position_at_decision?: number | null;
-      plan_explanation?: {summary: string; detail: string};
-      result_explanation?: {summary: string; detail: string};
-      execution_plan?: {
-        orders: Array<{side: 'BUY' | 'SELL'; quantity: number}>;
-        trigger: 'INITIAL_TARGET' | 'TARGET_CHANGED' | 'PREVIOUS_ZERO_FILL' | 'UNCHANGED_TARGET' | null;
-        planning_result: {status: 'READY' | 'CONSTRAINED' | 'BLOCKED' | 'NO_CHANGE' | 'SUPPRESSED';
-          reasons: string[]; desired_quantity: number; planned_quantity: number} | null;
-      };
     }>;
-    intents?: Array<{decision_id: string; status: string; channel_order_id: string | null;
-      channel_status?: string | null; submitted_at?: string | null}>;
     fills: Array<{
       fill_id: string; decision_id?: string; occurred_at: string; session?: string; time_precision?: 'SESSION' | 'TIMESTAMP';
       side: 'BUY' | 'SELL'; quantity: number; price: number; fee: number | null;

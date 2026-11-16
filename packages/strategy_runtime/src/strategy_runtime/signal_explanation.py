@@ -4,7 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TypeAlias
 
-from .observation import ObservationFormat, _fields, _key, _require, _text, _tuple
+from .observation import ObservationFormat, _fields, _key, _number, _require, _text, _tuple
 
 
 @dataclass(frozen=True, slots=True)
@@ -181,6 +181,47 @@ class SignalBasisSnapshot:
 
 
 @dataclass(frozen=True, slots=True)
+class DecisionCalculationSnapshot:
+    """Plain-text expression and values captured during the strategy step."""
+
+    expression: str
+    inputs: tuple[tuple[str, str | bool | int | float], ...]
+    result: str | bool | int | float
+    summary: str
+
+    def __post_init__(self):
+        _text(self.expression)
+        _text(self.summary)
+        _require(type(self.inputs) is tuple, "decision calculation inputs require a tuple")
+        labels = set()
+        for item in self.inputs:
+            _require(type(item) is tuple and len(item) == 2, "decision input requires label and value")
+            label, value = item
+            _text(label)
+            _require(label not in labels, "duplicate decision calculation input")
+            labels.add(label)
+            self._validate_value(value)
+        self._validate_value(self.result)
+
+    @staticmethod
+    def _validate_value(value):
+        if type(value) is str:
+            _text(value)
+        elif type(value) is not bool:
+            _number(value)
+
+    def to_dict(self):
+        return {"expression": self.expression, "inputs": dict(self.inputs),
+                "result": self.result, "summary": self.summary}
+
+    @classmethod
+    def from_dict(cls, value):
+        _fields(value, "expression inputs result summary")
+        _require(type(value["inputs"]) is dict, "decision calculation inputs must be an object")
+        return cls(value["expression"], tuple(value["inputs"].items()), value["result"], value["summary"])
+
+
+@dataclass(frozen=True, slots=True)
 class SignalExplanationSnapshot:
     state_key: str
     case_key: str
@@ -188,6 +229,7 @@ class SignalExplanationSnapshot:
     basis: tuple[SignalBasisSnapshot, ...]
     next_watch: str
     explanation: str
+    calculation: DecisionCalculationSnapshot | None = None
 
     def __post_init__(self):
         _key(self.state_key)
@@ -196,18 +238,27 @@ class SignalExplanationSnapshot:
             _text(text)
         _tuple(self.basis, SignalBasisSnapshot)
         _require(bool(self.basis), "explanation snapshot requires basis")
+        _require(self.calculation is None or type(self.calculation) is DecisionCalculationSnapshot,
+                 "explanation calculation requires a decision calculation snapshot")
 
     def to_dict(self):
-        return {"state_key": self.state_key, "case_key": self.case_key, "judgment": self.judgment,
+        result = {"state_key": self.state_key, "case_key": self.case_key, "judgment": self.judgment,
                 "basis": [{"key": x.key, "text": x.text} for x in self.basis],
                 "next_watch": self.next_watch, "explanation": self.explanation}
+        if self.calculation is not None:
+            result["calculation"] = self.calculation.to_dict()
+        return result
 
     @classmethod
     def from_dict(cls, value):
-        _fields(value, "state_key case_key judgment basis next_watch explanation")
+        has_calculation = type(value) is dict and "calculation" in value
+        _fields(value, "state_key case_key judgment basis next_watch explanation"
+                + (" calculation" if has_calculation else ""))
         _require(type(value["basis"]) is list, "explanation basis must be a list")
-        return cls(**{**value, "basis": tuple(SignalBasisSnapshot(**_fields(x, "key text"))
-                                             for x in value["basis"])})
+        return cls(value["state_key"], value["case_key"], value["judgment"],
+                   tuple(SignalBasisSnapshot(**_fields(x, "key text")) for x in value["basis"]),
+                   value["next_watch"], value["explanation"],
+                   DecisionCalculationSnapshot.from_dict(value["calculation"]) if has_calculation else None)
 
 
 def materialize_explanation(definition: SignalExplanationDefinition, panel) -> SignalExplanationSnapshot:
