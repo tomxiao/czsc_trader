@@ -85,15 +85,45 @@ test('paper shows effective-day decisions by interval and fills by market sessio
  assert.match(reading.textContent,/09:30:00 – 10:00:00.*未记录计算表达式/);
  assert.match(reading.textContent,/表达式：close < threshold输入：close = 98；threshold = 100结果：成立/);
  assert.match(reading.textContent,/<b>文本<\/b>/);assert.equal(reading.querySelector('b'),null);
- assert.match(f.root.querySelector('.event-heading').textContent,/当日无成交/);
- assert.equal(f.root.querySelector('.event-details').textContent,'');
+ const fills=()=>f.svg.querySelectorAll('foreignObject').at(-1);
+ assert.match(fills().querySelector('.event-heading').textContent,/当日无成交/);
+ assert.equal(fills().querySelector('.event-details').textContent,'');
  f.svg.fire('keydown',{key:'ArrowRight'});
  assert.match(reading.textContent,/当日无决策记录/);
- assert.match(f.root.querySelector('.event-heading').textContent,/2026-11-10 · 成交 2 笔/);
- const lines=f.root.querySelector('.event-details').textContent.split('\n');
+ assert.match(fills().querySelector('.event-heading').textContent,/2026-11-10 · 成交 2 笔/);
+ const lines=fills().querySelector('.event-details').textContent.split('\n');
  assert.equal(lines.length,2);
  assert.match(lines[0],/2026-11-10 14:30:00（America\/New_York） · 买入 2 股 · 成交价 .* · 成交金额 20.00 美元 · 费用 0.02 美元/);
  assert.match(lines[1],/买入 3 股/);
+});
+test('paper decision and fill panels use the same labeled layout with or without market bars',()=>{
+ for(const width of [1440,600])for(const empty of [false,true]){
+  const f=fixture(),data=context();
+  f.stage.clientWidth=width;data.mode='PAPER';data.strategy.currency='CNY';data.strategy.market_timezone='Asia/Shanghai';
+  if(empty)data.market_data.bars=[];
+  f.mount(f.root,data);
+  assert.equal(f.root.querySelector('.signal-panel-footer'),null);
+  const [decision,fill]=f.svg.querySelectorAll('foreignObject');
+  for(const [panel,title] of [[decision,'决策'],[fill,'成交']]){
+   const label=f.svg.children.find(e=>e.attrs.class==='panel-label'&&e.textContent===title);
+   assert.equal(Number(label.attrs.y),Number(panel.attrs.y)+15);
+   assert.ok(Number(label.attrs.x)<Number(panel.attrs.x));
+   assert.equal(panel.querySelector('.event-scroll').attrs.tabindex,'0');
+   assert.equal(panel.attrs.height,'168');
+  }
+  assert.equal(decision.attrs.x,fill.attrs.x);
+  assert.equal(decision.attrs.width,fill.attrs.width);
+  if(!empty){
+   const overlay=f.svg.children.at(-1);
+   assert.equal(Number(overlay.attrs.y)+Number(overlay.attrs.height),Number(decision.attrs.y));
+  }
+  const layer=f.root.querySelectorAll('[data-layer]').find(button=>button.dataset.layer==='signal');
+  layer.fire('click');
+  assert.equal(f.root.querySelector('.decision-reading').hidden,true);
+  assert.equal(f.svg.querySelectorAll('foreignObject').at(-1).querySelector('.event-scroll').hidden,false);
+  layer.fire('click');
+  assert.equal(f.root.querySelector('.decision-reading').hidden,false);
+ }
 });
 test('chart keyboard selection clears prior judgment and preserves non-trading event precision and fee',()=>{
  const f=fixture();f.mount(f.root,context());assert.equal(f.root.querySelector('#forward-event-date'),null);f.svg.fire('keydown',{key:'End'});
