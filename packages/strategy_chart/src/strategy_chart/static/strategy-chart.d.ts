@@ -52,7 +52,12 @@ interface StrategyChartContext {
     currency?: 'CNY' | 'USD';
     market_timezone?: 'Asia/Shanghai' | 'America/New_York';
   };
-  window: {start?: string; end?: string; selection_data_cutoff?: string; forward_observation_start?: string | null};
+  window: {
+    start?: string; end?: string; selection_data_cutoff?: string; forward_observation_start?: string | null;
+    account_forward_observation_start?: string | null;
+    history_page?: number;
+    history_pages?: Array<{start: string; end: string; fingerprint: string}>;
+  };
   market_data: {
     as_of: string;
     bars: Array<{date: string; open: number; high: number; low: number; close: number}>;

@@ -614,7 +614,7 @@ class AccountEngine:
         }
 
     def metrics(self, account_id: str, start: str | None = None, end: str | None = None):
-        from .performance_export import calculate_metrics, closed_trade_pnl
+        from .performance_export import calculate_metrics, closed_trade_pnl, fill_market_session
 
         account = self.store.virtual_account(account_id)
         all_snapshots = self.store.account_snapshots(account_id)
@@ -631,14 +631,9 @@ class AccountEngine:
         effective_end = end or (snapshots[-1]["session"] if snapshots else None)
 
         def fill_session(row) -> str:
-            value = datetime.fromisoformat(str(row["occurred_at"]).replace("Z", "+00:00"))
             rules = self.store.equity_account_rules(account_id)
             zone = self._BEIJING if rules is None else rules.timezone
-            if value.tzinfo is None:
-                if rules is not None:
-                    raise ValueError("US fills require timezone-aware channel timestamps")
-                value = value.replace(tzinfo=zone)
-            return value.astimezone(zone).date().isoformat()
+            return fill_market_session(str(row["occurred_at"]), zone, require_timezone=rules is not None)
 
         fills = [] if not snapshots else [
             row for row in self.store.account_fills(account_id)

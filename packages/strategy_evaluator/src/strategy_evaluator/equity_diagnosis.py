@@ -31,6 +31,9 @@ def _decompose(ledger, identity, start, end):
     fills = defaultdict(list)
     for row in ledger['fills']:
         fills[pd.Timestamp(row['interval_end'])].append(row)
+    orders_by_session = defaultdict(list)
+    for row in ledger["orders"]:
+        orders_by_session[_session(row["valid_end"], timezone)].append(row["order_id"])
     previous_equity, previous_close, quantity = ledger["initial_cash"], None, 0
     per_session = defaultdict(list)
     for row in rows:
@@ -84,7 +87,7 @@ def _decompose(ledger, identity, start, end):
         cycles = {r[6] for r in parts if r[6] is not None}
         decisions = tuple(r[7] for r in parts)
         filled = tuple(identity for r in parts for identity in r[8])
-        order_ids = tuple(x["order_id"] for x in ledger["orders"] if _session(x["valid_end"], timezone) == session)
+        order_ids = tuple(orders_by_session.get(session, ()))
         delta = parts[-1][1] - parts[0][0]
         daily.append(DailyPnl(session, parts[0][0], parts[-1][1], *totals, delta, delta - math.fsum(totals),
                               next(iter(cycles)) if len(cycles) == 1 else None, decisions, order_ids, filled))

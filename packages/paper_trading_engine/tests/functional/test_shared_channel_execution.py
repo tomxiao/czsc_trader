@@ -1,7 +1,9 @@
 """US broker facts traverse the same durable execution core as CN/inspection."""
-from dataclasses import replace
+from dataclasses import asdict, replace
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from decimal import Decimal
+from threading import Event, get_ident
 
 import pytest
 
@@ -172,6 +174,109 @@ def test_fill_report_and_release_rollback_together(durable_us, monkeypatch):
     assert store.account_fills('strategy') == []
     engine.refresh_orders()
     assert store.virtual_account('strategy')['quantity'] == 2
+
+
+def test_fill_report_does_not_reuse_another_threads_transaction(durable_us, monkeypatch):
+    from execution_channels.futu.order_reports import apply_order_report
+
+    root, store, broker, engine, _ = durable_us
+    engine.submit_pending()
+    original_account = store.virtual_account('strategy')
+    original_order, = store.account_orders('strategy')
+    broker.fill(2, '99.1234')
+    payload = asdict(engine.broker.order_snapshot()[0])
+    entered, waiting, release = Event(), Event(), Event()
+    report_thread = []
+    original_lock = store._lock
+
+    class ObservedLock:
+        def __enter__(self):
+            if report_thread and get_ident() == report_thread[0]:
+                waiting.set()
+            original_lock.acquire()
+            return self
+
+        def __exit__(self, *exc):
+            original_lock.release()
+
+    def competing_transaction():
+        with root.atomic_decision_update():
+            entered.set()
+            assert release.wait(5)
+
+    def fail_report(*args, **kwargs):
+        raise RuntimeError('report persistence failure')
+
+    def report():
+        report_thread.append(get_ident())
+        return apply_order_report(store, payload, occurred_at=FILL_TIME)
+
+    with monkeypatch.context() as patch, ThreadPoolExecutor(max_workers=2) as workers:
+        patch.setattr(store, '_lock', ObservedLock())
+        patch.setattr(store, 'update_channel_order_report', fail_report)
+        holder = workers.submit(competing_transaction)
+        assert entered.wait(5)
+        incoming = workers.submit(report)
+        try:
+            assert waiting.wait(5)
+        finally:
+            release.set()
+        holder.result(timeout=5)
+        with pytest.raises(RuntimeError, match='persistence failure'):
+            incoming.result(timeout=5)
+    assert store.virtual_account('strategy') == original_account
+    assert store.account_fills('strategy') == []
+    assert store.account_orders('strategy') == [original_order]
+    engine.refresh_orders()
+    assert store.virtual_account('strategy')['quantity'] == 2
+
+
+def test_order_deadline_poll_skips_terminal_intents(live_us, monkeypatch):
+    _, store, broker, engine, _ = live_us
+    engine.submit_pending()
+    broker.fill(2, '99')
+    engine.refresh_orders()
+    assert store.account_intents()[0]['status'] == 'FILLED_ALL'
+
+    def unexpected_history_read(intent):
+        pytest.fail('terminal order history must not enter the cancellation deadline path')
+
+    monkeypatch.setattr(engine, '_execution_interval', unexpected_history_read)
+    monkeypatch.setattr(store, '_account_intent_row', unexpected_history_read)
+    engine._cancel_expired_planned_orders(START)
+
+
+def test_cancellation_candidates_require_bound_orders_and_channel_scope(live_us):
+    root, store, _, engine, intent = live_us
+    assert store.cancellable_account_intents() == []
+    engine.submit_pending()
+    candidate, = store.cancellable_account_intents()
+    assert candidate['intent_id'] == intent['intent_id']
+    assert candidate['channel_order_id'] == 'us-test:42'
+    assert candidate['status'] == 'SUBMITTED'
+    sibling = root.register_channel_account(
+        replace(engine.config, channel_account_id='us-other', broker_account_id=78),
+        capital=Decimal('1000'),
+    )
+    assert sibling.cancellable_account_intents() == []
+    assert root.cancellable_account_intents() == [candidate]
+
+
+def test_existing_runtime_receives_intent_status_index(new_store, tmp_path):
+    from execution_channels.futu.store import PaperStore
+
+    path = tmp_path / 'existing.db'
+    store = new_store(path)
+    store._connection.execute('DROP INDEX IF EXISTS idx_intents_status_time')
+    store._connection.commit()
+    store.close()
+    reopened = PaperStore(path)
+    try:
+        assert reopened._connection.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='index' AND name='idx_intents_status_time'"
+        ).fetchone() is not None
+    finally:
+        reopened.close()
 
 
 # Independent risk: EC21; responsibility-level assertions.

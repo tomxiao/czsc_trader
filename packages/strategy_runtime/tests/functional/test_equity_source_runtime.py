@@ -80,9 +80,27 @@ def namespace_state():
     return {name for name in sys.modules if name.startswith("_equity_")}, tuple(sys.meta_path)
 
 
+@pytest.mark.parametrize('relative', ['strategy.py', 'rules/levels.py'])
+def test_replay_rejects_source_modified_after_candidate_preparation(tmp_path, relative):
+    value = multifile_candidate(tmp_path / 'source')
+    bars, constraints, executor = inputs(value)
+    prepared = prepare(value, bars, constraints)
+    source = value.source_root / relative
+    source.write_text(source.read_text(encoding='utf-8') + '\nCHANGED = True\n', encoding='utf-8')
+    existing = namespace_state()
+
+    with pytest.raises(ValueError, match='equity source closure changed'):
+        run_replay(prepared, value, executor, constraints=constraints,
+            start=bars.BarStart.iloc[1].to_pydatetime(),
+            end=bars.Date.iloc[-1].to_pydatetime(), fee_rate=.001)
+
+    assert executor.revision == 0
+    assert namespace_state() == existing
+
+
 def assert_counts(outcome, expected_bytes, count):
     assert outcome.statistics.decisions == count
-    assert outcome.statistics.source_checks == 0
+    assert outcome.statistics.source_checks == 1
     assert outcome.statistics.source_bytes_read == expected_bytes
     assert outcome.statistics.module_loads == 1
     facts = [

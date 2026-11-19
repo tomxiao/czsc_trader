@@ -6,6 +6,26 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   root.dataset.strategyChartMounted='true';root.classList.add('strategy-chart');
   const lifecycle=new AbortController();let destroyed=false;
   const listen=(node,type,handler)=>node.addEventListener(type,handler,{signal:lifecycle.signal});
+  const history=context.mode==='PAPER'?context.window.history_pages:null;
+  const historyIndex=context.window.history_page;
+  let historyControl=null;
+  const historyUrl=(index,day)=>`/charts/${encodeURIComponent(context.strategy.account_id)}/observation.html?v=${history[index].fingerprint}#${day}`;
+  if(history){
+    const requested=window.location.hash.slice(1);
+    const target=history.findIndex(page=>page.start<=requested&&requested<=page.end);
+    if(target>=0&&target!==historyIndex){
+      window.location.replace(historyUrl(target,requested));
+      return {destroy(){lifecycle.abort();delete root.dataset.strategyChartMounted;}};
+    }
+    const label=document.createElement('label');label.className='forward-controls';label.textContent='历史区间 ';
+    const selector=document.createElement('select');selector.setAttribute('aria-label','选择历史区间');
+    history.forEach((page,index)=>{
+      const option=document.createElement('option');option.value=String(index);option.textContent=`${page.start} — ${page.end}`;selector.appendChild(option);
+    });
+    selector.value=String(historyIndex);
+    listen(selector,'change',()=>{const index=Number(selector.value);window.location.assign(historyUrl(index,history[index].end));});
+    label.appendChild(selector);root.querySelector('.forward-toolbar').appendChild(label);historyControl=label;
+  }
   const stage=root.querySelector('#forward-stage');
   const svg=root.querySelector('#forward-svg');
   const tooltip=root.querySelector('#forward-tooltip');
@@ -55,7 +75,7 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   const fillCurrency=isPaper&&context.strategy.currency==='USD'?'美元':'元';
   const money=value=>value==null?'未记录':`${Number(value).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2})} ${fillCurrency}`;
   const decisionDate=item=>isPaper?item.decision_date:localTime(item.generated_at).slice(0,10);
-  const observationStart=isPaper?decisions.filter(item=>item.status!=='SUPERSEDED').map(decisionDate).sort()[0]:context.window.forward_observation_start;
+  const observationStart=isPaper?(context.window.account_forward_observation_start||decisions.filter(item=>item.status!=='SUPERSEDED').map(decisionDate).sort()[0]):context.window.forward_observation_start;
   const dayDecisions=date=>decisions.filter(item=>decisionDate(item)===date&&(!isPaper||item.status!=='SUPERSEDED'));
   const dayFills=date=>fills.filter(item=>fillDate(item)===date);
   function fillSummary(item){
@@ -439,6 +459,15 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
     if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)||!eventDates.length)return;
     event.preventDefault();
     const current=eventDates.indexOf(state.selected);
+    if(history){
+      const target=event.key==='Home'?0:event.key==='End'?history.length-1:
+        event.key==='ArrowLeft'&&current===0?historyIndex-1:
+        event.key==='ArrowRight'&&current===eventDates.length-1?historyIndex+1:historyIndex;
+      if(target>=0&&target<history.length&&target!==historyIndex){
+        const day=event.key==='ArrowLeft'||event.key==='End'?history[target].end:history[target].start;
+        window.location.assign(historyUrl(target,day));return;
+      }
+    }
     const index=event.key==='Home'?0:event.key==='End'?eventDates.length-1:
       Math.max(0,Math.min(eventDates.length-1,(current<0?eventDates.length-1:current)+(event.key==='ArrowLeft'?-1:1)));
     state.selected=eventDates[index];tooltip.hidden=true;render();
@@ -451,7 +480,7 @@ window.mountStrategyChart=function mountStrategyChart(root,context){
   let lastWidth=0;
   const resizeObserver=new ResizeObserver(()=>{const width=stage.clientWidth;if(width!==lastWidth){lastWidth=width;render();}});
   resizeObserver.observe(stage);
-  const destroy=()=>{if(destroyed)return;destroyed=true;lifecycle.abort();resizeObserver.disconnect();reading.remove();signalFooter.remove();signalControls.remove();svg.replaceChildren();tooltip.hidden=true;delete root.dataset.strategyChartMounted;};
+  const destroy=()=>{if(destroyed)return;destroyed=true;lifecycle.abort();resizeObserver.disconnect();reading.remove();signalFooter.remove();signalControls.remove();historyControl?.remove();svg.replaceChildren();tooltip.hidden=true;delete root.dataset.strategyChartMounted;};
   listen(window,'pagehide',destroy);render();
   return {destroy};
 };

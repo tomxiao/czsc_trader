@@ -21,6 +21,7 @@ from execution_channels.futu.channel import channel_profile
 from execution_channels.futu.execution_adoptions import adoption_window
 from strategy_runtime.signal_explanation import SignalExplanationSnapshot
 from .chart_history import decision_source_hash, original_calculation
+from .chart_pages import encode_context, history_pages
 from .chart_market_data import AccountChartDataError, LEGACY_CHART_UPDATE_TIME
 from .file_publication import replace_published_file
 from .forward_chart import ChartObservation, FORWARD_CHART_CONTRACT_VERSION, render_forward_chart_html
@@ -31,7 +32,7 @@ from execution_channels.instruments import BarFrequency
 ACCOUNT_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,63}")
 INPUT_LIMIT = 5 * 1024 * 1024
 OUTPUT_LIMIT = 20 * 1024 * 1024
-CACHE_RENDER_REVISION = "pte-forward-chart-v21"
+CACHE_RENDER_REVISION = "pte-forward-chart-v22"
 
 
 def _path_comparison_key(path: Path) -> str:
@@ -546,23 +547,20 @@ class AccountChartService:
                     f"图表行情未更新：要求截至 {scheduled_session.isoformat()}，"
                     f"实际截至 {market_cutoff}"
                 )
-            encoded = json.dumps(
-                request, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
-                allow_nan=False, default=str,
-            )
-            if len(encoded.encode("utf-8")) > INPUT_LIMIT:
-                raise ValueError("account observation input exceeds 5 MiB")
+            encoded = encode_context(request)
             fingerprint = self._sha256(f"{CACHE_RENDER_REVISION}\n{encoded}".encode("utf-8"))
             html_path = self.chart_path(account_id, fingerprint)
             if old_meta.get("fingerprint") != fingerprint or not html_path.is_file():
-                html = self.renderer(request)
-                if self._closing.is_set():
-                    raise _RefreshCancelled
-                if len(html.encode("utf-8")) > OUTPUT_LIMIT:
-                    raise ValueError("account observation output exceeds 20 MiB")
-                if not html.lstrip().lower().startswith(("<html", "<!doctype html")):
-                    raise ValueError("chart renderer returned invalid HTML")
-                self._atomic_write(html_path, html)
+                pages = history_pages(request, fingerprint, input_limit=INPUT_LIMIT)
+                for page_fingerprint, page in pages:
+                    html = self.renderer(page)
+                    if self._closing.is_set():
+                        raise _RefreshCancelled
+                    if len(html.encode("utf-8")) > OUTPUT_LIMIT:
+                        raise ValueError("account observation output exceeds 20 MiB")
+                    if not html.lstrip().lower().startswith(("<html", "<!doctype html")):
+                        raise ValueError("chart renderer returned invalid HTML")
+                    self._atomic_write(self.chart_path(account_id, page_fingerprint), html)
             self._atomic_write(
                 meta_path,
                 json.dumps(

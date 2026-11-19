@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+from copy import deepcopy
+from datetime import date, timedelta
+import json
+import re
 
 import pandas as pd
 import pytest
@@ -201,6 +205,68 @@ def _context() -> dict[str, object]:
             "intents": [], "fills": [], "snapshots": [],
         },
     }
+
+
+def test_large_history_is_published_in_bounded_documents(tmp_path, monkeypatch):
+    from paper_trading_engine import account_chart
+    from paper_trading_engine.chart_pages import encode_context
+
+    context = _context()
+    first = date(2026, 9, 3)
+    template = context["execution"]["decisions"][0]
+    context["observations"] = []
+    context["execution"]["decisions"] = []
+    context["market_data"]["bars"] = []
+    for index in range(30):
+        day = (first + timedelta(days=index)).isoformat()
+        row = {**deepcopy(template), "decision_id": f"decision-{index}", "signal_date": day,
+               "decision_date": day, "valid_session": day,
+               "explanation": {"state_key": "holding", "case_key": "holding", "judgment": "持有",
+                               "basis": [{"key": "summary", "text": "记录的历史判断。" * 40}],
+                               "next_watch": "下一日", "explanation": "持有"}}
+        context["execution"]["decisions"].append(row)
+        context["market_data"]["bars"].append({"date": day, "open": 1, "high": 2, "low": 1, "close": 2})
+        if index % 3 == 0:
+            context["execution"]["fills"].append({
+                "account_id": "s007-v1", "fill_id": f"fill-{index}", "session": day,
+                "occurred_at": f"{day}T10:00:00+08:00", "time_precision": "TIMESTAMP",
+                "side": "BUY", "quantity": 100, "price": 1, "fee": 0.1,
+            })
+    context["market_data"]["as_of"] = day
+    context["execution"]["decisions"][0]["signal_date"] = (first - timedelta(days=1)).isoformat()
+    context["window"]["forward_observation_start"] = (first - timedelta(days=1)).isoformat()
+    context["window"]["context_sessions"] = 2
+    monkeypatch.setattr(account_chart, "INPUT_LIMIT", 6000)
+    account = {"account_id": "s007-v1", "strategy_id": "S007", "strategy_version": "v1"}
+    service = account_chart.AccountChartService(
+        SimpleNamespace(), market_data=None, cache_dir=tmp_path,
+        audit=SimpleNamespace(record=lambda *args, **kwargs: None),
+    )
+    monkeypatch.setattr(service, "_request", lambda *args, **kwargs: context)
+    try:
+        service._refresh(account)
+        meta = json.loads((tmp_path / "s007-v1/observation.meta.json").read_bytes())
+        assert not meta.get("error"), meta
+        newest = service.chart_path("s007-v1", meta["fingerprint"]).read_text(encoding="utf-8")
+        selected = json.loads(re.search(r'<script id="forward-context" type="application/json">(.*?)</script>', newest)[1])
+        pages = selected["window"]["history_pages"]
+        assert len(pages) > 1
+        observed, fills = [], []
+        for page in pages:
+            html = service.chart_path("s007-v1", page["fingerprint"]).read_text(encoding="utf-8")
+            payload = json.loads(re.search(r'<script id="forward-context" type="application/json">(.*?)</script>', html)[1])
+            assert len(encode_context(payload).encode("utf-8")) <= account_chart.INPUT_LIMIT
+            assert payload["window"]["account_forward_observation_start"] == first.isoformat()
+            observed.extend(row["decision_id"] for row in payload["execution"]["decisions"])
+            fills.extend(row["fill_id"] for row in payload["execution"]["fills"])
+        assert sorted(observed) == sorted(row["decision_id"] for row in context["execution"]["decisions"])
+        assert sorted(fills) == sorted(row["fill_id"] for row in context["execution"]["fills"])
+        assert pages[-1]["fingerprint"] == meta["fingerprint"]
+        before = {path: path.stat().st_mtime_ns for path in (tmp_path / "s007-v1").glob("*.html")}
+        service._refresh(account)
+        assert before == {path: path.stat().st_mtime_ns for path in before}
+    finally:
+        service.close()
 
 
 # Independent risk: PTE25; responsibility-level assertions.

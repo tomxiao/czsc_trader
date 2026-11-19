@@ -3,6 +3,7 @@ from dataclasses import FrozenInstanceError
 from decimal import Decimal
 from datetime import date, timedelta
 from types import SimpleNamespace
+from zoneinfo import ZoneInfo
 
 import pytest
 
@@ -61,6 +62,7 @@ def test_performance_window_uses_auditable_opening_assets(tmp_path, start, initi
             strategy_id="S001", strategy_name_snapshot="Audit", strategy_version="v1",
             release_hash="a" * 64, qualification_snapshot="PAPER_READY", initial_cash="100",
             created_at="2026-09-01", observation_start="2026-09-01",
+            channel_id="futu_simulate_cn",
         ),
         account_snapshots=lambda _: history,
         account_fills=lambda _: [],
@@ -90,6 +92,34 @@ def test_performance_window_uses_auditable_opening_assets(tmp_path, start, initi
         assert evidence["sharpe_ratio"] is None
     else:
         assert source["opening_assets"]["basis"] == "INITIAL_CASH"
+
+
+@pytest.mark.parametrize("channel,session,stamp", [
+    ("futu_US_sim_channel", "2026-11-13", "2026-11-14T03:00:00+08:00"),
+    ("futu_US_sim_channel", "2026-07-01", "2026-07-02T03:00:00+08:00"),
+    ("futu_simulate_cn", "2026-11-13", "2026-11-13T01:30:00+00:00"),
+])
+def test_export_groups_fills_by_the_bound_market_session(tmp_path, channel, session, stamp):
+    fill = dict(side="SELL", order_id="filled", realized_pnl="25", occurred_at=stamp)
+    store = SimpleNamespace(
+        virtual_account=lambda _: dict(
+            strategy_id="S018", strategy_name_snapshot="Audit", strategy_version="v1",
+            release_hash="a" * 64, qualification_snapshot="PAPER_READY", initial_cash="1000",
+            created_at=session, observation_start=session, channel_id=channel,
+        ),
+        account_snapshots=lambda _: [dict(session=session, total_assets="1025")],
+        account_fills=lambda _: [fill],
+        account_intents=lambda _: [dict(payload={"fee_rate": "0.001"})],
+        equity_account_rules=lambda _: SimpleNamespace(timezone=ZoneInfo(
+            "America/New_York" if channel == "futu_US_sim_channel" else "Asia/Shanghai")),
+    )
+    bundle = export_performance(
+        store, "account", tmp_path / "evidence.json", recorded_by="test",
+        start=session, end=session,
+    )
+    assert bundle["evidence"]["closed_trades"] == 1
+    assert bundle["source"]["closed_trade_pnl"] == [25.0]
+    assert AccountEngine(store, None).metrics("account", session, session)["closed_trades"] == 1
 
 
 # Independent risk: PTE26; responsibility-level assertions.

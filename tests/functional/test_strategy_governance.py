@@ -16,7 +16,7 @@ def batch(**changes):
 
 def files(context):
     return {p.relative_to(context.research_root): p.read_bytes()
-            for p in context.research_root.rglob("*") if p.is_file()}
+            for p in context.research_root.rglob("*") if p.is_file() and p.name != ".registry.lock"}
 
 
 def test_TDR_01_C01_research_identity_credentials_context_and_editable_experiments(minimal_repo):
@@ -27,7 +27,7 @@ def test_TDR_01_C01_research_identity_credentials_context_and_editable_experimen
     assert research.data.binding.space.path.as_posix() == "research/S910/assets/data"
 
 
-@pytest.mark.parametrize('operation', ['create_family'])
+@pytest.mark.parametrize('operation', ['create_family', 'start_research_batch'])
 def test_TDR_01_C03_research_document_rolls_back_when_registration_fails(minimal_repo, monkeypatch, operation):
     context = RepositoryContext.discover(minimal_repo)
     request = batch()
@@ -41,6 +41,46 @@ def test_TDR_01_C03_research_document_rolls_back_when_registration_fails(minimal
     with pytest.raises(ValidationError):
         create_research_batch(context, request, actor="test", reason="failure")
     assert files(context) == before
+
+
+@pytest.mark.parametrize("existing", [False, True], ids=["first-batch", "subsequent-batch"])
+@pytest.mark.parametrize("phase", ["document", "pointer"])
+@pytest.mark.parametrize("after_write", [False, True], ids=["before-install", "after-install"])
+def test_batch_publication_failure_rolls_back_and_allows_same_request_retry(
+    minimal_repo, monkeypatch, existing, phase, after_write,
+):
+    from czsc_trader.application import research_governance_service as service
+
+    context = RepositoryContext.discover(minimal_repo)
+    if existing:
+        create_research_batch(context, batch(), actor="test", reason="initial")
+    request = batch(credential_id="SGC-S910-002") if existing else batch()
+    before = files(context)
+    publish = service._publish_bytes
+    failed = False
+
+    def fail_once(root, target, data):
+        nonlocal failed
+        selected = target.name == "batch.json" if phase == "pointer" else target.name.endswith(".md")
+        if selected and not failed:
+            failed = True
+            if after_write:
+                publish(root, target, data)
+            raise OSError("injected publication failure")
+        return publish(root, target, data)
+
+    monkeypatch.setattr(service, "_publish_bytes", fail_once)
+    with pytest.raises(ValidationError, match="injected publication failure"):
+        create_research_batch(context, request, actor="test", reason="retryable creation")
+    assert failed and files(context) == before
+    if not existing:
+        assert not (context.research_root / "S910").exists()
+
+    reference = create_research_batch(context, request, actor="test", reason="retryable creation")
+    registry = StrategyRegistry(context.research_registry_root)
+    credential = registry.get_governance_credential("S910", request.credential_id or "SGC-S910-001")
+    assert credential.strategy_id == reference.strategy_id == "S910"
+    assert (context.research_root / "S910/batch.json").is_file()
 
 
 @pytest.mark.parametrize('changes', [{'name': 'changed'}])

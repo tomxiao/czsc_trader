@@ -391,21 +391,14 @@ class ChannelExecution(RetirementExecution):
 
     def _cancel_expired_planned_orders(self, moment: datetime) -> None:
         local = moment.astimezone(self.zone)
-        cancellable = {
-            "UNSUBMITTED", "WAITING_SUBMIT", "SUBMITTED", "FILLED_PART",
-        }
-        for intent in self.store.account_intents():
+        for intent in self.store.cancellable_account_intents():
             interval = self._execution_interval(intent)
             deadline = self._planned_clock(intent, "submit_before")
             if (deadline is None and intent["side"] == "BUY"
                     and intent["payload"].get("order_type", "LIMIT") == "LIMIT"
                     and intent["payload"].get("time_in_force", "DAY") == "DAY"):
                 deadline = time(15, 0) if self.profile.market == 'CN' else None
-            if (
-                (deadline is None and interval is None)
-                or intent["status"] not in cancellable
-                or not intent.get("channel_order_id")
-            ):
+            if deadline is None and interval is None:
                 continue
             deadline_at = interval[1] if interval is not None else datetime.fromisoformat(
                 f"{intent['valid_session']}T{deadline.isoformat()}"

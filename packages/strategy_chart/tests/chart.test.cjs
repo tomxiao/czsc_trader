@@ -63,7 +63,7 @@ test('paper fill price, amount and fees all use the bound channel currency',()=>
 });
 test('paper shows effective-day decisions by interval and fills by market session',()=>{
  const f=fixture(),c=context();
- c.mode='PAPER';c.contract_version='pte_forward_chart.v8';
+ c.mode='PAPER';c.contract_version='pte_forward_chart.v9';
  c.strategy={symbol:'MU',account_id:'s019-v1',release_id:'S019-v1',currency:'USD',market_timezone:'America/New_York'};
  c.market_data.bars=['2026-11-06','2026-11-09','2026-11-10'].map(date=>({date,open:10,high:11,low:9,close:10}));
  const first={decision_id:'first',decision_date:'2026-11-09',signal_date:'2026-11-06',valid_session:'2026-11-09',generated_at:'2026-11-08T13:36:43Z',status:'COMPLETED',
@@ -147,6 +147,32 @@ test('paper decision and fill panels use the same labeled layout with or without
   layer.fire('click');
   assert.equal(f.root.querySelector('.decision-reading').hidden,false);
  }
+});
+
+test('paper history preserves date links and supports cross-page navigation',()=>{
+ const pages=[{start:'2026-01-05',end:'2026-01-06',fingerprint:'a'.repeat(64)},
+  {start:'2026-01-07',end:'2026-01-10',fingerprint:'b'.repeat(64)}];
+ const data=()=>{const c=context();c.mode='PAPER';c.strategy={account_id:'sample',currency:'CNY',market_timezone:'Asia/Shanghai'};
+  c.window.history_pages=pages;c.window.history_page=1;c.observations=[];c.execution={decisions:[],fills:[],snapshots:[]};
+  c.market_data.bars=c.market_data.bars.slice(-1);return c;};
+ const f=fixture(),redirects=[];
+ f.window.location={hash:'#2026-01-05',replace:url=>redirects.push(url)};
+ const redirected=f.mount(f.root,data());
+ assert.deepEqual(redirects,[`/charts/sample/observation.html?v=${'a'.repeat(64)}#2026-01-05`]);
+ assert.equal(f.svg.children.length,0);redirected.destroy();
+
+ const toolbar=new Element();toolbar.className='forward-toolbar';f.root.appendChild(toolbar);
+ f.window.location={hash:'#2026-01-07',assign:url=>redirects.push(url)};
+ const view=f.mount(f.root,data());
+ const selector=toolbar.querySelector('select');
+ assert.equal(selector.options.length,2);assert.equal(selector.value,'1');
+ selector.value='0';selector.fire('change');
+ assert.equal(redirects.at(-1),`/charts/sample/observation.html?v=${'a'.repeat(64)}#2026-01-06`);
+ f.svg.fire('keydown',{key:'Home'});
+ assert.equal(redirects.at(-1),`/charts/sample/observation.html?v=${'a'.repeat(64)}#2026-01-05`);
+ f.svg.fire('keydown',{key:'ArrowLeft'});
+ assert.equal(redirects.at(-1),`/charts/sample/observation.html?v=${'a'.repeat(64)}#2026-01-06`);
+ view.destroy();assert.equal(toolbar.children.length,0);
 });
 test('chart keyboard selection clears prior judgment and preserves non-trading event precision and fee',()=>{
  const f=fixture();f.mount(f.root,context());assert.equal(f.root.querySelector('#forward-event-date'),null);f.svg.fire('keydown',{key:'End'});

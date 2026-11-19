@@ -1,5 +1,4 @@
 """Shared cumulative-order validation and atomic fill/report accounting."""
-from contextlib import nullcontext
 from datetime import datetime
 from decimal import Decimal
 
@@ -8,8 +7,7 @@ from .broker import KNOWN_ORDER_STATUSES, TERMINAL_ORDER_STATUSES
 
 def apply_order_report(store, payload, *, occurred_at: str, settlement_at: str | None = None):
     """Apply a confirmed report once; a failure rolls back both fills and release."""
-    context = nullcontext() if store._atomic_decision_depth else store.atomic_decision_update()
-    with context:
+    with store._lock, store._write_context(False):
         order_id = str(payload['channel_order_id'])
         previous = store.account_order(order_id)
         status = str(payload['status'])

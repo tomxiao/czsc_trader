@@ -16,7 +16,7 @@ from strategy_runtime import (
 )
 
 
-FORWARD_CHART_CONTRACT_VERSION = "pte_forward_chart.v8"
+FORWARD_CHART_CONTRACT_VERSION = "pte_forward_chart.v9"
 
 
 @dataclass(frozen=True, slots=True)
@@ -135,6 +135,23 @@ def render_forward_chart_html(value: object, *, inline_assets: bool = False) -> 
         raise ValueError("PTE forward chart requires an explicit market timezone")
     market_zone = ZoneInfo(strategy["market_timezone"])
     window = context["window"]
+    if "history_pages" in window:
+        pages = window["history_pages"]
+        current = window.get("history_page")
+        if (type(pages) is not list or not pages or type(current) is not int
+                or not 0 <= current < len(pages)):
+            raise ValueError("invalid chart history page index")
+        previous_end = None
+        for page in pages:
+            if type(page) is not dict or set(page) != {"start", "end", "fingerprint"}:
+                raise ValueError("invalid chart history page")
+            left, right = date.fromisoformat(page["start"]), date.fromisoformat(page["end"])
+            identity = page["fingerprint"]
+            if (left > right or (previous_end is not None and left <= previous_end)
+                    or type(identity) is not str or len(identity) != 64
+                    or any(char not in "0123456789abcdef" for char in identity)):
+                raise ValueError("invalid chart history page range or identity")
+            previous_end = right
     start = window["forward_observation_start"]
     events = context["execution"]["decisions"]
     if start != min((row["signal_date"] for row in events), default=None):

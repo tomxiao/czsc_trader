@@ -1167,34 +1167,70 @@ class Dataflows:
 
     def _check_existing_contracts(self, connection, planned) -> None:
         # Disposable index misses must not hide an incompatible stored publication.
+        self._index_existing_contracts(connection)
         missing = [row for row in planned if row[1] is not None
                    and self._store.lookup_asset(connection, row[3]) is None]
-        if not missing:
-            return
-        publications = connection.execute(
-            "SELECT preparation_id,manifest_sha256 FROM preparations ORDER BY prepared_at DESC"
+        for _, binding, record, _ in missing:
+            key = self._contract_lookup_key(record, binding.name)
+            reference = self._store.lookup_preparation(connection, key)
+            if reference is None:
+                continue
+            for entry in self._store.load_preparation(reference, connection=connection):
+                stored = self._store.read_asset(connection, entry["asset_id"])
+                if self._contract_lookup_key(entry["request"], stored.identity.metadata.get("provider_binding")) != key:
+                    continue
+                self._require_contract_version(entry.get("data_contract_version"), location="preparation")
+                self._require_contract_version(stored.identity.metadata.get("data_contract_version"), location="asset")
+                break
+            else:
+                raise StoreError("PREPARATION_CORRUPT", "contract lookup differs from its preparation")
+
+    @staticmethod
+    def _contract_lookup_key(record, provider):
+        selector = {key: value for key, value in record.items() if key not in {"coverage", "required_cutoff"}}
+        value = json.dumps({"request": selector, "provider": provider}, sort_keys=True, separators=(",", ":"))
+        return "contract:" + hashlib.sha256(value.encode()).hexdigest()
+
+    def _index_contracts(self, connection, reference, entries, providers=None):
+        assets = {}
+        for index, entry in enumerate(entries):
+            if providers is None:
+                asset_id = entry["asset_id"]
+                if asset_id not in assets:
+                    assets[asset_id] = self._store.read_asset(connection, asset_id)
+                provider = assets[asset_id].identity.metadata.get("provider_binding")
+            else:
+                provider = providers[index]
+            key = self._contract_lookup_key(entry["request"], provider)
+            current = self._store.lookup_preparation(connection, key)
+            if current is not None:
+                latest = connection.execute(
+                    "SELECT preparation_id FROM preparations WHERE preparation_id IN (?,?) "
+                    "ORDER BY prepared_at DESC,rowid DESC LIMIT 1",
+                    (str(reference.preparation_id), str(current.preparation_id)),
+                ).fetchone()[0]
+                if latest != str(reference.preparation_id):
+                    continue
+            self._store.cache_preparation(connection, key, reference)
+
+    def _index_existing_contracts(self, connection):
+        # Reuse the disposable lookup table. Its cursor permits one-time rebuilding
+        # for older spaces and incremental indexing of publications by older writers.
+        cursor = self._store.lookup_preparation(connection, "contract-index:v1")
+        last = (0 if cursor is None else connection.execute(
+            "SELECT rowid FROM preparations WHERE preparation_id=?", (str(cursor.preparation_id),),
+        ).fetchone()[0])
+        rows = connection.execute(
+            "SELECT preparation_id,manifest_sha256 FROM preparations WHERE rowid>? ORDER BY rowid", (last,),
         ).fetchall()
-        for preparation_id, manifest_sha256 in publications:
+        for preparation_id, manifest_sha256 in rows:
             try:
                 reference = PreparedDataRef(self._store.space_id, UUID(preparation_id), manifest_sha256)
             except (TypeError, ValueError) as exc:
                 raise StoreError("PREPARATION_CORRUPT", "stored preparation identity is invalid") from exc
-            for entry in self._store.load_preparation(reference, connection=connection):
-                declared = {key: value for key, value in entry["request"].items()
-                            if key not in {"coverage", "required_cutoff"}}
-                for row in tuple(missing):
-                    selector = {key: value for key, value in row[2].items()
-                                if key not in {"coverage", "required_cutoff"}}
-                    if declared != selector:
-                        continue
-                    stored = self._store.read_asset(connection, entry["asset_id"])
-                    if stored.identity.metadata.get("provider_binding") != row[1].name:
-                        continue
-                    self._require_contract_version(entry.get("data_contract_version"), location="preparation")
-                    self._require_contract_version(stored.identity.metadata.get("data_contract_version"), location="asset")
-                    missing.remove(row)
-            if not missing:
-                return
+            entries = self._store.load_preparation(reference, connection=connection)
+            self._index_contracts(connection, reference, entries)
+            self._store.cache_preparation(connection, "contract-index:v1", reference)
 
     def prepare(
         self, requests: tuple[DataRequest, ...], *, policy: PreparePolicy,
@@ -1310,6 +1346,9 @@ class Dataflows:
                     self._assert_consistent(connection, entries)
                     reference = self._store.publish(connection, entries)
                     self._store.cache_preparation(connection, prepare_key, reference)
+                    self._index_contracts(connection, reference, entries, tuple(row[1].name for row in planned))
+                    if policy is PreparePolicy.REUSE:
+                        self._store.cache_preparation(connection, "contract-index:v1", reference)
         except StoreError as exc:
             items = [ItemPrepareResult(
                 request=request, status=DataStatus.FAILED, identity=None,

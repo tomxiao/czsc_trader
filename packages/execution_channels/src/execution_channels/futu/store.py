@@ -622,6 +622,10 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
             migrate_retirement(self._connection)
             migrate_account_health(self._connection, now)
             self._initialize_channel_accounts()
+            self._connection.execute(
+                "CREATE INDEX IF NOT EXISTS idx_intents_status_time "
+                "ON intents(status,created_at,order_sequence)"
+            )
             self._connection.execute("DROP INDEX IF EXISTS uq_decisions_active_signal_date")
             self._ensure_column("virtual_accounts", "entry_cycle_json", "TEXT")
             self._ensure_column("virtual_accounts", "equity_rules_json", "TEXT")
@@ -3149,6 +3153,18 @@ class PaperStore(ChannelAccountStore, EquityEventStore, ExecutionEffectStore, Re
         with self._lock:
             rows = self._connection.execute(sql, values).fetchall()
         return [self._account_intent_row(row) for row in self._scoped_rows(rows)]
+
+    def cancellable_account_intents(self) -> list[dict[str, Any]]:
+        """Read only bound channel orders whose current state permits cancellation."""
+        clause, values = self._scope_clause()
+        with self._lock:
+            rows = self._connection.execute(
+                "SELECT * FROM intents WHERE status IN "
+                "('UNSUBMITTED','WAITING_SUBMIT','SUBMITTED','FILLED_PART') "
+                f"AND channel_order_id IS NOT NULL AND {clause} ORDER BY created_at,order_sequence",
+                values,
+            ).fetchall()
+        return [self._account_intent_row(row) for row in rows]
 
     def bind_channel_order(
         self, intent_id: str, channel_order_id: str, payload: dict[str, object],

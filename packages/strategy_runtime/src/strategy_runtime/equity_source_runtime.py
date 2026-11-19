@@ -52,16 +52,17 @@ class BoundEquityInvocation:
         raise TypeError('loaded strategy modules cannot cross process boundaries')
 
     def _load(self):
-        from .equity_definition import _compiled_equity_source
+        from .equity_definition import _compiled_equity_source, _read_equity_sources
         root = self.candidate.source_root
-        codes = {}
         # Read the complete declared closure once, including lazy relative
         # imports. Later decisions and imports never reopen these source files.
-        for relative in self.candidate.definition.source_files:
-            path = root / relative
-            content = path.read_bytes()
-            self.bytes_read += len(content)
-            codes[relative] = _compiled_equity_source(content, str(path))
+        digest, sources = _read_equity_sources(root, self.candidate.definition.source_files)
+        self.checks = 1
+        self.bytes_read = sum(len(content) for content in sources.values())
+        if digest != self.candidate.definition.source_sha256:
+            raise ValueError('equity source closure changed before execution')
+        codes = {relative: _compiled_equity_source(content, str(root / relative))
+                 for relative, content in sources.items()}
         prefix = self.prefix
 
         class SourceLoader(importlib.machinery.SourceFileLoader):

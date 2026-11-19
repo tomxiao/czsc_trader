@@ -181,23 +181,30 @@ def create_research_batch(
         family = _family_from_request(raw, actor=actor)
         destination = managed_path(context.root, f"research/{family.strategy_id}")
         registry = StrategyRegistry(context.research_registry_root)
-        family_exists = (
-            context.research_registry_root / family.strategy_id / "family.json"
-        ).is_file()
-        if not family_exists:
+        # Keep publication and registration under the registry's reentrant writer
+        # lock. Install all documents before the registry's final commit.
+        with registry._write_lock.hold():
+            family_exists = (context.research_registry_root / family.strategy_id / "family.json").is_file()
             new_research_directory = not destination.exists()
             raw_credential = raw.get("credential_id")
-            if new_research_directory:
+            if not family_exists and new_research_directory:
                 credential_id = str(raw_credential or f"SGC-{family.strategy_id}-001")
+                if credential_id != f"SGC-{family.strategy_id}-001":
+                    raise ValueError("the first research batch credential must end with -001")
             elif not isinstance(raw_credential, str) or not raw_credential.strip():
-                raise ValueError(
-                    "an existing research directory requires an explicit credential_id"
-                )
+                subject = "another research batch" if family_exists else "an existing research directory"
+                raise ValueError(f"{subject} requires an explicit credential_id")
             else:
                 credential_id = raw_credential.strip()
-            if new_research_directory and credential_id != f"SGC-{family.strategy_id}-001":
-                raise ValueError("the first research batch credential must end with -001")
-            if new_research_directory:
+            if family_exists:
+                current = registry.get_family(family.strategy_id)
+                if current.name != family.name or current.scope != family.scope:
+                    raise ValueError("existing strategy family name or scope differs from request")
+                family = StrategyFamily.from_dict({
+                    **current.to_dict(), "research_intent": family.research_intent,
+                    "research_state": family.research_state.value, "updated_at": family.updated_at,
+                })
+            if not family_exists and new_research_directory:
                 document = destination / "HANDOFF.md"
                 document_text = _handoff_text(family)
                 artifact_name = "research_handoff"
@@ -207,68 +214,39 @@ def create_research_batch(
                 artifact_name = "research_batch"
             if document.exists():
                 raise ValueError(f"research batch document already exists: {credential_id}")
-            document.parent.mkdir(parents=True, exist_ok=True)
-            _publish_bytes(context.root, document, document_text.encode("utf-8"))
+            reference = ResearchBatchRef(family.strategy_id)
+            pointer = destination / "batch.json"
+            pointer_existed = pointer.exists()
+            missing_directories = []
+            parent = document.parent
+            while not parent.exists():
+                missing_directories.append(parent)
+                parent = parent.parent
             try:
-                registry.create_family(
-                    family,
-                    actor=actor,
-                    reason=reason,
-                    credential_id=credential_id,
-                    credential_content={
-                        "research_batch": family.to_dict(),
-                        "reason": reason,
+                document.parent.mkdir(parents=True, exist_ok=True)
+                _publish_bytes(context.root, document, document_text.encode("utf-8"))
+                _publish_bytes(context.root, pointer, json.dumps(reference.to_dict(), sort_keys=True).encode("utf-8"))
+                credential_args = {
+                    "actor": actor, "reason": reason, "credential_id": credential_id,
+                    "credential_content": {"research_batch": family.to_dict(), "reason": reason},
+                    "credential_artifact_hashes": {
+                        artifact_name: hashlib.sha256(document_text.encode("utf-8")).hexdigest(),
                     },
-                    credential_artifact_hashes={
-                        artifact_name: hashlib.sha256(document_text.encode("utf-8")).hexdigest()
-                    },
-                )
-                credential = registry.get_governance_credential(family.strategy_id, credential_id)
-            except Exception:
-                document.unlink(missing_ok=True)
-                if new_research_directory:
-                    shutil.rmtree(destination, ignore_errors=True)
-                raise
-        else:
-            current = registry.get_family(family.strategy_id)
-            if current.name != family.name or current.scope != family.scope:
-                raise ValueError("existing strategy family name or scope differs from request")
-            raw_credential = raw.get("credential_id")
-            if not isinstance(raw_credential, str) or not raw_credential.strip():
-                raise ValueError("another research batch requires an explicit credential_id")
-            credential_id = raw_credential.strip()
-            document = destination / "batches" / f"{credential_id}.md"
-            batch_family = StrategyFamily.from_dict(
-                {
-                    **current.to_dict(),
-                    "research_intent": family.research_intent,
-                    "research_state": family.research_state.value,
-                    "updated_at": family.updated_at,
                 }
-            )
-            batch_text = _batch_text(batch_family, credential_id, reason)
-            document.parent.mkdir(parents=True, exist_ok=True)
-            if document.exists():
-                raise ValueError(f"research batch document already exists: {credential_id}")
-            _publish_bytes(context.root, document, batch_text.encode("utf-8"))
-            try:
-                family, credential = registry.start_research_batch(
-                    family.strategy_id,
-                    research_intent=family.research_intent,
-                    research_state=family.research_state,
-                    actor=actor,
-                    reason=reason,
-                    credential_id=credential_id,
-                    credential_content={
-                        "research_batch": batch_family.to_dict(),
-                        "reason": reason,
-                    },
-                    credential_artifact_hashes={
-                        "research_batch": hashlib.sha256(batch_text.encode("utf-8")).hexdigest()
-                    },
-                )
+                if family_exists:
+                    registry.start_research_batch(
+                        family.strategy_id, research_intent=family.research_intent,
+                        research_state=family.research_state, **credential_args,
+                    )
+                else:
+                    registry.create_family(family, **credential_args)
             except Exception:
                 document.unlink(missing_ok=True)
+                if not pointer_existed:
+                    pointer.unlink(missing_ok=True)
+                for directory in missing_directories:
+                    if directory.exists():
+                        directory.rmdir()
                 raise
     except (StrategyManagerError, OSError, ValueError, json.JSONDecodeError) as exc:
         raise ValidationError(
@@ -276,9 +254,6 @@ def create_research_batch(
             str(exc),
             context={"command": "research.create"},
         ) from exc
-    reference = ResearchBatchRef(family.strategy_id)
-    _publish_bytes(context.root, destination / "batch.json",
-                   json.dumps(reference.to_dict(), sort_keys=True).encode("utf-8"))
     return reference
 
 

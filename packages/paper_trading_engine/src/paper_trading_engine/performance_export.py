@@ -7,7 +7,9 @@ import math
 from pathlib import Path
 import statistics
 import uuid
+from zoneinfo import ZoneInfo
 
+from execution_channels.futu.channel import channel_profile
 from strategy_manager import PerformanceEvidence
 
 
@@ -83,6 +85,15 @@ def closed_trade_pnl(fills: list[dict]) -> list[float]:
     return list(by_order.values())
 
 
+def fill_market_session(occurred_at: str, zone: ZoneInfo, *, require_timezone: bool) -> str:
+    moment = datetime.fromisoformat(occurred_at)
+    if moment.utcoffset() is None:
+        if require_timezone:
+            raise ValueError("US fills require timezone-aware channel timestamps")
+        moment = moment.replace(tzinfo=zone)
+    return moment.astimezone(zone).date().isoformat()
+
+
 def export_performance(
     store,
     account_id: str,
@@ -125,12 +136,16 @@ def export_performance(
     initial_assets = float(opening["total_assets"])
     if not math.isfinite(initial_assets) or initial_assets <= 0:
         raise ValueError("performance period requires positive finite opening assets")
+    profile = channel_profile(account["channel_id"])
+    zone = ZoneInfo(profile.timezone)
     fills = [
         item
         for item in store.account_fills(account_id)
         if item["side"] == "SELL"
-        and (start is None or item["occurred_at"][:10] >= start)
-        and (end is None or item["occurred_at"][:10] <= end)
+        and (session := fill_market_session(
+            item["occurred_at"], zone, require_timezone=profile.market == "US"))
+        and (start is None or session >= start)
+        and (end is None or session <= end)
     ]
     pnl = closed_trade_pnl(fills)
     intents = store.account_intents(account_id)
