@@ -86,7 +86,7 @@ def run_benchmark(*,rows,repeats,market,output):
             raise ValueError('repeated account facts differ')
         expected=hashes
         stats=asdict(outcome.statistics)
-        if stats['source_checks']!=0 or stats['module_loads']!=1:
+        if stats['source_checks']!=1 or stats['module_loads']!=1:
             raise ValueError('account loading contract differs')
         runs.append({'repeat':repeat+1,'seconds':elapsed,'runtime':stats,'table_hashes':hashes})
     result={'status':'PASS','market':market.value,'rows':rows,'repeats':repeats,'prepare_seconds':prepare_seconds,

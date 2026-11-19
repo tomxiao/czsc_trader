@@ -158,6 +158,7 @@ def test_SM_15_C04_pte_export_preserves_statistics_and_artifact(frozen_record, t
             return {"strategy_id": "S900", "strategy_name_snapshot": "Synthetic",
                     "strategy_version": "v1", "release_hash": version.release_hash,
                     "qualification_snapshot": "PAPER_READY", "initial_cash": "1000",
+                    "channel_id": "futu_simulate_cn",
                     "created_at": "2026-10-01T00:00:00+00:00", "observation_start": "2026-10-01"}
 
         def account_snapshots(self, account_id):
