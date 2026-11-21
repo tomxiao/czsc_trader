@@ -22,6 +22,13 @@ TEST_ROOTS = ("tests",) + tuple(f"packages/{name}/tests" for name in (
     "strategy_chart", "execution_channels", "paper_trading_engine"))
 INSPECTION_SEED_FILES = frozenset(f"tests/functional/test_candidate_{name}.py" for name in (
     "freeze", "contract_admission", "inspection_roundtrip", "inspection_failure"))
+SEED_AFFINITY_GROUPS = (
+    INSPECTION_SEED_FILES,
+    frozenset(f"tests/functional/test_{name}.py" for name in (
+        "formal_v4_runtime", "v4_account_rebinding")),
+    frozenset(f"tests/functional/test_{name}.py" for name in (
+        "v4_pte", "pte_observation_cutoff")),
+)
 
 
 def discover_files(root=ROOT):
@@ -67,12 +74,13 @@ def measured_costs(files, history):
 
 
 def partition(files, costs, workers):
-    # These consumers share one real inspected seed within a pytest process.
+    # Related consumers share immutable inspected or prepared input seeds.
+    # Keep the small groups separate so their own work can still run in parallel.
     # Group only discovered files; this is affinity, never a test allowlist.
-    inspection = tuple(sorted(name for name in files if name in INSPECTION_SEED_FILES))
-    jobs = [(name,) for name in files if name not in INSPECTION_SEED_FILES]
-    if inspection:
-        jobs.append(inspection)
+    grouped = frozenset().union(*SEED_AFFINITY_GROUPS)
+    jobs = [(name,) for name in files if name not in grouped]
+    jobs.extend(tuple(sorted(name for name in files if name in group))
+                for group in SEED_AFFINITY_GROUPS if any(name in group for name in files))
     lanes = [[] for _ in range(min(workers, len(jobs)))]
     loads = [0.] * len(lanes)
     # Whole files preserve module fixtures. New files get a nonzero initial cost.

@@ -6,6 +6,7 @@ from decimal import Decimal
 from hashlib import sha256
 import json
 import shutil
+from types import SimpleNamespace
 from uuid import uuid4
 
 import pytest
@@ -131,12 +132,13 @@ def native_protocol(context, request, products):
 
 
 def test_legacy_equity_contract_is_rejected_before_data_access(tmp_path):
-    context, request, products, replay = native_fixture(tmp_path, MarketId.US)
+    # Rejection precedes replay/data access; the CN/US roundtrip owns preparation.
+    context, request, products, _, _ = setup_adjusted(tmp_path, MarketId.US)
     legacy = replace(request.candidate, definition=replace(request.candidate.definition, contract_version=4))
     with pytest.raises(TypeError, match='V5 DFLS step contract'):
         replace(request, candidate=legacy)
     with pytest.raises(ValueError, match='V5 DFLS step contract'):
-        replay_account(legacy, None, replay)
+        replay_account(legacy, None, None)
     with pytest.raises(ValueError, match='candidate-inspection-v5'):
         replace(native_protocol(context, request, products), method_version='candidate-inspection-v4')
 
@@ -233,30 +235,27 @@ def test_native_dual_market_inspection_freezes_exact_v5_package(tmp_path, market
 def test_formal_inspection_permit_cannot_reach_normal_store_or_paths(tmp_path, boundary):
     from paper_trading_engine.equity_runtime import EquityRuntimeAdviceClient
     from paper_trading_engine.ec_boundary import execution_permit
-    from execution_channels.futu.store import PaperStore
     from strategy_runtime.inspection import InspectionRuntimePermit
     from strategy_runtime.errors import RuntimeCompatibilityError
     workspace = tmp_path / '.tmp' / 'strategy-inspection' / 'permit-test'
     repository = workspace / 'repository'
     permit = InspectionRuntimePermit('permit-test', 'S999-v1', 'a'*64, 'b'*64, 'c'*64,
                                      repository, workspace)
-    ordinary = PaperStore(workspace / 'ordinary.db')
-    isolated = PaperStore(workspace / 'isolated.db', inspection_permit=execution_permit(permit))
-    try:
-        kwargs = dict(repo_root=repository, dataflows=None, data_dir=workspace / 'data', inspection_permit=permit)
-        if boundary == 'repository':
-            with pytest.raises(ValueError, match='repository differs'):
-                EquityRuntimeAdviceClient(store=isolated, **{**kwargs, 'repo_root': tmp_path})
-        elif boundary == 'data_dir':
-            with pytest.raises(RuntimeCompatibilityError, match='escapes'):
-                EquityRuntimeAdviceClient(store=isolated, **{**kwargs, 'data_dir': tmp_path / 'outside'})
-        else:
-            with pytest.raises(ValueError, match='store differs'):
-                EquityRuntimeAdviceClient(store=ordinary, **kwargs)
-            client = EquityRuntimeAdviceClient(store=isolated, **kwargs)
-            assert client.inspection_permit == permit
-            with pytest.raises(RuntimeCompatibilityError):
-                client.load_release('S999', 'v1')  # Permission does not replace package authentication.
-    finally:
-        isolated.close()
-        ordinary.close()
+    # This constructor checks paths and permit identity without querying a DB.
+    # EC27-C01..06 own real store admission; the CN/US roundtrip owns integration.
+    ordinary = SimpleNamespace(path=workspace / 'ordinary.db', _inspection_permit=None)
+    isolated = SimpleNamespace(path=workspace / 'isolated.db', _inspection_permit=execution_permit(permit))
+    kwargs = dict(repo_root=repository, dataflows=None, data_dir=workspace / 'data', inspection_permit=permit)
+    if boundary == 'repository':
+        with pytest.raises(ValueError, match='repository differs'):
+            EquityRuntimeAdviceClient(store=isolated, **{**kwargs, 'repo_root': tmp_path})
+    elif boundary == 'data_dir':
+        with pytest.raises(RuntimeCompatibilityError, match='escapes'):
+            EquityRuntimeAdviceClient(store=isolated, **{**kwargs, 'data_dir': tmp_path / 'outside'})
+    else:
+        with pytest.raises(ValueError, match='store differs'):
+            EquityRuntimeAdviceClient(store=ordinary, **kwargs)
+        client = EquityRuntimeAdviceClient(store=isolated, **kwargs)
+        assert client.inspection_permit == permit
+        with pytest.raises(RuntimeCompatibilityError):
+            client.load_release('S999', 'v1')  # Permission does not replace package authentication.

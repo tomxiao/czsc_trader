@@ -119,9 +119,13 @@ def test_regression_results_must_match_collected_nodes(tmp_path, fault):
         assert runner.check_coverage(tmp_path, ['one']) == dict(nodes=2, failures=1, skipped=0)
 
 
-def test_INFRA_01_C02_seed_affinity_keeps_each_file_once():
-    affinity = tuple(f'tests/functional/test_candidate_{name}.py' for name in (
-        'freeze', 'contract_admission', 'inspection_roundtrip', 'inspection_failure'))
+@pytest.mark.parametrize('affinity', [
+    tuple(f'tests/functional/test_candidate_{name}.py' for name in (
+        'freeze', 'contract_admission', 'inspection_roundtrip', 'inspection_failure')),
+    ('tests/functional/test_formal_v4_runtime.py', 'tests/functional/test_v4_account_rebinding.py'),
+    ('tests/functional/test_v4_pte.py', 'tests/functional/test_pte_observation_cutoff.py'),
+], ids=['inspection', 'formal-inputs', 'pte-inputs'])
+def test_INFRA_01_C02_seed_affinity_keeps_each_file_once(affinity):
     files = ['tests/test_a.py', 'tests/test_b.py', *affinity]
     costs = {'tests/test_a.py': 100., 'tests/test_b.py': 40., **dict.fromkeys(affinity, 30.)}
     lanes = runner.partition(files, costs, 2)
